@@ -41,11 +41,8 @@ function loadLauncherHarness(includeButton = true) {
       },
       RendererI18n: {
         tRenderer(path) {
-          if (path === 'renderer.main.tooltips.text_time_calculator') {
+          if (path === 'renderer.main.names.text_time_calculator') {
             return 'Open calculator';
-          }
-          if (path === 'renderer.main.aria.text_time_calculator') {
-            return 'Open calculator aria';
           }
           return path;
         },
@@ -79,13 +76,18 @@ test('text_time_calculator_launcher fails fast when the launcher button is missi
   );
 });
 
-test('text_time_calculator_launcher applies translated tooltip and aria label', () => {
+test('text_time_calculator_launcher applies one translated name to ARIA and visual tooltip', () => {
   const harness = loadLauncherHarness();
 
-  harness.api.applyTranslations();
+  harness.api.applyTranslations({
+    tRenderer: (path) => (path === 'renderer.main.names.text_time_calculator'
+      ? 'Open calculator'
+      : path),
+  });
 
-  assert.equal(harness.button.getAttribute('title'), 'Open calculator');
-  assert.equal(harness.button.getAttribute('aria-label'), 'Open calculator aria');
+  assert.equal(harness.button.getAttribute('aria-label'), 'Open calculator');
+  assert.equal(harness.button.getAttribute('data-tot-tooltip'), 'Open calculator');
+  assert.equal(harness.button.getAttribute('title'), null);
 });
 
 test('text_time_calculator_launcher binds click action once', () => {

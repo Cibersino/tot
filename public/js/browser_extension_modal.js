@@ -57,7 +57,6 @@
   // =============================================================================
   // Shared state
   // =============================================================================
-  let previousFocus = null;
   let interactionLocked = false;
   let initialized = false;
   let electronApiRef = null;
@@ -87,31 +86,16 @@
     trigger.setAttribute('aria-disabled', locked ? 'true' : 'false');
   }
 
-  function rememberPreviousFocus() {
-    const activeElement = document.activeElement;
-    previousFocus = activeElement && typeof activeElement.focus === 'function'
-      ? activeElement
-      : null;
-  }
-
-  function restorePreviousFocus() {
-    if (!previousFocus || !document.contains(previousFocus)) return;
-    try {
-      previousFocus.focus();
-    } catch (err) {
-      log.warn('Browser extension focus restore failed (ignored):', err);
-    }
-  }
-
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
     if (visible) {
-      const panel = modal.querySelector('.browser-extension-modal-panel');
-      if (panel) panel.scrollTop = 0;
-      chromeStoreLink.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: closeButton,
+        fallbackFocus: closeButton,
+      });
       return;
     }
-    restorePreviousFocus();
+    window.Notify.deactivateModalFocus(modal);
   }
 
   function closeModal() {
@@ -127,7 +111,6 @@
       return;
     }
 
-    rememberPreviousFocus();
     setModalVisible(true);
   }
 
@@ -192,13 +175,12 @@
     const triggerAria = tRenderer('renderer.main.aria.browser_extension');
     const chromeStoreAria = tRenderer('renderer.browser_extension.chrome_store_aria');
 
-    trigger.title = triggerTooltip;
+    trigger.setAttribute('data-tot-tooltip', triggerTooltip);
     trigger.setAttribute('aria-label', triggerAria);
     title.textContent = tRenderer('renderer.browser_extension.title');
     subtitle.textContent = tRenderer('renderer.browser_extension.subtitle');
     availability.textContent = tRenderer('renderer.browser_extension.availability');
     closeButton.setAttribute('aria-label', tRenderer('renderer.browser_extension.close_aria'));
-    chromeStoreLink.title = chromeStoreAria;
     chromeStoreLink.setAttribute('aria-label', chromeStoreAria);
   }
 

@@ -83,6 +83,7 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   assert.equal(normalized.language, '');
   assert.equal(normalized.modeConteo, 'preciso');
   assert.equal(normalized.spellcheckEnabled, true);
+  assert.equal(normalized.previewSpoilerEnabled, true);
   assert.equal(normalized.editorFontSizePx, 20);
   assert.deepEqual(normalized.presets_by_language.es, []);
   assert.equal(Object.prototype.hasOwnProperty.call(normalized, 'snapshotTags'), false);
@@ -94,6 +95,21 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   const writes = harness.getWrites();
   assert.equal(writes.length, 1);
   assert.deepEqual(writes[0].value, normalized);
+});
+
+test('fresh settings include an enabled preview Spoiler preference', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness();
+
+  const normalized = settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+
+  assert.equal(normalized.previewSpoilerEnabled, true);
+  assert.equal(harness.getStoredValue().previewSpoilerEnabled, true);
 });
 
 test('saveSettings normalizes language-scoped buckets and trims selected preset names', () => {
@@ -115,12 +131,14 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
     disabled_default_presets: null,
     modeConteo: 'invalid-mode',
     spellcheckEnabled: 'invalid-flag',
+    previewSpoilerEnabled: 'invalid-flag',
     editorFontSizePx: 200,
   });
 
   assert.equal(normalized.language, 'en-us');
   assert.equal(normalized.modeConteo, 'preciso');
   assert.equal(normalized.spellcheckEnabled, true);
+  assert.equal(normalized.previewSpoilerEnabled, true);
   assert.equal(normalized.editorFontSizePx, 36);
   assert.deepEqual(normalized.presets_by_language.en, []);
   assert.equal(normalized.selected_preset_by_language.en, 'my preset');
@@ -150,6 +168,7 @@ test('getSettings reloads from the backing store and re-normalizes external edit
     numberFormatting: {},
     modeConteo: 'simple',
     spellcheckEnabled: false,
+    previewSpoilerEnabled: false,
     editorFontSizePx: 11,
   });
 
@@ -157,6 +176,7 @@ test('getSettings reloads from the backing store and re-normalizes external edit
   assert.equal(reloaded.language, 'en-us');
   assert.equal(reloaded.modeConteo, 'simple');
   assert.equal(reloaded.spellcheckEnabled, false);
+  assert.equal(reloaded.previewSpoilerEnabled, false);
   assert.equal(reloaded.editorFontSizePx, 12);
   assert.deepEqual(reloaded.numberFormatting.en, {
     separadorMiles: ',',
@@ -243,6 +263,9 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(initialSettings.spellcheckEnabled, true);
   assert.equal(initialSettings.spellcheckAvailable, false);
 
+  const currentLanguage = await ipcMain.invoke('get-current-language');
+  assert.equal(currentLanguage, 'ar');
+
   const result = await ipcMain.invoke('set-spellcheck-enabled', false);
   assert.deepEqual(result, { ok: true, enabled: false });
   assert.equal(onSettingsUpdatedCalls.length, 1);
@@ -265,7 +288,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
 });
 
-test('broadcastSettingsUpdated includes textTimeCalculatorWin in the fixed target list', () => {
+test('broadcastSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
   const settings = loadFreshSettingsModule();
   const sentPayloads = [];
 
@@ -273,6 +296,26 @@ test('broadcastSettingsUpdated includes textTimeCalculatorWin in the fixed targe
     { language: 'en' },
     {
       textTimeCalculatorWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+      readingTestQuestionsWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+      readingTestResultWin: {
         isDestroyed() {
           return false;
         },
@@ -290,7 +333,54 @@ test('broadcastSettingsUpdated includes textTimeCalculatorWin in the fixed targe
       channel: 'settings-updated',
       payload: { language: 'en' },
     },
+    {
+      channel: 'settings-updated',
+      payload: { language: 'en' },
+    },
+    {
+      channel: 'settings-updated',
+      payload: { language: 'en' },
+    },
   ]);
+});
+
+test('set-preview-spoiler-enabled strictly saves the main-window preference without broadcasting', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness();
+  const ipcMain = createIpcMainDouble();
+  const sentPayloads = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+  });
+
+  const result = await ipcMain.invoke('set-preview-spoiler-enabled', false);
+
+  assert.deepEqual(result, { ok: true, enabled: false });
+  assert.equal(settings.getSettings().previewSpoilerEnabled, false);
+  assert.equal(harness.getStoredValue().previewSpoilerEnabled, false);
+  assert.deepEqual(sentPayloads, []);
+
+  const invalidResult = await ipcMain.invoke('set-preview-spoiler-enabled', 'false');
+  assert.deepEqual(invalidResult, { ok: false, error: 'invalid' });
+  assert.equal(harness.getStoredValue().previewSpoilerEnabled, false);
 });
 
 test('registerIpc does not publish settings-updated or mutate persisted settings when strict save fails', async () => {

@@ -25,6 +25,9 @@ function createClassList() {
       values.add(name);
       return true;
     },
+    contains(name) {
+      return values.has(name);
+    },
   };
 }
 
@@ -62,8 +65,12 @@ function createElement(id, tagName = 'div') {
     addEventListener(type, listener) {
       listeners[type] = listener;
     },
+    blur() {
+      if (listeners.blur) listeners.blur({});
+    },
     dispatch(type, event = {}) {
-      if (listeners[type]) listeners[type](event);
+      if (listeners[type]) return listeners[type](event);
+      return undefined;
     },
     setAttribute(name, value) {
       attributes[name] = String(value);
@@ -108,6 +115,7 @@ function createHarness({ languageDirection = 'ltr' } = {}) {
     previewSpoilerToggle: createElement('previewSpoilerToggle', 'input'),
     previewSpoilerToggleLabel: createElement('previewSpoilerToggleLabel', 'label'),
     previewSpoilerText: createElement('previewSpoilerText'),
+    previewSpoilerDescription: createElement('previewSpoilerDescription'),
     btnTextExtractionAbort: createElement('btnTextExtractionAbort'),
   };
 
@@ -173,6 +181,24 @@ function createHarness({ languageDirection = 'ltr' } = {}) {
   };
 }
 
+function bindSelectorActions(api, onPreviewSpoilerEnabledChange) {
+  const noop = () => {};
+  api.bindActions({
+    onTextExtraction: noop,
+    onTextExtractionAbort: noop,
+    onOverwriteClipboard: noop,
+    onAppendClipboard: noop,
+    onOpenEditor: noop,
+    onClearText: noop,
+    onLoadSnapshot: noop,
+    onSaveSnapshot: noop,
+    onNewTask: noop,
+    onLoadTask: noop,
+    onReadingSpeedTest: noop,
+    onPreviewSpoilerEnabledChange,
+  });
+}
+
 test('empty preview direction follows UI fallback instead of placeholder script', () => {
   const harness = createHarness({ languageDirection: 'rtl' });
 
@@ -182,6 +208,7 @@ test('empty preview direction follows UI fallback instead of placeholder script'
   assert.equal(harness.elements.textPreview.getAttribute('dir'), 'rtl');
   const fragment = harness.elements.textPreview.childNodes[0];
   assert.equal(fragment.tagName, 'bdi');
+  assert.equal(fragment.className, 'preview-fragment preview-fragment--empty');
   assert.equal(fragment.getAttribute('dir'), 'auto');
   assert.equal(fragment.textContent, 'ltr:placeholder');
 });
@@ -193,6 +220,7 @@ test('inline preview direction resolves from normalized source text', () => {
 
   assert.deepEqual(harness.resolveCalls, ['rtl:ab   cd']);
   assert.equal(harness.elements.textPreview.getAttribute('dir'), 'rtl');
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].className, 'preview-fragment');
 });
 
 test('truncated preview resolves direction from full source text and keeps synthetic parts isolated', () => {
@@ -215,4 +243,101 @@ test('truncated preview resolves direction from full source text and keeps synth
   assert.equal(endFragment.tagName, 'bdi');
   assert.equal(endFragment.getAttribute('dir'), 'auto');
   assert.equal(endFragment.textContent, 'hij');
+});
+
+test('clipboard repeat commits the canonical value on blur and Enter', () => {
+  const harness = createHarness();
+  const input = harness.elements.clipboardRepeatInput;
+
+  input.value = '100';
+  input.dispatch('input');
+  assert.equal(input.classList.contains('is-invalid'), true);
+  assert.equal(input.getAttribute('aria-invalid'), 'true');
+  input.dispatch('blur');
+  assert.equal(input.value, '99');
+  assert.equal(input.classList.contains('is-invalid'), false);
+  assert.equal(input.getAttribute('aria-invalid'), 'false');
+
+  let prevented = false;
+  input.value = '0';
+  input.dispatch('input');
+  assert.equal(input.classList.contains('is-invalid'), true);
+  input.dispatch('keydown', {
+    key: 'Enter',
+    preventDefault() {
+      prevented = true;
+    },
+  });
+
+  assert.equal(prevented, true);
+  assert.equal(input.value, '1');
+  assert.equal(input.classList.contains('is-invalid'), false);
+});
+
+test('Spoiler updates its visible name and shared description/visual-tooltip source', () => {
+  const harness = createHarness();
+
+  harness.api.applyTranslations({
+    tRenderer(key) {
+      if (key === 'renderer.main.reading_tools.preview_spoiler') return 'Spoiler';
+      if (key === 'renderer.main.help.preview_spoiler') {
+        return 'Show or hide the end of the preview';
+      }
+      return key;
+    },
+  });
+
+  assert.equal(
+    harness.elements.previewSpoilerToggleLabel.getAttribute('data-tot-tooltip'),
+    'Show or hide the end of the preview',
+  );
+  assert.equal(
+    harness.elements.previewSpoilerDescription.textContent,
+    'Show or hide the end of the preview',
+  );
+  assert.equal(harness.elements.previewSpoilerText.textContent, 'Spoiler');
+  assert.equal(harness.elements.previewSpoilerToggle.getAttribute('aria-label'), null);
+});
+
+test('Spoiler applies saved state and restores the saved state when persistence fails', async () => {
+  const harness = createHarness();
+  const toggle = harness.elements.previewSpoilerToggle;
+
+  harness.api.renderPreview('abcdefghij');
+  harness.api.setPreviewSpoilerEnabled(false);
+  assert.equal(toggle.checked, false);
+  assert.equal(harness.elements.textPreview.childNodes.length, 1);
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+
+  let rejectSave;
+  bindSelectorActions(harness.api, () => new Promise((_resolve, reject) => {
+    rejectSave = reject;
+  }));
+
+  toggle.checked = true;
+  const pendingChange = toggle.dispatch('change');
+  assert.equal(toggle.disabled, true);
+  rejectSave(new Error('disk full'));
+  await pendingChange;
+
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.disabled, false);
+  assert.equal(harness.elements.textPreview.childNodes.length, 1);
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+});
+
+test('Spanish and English define the Spoiler shared help source', () => {
+  const expectedBaseCopy = {
+    en: 'Show or hide the end of the preview',
+    es: 'Mostrar u ocultar el final de la vista previa',
+  };
+  Object.entries(expectedBaseCopy).forEach(([tag, expected]) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag.toLowerCase()}/renderer.json`);
+    const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
+    const help = renderer.renderer.main.help.preview_spoiler;
+
+    assert.equal(help, expected, `${tag} has unexpected Spoiler help`);
+  });
 });

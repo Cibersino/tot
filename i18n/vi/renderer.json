@@ -19,8 +19,7 @@
         "chars": "Ký tự: {n}",
         "value_pending": "đang chờ...",
         "value_unavailable": "không khả dụng",
-        "precise_mode": "Chế độ chính xác",
-        "precise_tooltip": "Dựa trên Intl.Segmenter"
+        "precise_mode": "Chế độ chính xác"
       },
       "crono": {
         "title": "ĐỒNG HỒ BẤM GIỜ",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Đang tính lại kết quả của văn bản hiện tại...",
         "current_text_waiting_startup": "Đang ổn định văn bản hiện tại...",
         "current_text_waiting_editor": "Đang đồng bộ thay đổi từ Text Editor...",
+        "editor_loading": "Đang tải Text Editor...",
         "text_extraction_placeholder": "Đang trích xuất văn bản...",
         "text_extraction_preparing": "Đang chuẩn bị tuyến trích xuất...",
         "text_extraction_cancellation_pending": "Đã yêu cầu hủy. Vui lòng chờ...",
@@ -47,17 +47,19 @@
       },
       "tooltips": {
         "text_extraction": "Trích xuất văn bản từ tệp",
+        "browser_extension": "Tiện ích mở rộng trình duyệt"
+      },
+      "names": {
         "text_extraction_abort": "Hủy trích xuất",
         "overwrite_clipboard": "Thay thế văn bản hiện tại bằng clipboard",
         "append_clipboard": "Thêm clipboard vào cuối văn bản hiện tại (dòng mới)",
-        "clipboard_repeat_count": "Số lần lặp clipboard",
+        "clipboard_repeat_count": "Số lần dán",
         "edit": "Mở cửa sổ toàn bộ văn bản hiện tại",
         "clear": "Xóa văn bản hiện tại",
         "snapshot_load": "Tải bản lưu văn bản",
         "snapshot_save": "Lưu văn bản hiện tại thành bản lưu",
         "task_new": "Tác vụ mới",
         "task_load": "Tải tác vụ",
-        "browser_extension": "Tiện ích mở rộng trình duyệt",
         "cibersino_website": "Trang web Cibersino",
         "cibersino_kofi": "Ủng hộ tôi trên Ko-fi",
         "new_preset": "Tạo preset mới",
@@ -66,23 +68,22 @@
         "reset_presets": "Khôi phục preset mặc định",
         "text_time_calculator": "Mở máy tính nhanh",
         "help_button": "Hiển thị một mẹo hữu ích",
-        "flotante_window": "Cửa sổ nổi"
+        "crono_toggle": "Bắt đầu hoặc tạm dừng đồng hồ bấm giờ",
+        "crono_reset": "Đặt lại đồng hồ bấm giờ",
+        "floating_window": "Cửa sổ nổi"
+      },
+      "help": {
+        "preview_spoiler": "Hiển thị hoặc ẩn phần cuối bản xem trước",
+        "precise_mode": "Dựa trên Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Trích xuất văn bản từ tệp",
-        "text_extraction_abort": "Hủy trích xuất",
         "browser_extension": "Mở hộp thoại tiện ích mở rộng trình duyệt",
-        "clipboard_repeat_count": "Số lần dán",
-        "text_time_calculator": "Mở máy tính nhanh",
         "wpm_input": "Số từ mỗi phút",
         "wpm_slider": "Thanh trượt số từ mỗi phút",
         "speed_presets": "Preset tốc độ",
-        "precise_mode_toggle": "Chế độ chính xác",
         "crono_controls": "Điều khiển đồng hồ bấm giờ",
         "crono_display": "Hiển thị đồng hồ bấm giờ",
-        "crono_toggle": "Bắt đầu hoặc tạm dừng đồng hồ bấm giờ",
-        "crono_reset": "Đặt lại đồng hồ bấm giờ",
-        "floating_window_toggle": "Cửa sổ nổi",
         "floating_window_group": "Điều khiển cửa sổ nổi"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Đơn vị {index}",
         "unit_counter": "Đơn vị {index}/{count}",
         "unit_name_placeholder": "Tên đơn vị tùy chọn",
+        "aria": {
+          "route": "Tuyến trích xuất cho {file}",
+          "unit_assignment": "Đơn vị đích cho {file}",
+          "unit_name": "Tên tùy chọn cho đơn vị {index} trong {count}"
+        },
         "new_unit_option": "Tạo đơn vị mới",
         "move_up": "Di chuyển lên",
         "move_down": "Di chuyển xuống",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Mở thư mục snapshot",
         "ok_button": "OK",
         "close_aria": "Đóng báo cáo cuối cùng của trích xuất theo lô",
-        "split_result_label": "Kết quả tách:",
         "failed_fallback": "thất bại",
         "failed_with_code": "thất bại: {code}",
         "applied_truncated": "đã áp dụng với phần cắt bớt",
@@ -301,28 +306,35 @@
       "increase_text_size": "Tăng cỡ chữ",
       "reset_text_size": "Đặt lại cỡ chữ",
       "read_progress_label": "Đã đọc",
-      "clear_title": "Xóa",
+      "clear": "Xóa",
+      "help": {
+        "apply": "Áp dụng văn bản trong trình chỉnh sửa làm văn bản hiện tại",
+        "auto_apply": "Tự động áp dụng các thay đổi trong trình chỉnh sửa vào văn bản hiện tại khi bạn nhập",
+        "spellcheck": "Bật hoặc tắt kiểm tra chính tả cho văn bản trong trình chỉnh sửa"
+      },
       "editor_find": {
         "input_placeholder": "Tìm...",
         "input_aria": "Tìm trong văn bản",
-        "expand_title": "Hiển thị điều khiển thay thế",
-        "collapse_title": "Ẩn điều khiển thay thế",
         "replace_placeholder": "Thay thế...",
         "replace_aria": "Văn bản thay thế",
         "replace": "Thay thế",
         "replace_all": "Thay thế tất cả",
-        "prev_title": "Kết quả trước",
-        "next_title": "Kết quả tiếp theo",
-        "close_title": "Đóng thanh tìm kiếm",
-        "replace_title": "Thay thế kết quả hiện tại",
-        "replace_all_title": "Thay thế tất cả kết quả",
+        "names": {
+          "show_replace": "Hiển thị điều khiển thay thế",
+          "hide_replace": "Ẩn điều khiển thay thế",
+          "previous_match": "Kết quả trước",
+          "next_match": "Kết quả tiếp theo",
+          "close": "Đóng thanh tìm kiếm"
+        },
+        "help": {
+          "replace_current": "Thay thế kết quả hiện tại",
+          "replace_all": "Thay thế tất cả kết quả"
+        },
         "replace_timeout": "Thay thế quá thời gian. Hãy thử lại.",
         "status_no_matches": "Không có kết quả",
         "status_empty_query": "Nhập để tìm kiếm"
       },
       "alerts": {
-        "start_failed": "Không thể khởi động Text Editor.",
-        "start_timeout": "Text Editor khởi động quá lâu và đã bị đóng.",
         "paste_too_big": "Văn bản quá lớn để dán trực tiếp. Hãy dùng các nút ở cửa sổ chính.",
         "drop_too_big": "Văn bản được thả quá lớn. Hãy dùng các nút ở cửa sổ chính để thêm văn bản lớn.",
         "paste_no_text": "Clipboard không chứa văn bản thuần.",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "Lưu bản lưu văn bản",
-      "message": "Bạn có thể gắn thẻ tùy chọn cho bản lưu văn bản này trước khi chọn nơi lưu.",
+      "message": "Trước khi chọn nơi lưu, bạn có thể đặt tên, mô tả nguồn gốc và gắn thẻ cho bản lưu văn bản này.",
       "search": {
         "placeholder": "Nhập để lọc tùy chọn",
         "no_results": "Không có tùy chọn phù hợp",
         "create": "Tạo \"{label}\""
       },
       "labels": {
+        "name": "Tên (không bắt buộc)",
+        "source_comment": "Nguồn gốc (không bắt buộc)",
         "language": "Ngôn ngữ",
         "type": "Loại",
         "difficulty": "Độ khó"
+      },
+      "placeholders": {
+        "name": "Bài đọc",
+        "source_comment": "chapter-1.pdf, Bài 1 hoặc văn bản đã nhập"
+      },
+      "metrics": {
+        "include_count": "Bao gồm số lượng từ",
+        "include_reading": "Bao gồm thời gian đọc ước tính và WPM"
       },
       "manager": {
         "title": "Quản lý thẻ snapshot văn bản",
@@ -356,10 +378,11 @@
         "close_aria": "Đóng trình quản lý thẻ snapshot văn bản",
         "new_tag": "Thẻ mới",
         "new_tag_placeholder": "Tên thẻ",
+        "new_tag_input_aria": "Tên thẻ mới",
         "add_tag": "Thêm thẻ",
         "cancel_draft": "Hủy",
         "sort_alphabetically": "Sắp xếp A-Z",
-        "restore_hidden_defaults": "Khôi phục thẻ mặc định ({count})",
+        "restore_hidden_defaults": "Khôi phục thẻ mặc định",
         "empty_category": "Không có thẻ hiển thị trong danh mục này.",
         "move_up": "Di chuyển \"{label}\" lên",
         "move_down": "Di chuyển \"{label}\" xuống",
@@ -411,6 +434,7 @@
           "qu": "Tiếng Quechua",
           "ru": "Tiếng Nga",
           "sv": "Tiếng Thụy Điển",
+          "sw": "Tiếng Swahili",
           "tr": "Tiếng Thổ Nhĩ Kỳ",
           "ur": "Tiếng Urdu",
           "vi": "Tiếng Việt",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — Tác vụ",
       "name": "Tên",
+      "name_placeholder": "ví dụ: Kế hoạch đọc",
       "save_button": "Lưu",
       "delete_button": "Xóa",
       "summary_total": "Tổng",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Còn lại",
         "enlace": "Liên kết",
-        "comentario": "",
+        "comentario": "B+L",
         "acciones": "Hành động",
-        "tooltips": {
+        "header_names": {
+          "tiempo": "Thời gian đọc ước tính",
+          "percent": "Phần trăm đã hoàn thành",
+          "falta": "Thời gian còn lại ước tính",
+          "comentario": "Bình luận và snapshot văn bản"
+        },
+        "names": {
           "file_select": "Chọn tệp cục bộ",
           "link_open": "Mở liên kết",
           "snapshot_load": "Tải bản lưu văn bản cho hàng này",
-          "comment": "Thêm/chỉnh sửa bình luận",
+          "comment": "Thêm bình luận hoặc snapshot văn bản",
           "move_up": "Di chuyển lên",
           "move_down": "Di chuyển xuống",
           "library_row_save": "Lưu vào thư viện",
           "delete_row": "Xóa hàng"
+        },
+        "descriptions": {
+          "snapshot_path": "Đường dẫn snapshot văn bản được liên kết: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Tải snapshot văn bản làm văn bản hiện tại · Đường dẫn liên kết: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Bình luận",
+        "comment_placeholder": "Bình luận...",
         "snapshot_select": "Chọn bản lưu",
-        "snapshot_select_tooltip": "Chọn bản lưu văn bản cho hàng này",
-        "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này"
+        "snapshot_clear": "Gỡ bản lưu đã chọn khỏi hàng này",
+        "close_aria": "Đóng bình luận",
+        "snapshot_source_reminder": {
+          "title": "Nhắc về nguồn của bản lưu",
+          "message": "Hàng này được liên kết với một bản lưu văn bản. Hãy xem bình luận về nguồn của nó trước khi chọn tệp cục bộ.",
+          "source_comment": "Bình luận về nguồn của bản lưu:",
+          "select_file": "Chọn tệp cục bộ",
+          "cancel": "Hủy",
+          "close_aria": "Đóng lời nhắc về nguồn của bản lưu"
+        },
+        "snapshot_details_confirm": {
+          "title": "Dùng dữ liệu từ bản lưu văn bản đã chọn?",
+          "message": "Xem lại dữ liệu có sẵn từ bản lưu văn bản đã chọn trước khi áp dụng cho mục đọc này.",
+          "replace_reading_name": "Thay tên mục đọc",
+          "set_reading_name": "Đặt tên mục đọc",
+          "current_name": "Tên hiện tại",
+          "snapshot_name": "Tên bản lưu",
+          "empty": "(trống)",
+          "replace_time": "Thay thời gian ước tính",
+          "current_time": "Thời gian hiện tại",
+          "snapshot_estimate": "Ước tính của bản lưu",
+          "reading_speed": "Tốc độ đọc",
+          "apply": "Áp dụng",
+          "apply_selected": "Áp dụng mục đã chọn",
+          "keep": "Giữ các giá trị hiện tại",
+          "close_aria": "Đóng xác nhận dữ liệu bản lưu"
+        }
       },
       "biblioteca": {
         "library_title": "Thư viện",
+        "close_aria": "Đóng thư viện đọc",
         "search": "Tìm kiếm",
         "search_placeholder": "Tìm trong thư viện...",
         "empty": "(trống)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Lưu vào thư viện",
-        "library_save_question": "Bao gồm bình luận?",
+        "close_aria": "Đóng hộp thoại lưu vào thư viện",
+        "library_save_question": "Bao gồm bình luận? Nếu có bản lưu văn bản được chọn cho mục đọc này, liên kết của bản đó vẫn sẽ được lưu trong mọi trường hợp.",
         "yes": "Có",
         "no": "Không",
         "cancel": "Hủy"
@@ -499,6 +564,7 @@
         "task_delete_unavailable": "Không có tác vụ đã lưu để xóa.",
         "task_invalid_file": "Tệp tác vụ không hợp lệ.",
         "task_invalid_rows": "Có hàng không hợp lệ trong tác vụ.",
+        "task_duration_too_large": "Tổng thời lượng ước tính của tác vụ quá lớn.",
         "task_path_outside": "Tệp phải nằm trong thư mục tác vụ.",
         "name_required": "Tên tác vụ là bắt buộc.",
         "row_text_required": "Văn bản của hàng không được để trống.",
@@ -507,6 +573,10 @@
         "library_save_error": "Không thể lưu vào thư viện.",
         "library_save_success": "Đã lưu hàng vào thư viện.",
         "library_delete_error": "Không thể xóa khỏi thư viện.",
+        "column_layout_save_error": "Không thể lưu bố cục cột và bố cục này có thể không được giữ lại vào lần sau.",
+        "snapshot_missing": "Bản lưu văn bản đã chọn không còn tồn tại.",
+        "snapshot_invalid": "Bản lưu văn bản đã chọn không hợp lệ.",
+        "snapshot_read_error": "Không thể đọc bản lưu văn bản đã chọn.",
         "link_blocked": "Liên kết bị chặn.",
         "link_missing": "Không tìm thấy tệp.",
         "link_error": "Lỗi khi mở liên kết.",
@@ -538,7 +608,7 @@
         "title": "Bài kiểm tra tốc độ đọc",
         "show_instructions": "Hiển thị hướng dẫn",
         "hide_instructions": "Ẩn hướng dẫn",
-        "intro": "Bài kiểm tra này nhằm ước tính tốc độ đọc thực tế của bạn qua một phiên được hướng dẫn. Ứng dụng sẽ mở văn bản và chờ bạn nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ dùng Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra. Sau đó, bạn có thể xem các câu hỏi đọc hiểu nếu văn bản có kèm theo, và cuối cùng tạo một preset từ kết quả.\nTrước khi bắt đầu, hãy nhớ rằng các văn bản kiểm tra này thường cần từ 5 đến 15 phút tập trung không bị gián đoạn.\nPool này dùng các văn bản ngắn, vì vậy hãy diễn giải kết quả một cách thận trọng. Không nên ngoại suy trực tiếp sang văn bản dài, nơi các yếu tố tích cực như nhịp đọc và sự tích lũy ngữ cảnh, cũng như các yếu tố tiêu cực như việc tự tóm lược trong đầu và mệt mỏi, thường phát huy tác động.",
+        "intro": "Bài kiểm tra này nhằm ước tính tốc độ đọc thực tế của bạn qua một phiên được hướng dẫn. Ứng dụng sẽ mở văn bản và chờ bạn nhấn Play (▶) trong Đồng hồ bấm giờ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng đồng hồ bấm giờ. Chỉ dùng Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra. Sau đó, bạn có thể xem các câu hỏi đọc hiểu nếu văn bản có kèm theo, và cuối cùng tạo một preset từ kết quả.\nTrước khi bắt đầu, hãy nhớ rằng các văn bản kiểm tra này thường cần từ 5 đến 15 phút tập trung không bị gián đoạn.\nPool này dùng các văn bản ngắn, vì vậy hãy diễn giải kết quả một cách thận trọng. Không nên ngoại suy trực tiếp sang văn bản dài, nơi các yếu tố tích cực như nhịp đọc và sự tích lũy ngữ cảnh, cũng như các yếu tố tiêu cực như việc tự tóm lược trong đầu và mệt mỏi, thường phát huy tác động.",
         "eligible_count": "Tệp đủ điều kiện:",
         "show_bundled_entries": "Test cơ bản",
         "get_more_files": "Lấy thêm tệp",
@@ -550,28 +620,22 @@
         "close_aria": "Đóng hộp thoại bài kiểm tra tốc độ đọc",
         "start_random_confirm": "Thao tác này sẽ ghi đè văn bản hiện tại bằng một văn bản đủ điều kiện ngẫu nhiên từ pool. Bạn có muốn tiếp tục?",
         "reset_confirm": "Thao tác này sẽ đặt lại toàn bộ pool kiểm tra và đánh dấu tất cả tệp là chưa dùng lại. Bạn có muốn tiếp tục?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Bao gồm các tệp kiểm tra khởi đầu được tích hợp sẵn trong ứng dụng vào pool",
           "get_more_files": "Lấy thêm tệp kiểm tra từ thư mục Google Drive",
           "import_files": "Nhập tệp kiểm tra từ thiết bị của bạn",
-          "reset_pool": "Đặt lại pool kiểm tra",
           "start_random_text": "Bắt đầu bài kiểm tra với một văn bản đủ điều kiện ngẫu nhiên từ pool",
-          "start_current_text": "Bắt đầu bài kiểm tra với văn bản hiện tại"
+          "start_current_text": "Dùng văn bản hiện tại mà không thay thế nó hoặc dùng một tệp trong pool"
+        },
+        "names": {
+          "reset_pool": "Đặt lại pool kiểm tra"
         },
         "import": {
-          "import_summary": "Nhập xong. Đã nhập: {imported}. Bỏ qua trùng lặp: {skippedDuplicates}. Không đạt xác thực: {failedValidation}. Mục trong gói nén lỗi: {failedArchiveEntries}. Ghi lỗi: {failedWrites}.",
-          "import_conflict": {
-            "title": "Nhập tệp",
-            "message": "Một số tệp được nhập đã tồn tại trong pool. Xử lý tệp trùng như thế nào?",
-            "detail": "{count} tên tệp đích đã tồn tại trong pool.",
-            "skip_button": "Bỏ qua tệp trùng",
-            "replace_button": "Thay thế tệp trùng",
-            "cancel_button": "Hủy nhập"
-          }
+          "import_summary": "Nhập xong. Đã nhập: {imported}. Bỏ qua trùng lặp: {skippedDuplicates}. Không đạt xác thực: {failedValidation}. Mục trong gói nén lỗi: {failedArchiveEntries}. Ghi lỗi: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Nhấn Play (▶) trong Cửa sổ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng bộ đếm thời gian. Chỉ nhấn Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra."
+        "reminder": "Nhấn Play (▶) trong Đồng hồ bấm giờ nổi khi bạn sẵn sàng bắt đầu. Sau khi bài kiểm tra đã bắt đầu, đừng nhấn Pause (⏸) cho đến khi bạn đọc xong: Pause kết thúc bài kiểm tra; nó không tạm dừng đồng hồ bấm giờ. Chỉ nhấn Stop/Reset (⏹) nếu bạn muốn hủy bài kiểm tra."
       },
       "questions": {
         "title": "Câu hỏi đọc hiểu",
@@ -580,6 +644,7 @@
         "random_value": "Điểm kỳ vọng khi đoán ngẫu nhiên: {percentage}",
         "feedback_title": "Phản hồi",
         "feedback_prefix": "Khiếu nại:",
+        "summary_aria": "Tóm tắt bài test",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Phải trả lời tất cả câu hỏi trước khi đánh giá.",
         "result_summary": "Đúng {correct} trên {total} ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "WPM đo được",
         "elapsed_time": "Thời gian",
         "word_count": "Từ",
+        "summary_aria": "Tóm tắt bài test",
         "continue_button": "Tiếp tục"
       },
       "alerts": {
@@ -646,8 +712,8 @@
       }
     },
     "browser_extension": {
-      "title": "Tiện ích mở rộng trình duyệt",
-      "subtitle": "Tiempo de lectura",
+      "title": "Thời gian đọc",
+      "subtitle": "Tiện ích mở rộng trình duyệt",
       "availability": "Hiện đã có trên Chrome. Nhiều trình duyệt khác sẽ sớm được hỗ trợ.",
       "chrome_store_aria": "Mở trang Chrome Web Store của tiện ích",
       "close_aria": "Đóng hộp thoại tiện ích mở rộng trình duyệt",
@@ -658,6 +724,11 @@
     "info": {
       "loading": "Đang tải...",
       "missing_content": "Không có nội dung cho '{name}'.",
+      "close_aria": "Đóng thông tin",
+      "media_lightbox": {
+        "title": "Bản xem trước ảnh chụp màn hình phóng to",
+        "close_aria": "Đóng bản xem trước"
+      },
       "external": {
         "blocked": "Liên kết bị chặn",
         "error": "Lỗi khi mở liên kết"

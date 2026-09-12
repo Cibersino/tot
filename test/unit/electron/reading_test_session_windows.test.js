@@ -7,11 +7,36 @@ const {
   installElectronModuleMock,
 } = require('../../helpers/electron_module_mock');
 
-function loadFreshReadingTestSessionWindows(t) {
+function loadFreshReadingTestSessionWindows(t, electronOverrides = null) {
   const modulePath = path.resolve(__dirname, '../../../electron/reading_test_session_windows.js');
-  t.after(installElectronModuleMock());
+  t.after(installElectronModuleMock(electronOverrides));
   delete require.cache[require.resolve(modulePath)];
   return require(modulePath);
+}
+
+function createModalWindowDouble() {
+  const win = createWindowDouble({ visible: false, loading: false });
+  const persistentListeners = new Map();
+  const sent = [];
+  win.setMenu = () => {};
+  win.show = () => {
+    win.visible = true;
+  };
+  win.loadFile = async () => {};
+  win.on = (event, listener) => {
+    persistentListeners.set(event, listener);
+  };
+  win.emit = (event) => {
+    const onceListener = win.listeners.get(event);
+    if (onceListener) onceListener();
+    const persistentListener = persistentListeners.get(event);
+    if (persistentListener) persistentListener();
+  };
+  win.webContents.send = (channel, payload) => {
+    sent.push({ channel, payload });
+  };
+  win.getSent = () => sent.slice();
+  return win;
 }
 
 function createWindowDouble({ visible = true, loading = false } = {}) {
@@ -108,4 +133,117 @@ test('openReadingSessionWindows starts a hidden maximized editor bootstrap and w
 
   assert.equal(result.editorWin, editorWin);
   assert.equal(result.flotanteWin, flotanteWin);
+});
+
+test('question and result modal windows register while live and deregister on close', async (t) => {
+  const questionsWin = createModalWindowDouble();
+  const resultWin = createModalWindowDouble();
+  const windows = [questionsWin, resultWin];
+  const readingTestSessionWindows = loadFreshReadingTestSessionWindows(t, {
+    BrowserWindow: function BrowserWindowDouble() {
+      return windows.shift();
+    },
+  });
+  const mainWin = createWindowDouble({ visible: true, loading: false });
+  const lifecycle = [];
+  const commonOptions = {
+    resolveMainWindow: () => mainWin,
+    log: { warn() {} },
+    onWindowCreated(win) {
+      lifecycle.push(['created', win]);
+    },
+    onWindowClosed(win) {
+      lifecycle.push(['closed', win]);
+    },
+  };
+
+  const questionsPromise = readingTestSessionWindows.openQuestionsWindow([{ id: 'q1' }], {
+    ...commonOptions,
+    questionsWindowPreload: 'questions-preload.js',
+    questionsWindowHtml: 'questions.html',
+    developerEmail: 'support@example.test',
+  });
+  assert.deepEqual(lifecycle, [['created', questionsWin]]);
+  questionsWin.emit('ready-to-show');
+  assert.equal(questionsWin.isVisible(), true);
+  assert.equal(questionsWin.getSent()[0].channel, 'reading-test-questions-init');
+  questionsWin.emit('closed');
+  assert.deepEqual(await questionsPromise, { ok: true });
+
+  const resultPromise = readingTestSessionWindows.openResultWindow({ measuredWpm: 250 }, {
+    ...commonOptions,
+    resultWindowPreload: 'result-preload.js',
+    resultWindowHtml: 'result.html',
+  });
+  assert.deepEqual(lifecycle, [
+    ['created', questionsWin],
+    ['closed', questionsWin],
+    ['created', resultWin],
+  ]);
+  resultWin.emit('ready-to-show');
+  assert.equal(resultWin.isVisible(), true);
+  assert.equal(resultWin.getSent()[0].channel, 'reading-test-result-init');
+  resultWin.emit('closed');
+  assert.deepEqual(await resultPromise, { ok: true });
+  assert.deepEqual(lifecycle, [
+    ['created', questionsWin],
+    ['closed', questionsWin],
+    ['created', resultWin],
+    ['closed', resultWin],
+  ]);
+});
+
+test('question and result modal windows ignore and diagnose throwing optional lifecycle observers', async (t) => {
+  const questionsWin = createModalWindowDouble();
+  const resultWin = createModalWindowDouble();
+  const windows = [questionsWin, resultWin];
+  const readingTestSessionWindows = loadFreshReadingTestSessionWindows(t, {
+    BrowserWindow: function BrowserWindowDouble() {
+      return windows.shift();
+    },
+  });
+  const mainWin = createWindowDouble({ visible: true, loading: false });
+  const warnings = [];
+  const commonOptions = {
+    resolveMainWindow: () => mainWin,
+    log: { warn(...args) { warnings.push(args); } },
+    onWindowCreated() {
+      throw new Error('created observer failed');
+    },
+    onWindowClosed() {
+      throw new Error('closed observer failed');
+    },
+  };
+
+  const questionsPromise = readingTestSessionWindows.openQuestionsWindow([{ id: 'q1' }], {
+    ...commonOptions,
+    questionsWindowPreload: 'questions-preload.js',
+    questionsWindowHtml: 'questions.html',
+    developerEmail: 'support@example.test',
+  });
+  questionsWin.emit('ready-to-show');
+  questionsWin.emit('closed');
+  assert.deepEqual(await questionsPromise, { ok: true });
+  assert.equal(questionsWin.isVisible(), true);
+  assert.equal(questionsWin.getSent()[0].channel, 'reading-test-questions-init');
+
+  const resultPromise = readingTestSessionWindows.openResultWindow({ measuredWpm: 250 }, {
+    ...commonOptions,
+    resultWindowPreload: 'result-preload.js',
+    resultWindowHtml: 'result.html',
+  });
+  resultWin.emit('ready-to-show');
+  resultWin.emit('closed');
+  assert.deepEqual(await resultPromise, { ok: true });
+  assert.equal(resultWin.isVisible(), true);
+  assert.equal(resultWin.getSent()[0].channel, 'reading-test-result-init');
+  assert.deepEqual(
+    warnings.map(([message]) => message),
+    [
+      'Reading-test questions window registration failed (ignored):',
+      'Reading-test questions window close registration failed (ignored):',
+      'Reading-test result window registration failed (ignored):',
+      'Reading-test result window close registration failed (ignored):',
+    ]
+  );
 });

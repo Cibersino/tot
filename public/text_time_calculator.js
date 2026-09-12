@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Load translations and number-format settings for the current language.
 // - Keep the selected target plus raw editable values synchronized with the UI.
-// - Delegate math and stopwatch parsing/formatting to shared pure helpers.
+// - Delegate reading math and whole-second clock parsing/formatting to shared pure helpers.
 // - Keep startup strict for required owners while degrading cleanly for optional settings sync.
 // - Render inline validation without toasts or developer noise for normal input mistakes.
 
@@ -17,7 +17,7 @@
   // Runtime dependencies and owner surfaces
   // =============================================================================
   // This window depends on stable renderer-owned globals for logging, i18n,
-  // formatting, stopwatch parsing, calculator math, and default language.
+  // formatting, reading duration, clock parsing, calculator math, and default language.
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text_time_calculator] window.getLogger unavailable; cannot continue');
   }
@@ -28,14 +28,19 @@
     && typeof textTimeCalculatorApi.getSettings === 'function';
   const canWatchSettings = !!textTimeCalculatorApi
     && typeof textTimeCalculatorApi.onSettingsChanged === 'function';
+  let calculatorI18nTerminal = false;
+  // The earliest required-dependency failure occurs before the field constants
+  // exist. Static markup already keeps those fields disabled at that point;
+  // defer the dynamic lock until the normal-control surface has been created.
+  let calculatorInteractionControlsInitialized = false;
 
   const rendererI18n = window.RendererI18n || null;
   if (!rendererI18n
-    || typeof rendererI18n.applyWindowLanguageAttributes !== 'function'
     || typeof rendererI18n.getLangBase !== 'function'
-    || typeof rendererI18n.loadRendererTranslations !== 'function'
     || typeof rendererI18n.normalizeLangTag !== 'function'
+    || typeof rendererI18n.transitionRendererTranslations !== 'function'
     || typeof rendererI18n.tRenderer !== 'function') {
+    reportTerminalCalculatorI18nFailure('startup-api');
     throw new Error('[text_time_calculator] RendererI18n unavailable; cannot continue');
   }
 
@@ -49,6 +54,14 @@
     throw new Error('[text_time_calculator] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
   }
 
+  const readingDurationUtils = window.ReadingDurationUtils || null;
+  if (!readingDurationUtils
+    || typeof readingDurationUtils.getEstimatedReadingSeconds !== 'function'
+    || typeof readingDurationUtils.getWordsForDurationSeconds !== 'function'
+    || typeof readingDurationUtils.getWpmForDurationSeconds !== 'function') {
+    throw new Error('[text_time_calculator] ReadingDurationUtils unavailable; cannot continue');
+  }
+
   const calculatorCore = window.TextTimeCalculatorCore || null;
   if (!calculatorCore || typeof calculatorCore.createTextTimeCalculatorUtils !== 'function') {
     throw new Error('[text_time_calculator] TextTimeCalculatorCore.createTextTimeCalculatorUtils unavailable; cannot continue');
@@ -60,12 +73,15 @@
   }
 
   const DEFAULT_LANG = AppConstants.DEFAULT_LANG;
+  const rendererCombobox = window.RendererCombobox || null;
+  if (!rendererCombobox || typeof rendererCombobox.create !== 'function') {
+    throw new Error('[text_time_calculator] RendererCombobox unavailable; cannot continue');
+  }
   const {
-    applyWindowLanguageAttributes,
     getLangBase,
-    loadRendererTranslations,
     normalizeLangTag,
     tRenderer,
+    transitionRendererTranslations,
   } = rendererI18n;
 
   const formatUtils = formatCore.createFormatUtils({
@@ -77,12 +93,15 @@
   const stopwatchUtils = stopwatchTimeCore.createStopwatchTimeUtils();
   const integerFormatState = {
     format(value) {
-      return String(Math.round(Number(value) || 0));
+      return String(value);
     },
   };
   const calculatorUtils = calculatorCore.createTextTimeCalculatorUtils({
-    parseStopwatchInput: stopwatchUtils.parseStopwatchInput,
-    formatRoundedSeconds: stopwatchUtils.formatRoundedSeconds,
+    getEstimatedReadingSeconds: readingDurationUtils.getEstimatedReadingSeconds,
+    getWordsForDurationSeconds: readingDurationUtils.getWordsForDurationSeconds,
+    getWpmForDurationSeconds: readingDurationUtils.getWpmForDurationSeconds,
+    formatClockSeconds: stopwatchUtils.formatClockSeconds,
+    parseClockSeconds: stopwatchUtils.parseClockSeconds,
     formatInteger: (value) => integerFormatState.format(value),
   });
 
@@ -90,7 +109,7 @@
   // DOM references and field schema
   // =============================================================================
   const targetLabel = document.getElementById('textTimeCalculatorTargetLabel');
-  const targetSelect = document.getElementById('textTimeCalculatorTarget');
+  const targetHost = document.getElementById('textTimeCalculatorTarget');
   const formulaValidation = document.getElementById('textTimeCalculatorFormulaValidation');
 
   const fields = {
@@ -131,7 +150,7 @@
     wpm: 'renderer.text_time_calculator.validation.wpm',
   };
 
-  if (!targetLabel || !targetSelect || !formulaValidation) {
+  if (!targetLabel || !targetHost || !formulaValidation) {
     throw new Error('[text_time_calculator] Required DOM unavailable; cannot continue');
   }
   fieldNames.forEach((field) => {
@@ -140,13 +159,15 @@
       throw new Error(`[text_time_calculator] Missing DOM for field: ${field}`);
     }
   });
+  calculatorInteractionControlsInitialized = true;
 
   // =============================================================================
   // Shared state and translation keys
   // =============================================================================
   let currentLanguage = DEFAULT_LANG;
   let settingsCache = null;
-  let translationsLoadedFor = null;
+  let settingsApplicationQueue = Promise.resolve();
+  let targetCombobox = null;
   const rawValues = {
     words: '',
     time: '',
@@ -157,8 +178,16 @@
   // Helpers
   // =============================================================================
   function getSelectedTarget() {
-    const selected = String(targetSelect.value || '').trim();
+    if (!targetCombobox) return 'wpm';
+    const selected = targetCombobox.getValue();
     return selected === 'words' || selected === 'time' ? selected : 'wpm';
+  }
+
+  function getTargetOptions() {
+    return Object.entries(TARGET_LABEL_KEYS).map(([value, key]) => ({
+      value,
+      label: tRenderer(key),
+    }));
   }
 
   function setFieldInvalidState(input, isInvalid) {
@@ -172,48 +201,44 @@
     });
   }
 
-  async function ensureTranslations(lang) {
-    const targetLang = normalizeLangTag(lang) || DEFAULT_LANG;
-    if (translationsLoadedFor === targetLang) {
-      applyWindowLanguageAttributes(targetLang);
-      return;
-    }
-
-    applyWindowLanguageAttributes(targetLang);
-    await loadRendererTranslations(targetLang);
-    translationsLoadedFor = targetLang;
-  }
-
   async function refreshIntegerFormatter() {
     const { separadorMiles: thousandsSeparator, separadorDecimal: decimalSeparator } = await formatUtils.obtenerSeparadoresDeNumeros(
       currentLanguage,
       settingsCache
     );
     integerFormatState.format = (value) => formatUtils.formatearNumero(
-      Math.round(Number(value) || 0),
+      value,
       thousandsSeparator,
       decimalSeparator
     );
   }
 
   async function applyTranslations() {
-    await ensureTranslations(currentLanguage);
-
     document.title = tRenderer('renderer.text_time_calculator.title');
     targetLabel.textContent = tRenderer('renderer.text_time_calculator.calculate_label');
-    targetSelect.setAttribute('aria-label', tRenderer('renderer.text_time_calculator.calculate_label'));
-
-    Array.from(targetSelect.options).forEach((option) => {
-      const value = String(option.value || '').trim();
-      const key = TARGET_LABEL_KEYS[value];
-      if (key) option.textContent = tRenderer(key);
-    });
+    const targetOptions = getTargetOptions();
+    if (!targetCombobox) {
+      targetCombobox = rendererCombobox.create({
+        host: targetHost,
+        mode: 'select',
+        options: targetOptions,
+        value: 'wpm',
+        ariaLabelledBy: 'textTimeCalculatorTargetLabel',
+        onChange: () => {
+          if (!calculatorI18nTerminal) renderCalculator();
+        },
+      });
+    } else {
+      targetCombobox.update({
+        ariaLabelledBy: 'textTimeCalculatorTargetLabel',
+        options: targetOptions,
+      });
+    }
 
     fieldNames.forEach((field) => {
       const entry = fields[field];
       const labelText = tRenderer(FIELD_LABEL_KEYS[field]);
       entry.label.textContent = labelText;
-      entry.input.setAttribute('aria-label', labelText);
       entry.output.setAttribute('aria-label', labelText);
     });
   }
@@ -256,69 +281,146 @@
     const entry = fields[field];
     entry.input.setAttribute('aria-invalid', 'false');
     entry.input.addEventListener('input', () => {
+      if (calculatorI18nTerminal) return;
       rawValues[field] = entry.input.value;
       renderCalculator();
     });
   }
 
+  function setCalculatorFieldsInteractive(interactive) {
+    fieldNames.forEach((field) => {
+      fields[field].input.disabled = !interactive;
+    });
+  }
+
+  function setCalculatorNormalInteractionAvailable(available) {
+    const interactive = available === true && !calculatorI18nTerminal;
+    setCalculatorFieldsInteractive(interactive);
+    if (targetHost) {
+      targetHost.inert = !interactive;
+      targetHost.setAttribute('aria-busy', interactive ? 'false' : 'true');
+    }
+    if (targetCombobox) {
+      targetCombobox.update({ disabled: !interactive });
+    }
+  }
+
   async function applySettings(settings) {
-    settingsCache = settings && typeof settings === 'object' ? settings : {};
-    currentLanguage = settingsCache.language || DEFAULT_LANG;
-    await refreshIntegerFormatter();
-    await applyTranslations();
-    renderCalculator();
+    const nextSettings = settings && typeof settings === 'object' ? settings : {};
+    const previousSettings = settingsCache;
+    await transitionRendererTranslations(nextSettings.language || DEFAULT_LANG, {
+      applyTranslations: async ({ language, restoring }) => {
+        currentLanguage = language;
+        settingsCache = restoring ? previousSettings : nextSettings;
+        await refreshIntegerFormatter();
+        await applyTranslations();
+        renderCalculator();
+      },
+    });
+  }
+
+  function enqueueCalculatorSemanticWork(work) {
+    const run = async () => {
+      // Main-process closure is asynchronous. Do not admit queued semantic
+      // work after this window has entered terminal i18n failure.
+      if (calculatorI18nTerminal) return;
+      return work();
+    };
+    settingsApplicationQueue = settingsApplicationQueue.then(run, run);
+    return settingsApplicationQueue;
+  }
+
+  function enqueueSettingsApplication(settings) {
+    const run = async () => {
+      try {
+        await applySettings(settings);
+      } catch (err) {
+        reportCalculatorI18nFailure(err);
+      }
+    };
+    // Preload listeners intentionally do not await async callbacks. Serialize
+    // every settings source so rollback snapshots are taken when its work begins.
+    return enqueueCalculatorSemanticWork(run);
+  }
+
+  function reportCalculatorI18nFailure(err, { startup = false } = {}) {
+    const transition = err && err.rendererI18nTransition;
+    if (!transition) {
+      return;
+    }
+    if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+      log.error('Text-time calculator language transition failed; previous translation state remains authoritative:', err);
+      return;
+    }
+    log.error('Text-time calculator i18n failure requires window closure:', err);
+    reportTerminalCalculatorI18nFailure(startup ? 'startup' : 'transition-restoration');
+  }
+
+  function reportTerminalCalculatorI18nFailure(kind) {
+    if (calculatorI18nTerminal) return;
+    calculatorI18nTerminal = true;
+    if (calculatorInteractionControlsInitialized) {
+      setCalculatorNormalInteractionAvailable(false);
+    }
+    if (textTimeCalculatorApi && typeof textTimeCalculatorApi.reportRendererI18nFailure === 'function') {
+      try {
+        textTimeCalculatorApi.reportRendererI18nFailure({ kind });
+      } catch (reportErr) {
+        log.warn('textTimeCalculatorAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+        if (typeof window.close === 'function') window.close();
+      }
+      return;
+    }
+    log.warn('textTimeCalculatorAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
   }
 
   // =============================================================================
   // App lifecycle and bootstrapping
   // =============================================================================
   async function bootstrap() {
-    targetSelect.value = 'wpm';
+    // The window is shown once its document is paintable, before the required
+    // settings-backed translation transition finishes. Keep native fields from
+    // admitting input until that first semantic presentation succeeds.
+    setCalculatorNormalInteractionAvailable(false);
     fieldNames.forEach(bindFieldInput);
-    targetSelect.addEventListener('change', () => {
-      renderCalculator();
-    });
-
-    let initialSettings = null;
-    if (canGetSettings) {
-      try {
-        initialSettings = await textTimeCalculatorApi.getSettings();
-      } catch (err) {
-        log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; using default language and number formatting:', err);
-      }
-    } else if (!textTimeCalculatorApi) {
-      log.warn('BOOTSTRAP: textTimeCalculatorAPI unavailable; using default language and disabling live settings updates.');
-    } else {
-      log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; using default language and number formatting.');
-    }
-
-    await applySettings(initialSettings);
 
     if (!textTimeCalculatorApi) {
-      return;
-    }
-
-    if (!canWatchSettings) {
+      log.warn('BOOTSTRAP: textTimeCalculatorAPI unavailable; using default language and disabling live settings updates.');
+    } else if (!canWatchSettings) {
       log.warn('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged missing; live settings updates disabled.');
-      return;
+    } else {
+      try {
+        textTimeCalculatorApi.onSettingsChanged((settings) => enqueueSettingsApplication(settings));
+      } catch (err) {
+        log.warn('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged listener setup failed; live settings updates disabled:', err);
+      }
     }
 
-    try {
-      textTimeCalculatorApi.onSettingsChanged(async (settings) => {
+    await enqueueCalculatorSemanticWork(async () => {
+      let initialSettings = null;
+      if (canGetSettings) {
         try {
-          await applySettings(settings);
+          initialSettings = await textTimeCalculatorApi.getSettings();
         } catch (err) {
-          log.warn('text-time calculator settings update failed (ignored):', err);
+          log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; using default language and number formatting:', err);
         }
-      });
-    } catch (err) {
-      log.warn('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged listener setup failed; live settings updates disabled:', err);
-    }
+      } else if (textTimeCalculatorApi) {
+        log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; using default language and number formatting.');
+      }
+
+      try {
+        await applySettings(initialSettings);
+        setCalculatorNormalInteractionAvailable(true);
+      } catch (err) {
+        reportCalculatorI18nFailure(err, { startup: true });
+      }
+    });
   }
 
   bootstrap().catch((err) => {
     log.error('BOOTSTRAP: text-time calculator initialization failed:', err);
-    throw err;
+    reportCalculatorI18nFailure(err, { startup: true });
   });
 })();
 

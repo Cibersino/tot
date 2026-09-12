@@ -24,6 +24,10 @@ function createIpcMainDouble() {
   };
 }
 
+function flushAsyncWork() {
+  return new Promise((resolve) => setImmediate(resolve));
+}
+
 function createReadingTestPoolMock({
   entries,
   initialShowBundledEntries = true,
@@ -80,13 +84,23 @@ function createReadingTestPoolMock({
       }
       return { ok: true, updated: entries.length, failed: 0 };
     },
+    markPoolEntryUsed() {
+      return { ok: true };
+    },
   };
 }
 
-function loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin) {
+function loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin, {
+  sessionWindowsMock = null,
+  settingsStateMock = null,
+} = {}) {
   const poolModulePath = require.resolve('../../../electron/reading_test_pool');
   const sessionModulePath = require.resolve('../../../electron/reading_test_session');
+  const sessionWindowsModulePath = require.resolve('../../../electron/reading_test_session_windows');
+  const settingsModulePath = require.resolve('../../../electron/settings');
   const originalPoolModule = require.cache[poolModulePath];
+  const originalSessionWindowsModule = require.cache[sessionWindowsModulePath];
+  const originalSettingsModule = require.cache[settingsModulePath];
   const restoreElectronModule = installElectronModuleMock({
     BrowserWindow: {
       fromWebContents(webContents) {
@@ -101,6 +115,22 @@ function loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin) {
     loaded: true,
     exports: readingTestPoolMock,
   };
+  if (sessionWindowsMock) {
+    require.cache[sessionWindowsModulePath] = {
+      id: sessionWindowsModulePath,
+      filename: sessionWindowsModulePath,
+      loaded: true,
+      exports: sessionWindowsMock,
+    };
+  }
+  if (settingsStateMock) {
+    require.cache[settingsModulePath] = {
+      id: settingsModulePath,
+      filename: settingsModulePath,
+      loaded: true,
+      exports: settingsStateMock,
+    };
+  }
 
   delete require.cache[sessionModulePath];
   const readingTestSession = require(sessionModulePath);
@@ -111,6 +141,16 @@ function loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin) {
       require.cache[poolModulePath] = originalPoolModule;
     } else {
       delete require.cache[poolModulePath];
+    }
+    if (originalSessionWindowsModule) {
+      require.cache[sessionWindowsModulePath] = originalSessionWindowsModule;
+    } else {
+      delete require.cache[sessionWindowsModulePath];
+    }
+    if (originalSettingsModule) {
+      require.cache[settingsModulePath] = originalSettingsModule;
+    } else {
+      delete require.cache[settingsModulePath];
     }
     restoreElectronModule();
   }
@@ -454,4 +494,127 @@ test('reading-test start stays blocked when the text time calculator window is a
   } finally {
     harness.restore();
   }
+});
+
+test('live Questions and Result windows remain settings targets until their actual closed events', async (t) => {
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      send() {},
+    },
+  };
+  const editorWin = { isDestroyed() { return false; } };
+  const flotanteWin = { isDestroyed() { return false; } };
+  const resultWin = { isDestroyed() { return false; } };
+  const questionsWin = { isDestroyed() { return false; } };
+  const lifecycle = {};
+  const sessionWindowsMock = {
+    async openReadingSessionWindows() {
+      return { editorWin, flotanteWin };
+    },
+    async openResultWindow(_resultInfo, { onWindowCreated, onWindowClosed }) {
+      onWindowCreated(resultWin);
+      lifecycle.closeResult = () => onWindowClosed(resultWin);
+      return { ok: false, code: 'RESULT_WINDOW_LOAD_FAILED' };
+    },
+    async openQuestionsWindow(_questions, { onWindowCreated, onWindowClosed }) {
+      onWindowCreated(questionsWin);
+      lifecycle.closeQuestions = () => onWindowClosed(questionsWin);
+      return { ok: false, code: 'QUESTIONS_WINDOW_LOAD_FAILED' };
+    },
+    setEditorPrestartVisible() {},
+    async waitForWindowVisible() {},
+  };
+  const settingsStateMock = {
+    deriveLangKey() {
+      return 'en';
+    },
+    getSettings() {
+      return {
+        language: 'en',
+        modeConteo: 'preciso',
+        presets_by_language: {},
+      };
+    },
+  };
+  const readingTestPoolMock = createReadingTestPoolMock({
+    entries: [
+      {
+        snapshotRelPath: '/reading_speed_test_pool/questions.json',
+        fileName: 'questions.json',
+        text: 'word '.repeat(200),
+        tags: { language: 'en' },
+        used: false,
+        hasValidQuestions: true,
+        questions: [{ id: 'q1' }],
+      },
+    ],
+  });
+  const { readingTestSession, restore } = loadReadingTestSessionWithMocks(
+    readingTestPoolMock,
+    senderWin,
+    { sessionWindowsMock, settingsStateMock }
+  );
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  let elapsed = 0;
+  let currentText = '';
+  const controller = readingTestSession.createController({
+    resolveMainWindow: () => senderWin,
+    getPreconditionContext: () => ({ openSecondaryWindows: [], stopwatchRunning: false }),
+    isProcessingModeActive: () => false,
+    ensureEditorWindow: async () => editorWin,
+    showEditorWindow() {},
+    ensureFlotanteWindow: async () => flotanteWin,
+    closeEditorWindow() {},
+    closeFlotanteWindow() {},
+    startCrono() {
+      elapsed = 60000;
+    },
+    resetCrono() {},
+    stopCrono() {},
+    getCronoState: () => ({ elapsed }),
+    getCurrentText: () => currentText,
+    applyCurrentText(text) {
+      currentText = text;
+      return { ok: true };
+    },
+    openPresetWindow: () => null,
+  });
+  controller.registerIpc(ipcMain);
+
+  const startResult = await ipcMain.invoke(
+    'reading-test-start',
+    { sender: senderWin.webContents },
+    { sourceMode: 'pool', selection: {} }
+  );
+  assert.deepEqual(startResult, { ok: true });
+  await flushAsyncWork();
+  assert.equal(controller.getState().stage, 'arming');
+
+  controller.handleFlotanteCommand({ cmd: 'toggle' });
+  assert.equal(controller.getState().stage, 'running');
+  controller.handleFlotanteCommand({ cmd: 'toggle' });
+  await flushAsyncWork();
+  await flushAsyncWork();
+
+  assert.equal(controller.getState().stage, 'idle');
+  assert.deepEqual(controller.getSettingsWindows(), {
+    readingTestQuestionsWin: questionsWin,
+    readingTestResultWin: resultWin,
+  });
+
+  lifecycle.closeResult();
+  assert.deepEqual(controller.getSettingsWindows(), {
+    readingTestQuestionsWin: questionsWin,
+    readingTestResultWin: null,
+  });
+  lifecycle.closeQuestions();
+  assert.deepEqual(controller.getSettingsWindows(), {
+    readingTestQuestionsWin: null,
+    readingTestResultWin: null,
+  });
 });

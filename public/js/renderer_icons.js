@@ -141,19 +141,10 @@
     return slot;
   }
 
-  function syncAccessibleName(element, { title = '', ariaLabel = '' } = {}) {
+  function applyAccessibleName(element, { ariaLabel = '' } = {}) {
     const resolvedAriaLabel = String(ariaLabel || '').trim();
-    const resolvedTitle = String(title || '').trim();
     if (resolvedAriaLabel) {
       element.setAttribute('aria-label', resolvedAriaLabel);
-    } else if (!element.getAttribute('aria-label') && resolvedTitle) {
-      element.setAttribute('aria-label', resolvedTitle);
-    }
-
-    if (resolvedTitle) {
-      element.title = resolvedTitle;
-    } else if (!element.title && resolvedAriaLabel) {
-      element.title = resolvedAriaLabel;
     }
   }
 
@@ -171,7 +162,6 @@
   function applyIconToElement(element, iconName, {
     size = 'md',
     preserveContent = false,
-    title = '',
     ariaLabel = '',
   } = {}) {
     if (!element) {
@@ -189,7 +179,7 @@
     }
     element.classList.add('tot-icon-host');
     element.setAttribute('data-tot-icon', normalizedName);
-    syncAccessibleName(element, { title, ariaLabel });
+    applyAccessibleName(element, { ariaLabel });
     element.appendChild(createIconSlot(normalizedName, { size }));
     return element;
   }
@@ -198,7 +188,6 @@
     iconName,
     size = 'md',
     className = '',
-    title = '',
     ariaLabel = '',
     type = 'button',
   } = {}) {
@@ -209,7 +198,6 @@
     }
     applyIconToElement(button, iconName, {
       size,
-      title,
       ariaLabel,
     });
     return button;

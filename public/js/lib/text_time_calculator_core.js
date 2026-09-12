@@ -32,15 +32,27 @@
   // Helpers (pure calculator validation + derivation)
   // =============================================================================
   function createTextTimeCalculatorUtils({
-    parseStopwatchInput,
-    formatRoundedSeconds,
+    getEstimatedReadingSeconds,
+    getWordsForDurationSeconds,
+    getWpmForDurationSeconds,
+    formatClockSeconds,
+    parseClockSeconds,
     formatInteger,
   } = {}) {
-    if (typeof parseStopwatchInput !== 'function') {
-      throw new Error('[text_time_calculator_core] parseStopwatchInput is required');
+    if (typeof getEstimatedReadingSeconds !== 'function') {
+      throw new Error('[text_time_calculator_core] getEstimatedReadingSeconds is required');
     }
-    if (typeof formatRoundedSeconds !== 'function') {
-      throw new Error('[text_time_calculator_core] formatRoundedSeconds is required');
+    if (typeof getWordsForDurationSeconds !== 'function') {
+      throw new Error('[text_time_calculator_core] getWordsForDurationSeconds is required');
+    }
+    if (typeof getWpmForDurationSeconds !== 'function') {
+      throw new Error('[text_time_calculator_core] getWpmForDurationSeconds is required');
+    }
+    if (typeof formatClockSeconds !== 'function') {
+      throw new Error('[text_time_calculator_core] formatClockSeconds is required');
+    }
+    if (typeof parseClockSeconds !== 'function') {
+      throw new Error('[text_time_calculator_core] parseClockSeconds is required');
     }
     if (typeof formatInteger !== 'function') {
       throw new Error('[text_time_calculator_core] formatInteger is required');
@@ -52,7 +64,7 @@
         target,
         normalized: {
           words: null,
-          timeMs: null,
+          timeSeconds: null,
           wpm: null,
         },
         invalid: {
@@ -66,25 +78,30 @@
     }
 
     function parseNonNegativeIntegerText(rawValue) {
-      const text = String(rawValue || '').trim();
+      if (typeof rawValue !== 'string') return { state: 'invalid', value: null };
+      const text = rawValue.trim();
       if (!text) return { state: 'empty', value: null };
       if (!/^\d+$/.test(text)) return { state: 'invalid', value: null };
-      return { state: 'valid', value: Number(text) };
+      const value = Number(text);
+      return Number.isSafeInteger(value) ? { state: 'valid', value } : { state: 'invalid', value: null };
     }
 
     function parsePositiveIntegerText(rawValue) {
-      const text = String(rawValue || '').trim();
+      if (typeof rawValue !== 'string') return { state: 'invalid', value: null };
+      const text = rawValue.trim();
       if (!text) return { state: 'empty', value: null };
       if (!/^[1-9]\d*$/.test(text)) return { state: 'invalid', value: null };
-      return { state: 'valid', value: Number(text) };
+      const value = Number(text);
+      return Number.isSafeInteger(value) ? { state: 'valid', value } : { state: 'invalid', value: null };
     }
 
     function parseTimeText(rawValue) {
-      const text = String(rawValue || '').trim();
+      if (typeof rawValue !== 'string') return { state: 'invalid', value: null };
+      const text = rawValue.trim();
       if (!text) return { state: 'empty', value: null };
-      const parsedMs = parseStopwatchInput(text);
-      if (parsedMs === null) return { state: 'invalid', value: null };
-      return { state: 'valid', value: parsedMs };
+      const parsedSeconds = parseClockSeconds(text);
+      if (parsedSeconds === null) return { state: 'invalid', value: null };
+      return { state: 'valid', value: parsedSeconds };
     }
 
     function applyInputState(result, field, parsed) {
@@ -96,20 +113,18 @@
         return false;
       }
       if (field === 'time') {
-        result.normalized.timeMs = parsed.value;
+        result.normalized.timeSeconds = parsed.value;
       } else {
         result.normalized[field] = parsed.value;
       }
       return true;
     }
 
-    function finalizeDerivedInteger(result, field, rawNumber) {
-      const roundedValue = Math.round(rawNumber);
-      result.normalized[field] = roundedValue;
+    function finalizeDerivedWholeValue(result, field, value) {
+      result.normalized[field] = value;
       result.derived = {
         kind: field,
-        rawNumber,
-        displayText: formatInteger(roundedValue),
+        displayText: formatInteger(value),
       };
       result.ok = true;
       return result;
@@ -117,9 +132,9 @@
 
     function evaluateCalculatorState({
       target,
-      wordsText,
-      timeText,
-      wpmText,
+      wordsText = '',
+      timeText = '',
+      wpmText = '',
     } = {}) {
       const normalizedTarget = VALID_TARGETS.has(target) ? target : 'wpm';
       const result = createNeutralState(normalizedTarget);
@@ -147,39 +162,48 @@
       }
 
       if (normalizedTarget === 'time') {
-        const exactSeconds = (result.normalized.words / result.normalized.wpm) * 60;
-        const roundedSeconds = Number.isFinite(exactSeconds) && exactSeconds > 0
-          ? Math.round(exactSeconds)
-          : 0;
-        result.normalized.timeMs = roundedSeconds * 1000;
+        const roundedSeconds = getEstimatedReadingSeconds(
+          result.normalized.words,
+          result.normalized.wpm
+        );
+        if (!Number.isSafeInteger(roundedSeconds) || roundedSeconds < 0) {
+          result.invalid.formula = true;
+          return result;
+        }
+        const displayText = formatClockSeconds(roundedSeconds);
+        if (displayText === null) {
+          throw new Error('[text_time_calculator_core] formatClockSeconds rejected canonical duration');
+        }
+        result.normalized.timeSeconds = roundedSeconds;
         result.derived = {
           kind: 'time',
-          rawNumber: exactSeconds,
-          displayText: formatRoundedSeconds(exactSeconds),
+          displayText,
         };
         result.ok = true;
         return result;
       }
 
-      const timeSeconds = result.normalized.timeMs / 1000;
-
       if (normalizedTarget === 'words') {
-        const exactWords = (result.normalized.wpm * timeSeconds) / 60;
-        return finalizeDerivedInteger(result, 'words', exactWords);
+        const words = getWordsForDurationSeconds(
+          result.normalized.timeSeconds,
+          result.normalized.wpm
+        );
+        if (!Number.isSafeInteger(words) || words < 0) {
+          result.invalid.formula = true;
+          return result;
+        }
+        return finalizeDerivedWholeValue(result, 'words', words);
       }
 
-      if (timeSeconds === 0) {
+      const wpm = getWpmForDurationSeconds(
+        result.normalized.words,
+        result.normalized.timeSeconds
+      );
+      if (!Number.isSafeInteger(wpm) || wpm < 0) {
         result.invalid.formula = true;
         return result;
       }
-
-      const exactWpm = (result.normalized.words * 60) / timeSeconds;
-      if (!Number.isFinite(exactWpm)) {
-        result.invalid.formula = true;
-        return result;
-      }
-
-      return finalizeDerivedInteger(result, 'wpm', exactWpm);
+      return finalizeDerivedWholeValue(result, 'wpm', wpm);
     }
 
     return {

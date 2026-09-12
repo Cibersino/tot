@@ -91,6 +91,7 @@ const api = {
     getSnapshotTagPreferences: () => ipcRenderer.invoke('get-snapshot-tag-preferences'),
     setSnapshotTagPreferences: (payload) => ipcRenderer.invoke('set-snapshot-tag-preferences', payload),
     setModeConteo: (mode) => ipcRenderer.invoke('set-mode-conteo', mode),
+    setPreviewSpoilerEnabled: (enabled) => ipcRenderer.invoke('set-preview-spoiler-enabled', enabled),
     getAppConfig: () => ipcRenderer.invoke('get-app-config'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     getAppRuntimeInfo: () => ipcRenderer.invoke('get-app-runtime-info'),
@@ -195,6 +196,7 @@ const api = {
 
     // Startup handshake
     sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),
+    reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
     onStartupReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('startup:ready callback error:', err); } };
         return subscribeWithUnsub('startup:ready', listener, 'removeListener error (startup:ready):');

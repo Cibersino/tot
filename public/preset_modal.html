@@ -1,46 +1,46 @@
 <!-- public/preset_modal.html -->
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
-
   <title>Nuevo preset</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: Arial, sans-serif; margin: 12px; }
-    label { display:block; margin-top:10px; }
-    input[type="text"], input[type="number"], textarea {
-      width: 100%; box-sizing: border-box; padding:6px; margin-top:4px;
-      font-size: 14px;
-    }
-    textarea { resize: none; height: 64px; }
-    .buttons { margin-top:12px; text-align:right; }
-    button { margin-left:8px; padding:6px 10px; }
-    .hint { font-size:12px; color:#666; margin-top:6px; }
-    #charCount {
-      font-size: 12px;
-      color: #999;
-      margin-top: 4px;
-    }
-  </style>
+  <link rel="stylesheet" href="preset_modal.css" />
 </head>
+
 <body>
-  <h3>Crear nuevo preset</h3>
+  <h1 id="presetHeading">Crear nuevo preset</h1>
 
-  <label>
+  <label id="presetNameLabel">
     Nombre:
-    <input id="presetName" type="text" placeholder="ej. 250wpm" maxlength="60" />
+    <input
+      id="presetName"
+      type="text"
+      placeholder="ej. 250wpm"
+      maxlength="20"
+    />
   </label>
 
-  <label>
+  <label id="presetWpmLabel">
     WPM:
-    <input id="presetWpm" type="number" min="10" max="700" value="200" />
+    <input
+      id="presetWpm"
+      type="number"
+      min="10"
+      max="700"
+      value="200"
+    />
   </label>
 
-  <label>
+  <label id="presetDescriptionLabel">
     Descripción:
-    <textarea id="presetDesc" maxlength="120" placeholder="Descripción breve..."></textarea>
+    <textarea
+      id="presetDesc"
+      maxlength="120"
+      placeholder="Descripción breve..."
+    ></textarea>
   </label>
 
   <div id="charCount">120 caracteres restantes</div>

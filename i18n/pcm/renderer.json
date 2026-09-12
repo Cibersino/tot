@@ -19,8 +19,7 @@
         "chars": "Characters: {n}",
         "value_pending": "dey wait...",
         "value_unavailable": "no dey available",
-        "precise_mode": "Precise mode",
-        "precise_tooltip": "Based on Intl.Segmenter"
+        "precise_mode": "Precise mode"
       },
       "crono": {
         "title": "STOPWATCH",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Dey recalculate current-text results...",
         "current_text_waiting_startup": "Dey settle current text...",
         "current_text_waiting_editor": "Dey sync Text Editor changes...",
+        "editor_loading": "Text Editor dey load...",
         "text_extraction_placeholder": "Extracting text...",
         "text_extraction_preparing": "Preparing text extraction route...",
         "text_extraction_cancellation_pending": "Cancellation requested. Abeg wait...",
@@ -47,42 +47,43 @@
       },
       "tooltips": {
         "text_extraction": "Text extraction text from file",
-        "text_extraction_abort": "Abort extraction",
-        "overwrite_clipboard": "Replace current text with clipboard",
-        "append_clipboard": "Add clipboard to di end of current text (new line)",
-        "clipboard_repeat_count": "Clipboard repetitions",
-        "edit": "Open full current text window",
-        "clear": "Clear current text",
+        "browser_extension": "Browser extension"
+      },
+      "names": {
+        "text_extraction_abort": "Stop di extraction",
+        "overwrite_clipboard": "Replace di current text with clipboard",
+        "append_clipboard": "Add clipboard to di end of di current text (new line)",
+        "clipboard_repeat_count": "How many times make e paste",
+        "edit": "Open di full current-text window",
+        "clear": "Clear di current text",
         "snapshot_load": "Load text snapshot",
-        "snapshot_save": "Save current text as snapshot",
+        "snapshot_save": "Save di current text as snapshot",
         "task_new": "New task",
         "task_load": "Load task",
-        "browser_extension": "Browser extension",
         "cibersino_website": "Cibersino website",
         "cibersino_kofi": "Support me on Ko-fi",
-        "new_preset": "Create new preset",
-        "edit_preset": "Edit selected preset",
-        "delete_preset": "Delete selected preset",
-        "reset_presets": "Restore default presets",
+        "new_preset": "Make new preset",
+        "edit_preset": "Edit di selected preset",
+        "delete_preset": "Delete di selected preset",
+        "reset_presets": "Bring back default presets",
         "text_time_calculator": "Open quick calculator",
         "help_button": "Show useful tip",
-        "flotante_window": "Floating Stopwatch"
+        "crono_toggle": "Start or pause di stopwatch",
+        "crono_reset": "Reset di stopwatch",
+        "floating_window": "Floating Stopwatch"
+      },
+      "help": {
+        "preview_spoiler": "Show or hide di end of di preview",
+        "precise_mode": "Based on Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Extract text from file",
-        "text_extraction_abort": "Abort extraction",
         "browser_extension": "Open browser extension dialog",
-        "clipboard_repeat_count": "Paste repetitions",
-        "text_time_calculator": "Open quick calculator",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words-per-minute slider",
         "speed_presets": "Speed presets",
-        "precise_mode_toggle": "Precise mode",
         "crono_controls": "Stopwatch controls",
         "crono_display": "Stopwatch display",
-        "crono_toggle": "Start or pause stopwatch",
-        "crono_reset": "Reset stopwatch",
-        "floating_window_toggle": "Floating Stopwatch",
         "floating_window_group": "Floating Stopwatch controls"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Unit {index}",
         "unit_counter": "Unit {index}/{count}",
         "unit_name_placeholder": "Optional unit name",
+        "aria": {
+          "route": "Route wey {file} go use extract text",
+          "unit_assignment": "Unit wey {file} go enter",
+          "unit_name": "Name for unit {index} of {count}, if you want"
+        },
         "new_unit_option": "Create new unit",
         "move_up": "Move up",
         "move_down": "Move down",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Open snapshots folder",
         "ok_button": "OK",
         "close_aria": "Close batch extraction final report",
-        "split_result_label": "Split result:",
         "failed_fallback": "Failed",
         "failed_with_code": "Failed: {code}",
         "applied_truncated": "apply am with truncation",
@@ -301,28 +306,35 @@
       "increase_text_size": "Increase text size",
       "reset_text_size": "Reset text size",
       "read_progress_label": "Read",
-      "clear_title": "Clear",
+      "clear": "Clear am",
+      "help": {
+        "apply": "Use di editor text as di current text",
+        "auto_apply": "Apply editor changes to di current text as you dey type",
+        "spellcheck": "Turn spellcheck on or off for di editor text"
+      },
       "editor_find": {
         "input_placeholder": "Find...",
         "input_aria": "Find inside text",
-        "expand_title": "Show replace controls",
-        "collapse_title": "Hide replace controls",
         "replace_placeholder": "Replace...",
         "replace_aria": "Replacement text",
         "replace": "Replace",
         "replace_all": "Replace all",
-        "prev_title": "Previous match",
-        "next_title": "Next match",
-        "close_title": "Close find bar",
-        "replace_title": "Replace current match",
-        "replace_all_title": "Replace all matches",
+        "names": {
+          "show_replace": "Show di replace controls",
+          "hide_replace": "Hide di replace controls",
+          "previous_match": "Previous match",
+          "next_match": "Next match",
+          "close": "Close di find bar"
+        },
+        "help": {
+          "replace_current": "Replace dis match",
+          "replace_all": "Replace all di matches"
+        },
         "replace_timeout": "Replace take too long. Try again.",
         "status_no_matches": "No matches",
         "status_empty_query": "Type to search"
       },
       "alerts": {
-        "start_failed": "Text Editor no fit start.",
-        "start_timeout": "Text Editor take too long to start, so e close.",
         "paste_too_big": "Text too large to paste directly. Use di main window buttons.",
         "drop_too_big": "Dropped text too large. Use di main window buttons to add large text.",
         "paste_no_text": "Clipboard no contain plain text.",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "Save text snapshot",
-      "message": "You fit tag dis text snapshot before you choose where to save am.",
+      "message": "Before you choose where to save am, you fit name dis text snapshot, talk where e come from, and tag am.",
       "search": {
         "placeholder": "Type to filter options",
         "no_results": "No matching options",
         "create": "Create \"{label}\""
       },
       "labels": {
+        "name": "Name, if you want",
+        "source_comment": "Where e come from, if you want",
         "language": "Language",
         "type": "Type",
         "difficulty": "Difficulty"
+      },
+      "placeholders": {
+        "name": "Reading",
+        "source_comment": "chapter-1.pdf, Unit 1, or text wey you import"
+      },
+      "metrics": {
+        "include_count": "Add word count",
+        "include_reading": "Add estimated reading time and WPM"
       },
       "manager": {
         "title": "Manage text snapshot tags",
@@ -356,10 +378,11 @@
         "close_aria": "Close text snapshot tag manager",
         "new_tag": "New tag",
         "new_tag_placeholder": "Tag label",
+        "new_tag_input_aria": "New tag label",
         "add_tag": "Add tag",
         "cancel_draft": "Cancel",
         "sort_alphabetically": "Sort A-Z",
-        "restore_hidden_defaults": "Restore default tags ({count})",
+        "restore_hidden_defaults": "Bring back default tags",
         "empty_category": "No visible tags dey for dis category.",
         "move_up": "Move \"{label}\" up",
         "move_down": "Move \"{label}\" down",
@@ -411,6 +434,7 @@
           "qu": "Kẹchuá",
           "ru": "Russian",
           "sv": "Suwídẹ́n Lángwej",
+          "sw": "Swahili",
           "tr": "Turkish",
           "ur": "Urdu",
           "vi": "Viẹ́tnám Lángwej",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — Tasks",
       "name": "Name",
+      "name_placeholder": "e.g.: Reading plan",
       "save_button": "Save",
       "delete_button": "Delete",
       "summary_total": "Total",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Remain",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "C+S",
         "acciones": "Actions",
-        "tooltips": {
-          "file_select": "Select local file",
-          "link_open": "Open link",
+        "header_names": {
+          "tiempo": "Time wey e go take to read",
+          "percent": "Percent wey don finish",
+          "falta": "Estimated time wey remain",
+          "comentario": "Comment plus text snapshot"
+        },
+        "names": {
+          "file_select": "Choose file from dis device",
+          "link_open": "Open di link",
           "snapshot_load": "Load text snapshot for dis row",
-          "comment": "Add/edit comment",
-          "move_up": "Move row up",
-          "move_down": "Move row down",
-          "library_row_save": "Save to library",
-          "delete_row": "Delete row"
+          "comment": "Add comment or text snapshot",
+          "move_up": "Move di row up",
+          "move_down": "Move di row down",
+          "library_row_save": "Save am for library",
+          "delete_row": "Delete di row"
+        },
+        "descriptions": {
+          "snapshot_path": "Path for text snapshot wey link: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Load text snapshot as current text · Path wey link: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Comment",
+        "comment_placeholder": "Comment...",
         "snapshot_select": "Select snapshot",
-        "snapshot_select_tooltip": "Select text snapshot for dis row",
-        "snapshot_clear": "Remove selected snapshot from dis row"
+        "snapshot_clear": "Remove selected snapshot from dis row",
+        "close_aria": "Close di comment",
+        "snapshot_source_reminder": {
+          "title": "Reminder about snapshot source",
+          "message": "Dis row dey linked to text snapshot. Check di source comment before you choose local file.",
+          "source_comment": "Snapshot source comment:",
+          "select_file": "Choose file from dis device",
+          "cancel": "Cancel",
+          "close_aria": "Close di snapshot source reminder"
+        },
+        "snapshot_details_confirm": {
+          "title": "Use data from di selected text snapshot?",
+          "message": "Check di data inside di selected text snapshot before you apply am to dis reading.",
+          "replace_reading_name": "Replace di reading name",
+          "set_reading_name": "Set di reading name",
+          "current_name": "Current name",
+          "snapshot_name": "Snapshot name",
+          "empty": "(empty)",
+          "replace_time": "Replace di estimated time",
+          "current_time": "Current time",
+          "snapshot_estimate": "Snapshot estimate",
+          "reading_speed": "Reading speed",
+          "apply": "Apply",
+          "apply_selected": "Apply selected",
+          "keep": "Keep di current values",
+          "close_aria": "Close di snapshot data confirmation"
+        }
       },
       "biblioteca": {
         "library_title": "Library",
+        "close_aria": "Close di reading library",
         "search": "Search",
         "search_placeholder": "Search library...",
         "empty": "(empty)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Save to library",
-        "library_save_question": "Include comment?",
+        "close_aria": "Close di save-to-library dialog",
+        "library_save_question": "Include comment? If dis reading get selected text snapshot, di link go save whether you include am or not.",
         "yes": "Yes",
         "no": "No",
         "cancel": "Cancel"
@@ -499,14 +564,19 @@
         "task_delete_unavailable": "No saved task to delete.",
         "task_invalid_file": "Invalid task file.",
         "task_invalid_rows": "Some task rows no valid.",
+        "task_duration_too_large": "Di total estimated time for di task too big.",
         "task_path_outside": "File must dey inside di tasks folder.",
         "name_required": "Task name dey required.",
         "row_text_required": "Row text no fit dey empty.",
-        "file_select_error": "Could not complete file selection.",
+        "file_select_error": "App no fit finish file selection.",
         "library_load_error": "Could not load library.",
         "library_save_error": "Could not save to library.",
         "library_save_success": "Row saved to library.",
         "library_delete_error": "Could not delete from library.",
+        "column_layout_save_error": "We no fit save di column layout, and e fit no remain next time.",
+        "snapshot_missing": "Di selected text snapshot no dey again.",
+        "snapshot_invalid": "Di selected text snapshot no valid.",
+        "snapshot_read_error": "App no fit read di selected text snapshot.",
         "link_blocked": "Link blocked.",
         "link_missing": "File no dey found.",
         "link_error": "Error opening link.",
@@ -527,7 +597,7 @@
         "wpm": "WPM"
       },
       "validation": {
-        "words": "Enter whole number we no negative.",
+        "words": "Enter whole number wey no be negative.",
         "time": "Enter time for H+:MM:SS format.",
         "wpm": "Enter positive whole number.",
         "formula": "WPM no fit calculate from 00:00:00."
@@ -538,7 +608,7 @@
         "title": "Reading speed test",
         "show_instructions": "Show instructions",
         "hide_instructions": "Hide instructions",
-        "intro": "Dis test go help estimate your real reading speed through guided session. Di app go open di text and wait make you press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Use Stop/Reset (⏹) only if you wan cancel di test. After, you fit check comprehension questions if di text get dem and, for di end, create preset from di result.\nBefore you start, remember say these test texts usually need between 5 and 15 minutes of steady concentration, without interruption.\nDis pool dey use short texts, so take di result with care. No use am directly judge long texts, where good factors like flow and context build-up, and bad factors like mental recap and tiredness, usually dey matter.",
+        "intro": "Dis test go help estimate your real reading speed through one guided session. Di app go open di text and wait make you press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di stopwatch. Use Stop/Reset (⏹) only if you wan cancel di test. After dat, you fit answer comprehension questions if di text get dem, and for di end you fit create preset from di result.\nBefore you start, remember say these test texts usually need 5 to 15 minutes of steady concentration, without interruption.\nDis pool dey use short texts, so treat di result with care. No use am directly judge long texts, because for long texts flow and context build-up fit help, while mental recap and tiredness fit slow you down.",
         "eligible_count": "Eligible files:",
         "show_bundled_entries": "Base tests",
         "get_more_files": "Get more files",
@@ -550,28 +620,22 @@
         "close_aria": "Close reading speed test dialog",
         "start_random_confirm": "Dis go overwrite di current text with random eligible text from di pool. You wan continue?",
         "reset_confirm": "Dis go reset di whole test pool and mark all files as unused again. You wan continue?",
-        "tooltips": {
-          "show_bundled_entries": "Include di starter test files wey come with di app for di pool",
+        "help": {
+          "show_bundled_entries": "Add di starter test files wey come with di app to di pool",
           "get_more_files": "Get more test files from di Google Drive folder",
           "import_files": "Import test files from your device",
-          "reset_pool": "Reset test pool",
           "start_random_text": "Start di test with random eligible text from di pool",
-          "start_current_text": "Start di test with di current text"
+          "start_current_text": "Use di current text without replacing am or using file from di pool"
+        },
+        "names": {
+          "reset_pool": "Reset di test pool"
         },
         "import": {
-          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
-          "import_conflict": {
-            "title": "Import files",
-            "message": "Some imported files already dey for pool. How you wan handle duplicates?",
-            "detail": "{count} destination filename(s) already dey for pool.",
-            "skip_button": "Skip duplicates",
-            "replace_button": "Replace duplicates",
-            "cancel_button": "Cancel import"
-          }
+          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di timer. Press Stop/Reset (⏹) only if you wan cancel di test."
+        "reminder": "Press Play (▶) for di Floating Stopwatch when you ready to start. Once di test don start, no press Pause (⏸) until you finish reading: Pause ends di test; e no pause di stopwatch. Press Stop/Reset (⏹) only if you wan cancel di test."
       },
       "questions": {
         "title": "Reading comprehension questions",
@@ -580,6 +644,7 @@
         "random_value": "Expected score if person guess at random: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "For complaints:",
+        "summary_aria": "Test summary",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "You must answer all questions before evaluation.",
         "result_summary": "{correct} out of {total} correct ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "Measured WPM",
         "elapsed_time": "Time",
         "word_count": "Words",
+        "summary_aria": "Test summary",
         "continue_button": "Continue"
       },
       "alerts": {
@@ -646,8 +712,8 @@
       }
     },
     "browser_extension": {
-      "title": "Browser extension",
-      "subtitle": "Reading time",
+      "title": "Time wey e go take read",
+      "subtitle": "Browser add-on",
       "availability": "E don dey available for Chrome now. More browsers go come soon.",
       "chrome_store_aria": "Open di extension Chrome Web Store page",
       "close_aria": "Close browser extension dialog",
@@ -658,6 +724,11 @@
     "info": {
       "loading": "Loading...",
       "missing_content": "No content dey available for '{name}'.",
+      "close_aria": "Close di info",
+      "media_lightbox": {
+        "title": "Large screenshot preview",
+        "close_aria": "Close di preview"
+      },
       "external": {
         "blocked": "Link blocked",
         "error": "Error opening link"

@@ -59,6 +59,7 @@ const deriveLangKey = (langTag) => getLangBase(langTag);
 const createDefaultSettings = (language = '') => ({
   language,
   spellcheckEnabled: true,
+  previewSpoilerEnabled: true,
   editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
   presets_by_language: {},
   selected_preset_by_language: {},
@@ -331,6 +332,20 @@ function normalizeSettings(settings) {
     settings.spellcheckEnabled = true;
   }
 
+  // previewSpoilerEnabled:
+  // - missing -> default (silent)
+  // - present but invalid -> warnOnce + default
+  if (typeof settings.previewSpoilerEnabled === 'undefined') {
+    settings.previewSpoilerEnabled = true;
+  } else if (typeof settings.previewSpoilerEnabled !== 'boolean') {
+    log.warnOnce(
+      'settings.normalizeSettings.invalidPreviewSpoilerEnabled',
+      'Invalid previewSpoilerEnabled; forcing default:',
+      { type: typeof settings.previewSpoilerEnabled }
+    );
+    settings.previewSpoilerEnabled = true;
+  }
+
   // editorFontSizePx:
   // - missing -> default (silent)
   // - invalid/out of range -> warnOnce + normalized value
@@ -552,6 +567,8 @@ function broadcastSettingsUpdated(settings, windows) {
     { win: windows.flotanteWin, name: 'flotanteWin' },
     { win: windows.taskEditorWin, name: 'taskEditorWin' },
     { win: windows.textTimeCalculatorWin, name: 'textTimeCalculatorWin' },
+    { win: windows.readingTestQuestionsWin, name: 'readingTestQuestionsWin' },
+    { win: windows.readingTestResultWin, name: 'readingTestResultWin' },
   ];
 
   targets.forEach(({ win, name }) => {
@@ -603,9 +620,11 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
 /**
  * Registers IPC handlers related to settings:
  * - get-settings
+ * - get-current-language
  * - set-language
  * - set-mode-conteo
  * - set-selected-preset
+ * - set-preview-spoiler-enabled
  * - set-spellcheck-enabled
  * - set-editor-font-size-px
  */
@@ -740,6 +759,16 @@ function registerIpc(
     }
   });
 
+  // get-current-language: returns only the persisted language needed by the language window
+  ipcMain.handle('get-current-language', async () => {
+    try {
+      return getSettings().language;
+    } catch (err) {
+      log.error('IPC get-current-language failed:', err);
+      throw err;
+    }
+  });
+
   // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
     try {
@@ -846,6 +875,32 @@ function registerIpc(
       return { ok: true, langKey, name };
     } catch (err) {
       log.error('IPC set-selected-preset failed:', err);
+      throw err;
+    }
+  });
+
+  // set-preview-spoiler-enabled: persists the main-window preview preference
+  ipcMain.handle('set-preview-spoiler-enabled', async (_event, enabled) => {
+    try {
+      if (typeof enabled !== 'boolean') {
+        log.warnOnce(
+          'settings.set-preview-spoiler-enabled.invalid',
+          'set-preview-spoiler-enabled called with non-boolean value (ignored).',
+          { type: typeof enabled }
+        );
+        return { ok: false, error: 'invalid' };
+      }
+
+      const settings = getSettings();
+      if (settings.previewSpoilerEnabled === enabled) {
+        return { ok: true, enabled };
+      }
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.previewSpoilerEnabled = enabled;
+      saveSettingsStrict(nextSettings);
+      return { ok: true, enabled };
+    } catch (err) {
+      log.error('IPC set-preview-spoiler-enabled failed:', err);
       throw err;
     }
   });

@@ -37,6 +37,7 @@
   const btnOcr = document.getElementById('textExtractionRouteModalOcr');
   const btnCancel = document.getElementById('textExtractionRouteModalCancel');
   const btnClose = document.getElementById('textExtractionRouteModalClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -60,6 +61,19 @@
     return options.includes('native') && options.includes('ocr');
   }
 
+  function applyModalCopy() {
+    title.textContent = tRenderer('renderer.text_extraction.route_choice.title');
+    message.textContent = tRenderer('renderer.text_extraction.route_choice.message');
+    btnNative.textContent = tRenderer('renderer.text_extraction.route_choice.native_button');
+    btnOcr.textContent = tRenderer('renderer.text_extraction.route_choice.ocr_button');
+    btnCancel.textContent = tRenderer('renderer.text_extraction.route_choice.cancel_button');
+    btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.route_choice.close_aria'));
+  }
+
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public entrypoints
   // =============================================================================
@@ -73,24 +87,13 @@
       return '';
     }
 
-    const titleText = tRenderer('renderer.text_extraction.route_choice.title');
-    const messageText = tRenderer('renderer.text_extraction.route_choice.message');
-    const nativeText = tRenderer('renderer.text_extraction.route_choice.native_button');
-    const ocrText = tRenderer('renderer.text_extraction.route_choice.ocr_button');
-    const cancelText = tRenderer('renderer.text_extraction.route_choice.cancel_button');
-    const closeAriaText = tRenderer('renderer.text_extraction.route_choice.close_aria');
-
-    title.textContent = titleText;
-    message.textContent = messageText;
-    btnNative.textContent = nativeText;
-    btnOcr.textContent = ocrText;
-    btnCancel.textContent = cancelText;
-    btnClose.setAttribute('aria-label', closeAriaText);
+    applyModalCopy();
 
     return await new Promise((resolve) => {
       let settled = false;
 
       const cleanup = () => {
+        activePromptTranslations = null;
         btnNative.removeEventListener('click', onNative);
         btnOcr.removeEventListener('click', onOcr);
         btnCancel.removeEventListener('click', onCancel);
@@ -98,6 +101,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = (choice) => {
@@ -124,9 +128,13 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = applyModalCopy;
 
       modal.setAttribute('aria-hidden', 'false');
-      btnNative.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnOcr,
+        fallbackFocus: btnClose,
+      });
     });
   }
 
@@ -135,6 +143,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionRouteChoice', promptRouteChoice);
+  window.TextExtractionRouteChoiceModal = { applyTranslations };
 })();
 
 // =============================================================================

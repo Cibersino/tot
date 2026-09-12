@@ -694,6 +694,36 @@
       return true;
     }
 
+    async function applyInitialText(payload) {
+      try {
+        const normalizedPayload = normalizeExternalUpdatePayload(payload);
+        let initialText = normalizedPayload.newText;
+        let truncated = false;
+
+        if (initialText.length > state.maxTextChars) {
+          initialText = initialText.slice(0, state.maxTextChars);
+          truncated = true;
+        }
+
+        const committed = withLocalUpdateSuppressed(() => commitWholeValueWithThresholdPolicy(
+          initialText,
+          {
+            nativeFocusWarnKey: 'focus.prevActive.initialText.native',
+            directFocusWarnKey: 'focus.prevActive.initialText.full',
+          }
+        ));
+        if (!committed) {
+          log.error('Initial whole-value application failed unexpectedly.');
+          return false;
+        }
+        notifyIfTruncated(truncated);
+        return true;
+      } catch (err) {
+        log.error('applyInitialText error:', err);
+        return false;
+      }
+    }
+
     async function applyExternalUpdate(payload) {
       try {
         const normalizedPayload = normalizeExternalUpdatePayload(payload);
@@ -762,6 +792,7 @@
       sendCurrentTextToMain,
       handleTruncationResponse,
       handleTextTransferInsert,
+      applyInitialText,
       applyExternalUpdate,
     };
   }

@@ -27,7 +27,7 @@
     // =============================================================================
     // DOM references + required guards
     // =============================================================================
-    const h3El = document.querySelector('h3');
+    const headingEl = document.getElementById('presetHeading');
     const nameEl = document.getElementById('presetName');
     const wpmEl = document.getElementById('presetWpm');
     const descEl = document.getElementById('presetDesc');
@@ -36,7 +36,7 @@
     const charCountEl = document.getElementById('charCount');
     const hintEl = document.querySelector('.hint');
 
-    if (!nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
+    if (!headingEl || !nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
       log.warn('Preset modal initialization skipped: required DOM elements missing.');
       return;
     }
@@ -65,19 +65,23 @@
     let mode = 'new';
     let originalName = null;
     let idiomaActual = DEFAULT_LANG;
-    let translationsLoadedFor = null;
+    let presetTranslationsEstablished = false;
+    let presetInitialPayloadPresentationEstablished = false;
+    let presetI18nTerminal = false;
+    let presetSemanticQueue = Promise.resolve();
 
     // =============================================================================
     // Helpers
     // =============================================================================
     const {
-      loadRendererTranslations,
+      transitionRendererTranslations,
       tRenderer,
       msgRenderer,
-      applyWindowLanguageAttributes,
+      normalizeLangTag,
       resolveUserTextDirection,
     } = window.RendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer || !msgRenderer || !applyWindowLanguageAttributes || !resolveUserTextDirection) {
+    if (!transitionRendererTranslations || !tRenderer || !msgRenderer || !normalizeLangTag || !resolveUserTextDirection) {
+      reportTerminalPresetI18nFailure('startup-api');
       throw new Error('[preset_modal] RendererI18n unavailable; cannot continue');
     }
     const tr = (path) => tRenderer(path);
@@ -95,34 +99,82 @@
       return direction;
     }
 
-    async function ensurePresetTranslations(lang) {
-      const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-      if (translationsLoadedFor === target) return;
-      applyWindowLanguageAttributes(target);
-      await loadRendererTranslations(target);
-      translationsLoadedFor = target;
+    function setPresetFormInteractionLocked(locked) {
+      [nameEl, wpmEl, descEl, btnSave].forEach((element) => {
+        element.disabled = locked === true;
+      });
+    }
+
+    function establishInitialPresetPayloadPresentation() {
+      if (presetInitialPayloadPresentationEstablished) return;
+      presetInitialPayloadPresentationEstablished = true;
+      setPresetFormInteractionLocked(false);
     }
 
     async function applyPresetTranslations(modeForHeading = mode) {
-      await ensurePresetTranslations(idiomaActual);
       const isEdit = modeForHeading === 'edit';
       const headingKey = isEdit ? 'renderer.presets.preset_modal.heading_edit' : 'renderer.presets.preset_modal.heading_new';
       const titleKey = isEdit ? 'renderer.presets.preset_modal.title_edit' : 'renderer.presets.preset_modal.title_new';
       document.title = tr(titleKey);
-      if (h3El) h3El.textContent = tr(headingKey);
-      const labels = document.querySelectorAll('label');
-      labels.forEach((lbl) => {
-        const text = (lbl.textContent || '').trim();
-        if (text.startsWith('Nombre') || text.startsWith('Name')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.name');
-        if (text.startsWith('WPM')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.wpm');
-        if (text.startsWith('Descripcion') || text.startsWith('Descripci') || text.startsWith('Description')) lbl.childNodes[0].textContent = tr('renderer.presets.preset_modal.description');
-      });
+      headingEl.textContent = tr(headingKey);
+      const nameLabel = document.getElementById('presetNameLabel');
+      const wpmLabel = document.getElementById('presetWpmLabel');
+      const descriptionLabel = document.getElementById('presetDescriptionLabel');
+      if (nameLabel && nameLabel.firstChild) nameLabel.firstChild.textContent = tr('renderer.presets.preset_modal.name');
+      if (wpmLabel && wpmLabel.firstChild) wpmLabel.firstChild.textContent = tr('renderer.presets.preset_modal.wpm');
+      if (descriptionLabel && descriptionLabel.firstChild) descriptionLabel.firstChild.textContent = tr('renderer.presets.preset_modal.description');
       if (nameEl && nameEl.placeholder) nameEl.placeholder = tr('renderer.presets.preset_modal.name_placeholder');
       if (descEl && descEl.placeholder) descEl.placeholder = tr('renderer.presets.preset_modal.description_placeholder');
       if (charCountEl) charCountEl.textContent = mr('renderer.presets.preset_modal.char_count', { remaining: descMaxLength });
       if (hintEl) hintEl.textContent = tr('renderer.presets.preset_modal.hint');
       if (btnSave) btnSave.textContent = tr('renderer.presets.preset_modal.save');
       if (btnCancel) btnCancel.textContent = tr('renderer.presets.preset_modal.cancel');
+    }
+
+    async function applyPresetLanguagePresentation() {
+      await applyPresetTranslations(mode);
+      updatePresetDescriptionDirection();
+      updateCharCount();
+    }
+
+    async function transitionPresetTranslations(language) {
+      await transitionRendererTranslations(language || DEFAULT_LANG, {
+        applyTranslations: async ({ language: appliedLanguage }) => {
+          idiomaActual = appliedLanguage;
+          await applyPresetLanguagePresentation();
+        },
+      });
+      presetTranslationsEstablished = true;
+    }
+
+    function reportPresetI18nFailure(err, { startup = false } = {}) {
+      const transition = err && err.rendererI18nTransition;
+      if (!transition) {
+        return;
+      }
+      if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+        log.error('Preset modal language transition failed; previous translation state remains authoritative:', err);
+        return;
+      }
+      log.error('Preset modal i18n failure requires window closure:', err);
+      reportTerminalPresetI18nFailure(startup ? 'startup' : 'transition-restoration');
+    }
+
+    function reportTerminalPresetI18nFailure(kind) {
+      if (presetI18nTerminal) return;
+      presetI18nTerminal = true;
+      setPresetFormInteractionLocked(true);
+      if (!window.presetAPI || typeof window.presetAPI.reportRendererI18nFailure !== 'function') {
+        log.warn('presetAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+        if (typeof window.close === 'function') window.close();
+        return;
+      }
+      try {
+        window.presetAPI.reportRendererI18nFailure({ kind });
+      } catch (reportErr) {
+        log.warn('presetAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+        if (typeof window.close === 'function') window.close();
+      }
     }
 
     function applyIncomingPresetPayload(payload) {
@@ -141,7 +193,7 @@
 
       if (incomingMode === 'edit') {
         mode = 'new';
-        log.warn('BOOTSTRAP: preset-init edit payload missing preset; falling back to new mode.');
+        log.warn('preset-init edit payload missing preset; falling back to new mode.');
       } else {
         mode = 'new';
       }
@@ -189,57 +241,112 @@
     // =============================================================================
     // Bridge integration
     // =============================================================================
-    if (window.presetAPI && typeof window.presetAPI.onInit === 'function') {
-      try {
-        window.presetAPI.onInit(async (payload) => {
-          try {
-            if (!payload) return;
-            try {
-              if (window.presetAPI && typeof window.presetAPI.getSettings === 'function') {
-                const settings = await window.presetAPI.getSettings();
-                if (settings && settings.language) idiomaActual = settings.language || idiomaActual;
-              } else {
-                log.warn('BOOTSTRAP: presetAPI.getSettings missing; using default language.');
-              }
-            } catch (err) {
-              log.warn('BOOTSTRAP: presetAPI.getSettings failed; using default language:', err);
-            }
+    function enqueuePresetSemanticWork(work) {
+      const run = async () => {
+        // Main-process closure is asynchronous. Do not admit queued semantic
+        // work after this modal has entered terminal i18n failure.
+        if (presetI18nTerminal) return;
+        return work();
+      };
+      presetSemanticQueue = presetSemanticQueue.then(run, run);
+      return presetSemanticQueue;
+    }
 
-            await ensurePresetTranslations(idiomaActual);
-            applyIncomingPresetPayload(payload);
-            await applyPresetTranslations(mode);
-            updatePresetDescriptionDirection();
-            updateCharCount();
-          } catch (err) {
-            log.error('Preset modal preset-init handling failed:', err);
-          }
-        });
-      } catch (err) {
-        log.error('BOOTSTRAP: presetAPI.onInit listener setup failed:', err);
+    async function getPresetSettingsLanguage() {
+      if (!window.presetAPI || typeof window.presetAPI.getSettings !== 'function') {
+        log.warn('presetAPI.getSettings missing; using default language.');
+        return DEFAULT_LANG;
       }
-    } else {
+      try {
+        const settings = await window.presetAPI.getSettings();
+        return settings && settings.language ? settings.language : DEFAULT_LANG;
+      } catch (err) {
+        log.warn('presetAPI.getSettings failed; using default language:', err);
+        return DEFAULT_LANG;
+      }
+    }
+
+    function getEffectivePresetLanguage(language) {
+      return normalizeLangTag(language) || DEFAULT_LANG;
+    }
+
+    async function applyPresetTranslationUpdate(language) {
+      try {
+        await transitionPresetTranslations(language);
+        return true;
+      } catch (err) {
+        if (err && err.rendererI18nTransition) {
+          reportPresetI18nFailure(err, {
+            startup: !presetTranslationsEstablished,
+          });
+        } else {
+          log.error('Preset modal semantic update failed:', err);
+        }
+        return false;
+      }
+    }
+
+    // Bootstrap HTML is only a temporary visual shell. Do not admit form
+    // mutation or persistence until an authoritative preset payload has been
+    // rendered through successfully established renderer translations.
+    setPresetFormInteractionLocked(true);
+
+    function registerPresetSettingsChanged() {
+      if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
+        try {
+          window.presetAPI.onSettingsChanged((settings) => {
+            if (presetI18nTerminal) return;
+            enqueuePresetSemanticWork(async () => {
+              const nextLang = normalizeLangTag(settings && settings.language ? settings.language : '');
+              if (!nextLang || nextLang === idiomaActual) return;
+              await applyPresetTranslationUpdate(nextLang);
+            });
+          });
+        } catch (err) {
+          log.warn('BOOTSTRAP: presetAPI.onSettingsChanged listener setup failed; language updates disabled:', err);
+        }
+        return;
+      }
+      log.warn('BOOTSTRAP: presetAPI.onSettingsChanged missing; language updates disabled.');
+    }
+
+    function registerPresetInit() {
+      if (window.presetAPI && typeof window.presetAPI.onInit === 'function') {
+        try {
+          window.presetAPI.onInit((payload) => {
+            if (!payload || presetI18nTerminal) return;
+            enqueuePresetSemanticWork(async () => {
+              applyIncomingPresetPayload(payload);
+              if (presetTranslationsEstablished) {
+                try {
+                  await applyPresetLanguagePresentation();
+                  establishInitialPresetPayloadPresentation();
+                } catch (err) {
+                  log.error('Preset modal required language presentation failed:', err);
+                  reportTerminalPresetI18nFailure('semantic-application');
+                  return;
+                }
+              }
+              const language = getEffectivePresetLanguage(await getPresetSettingsLanguage());
+              if (!presetTranslationsEstablished || language !== idiomaActual) {
+                if (!await applyPresetTranslationUpdate(language)) {
+                  return;
+                }
+              }
+              establishInitialPresetPayloadPresentation();
+              btnSave.focus({ preventScroll: true });
+            });
+          });
+        } catch (err) {
+          log.error('BOOTSTRAP: presetAPI.onInit listener setup failed:', err);
+        }
+        return;
+      }
       log.warn('BOOTSTRAP: presetAPI.onInit missing; modal will not receive init data.');
     }
 
-    if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
-      try {
-        window.presetAPI.onSettingsChanged(async (settings) => {
-          try {
-            const nextLang = settings && settings.language ? settings.language : '';
-            if (!nextLang || nextLang === idiomaActual) return;
-            idiomaActual = nextLang;
-            await applyPresetTranslations(mode);
-            updatePresetDescriptionDirection();
-          } catch (err) {
-            log.warn('Preset modal settings update failed:', err);
-          }
-        });
-      } catch (err) {
-        log.warn('BOOTSTRAP: presetAPI.onSettingsChanged listener setup failed; language updates disabled:', err);
-      }
-    } else {
-      log.warn('BOOTSTRAP: presetAPI.onSettingsChanged missing; language updates disabled.');
-    }
+    registerPresetSettingsChanged();
+    registerPresetInit();
 
     // =============================================================================
     // Input validation / preset builder
@@ -269,6 +376,7 @@
     // UI event listeners
     // =============================================================================
     descEl.addEventListener('input', () => {
+      if (presetI18nTerminal) return;
       if (descEl.value.length > descMaxLength) {
         descEl.value = descEl.value.substring(0, descMaxLength);
       }
@@ -277,12 +385,14 @@
     });
 
     nameEl.addEventListener('input', () => {
+      if (presetI18nTerminal) return;
       if (nameEl.value.length >= nameMaxLength) {
         nameEl.value = nameEl.value.substring(0, nameMaxLength);
       }
     });
 
     btnSave.addEventListener('click', async () => {
+      if (presetI18nTerminal) return;
       const preset = buildPresetFromInputs();
       if (!preset) return;
 
@@ -299,6 +409,7 @@
     });
 
     wpmEl.addEventListener('input', () => {
+      if (presetI18nTerminal) return;
       if (!nameEl.value.trim()) {
         const val = Number(wpmEl.value);
         if (Number.isFinite(val) && val > 0) {
@@ -306,14 +417,6 @@
         }
       }
     });
-
-    // =============================================================================
-    // App lifecycle / bootstrapping
-    // =============================================================================
-    (async function initCharCount() {
-      updateCharCount();
-      updatePresetDescriptionDirection();
-    })();
 
   }); // DOMContentLoaded
 })();

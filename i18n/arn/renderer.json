@@ -19,8 +19,7 @@
         "chars": "Wirin: {n}",
         "value_pending": "ngüman...",
         "value_unavailable": "no nielay",
-        "precise_mode": "Rüf rakiduam",
-        "precise_tooltip": "Inatun Intl.Segmenter mu"
+        "precise_mode": "Rüf rakiduam"
       },
       "crono": {
         "title": "ÜNGÜMWE",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Current text resultados wiño rakinmekey...",
         "current_text_waiting_startup": "Current text asentakünuwküley...",
         "current_text_waiting_editor": "Text Editor cambios sync-künuwküley...",
+        "editor_loading": "Wirin azümwe nülküley...",
         "text_extraction_placeholder": "Extracción amuley...",
         "text_extraction_preparing": "Elkünoel extraer rüpü...",
         "text_extraction_cancellation_pending": "Katrüntun ngillañmagey. Üngümnge...",
@@ -47,42 +47,43 @@
       },
       "tooltips": {
         "text_extraction": "Archivo mew wirin extraer",
-        "text_extraction_abort": "Abortar extracción",
-        "overwrite_clipboard": "Kangelu wirin tachi portapapeles mu",
-        "append_clipboard": "Pültrün tachi portapapeles afkechi wirin mu (we ruka)",
-        "clipboard_repeat_count": "Pültrün tachi portapapeles afkechi wirin mu (we ruka) ka repeat",
+        "browser_extension": "Kintuwe ñi kelluwe"
+      },
+      "names": {
+        "text_extraction_abort": "Wirin nentun katrütun",
+        "overwrite_clipboard": "Kangelu wirin tachi pültrünpeyüm mu",
+        "append_clipboard": "Pültrün tachi pültrünpeyüm afkechi wirin mu (we ruka)",
+        "clipboard_repeat_count": "Pültrünpeyüm ñi pültrün rakin",
         "edit": "Nülan wirin weyel tati",
         "clear": "Nentun kom wirin",
-        "snapshot_load": "Kintun snapshot weyel tati",
-        "snapshot_save": "Elkünun wirin snapshot weyel tati",
-        "task_new": "Dewman we tarea",
-        "task_load": "Kintun tarea",
-        "browser_extension": "Extensión navegador mew",
+        "snapshot_load": "Kintun textu snapshot",
+        "snapshot_save": "Elkünun textu snapshot",
+        "task_new": "Dewman we küdaw",
+        "task_load": "Kintun küdaw",
         "cibersino_website": "Cibersino web",
         "cibersino_kofi": "Kelluen Ko-fi mew",
         "new_preset": "Dewman we preset",
         "edit_preset": "Wirin düllilu preset",
         "delete_preset": "Ñamümün düllilu preset",
-        "reset_presets": "Wiño elual presets",
-        "text_time_calculator": "Nülan calculadora rápida",
+        "reset_presets": "Wiño elual preset müyey",
+        "text_time_calculator": "Nülan pürüm rakin",
         "help_button": "Pengelün kellu dungu",
-        "flotante_window": "Ventana weñyefe"
+        "crono_toggle": "Amulal kam mütüntual üngümwe",
+        "crono_reset": "Wiño püneal üngümwe",
+        "floating_window": "Üngümwe weñyefe"
+      },
+      "help": {
+        "preview_spoiler": "Wünen pen ñi afel erakünu kam ellkawün",
+        "precise_mode": "Inatun Intl.Segmenter mu"
       },
       "aria": {
         "text_extraction": "Archivo mew wirin extraer",
-        "text_extraction_abort": "Abortar extracción",
-        "browser_extension": "Nülan diálogo extensión navegador mew",
-        "clipboard_repeat_count": "Pültrün repeticiones",
-        "text_time_calculator": "Nülan calculadora rápida",
+        "browser_extension": "Kintuwe ñi kelluwe nütram nülal",
         "wpm_input": "Dungu kiñe minuto mu",
         "wpm_slider": "WPM slider",
         "speed_presets": "Lef preset",
-        "precise_mode_toggle": "Rüf rakiduam",
         "crono_controls": "Üngümwe küzawtuwe",
         "crono_display": "Üngümwe pengelün",
-        "crono_toggle": "Amulal kam mütüntual üngümwe",
-        "crono_reset": "Wiño püneal üngümwe",
-        "floating_window_toggle": "Ventana weñyefe",
         "floating_window_group": "Ventana weñyefe küzawtuwe"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Unidad {index}",
         "unit_counter": "Unidad {index}/{count}",
         "unit_name_placeholder": "Unidad ñi üi, mülele",
+        "aria": {
+          "route": "{file} ñi wirin nentun rüpü",
+          "unit_assignment": "{file} ñi amual unidad",
+          "unit_name": "Unidad {index}/{count} ñi üy"
+        },
         "new_unit_option": "Dewman we unidad",
         "move_up": "Püra apay",
         "move_down": "Nag apay",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Nülan snapshots carpeta",
         "ok_button": "Llowün",
         "close_aria": "Nürüfün informe final lote extracción",
-        "split_result_label": "Resultado división:",
         "failed_fallback": "Welulkuy",
         "failed_with_code": "Welulkuy: {code}",
         "applied_truncated": "aplicadongey recorte mew",
@@ -301,28 +306,35 @@
       "increase_text_size": "Fütrakünun wirin",
       "reset_text_size": "Wiño püneal wirin",
       "read_progress_label": "Chillkatun",
-      "clear_title": "Lifün",
+      "clear": "Lifün",
+      "help": {
+        "apply": "Wirin azümwe ñi wirin fachi wirin mew apólge",
+        "auto_apply": "Wirilelu, Wirin azümwe ñi trürüm fachi wirin mew müley",
+        "spellcheck": "Wirin azümwe ñi wirin mew wirin rüfkenu nülge kam nürüfge"
+      },
       "editor_find": {
         "input_placeholder": "Kintun...",
         "input_aria": "Kintun wirintukun mew",
-        "expand_title": "Pengelün kaxün",
-        "collapse_title": "Ellkan kaxün",
         "replace_placeholder": "Kaxün...",
         "replace_aria": "Wirin kaxüal",
         "replace": "Kaxün",
         "replace_all": "Kom kaxün",
-        "prev_title": "Wünen kintun",
-        "next_title": "Inan kintun",
-        "close_title": "Nürüfün kintun wechun",
-        "replace_title": "Kaxün tüfachi wirin",
-        "replace_all_title": "Kom kaxün wirin",
+        "names": {
+          "show_replace": "Pengelün kaxün",
+          "hide_replace": "Ellkan kaxün",
+          "previous_match": "Wünen kintun",
+          "next_match": "Inan kintun",
+          "close": "Nürüfün kintun wechun"
+        },
+        "help": {
+          "replace_current": "Kaxün tüfachi wirin",
+          "replace_all": "Kom kaxün wirin"
+        },
         "replace_timeout": "Alüñmay ti llowtugen. Wiño pepi deumange.",
         "status_no_matches": "Chem no rume kintulay",
         "status_empty_query": "Wiringe kintuael"
       },
       "alerts": {
-        "start_failed": "Text Editor no pudo iniciar.",
-        "start_timeout": "Text Editor fütrañmaw iniciar mew ka nürüfüngey.",
         "paste_too_big": "Wirin rume fütra pültrüal. Püne tati botones ventana mu.",
         "drop_too_big": "Wirin küpalyelu rume fütra. Püne tati botones ventana mu.",
         "paste_no_text": "Portapapeles nielay wirin.",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "Elkünun textu snapshot",
-      "message": "Münafülchi tañi textu snapshot müley ta küme ngünekan mew ka chumgechi elkünuael.",
+      "message": "Münafülchi, tüfachi textu snapshot mew üy elukefal, ñi tüwün kimeltukefal ka etiqueta elkünukefal, wünen chew elkünuael dullinge.",
       "search": {
         "placeholder": "Wirintuku opciones filtrangeal",
         "no_results": "Ngelay opciones trafkülelu",
         "create": "Dewma \"{label}\""
       },
       "labels": {
+        "name": "Üy (münafülchi)",
+        "source_comment": "Mülewe (münafülchi)",
         "language": "Dungun",
         "type": "Az",
         "difficulty": "Rume newen"
+      },
+      "placeholders": {
+        "name": "Chillka",
+        "source_comment": "chapter-1.pdf, Unidad 1 ka apolngechi textu"
+      },
+      "metrics": {
+        "include_count": "Dungu rakiduam müley",
+        "include_reading": "Chillkatun antü ka WPM müley"
       },
       "manager": {
         "title": "Ngünen etiquetas snapshot de texto",
@@ -356,10 +378,11 @@
         "close_aria": "Nütramkawün trariñman etiquetas snapshot de texto",
         "new_tag": "We etiqueta",
         "new_tag_placeholder": "Etiqueta ñi üy",
+        "new_tag_input_aria": "We etiqueta ñi üy",
         "add_tag": "Tuwün etiqueta",
         "cancel_draft": "Nentun",
         "sort_alphabetically": "Ordenar A-Z",
-        "restore_hidden_defaults": "Wiñoltun etiquetas por defecto ({count})",
+        "restore_hidden_defaults": "Wiño elun müyey etiquetas",
         "empty_category": "Ngelay görüngechi etiquetas tüfachi categoría mew.",
         "move_up": "Püram \"{label}\"",
         "move_down": "Nagüm \"{label}\"",
@@ -411,6 +434,7 @@
           "qu": "Quechua",
           "ru": "Ruso",
           "sv": "Sueco",
+          "sw": "Suajili",
           "tr": "Turco",
           "ur": "Urdu",
           "vi": "Vietnamita",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — Tareas",
       "name": "Üi",
+      "name_placeholder": "Eymi: Chillkatun plan",
       "save_button": "Elkünun",
       "delete_button": "Ñamümün",
       "summary_total": "Kom",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Petu",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "N+S",
         "acciones": "Küzawtuwe",
-        "tooltips": {
-          "file_select": "Dullin archivo local",
-          "link_open": "Link nülal",
-          "snapshot_load": "Kintun snapshot weyel tati ruka",
-          "comment": "Nütram yapeln",
+        "header_names": {
+          "tiempo": "Rakiduam chillkatun antü",
+          "percent": "Tukuluwün %",
+          "falta": "Rakiduam petu antü",
+          "comentario": "Nütram ka textu snapshot"
+        },
+        "names": {
+          "file_select": "Dullin local archivo",
+          "link_open": "Rüpü nülal",
+          "snapshot_load": "Kintun textu snapshot weyel tati ruka",
+          "comment": "Nütram kam textu snapshot yapeln",
           "move_up": "Wünen ruka",
           "move_down": "Inan ruka",
           "library_row_save": "Elkünun ruka biblioteca mew",
           "delete_row": "Ñamümün ruka"
+        },
+        "descriptions": {
+          "snapshot_path": "Textu snapshot ñi rüpü: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Textu snapshot fachi wirin mew nüwülge · Rüpü: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Nütram",
+        "comment_placeholder": "Nütram...",
         "snapshot_select": "Kintun snapshot",
-        "snapshot_select_tooltip": "Kintun snapshot weyel tati ruka",
-        "snapshot_clear": "Ñamümün snapshot weyel tati ruka"
+        "snapshot_clear": "Ñamümün snapshot weyel tati ruka",
+        "close_aria": "Nütram nürüf",
+        "snapshot_source_reminder": {
+          "title": "Textu snapshot tüwün nütram mew ramtun",
+          "message": "Tüfa chi ruka textu snapshot mew müley. Local archivo kintual, tüwün nütram küme azümnge.",
+          "source_comment": "Textu snapshot tüwün nütram:",
+          "select_file": "Dullin local archivo",
+          "cancel": "Ngelay",
+          "close_aria": "Textu snapshot tüwün nütram mew ramtun nürüfün"
+        },
+        "snapshot_details_confirm": {
+          "title": "¿Eiporúaymi textu snapshot ajllin ñi kimün?",
+          "message": "Fachi chillkatun mew eiporual, textu snapshot ajllin ñi kimün küme azümnge.",
+          "replace_reading_name": "Kaxün chillkatun ñi üi",
+          "set_reading_name": "Elu chillkatun ñi üi",
+          "current_name": "Fachi üi",
+          "snapshot_name": "Textu snapshot ñi üi",
+          "empty": "(welli)",
+          "replace_time": "Kaxün rakiduam antü",
+          "current_time": "Fachi antü",
+          "snapshot_estimate": "Textu snapshot ñi rakiduam",
+          "reading_speed": "Lef chillkatun",
+          "apply": "Eiporu",
+          "apply_selected": "Eiporu ajllin",
+          "keep": "Fachi dungu müley",
+          "close_aria": "Textu snapshot ñi kimün rüpüntukun nürüfün"
+        }
       },
       "biblioteca": {
         "library_title": "Biblioteca",
+        "close_aria": "Biblioteca nürüf",
         "search": "Kintun",
         "search_placeholder": "Biblioteca mew kintun...",
         "empty": "(welli)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Elkünun biblioteca meu",
-        "library_save_question": "¿Müleael nütram?",
+        "close_aria": "Biblioteca mew elkünun nütram nürüf",
+        "library_save_question": "¿Müleael nütram? Tüfa chi ruka mew textu snapshot mülelu, ñi trawün rume elkünuay.",
         "yes": "May",
         "no": "No",
         "cancel": "Katrüntun"
@@ -499,6 +564,7 @@
         "task_delete_unavailable": "Ngelay tarea elkünutulu ñamümael.",
         "task_invalid_file": "Archivo de tareas no küme.",
         "task_invalid_rows": "Tarea mew müley ruka no küme.",
+        "task_duration_too_large": "Küdaw ñi kom rakiduam antü fütra rume.",
         "task_path_outside": "Archivo müleyafuy tareas carpeta mew.",
         "name_required": "Üi müleyafuy.",
         "row_text_required": "Ruka wirin welli mülelay.",
@@ -507,6 +573,10 @@
         "library_save_error": "Chem welulkuy elkünun biblioteca mu.",
         "library_save_success": "Biblioteca elküntuy.",
         "library_delete_error": "Chem welulkuy ñamümün biblioteca mu.",
+        "column_layout_save_error": "Chem welulkuy ruka ñemohenda elkünun mew, ka amulchi kiñe antü mew petu elkunulay.",
+        "snapshot_missing": "Ngelay tati textu snapshot weyel.",
+        "snapshot_invalid": "Tati textu snapshot weyel no küme müley.",
+        "snapshot_read_error": "Tati textu snapshot weyel ñamümün no pepi.",
         "link_blocked": "Link bloqueado.",
         "link_missing": "Link nielay.",
         "link_error": "Chem welulkuy link nülal mu.",
@@ -514,7 +584,7 @@
       }
     },
     "text_time_calculator": {
-      "title": "toT — Calculadora rápida",
+      "title": "toT — Pürüm rakin",
       "calculate_label": "Rakin",
       "targets": {
         "words": "Dungu",
@@ -527,9 +597,9 @@
         "wpm": "WPM"
       },
       "validation": {
-        "words": "Koneltu kiñe entero no negativo.",
-        "time": "Koneltu tiempo formato H+:MM:SS mew.",
-        "wpm": "Koneltu kiñe entero positivo.",
+        "words": "0 kam doy fütra rakin koneltu.",
+        "time": "Antü H+:MM:SS az mew koneltu.",
+        "wpm": "0 mew doy fütra rakin koneltu.",
         "formula": "WPM no pepi rakiñmawün 00:00:00 mew."
       }
     },
@@ -538,7 +608,7 @@
         "title": "Pepiluwün ñi pürüm chillkatun",
         "show_instructions": "Pepefinge instrucciones",
         "hide_instructions": "Ellkañma instrucciones",
-        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi sesión mu. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Cronómetro Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi ramtun kimün chillkatun mu mülele feytichi chillka mu, ka afmew, dewmayaymi kiñe preset tami chum tripachi mu.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müten müley 5 ka 15 minutos küme rakiduam mu, gelay interrupciones.\nTüfachi pool pichi chillka engün müten müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka contexto, ka weda dungu, mental recapitulación ka fatigue, mülekey ti chillkatun mu.",
+        "intro": "Tüfachi pepiluwün kelluay tami kimal tami rüf pürüm chillkatun kiñe adkünungechi amulzugun mew. Ti app nülayay feyti chillka ka üyümlayaymi tami nüngüal Play (▶) feyti Weñyefe Üngümwe mew tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pause (⏸) petu af-chillkatulaymi: Pause afay tüfachi pepiluwün; mütümlafi ti üngümwe. Püntüal/Wiñotual (⏹) fey müten ayülemi tami katrüal tüfachi pepiluwün. Feymew kintuafuluymi chillkatun kimün ramtun mülele feytichi chillka mew, ka afmew, dewmayaymi kiñe adkunun tami chum tripachi mew.\nWünen amutulaymi, rakiduamüngeymi tüfachi pepiluwün chillka engün müley 5 ka 15 minutu küme rakiduam mew, katrükawün nülay.\nTüfachi trañmawün pichi chillka engün müley, feymew küme rakiduamngeymi tami chum tripachi. Kümelay rüf müten tripayal füta chillka mew, felew müten küme dungu, küme amuluwün ka dungu ñi trawün, ka weda dungu, rakiduam mew wiño kintun ka afün, mülekey ti chillkatun mew.",
         "eligible_count": "Dullngechi chillka:",
         "show_bundled_entries": "Test msingi",
         "get_more_files": "Pepefinge más archivos",
@@ -550,28 +620,22 @@
         "close_aria": "Ñafün tüfachi pepiluwün ñi nütram",
         "start_random_confirm": "Tüfachi wiño püneay tami felechi chillka ka müley kiñe random chillka feychi trawün mew. ¿Amuleaymi?",
         "reset_confirm": "Fey mu wiñotripayay kom trawün (pool) pepiluwal ka kom chillka 'ngelay chillkatun' pingeay. ¿Amuleaymi?",
-        "tooltips": {
-          "show_bundled_entries": "Pool mew mütrümnge ti app mew mülelu ñepüle test archivos",
+        "help": {
+          "show_bundled_entries": "Trañmawün mew mütrümnge ti app mew mülelu ñepüle pepiluwün wirin",
           "get_more_files": "Llowün doy pepiükantun wirintukun Google Drive mu",
           "import_files": "Küpan pepiükantun wirintukun tami nütrampeyüm mu",
-          "reset_pool": "Wiño llowün pepiükantun trañmawun",
-          "start_random_text": "Yallün chi pepiükantun chem rume wirin mu chi trañmawun mu",
-          "start_current_text": "Yallün chi pepiükantun tüfachi wirin mu"
+          "start_random_text": "Yallün chi pepiükantun chem rume wirin mu chi trañmawün mu",
+          "start_current_text": "Eiporu fachi wirin, kaxünlafiel ka trañmawün ñi archivo nentulafiel"
+        },
+        "names": {
+          "reset_pool": "Wiño llowün pepiükantun trañmawün"
         },
         "import": {
-          "import_summary": "Importación afmatuy. Koneltuy: {imported}. Duplicados no koneltuy: {skippedDuplicates}. Validación no müley: {failedValidation}. Archivo comprimido mu entradas no müley: {failedArchiveEntries}. Escrituras no müley: {failedWrites}.",
-          "import_conflict": {
-            "title": "Importar archivos",
-            "message": "Kiñeke archivos koneltulu müley trawün mew. ¿Chumgechi küdawaimi duplicados engün?",
-            "detail": "{count} destino archivo üi müley trawün mew.",
-            "skip_button": "Rupan duplicados",
-            "replace_button": "Wiño püne duplicados",
-            "cancel_button": "Katrüntun importación"
-          }
+          "import_summary": "Importación afmatuy. Koneltuy: {imported}. Duplicados no koneltuy: {skippedDuplicates}. Validación no müley: {failedValidation}. Archivo comprimido mu entradas no müley: {failedArchiveEntries}. Escrituras no müley: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Nüngünge Play (▶) feyti Cronómetro Flotante mu tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pausa (⏸) petu af-chillkatulaymi: Pausa afay tüfachi pepiluwün; küpaykelay ti chiñura. Nüngünge Püntüal/Wiñotual (⏹) müten ayülemi tami katrüal tüfachi pepiluwün."
+        "reminder": "Nüngünge Play (▶) feyti Weñyefe Üngümwe mew tami kümeke rakiduamkülelu amutual. Amulngechi tüfachi pepiluwün, nüngükilnge Pause (⏸) petu af-chillkatulaymi: Pause afay tüfachi pepiluwün; mütümlafi ti üngümwe. Nüngünge Püntüal/Wiñotual (⏹) müten ayülemi tami katrüal tüfachi pepiluwün."
       },
       "questions": {
         "title": "Ramtun kimün chillkatun mu",
@@ -580,6 +644,7 @@
         "random_value": "{percentage} küme llowün tripayafuy kisu",
         "feedback_title": "Feedback",
         "feedback_prefix": "Düngual:",
+        "summary_aria": "Chillkatun test ñi resumen",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Llowkeaymi kom ramtun petu kintual chumngechi tripay.",
         "result_summary": "{correct} ñi {total} küme tripachi ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "WPM tripachi",
         "elapsed_time": "Antü",
         "word_count": "Dungu",
+        "summary_aria": "Chillkatun test ñi resumen",
         "continue_button": "Amuleal"
       },
       "alerts": {
@@ -607,7 +673,7 @@
         "preset_unavailable": "Ngelay kintual modal preset pepiluwün mu.",
         "questions_unavailable": "Ngelay kintual modal ramtun. Amulelay yalltul preset.",
         "pool_import_failed": "Pepiluwün ñi pürüm chillkatun archivos koneltulay.",
-        "pool_import_state_cleanup_failed": "Pu archivo test de velocidad de lectura konüy, welu pool ñi estado no pepi actualizar kom.",
+        "pool_import_state_cleanup_failed": "Pu chillkatun pürüm pepiluwün ñi wirin konüy, welu trañmawün ñi az no pepi küme eluwün kom.",
         "start_failed": "Ngelay yalltuwal pepiluwün ñi pürüm chillkatun.",
         "cancelled": "Pepiluwün ñi pürüm chillkatun katrütungey.",
         "cancelled_window_closed": "Pepiluwün ñi pürüm chillkatun katrütungey ñafün mu kiñe ventana."
@@ -646,18 +712,23 @@
       }
     },
     "browser_extension": {
-      "title": "Extensión navegador mew",
-      "subtitle": "Tiempo de lectura",
+      "title": "Chillkatun antü",
+      "subtitle": "Kintuwe ñi kelluwe",
       "availability": "Chrome mew müley feichi. Püñeñ mew kake navegadores müleay.",
-      "chrome_store_aria": "Nülan página extensión Chrome Web Store mew",
-      "close_aria": "Nürüfün diálogo extensión navegador mew",
+      "chrome_store_aria": "Nülan Chrome Web Store mew kintuwe ñi kelluwe página",
+      "close_aria": "Nürüfün kintuwe ñi kelluwe nütram",
       "alerts": {
-        "modal_open_blocked": "Navegador extensión diálogo fewla nülalay."
+        "modal_open_blocked": "Kintuwe ñi kelluwe nütram fewla nülalay."
       }
     },
     "info": {
       "loading": "Cargando...",
       "missing_content": "Ngelay chi dungu '{name}'.",
+      "close_aria": "Kimün nürüf",
+      "media_lightbox": {
+        "title": "Fütra wünen pen",
+        "close_aria": "Wünen pen nürüf"
+      },
       "external": {
         "blocked": "Link bloqueado",
         "error": "Welulkuy nülal link"

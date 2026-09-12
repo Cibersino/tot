@@ -19,8 +19,7 @@
         "chars": "Zeichen: {n}",
         "value_pending": "ausstehend...",
         "value_unavailable": "nicht verfügbar",
-        "precise_mode": "Präziser Modus",
-        "precise_tooltip": "Basierend auf Intl.Segmenter"
+        "precise_mode": "Präziser Modus"
       },
       "crono": {
         "title": "STOPPUHR",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Ergebnisse des aktuellen Texts werden neu berechnet...",
         "current_text_waiting_startup": "Aktueller Text wird stabilisiert...",
         "current_text_waiting_editor": "Änderungen des Texteditors werden synchronisiert...",
+        "editor_loading": "Text Editor wird geladen...",
         "text_extraction_placeholder": "Text wird extrahiert...",
         "text_extraction_preparing": "Extraktionsroute wird vorbereitet...",
         "text_extraction_cancellation_pending": "Abbruch angefordert. Bitte warten...",
@@ -47,17 +47,19 @@
       },
       "tooltips": {
         "text_extraction": "Text aus Datei extrahieren",
+        "browser_extension": "Browser-Erweiterung"
+      },
+      "names": {
         "text_extraction_abort": "Extraktion abbrechen",
         "overwrite_clipboard": "Aktuellen Text mit der Zwischenablage ersetzen",
         "append_clipboard": "Hängen Sie die Zwischenablage am Ende des aktuellen Textes an (neue Zeile)",
-        "clipboard_repeat_count": "Wiederholungen beim Einfügen aus der Zwischenablage",
+        "clipboard_repeat_count": "Einfügewiederholungen",
         "edit": "Öffnen Sie das vollständige aktuelle Textfenster",
         "clear": "Aktuellen Text löschen",
         "snapshot_load": "Laden Sie einen Text-Snapshot",
         "snapshot_save": "Speichern Sie den aktuellen Text in einem Snapshot",
         "task_new": "Neue Aufgabe",
         "task_load": "Aufgabe laden",
-        "browser_extension": "Browser-Erweiterung",
         "cibersino_website": "Cibersino-Website",
         "cibersino_kofi": "Unterstütze mich auf Ko-fi",
         "new_preset": "Erstellen Sie ein neues Preset",
@@ -66,23 +68,22 @@
         "reset_presets": "Standard-Presets wiederherstellen",
         "text_time_calculator": "Schnellrechner öffnen",
         "help_button": "Zeigen Sie einen nützlichen Tipp an",
-        "flotante_window": "Schwebendes Fenster"
+        "crono_toggle": "Stoppuhr starten oder pausieren",
+        "crono_reset": "Stoppuhr zurücksetzen",
+        "floating_window": "Schwebendes Fenster"
+      },
+      "help": {
+        "preview_spoiler": "Ende der Vorschau anzeigen oder ausblenden",
+        "precise_mode": "Basierend auf Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Text aus Datei extrahieren",
-        "text_extraction_abort": "Extraktion abbrechen",
         "browser_extension": "Dialog der Browser-Erweiterung öffnen",
-        "clipboard_repeat_count": "Einfügewiederholungen",
-        "text_time_calculator": "Schnellrechner öffnen",
         "wpm_input": "Wörter pro Minute",
         "wpm_slider": "Regler für Wörter pro Minute",
         "speed_presets": "Geschwindigkeits-Presets",
-        "precise_mode_toggle": "Präziser Modus",
         "crono_controls": "Stoppuhr-Steuerelemente",
         "crono_display": "Stoppuhr-Anzeige",
-        "crono_toggle": "Stoppuhr starten oder pausieren",
-        "crono_reset": "Stoppuhr zurücksetzen",
-        "floating_window_toggle": "Schwebendes Fenster",
         "floating_window_group": "Steuerelemente für schwebendes Fenster"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Einheit {index}",
         "unit_counter": "Einheit {index}/{count}",
         "unit_name_placeholder": "Optionaler Einheitsname",
+        "aria": {
+          "route": "Extraktionsroute für {file}",
+          "unit_assignment": "Zieleinheit für {file}",
+          "unit_name": "Optionaler Name für Einheit {index} von {count}"
+        },
         "new_unit_option": "Neue Einheit erstellen",
         "move_up": "Nach oben",
         "move_down": "Nach unten",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Snapshot-Ordner öffnen",
         "ok_button": "OK",
         "close_aria": "Abschlussbericht der Stapelextraktion schließen",
-        "split_result_label": "Split-Ergebnis:",
         "failed_fallback": "fehlgeschlagen",
         "failed_with_code": "fehlgeschlagen: {code}",
         "applied_truncated": "mit Kürzung angewendet",
@@ -301,28 +306,35 @@
       "increase_text_size": "Textgröße vergrößern",
       "reset_text_size": "Textgröße zurücksetzen",
       "read_progress_label": "Gelesen",
-      "clear_title": "Löschen",
+      "clear": "Löschen",
+      "help": {
+        "apply": "Editor-Text als aktuellen Text übernehmen",
+        "auto_apply": "Editor-Änderungen beim Tippen automatisch auf den aktuellen Text anwenden",
+        "spellcheck": "Rechtschreibprüfung für den Editor-Text ein- oder ausschalten"
+      },
       "editor_find": {
         "input_placeholder": "Suchen...",
         "input_aria": "Im Text suchen",
-        "expand_title": "Ersetzen anzeigen",
-        "collapse_title": "Ersetzen ausblenden",
         "replace_placeholder": "Ersetzen...",
         "replace_aria": "Ersetzungstext",
         "replace": "Ersetzen",
         "replace_all": "Alle ersetzen",
-        "prev_title": "Vorheriger Treffer",
-        "next_title": "Naechster Treffer",
-        "close_title": "Suchleiste schliessen",
-        "replace_title": "Aktuelle Übereinstimmung ersetzen",
-        "replace_all_title": "Alle Übereinstimmungen ersetzen",
+        "names": {
+          "show_replace": "Ersetzen anzeigen",
+          "hide_replace": "Ersetzen ausblenden",
+          "previous_match": "Vorheriger Treffer",
+          "next_match": "Naechster Treffer",
+          "close": "Suchleiste schliessen"
+        },
+        "help": {
+          "replace_current": "Aktuelle Übereinstimmung ersetzen",
+          "replace_all": "Alle Übereinstimmungen ersetzen"
+        },
         "replace_timeout": "Ersetzen hat zu lange gedauert. Bitte erneut versuchen.",
         "status_no_matches": "Keine Treffer",
         "status_empty_query": "Zum Suchen tippen"
       },
       "alerts": {
-        "start_failed": "Der Texteditor konnte nicht gestartet werden.",
-        "start_timeout": "Der Texteditor brauchte zu lange zum Starten und wurde geschlossen.",
         "paste_too_big": "Text zu groß, um direkt einzufügen. Verwenden Sie die Schaltflächen im Hauptfenster.",
         "drop_too_big": "Abgelegter Text ist zu groß. Verwenden Sie die Schaltflächen im Hauptfenster, um großen Text hinzuzufügen.",
         "paste_no_text": "Die Zwischenablage enthält keinen reinen Text.",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "Text-Snapshot speichern",
-      "message": "Markieren Sie diesen Text-Snapshot optional, bevor Sie auswählen, wo er gespeichert werden soll.",
+      "message": "Sie können diesen Text-Snapshot optional benennen, seine Herkunft beschreiben und mit Tags versehen, bevor Sie auswählen, wo er gespeichert werden soll.",
       "search": {
         "placeholder": "Tippen, um Optionen zu filtern",
         "no_results": "Keine passenden Optionen",
         "create": "\"{label}\" erstellen"
       },
       "labels": {
+        "name": "Name (optional)",
+        "source_comment": "Herkunft (optional)",
         "language": "Sprache",
         "type": "Typ",
         "difficulty": "Schwierigkeit"
+      },
+      "placeholders": {
+        "name": "Lektüre",
+        "source_comment": "chapter-1.pdf, Einheit 1 oder importierter Text"
+      },
+      "metrics": {
+        "include_count": "Wortanzahl einbeziehen",
+        "include_reading": "Geschätzte Lesezeit und WPM einbeziehen"
       },
       "manager": {
         "title": "Text-Snapshot-Tags verwalten",
@@ -356,10 +378,11 @@
         "close_aria": "Verwaltung der Text-Snapshot-Tags schließen",
         "new_tag": "Neuer Tag",
         "new_tag_placeholder": "Tag-Name",
+        "new_tag_input_aria": "Name des neuen Tags",
         "add_tag": "Tag hinzufügen",
         "cancel_draft": "Abbrechen",
         "sort_alphabetically": "A-Z sortieren",
-        "restore_hidden_defaults": "Standard-Tags wiederherstellen ({count})",
+        "restore_hidden_defaults": "Standard-Tags wiederherstellen",
         "empty_category": "Keine sichtbaren Tags in dieser Kategorie.",
         "move_up": "\"{label}\" nach oben verschieben",
         "move_down": "\"{label}\" nach unten verschieben",
@@ -411,6 +434,7 @@
           "qu": "Quechua",
           "ru": "Russisch",
           "sv": "Schwedisch",
+          "sw": "Suaheli",
           "tr": "Türkisch",
           "ur": "Urdu",
           "vi": "Vietnamesisch",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — Aufgaben",
       "name": "Name",
+      "name_placeholder": "z. B. Leseplan",
       "save_button": "Speichern",
       "delete_button": "Löschen",
       "summary_total": "Gesamt",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Restzeit",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "K+S",
         "acciones": "Aktionen",
-        "tooltips": {
+        "header_names": {
+          "tiempo": "Geschätzte Lesezeit",
+          "percent": "Abgeschlossener Prozentsatz",
+          "falta": "Geschätzte verbleibende Zeit",
+          "comentario": "Kommentar und Text-Snapshot"
+        },
+        "names": {
           "file_select": "Lokale Datei auswählen",
           "link_open": "Link öffnen",
           "snapshot_load": "Laden Sie einen Text-Snapshot für diese Zeile",
-          "comment": "Kommentar hinzufügen/bearbeiten",
+          "comment": "Kommentar oder Text-Snapshot hinzufügen",
           "move_up": "Nach oben verschieben",
           "move_down": "Nach unten verschieben",
           "library_row_save": "In Bibliothek speichern",
           "delete_row": "Diese Zeile löschen"
+        },
+        "descriptions": {
+          "snapshot_path": "Pfad des verknüpften Text-Snapshots: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Text-Snapshot als aktuellen Text laden · Verknüpfter Pfad: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Kommentar",
+        "comment_placeholder": "Kommentar...",
         "snapshot_select": "Snapshot auswählen",
-        "snapshot_select_tooltip": "Wählen Sie einen Text-Snapshot für diese Zeile aus",
-        "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile"
+        "snapshot_clear": "Entfernen Sie den ausgewählten Text-Snapshot von dieser Zeile",
+        "close_aria": "Kommentar schließen",
+        "snapshot_source_reminder": {
+          "title": "Hinweis zur Snapshot-Quelle",
+          "message": "Diese Zeile ist mit einem Text-Snapshot verknüpft. Prüfen Sie dessen Quellenkommentar, bevor Sie eine lokale Datei auswählen.",
+          "source_comment": "Quellenkommentar des Snapshots:",
+          "select_file": "Lokale Datei auswählen",
+          "cancel": "Abbrechen",
+          "close_aria": "Hinweis zur Snapshot-Quelle schließen"
+        },
+        "snapshot_details_confirm": {
+          "title": "Daten des ausgewählten Text-Snapshots verwenden?",
+          "message": "Prüfen Sie die verfügbaren Daten des ausgewählten Text-Snapshots, bevor Sie sie auf diesen Leseeintrag anwenden.",
+          "replace_reading_name": "Namen des Leseeintrags ersetzen",
+          "set_reading_name": "Namen des Leseeintrags festlegen",
+          "current_name": "Aktueller Name",
+          "snapshot_name": "Snapshot-Name",
+          "empty": "(leer)",
+          "replace_time": "Geschätzte Zeit ersetzen",
+          "current_time": "Aktuelle Zeit",
+          "snapshot_estimate": "Snapshot-Schätzung",
+          "reading_speed": "Lesegeschwindigkeit",
+          "apply": "Anwenden",
+          "apply_selected": "Auswahl anwenden",
+          "keep": "Aktuelle Werte beibehalten",
+          "close_aria": "Bestätigung der Snapshot-Daten schließen"
+        }
       },
       "biblioteca": {
         "library_title": "Bibliothek",
+        "close_aria": "Lesebibliothek schließen",
         "search": "Suchen",
         "search_placeholder": "In der Bibliothek suchen...",
         "empty": "(leer)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "In Bibliothek speichern",
-        "library_save_question": "Kommentar einbeziehen?",
+        "close_aria": "Dialog „In Bibliothek speichern“ schließen",
+        "library_save_question": "Kommentar einbeziehen? Wenn für diese Lektüre ein Text-Snapshot ausgewählt ist, wird die Verknüpfung in jedem Fall gespeichert.",
         "yes": "Ja",
         "no": "Nein",
         "cancel": "Abbrechen"
@@ -499,6 +564,7 @@
         "task_delete_unavailable": "Keine gespeicherte Aufgabe zum Löschen.",
         "task_invalid_file": "Ungültige Aufgabendatei.",
         "task_invalid_rows": "Es gibt ungültige Zeilen in der Aufgabe.",
+        "task_duration_too_large": "Die geschätzte Gesamtdauer der Aufgabe ist zu groß.",
         "task_path_outside": "Die Datei muss sich im Aufgabenordner befinden.",
         "name_required": "Aufgabenname ist erforderlich.",
         "row_text_required": "Zeilentext darf nicht leer sein.",
@@ -507,6 +573,10 @@
         "library_save_error": "Konnte nicht in die Bibliothek speichern.",
         "library_save_success": "Zeile in die Bibliothek gespeichert.",
         "library_delete_error": "Konnte nicht aus der Bibliothek löschen.",
+        "column_layout_save_error": "Das Spaltenlayout konnte nicht gespeichert werden und wird beim nächsten Mal möglicherweise nicht beibehalten.",
+        "snapshot_missing": "Der ausgewählte Text-Snapshot existiert nicht mehr.",
+        "snapshot_invalid": "Der ausgewählte Text-Snapshot ist ungültig.",
+        "snapshot_read_error": "Der ausgewählte Text-Snapshot konnte nicht gelesen werden.",
         "link_blocked": "Link blockiert.",
         "link_missing": "Datei nicht gefunden.",
         "link_error": "Fehler beim Öffnen des Links.",
@@ -538,7 +608,7 @@
         "title": "Lesegeschwindigkeitstest",
         "show_instructions": "Anleitung anzeigen",
         "hide_instructions": "Anleitung ausblenden",
-        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text und wartet darauf, dass Sie Play (▶) im schwebenden Fenster drücken, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert den Timer nicht. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nBevor Sie beginnen, bedenken Sie, dass diese Testtexte in der Regel zwischen 5 und 15 Minuten ununterbrochene Konzentration erfordern.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
+        "intro": "Dieser Test soll Ihre reale Lesegeschwindigkeit in einer geführten Sitzung schätzen. Die App öffnet den Text und wartet darauf, dass Sie Play (▶) in der schwebenden Stoppuhr drücken, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert die Stoppuhr nicht. Verwenden Sie Stop/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten. Danach können Sie Verständnisfragen prüfen, falls der Text sie enthält, und am Ende ein Preset aus dem Ergebnis erstellen.\nBevor Sie beginnen, bedenken Sie, dass diese Testtexte in der Regel zwischen 5 und 15 Minuten ununterbrochene Konzentration erfordern.\nDieser Pool verwendet kurze Texte; behandeln Sie das Ergebnis daher mit Vorsicht. Es sollte nicht direkt auf lange Texte übertragen werden, bei denen in der Regel positive Faktoren wie Lesefluss und Kontextaufbau sowie negative Faktoren wie mentales Rekapitulieren und Ermüdung ins Spiel kommen.",
         "eligible_count": "Geeignete Dateien:",
         "show_bundled_entries": "Basistests",
         "get_more_files": "Weitere Dateien holen",
@@ -550,28 +620,22 @@
         "close_aria": "Dialog für den Lesegeschwindigkeitstest schließen",
         "start_random_confirm": "Dadurch wird der aktuelle Text durch einen zufälligen geeigneten Text aus dem Pool ersetzt. Möchten Sie fortfahren?",
         "reset_confirm": "Dadurch wird der gesamte Test-Pool zurückgesetzt und alle Dateien werden wieder als unbenutzt markiert. Möchten Sie fortfahren?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Die mit der App gebündelten Start-Testdateien in den Pool aufnehmen",
           "get_more_files": "Weitere Testdateien aus dem Google Drive-Ordner holen",
           "import_files": "Testdateien von Ihrem Gerät importieren",
-          "reset_pool": "Test-Pool zurücksetzen",
           "start_random_text": "Den Test mit einem zufälligen geeigneten Text aus dem Pool starten",
-          "start_current_text": "Den Test mit dem aktuellen Text starten"
+          "start_current_text": "Aktuellen Text verwenden, ohne ihn zu ersetzen oder eine Pool-Datei zu verbrauchen"
+        },
+        "names": {
+          "reset_pool": "Test-Pool zurücksetzen"
         },
         "import": {
-          "import_summary": "Import abgeschlossen. Importiert: {imported}. Doppelte übersprungen: {skippedDuplicates}. Fehlgeschlagene Validierungen: {failedValidation}. Fehlgeschlagene Archiv-Einträge: {failedArchiveEntries}. Fehlgeschlagene Schreibvorgänge: {failedWrites}.",
-          "import_conflict": {
-            "title": "Dateien importieren",
-            "message": "Einige importierte Dateien existieren bereits im Pool. Wie sollen Duplikate behandelt werden?",
-            "detail": "{count} Zieldateiname(n) existieren bereits im Pool.",
-            "skip_button": "Duplikate überspringen",
-            "replace_button": "Duplikate ersetzen",
-            "cancel_button": "Import abbrechen"
-          }
+          "import_summary": "Import abgeschlossen. Importiert: {imported}. Doppelte übersprungen: {skippedDuplicates}. Fehlgeschlagene Validierungen: {failedValidation}. Fehlgeschlagene Archiv-Einträge: {failedArchiveEntries}. Fehlgeschlagene Schreibvorgänge: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Drücken Sie Play (▶) im schwebenden Fenster, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert den Timer nicht. Verwenden Sie Stopp/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten."
+        "reminder": "Drücken Sie Play (▶) in der schwebenden Stoppuhr, wenn Sie bereit sind zu beginnen. Sobald der Test gestartet ist, drücken Sie Pause (⏸) erst, wenn Sie mit dem Lesen fertig sind: Pause beendet den Test; sie pausiert die Stoppuhr nicht. Verwenden Sie Stopp/Zurücksetzen (⏹) nur, wenn Sie den Test abbrechen möchten."
       },
       "questions": {
         "title": "Fragen zum Leseverständnis",
@@ -580,6 +644,7 @@
         "random_value": "Erwartete Punktzahl bei zufälligem Raten: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Für Beschwerden:",
+        "summary_aria": "Testzusammenfassung",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Sie müssen alle Fragen beantworten, bevor Sie auswerten.",
         "result_summary": "{correct} von {total} richtig ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "Gemessene WPM",
         "elapsed_time": "Zeit",
         "word_count": "Wörter",
+        "summary_aria": "Testzusammenfassung",
         "continue_button": "Weiter"
       },
       "alerts": {
@@ -646,8 +712,8 @@
       }
     },
     "browser_extension": {
-      "title": "Browser-Erweiterung",
-      "subtitle": "Tiempo de lectura",
+      "title": "Lesezeit",
+      "subtitle": "Browser-Erweiterung",
       "availability": "Jetzt in Chrome verfügbar. Weitere Browser folgen bald.",
       "chrome_store_aria": "Die Chrome Web Store-Seite der Erweiterung öffnen",
       "close_aria": "Dialog der Browser-Erweiterung schließen",
@@ -658,6 +724,11 @@
     "info": {
       "loading": "Lädt...",
       "missing_content": "Kein Inhalt verfügbar für '{name}'.",
+      "close_aria": "Informationen schließen",
+      "media_lightbox": {
+        "title": "Vergrößerte Screenshot-Vorschau",
+        "close_aria": "Vorschau schließen"
+      },
       "external": {
         "blocked": "Link blockiert",
         "error": "Fehler beim Öffnen des Links"

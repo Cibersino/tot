@@ -25,6 +25,22 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
+function createSnapshotData({ text, tags = {}, readingTest } = {}) {
+  const snapshot = {
+    type: 'text snapshot',
+    meta: {
+      savedAt: '2026-08-03T00:00:00.000Z',
+      savedWith: 'toT (totapp.org)',
+    },
+    text,
+    tags,
+  };
+  if (readingTest !== undefined) {
+    snapshot.readingTest = readingTest;
+  }
+  return snapshot;
+}
+
 function createIpcMainDouble() {
   const handlers = new Map();
   return {
@@ -45,19 +61,25 @@ function loadFreshReadingTestPoolImportForIpc({
   poolDir,
   senderWin,
   openDialogResult,
+  dialogOptions = null,
   clearImportedPoolEntriesStateImpl = null,
+  settingsGet = null,
 } = {}) {
   const modulePath = require.resolve('../../../electron/reading_test_pool_import');
   const poolModulePath = require.resolve('../../../electron/reading_test_pool');
   const fsStorageModulePath = require.resolve('../../../electron/fs_storage');
+  const settingsModulePath = require.resolve('../../../electron/settings');
   const originalPoolModule = require.cache[poolModulePath];
   const originalFsStorageModule = require.cache[fsStorageModulePath];
+  const originalSettingsModule = require.cache[settingsModulePath];
   const restoreElectronModule = installElectronModuleMock({
     dialog: {
-      async showOpenDialog() {
+      async showOpenDialog(_mainWin, options) {
+        if (Array.isArray(dialogOptions)) dialogOptions.push(options);
         return openDialogResult;
       },
-      async showMessageBox() {
+      async showMessageBox(_mainWin, options) {
+        if (Array.isArray(dialogOptions)) dialogOptions.push(options);
         return { response: 0 };
       },
     },
@@ -116,6 +138,17 @@ function loadFreshReadingTestPoolImportForIpc({
     },
   };
 
+  if (typeof settingsGet === 'function') {
+    require.cache[settingsModulePath] = {
+      id: settingsModulePath,
+      filename: settingsModulePath,
+      loaded: true,
+      exports: {
+        getSettings: settingsGet,
+      },
+    };
+  }
+
   delete require.cache[modulePath];
   const readingTestPoolImport = require(modulePath);
 
@@ -134,18 +167,24 @@ function loadFreshReadingTestPoolImportForIpc({
     } else {
       delete require.cache[fsStorageModulePath];
     }
+
+    if (originalSettingsModule) {
+      require.cache[settingsModulePath] = originalSettingsModule;
+    } else {
+      delete require.cache[settingsModulePath];
+    }
   }
 
   return { readingTestPoolImport, restore };
 }
 
-test('importSelectedFiles imports a valid json file, normalizes pool data, and preserves valid readingTest questions', async () => {
+test('importSelectedFiles imports a valid canonical snapshot and preserves readingTest questions', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'sample.json');
   const poolDir = path.join(tempDir, 'pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
-  writeJson(sourcePath, {
+  writeJson(sourcePath, createSnapshotData({
     text: 'Sample reading text.',
     tags: {
       language: 'EN',
@@ -165,8 +204,7 @@ test('importSelectedFiles imports a valid json file, normalizes pool data, and p
         },
       ],
     },
-    ignored: 'field',
-  });
+  }));
 
   const result = await importSelectedFiles({
     selectedPaths: [sourcePath],
@@ -183,6 +221,11 @@ test('importSelectedFiles imports a valid json file, normalizes pool data, and p
 
   const importedPath = path.join(poolDir, 'sample.json');
   const imported = JSON.parse(fs.readFileSync(importedPath, 'utf8'));
+  assert.equal(imported.type, 'text snapshot');
+  assert.deepEqual(imported.meta, {
+    savedAt: '2026-08-03T00:00:00.000Z',
+    savedWith: 'toT (totapp.org)',
+  });
   assert.equal(imported.text, 'Sample reading text.');
   assert.deepEqual(imported.tags, {
     language: 'en',
@@ -202,7 +245,6 @@ test('importSelectedFiles imports a valid json file, normalizes pool data, and p
       },
     ],
   });
-  assert.equal(Object.prototype.hasOwnProperty.call(imported, 'ignored'), false);
 });
 
 test('importSelectedFiles rejects imported json that contains invalid readingTest questions', async () => {
@@ -211,7 +253,7 @@ test('importSelectedFiles rejects imported json that contains invalid readingTes
   const poolDir = path.join(tempDir, 'pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
-  writeJson(sourcePath, {
+  writeJson(sourcePath, createSnapshotData({
     text: 'Invalid imported text.',
     tags: {
       language: 'en',
@@ -221,7 +263,7 @@ test('importSelectedFiles rejects imported json that contains invalid readingTes
     readingTest: {
       invalid: true,
     },
-  });
+  }));
 
   const result = await importSelectedFiles({
     selectedPaths: [sourcePath],
@@ -234,6 +276,28 @@ test('importSelectedFiles rejects imported json that contains invalid readingTes
   assert.equal(fs.existsSync(path.join(poolDir, 'invalid-reading-test.json')), false);
 });
 
+test('importSelectedFiles rejects legacy snapshot JSON', async () => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'legacy-snapshot.json');
+  const poolDir = path.join(tempDir, 'pool');
+  fs.mkdirSync(poolDir, { recursive: true });
+
+  writeJson(sourcePath, {
+    text: 'Former snapshot shape.',
+    tags: { language: 'en' },
+  });
+
+  const result = await importSelectedFiles({
+    selectedPaths: [sourcePath],
+    poolDir,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.imported, 0);
+  assert.equal(result.failedValidation, 1);
+  assert.equal(fs.existsSync(path.join(poolDir, 'legacy-snapshot.json')), false);
+});
+
 test('importSelectedFiles imports valid zip entries and reports invalid json entries as failed validation', async () => {
   const tempDir = makeTempDir();
   const zipPath = path.join(tempDir, 'pack.zip');
@@ -241,14 +305,14 @@ test('importSelectedFiles imports valid zip entries and reports invalid json ent
   fs.mkdirSync(poolDir, { recursive: true });
 
   const zip = new AdmZip();
-  zip.addFile('valid.json', Buffer.from(JSON.stringify({
+  zip.addFile('valid.json', Buffer.from(JSON.stringify(createSnapshotData({
     text: 'Zip reading text.',
     tags: {
       language: 'fr',
       type: 'fiction',
       difficulty: 'normal',
     },
-  }, null, 2), 'utf8'));
+  }), null, 2), 'utf8'));
   zip.addFile('invalid.json', Buffer.from('{invalid', 'utf8'));
   zip.addFile('notes.txt', Buffer.from('ignore me', 'utf8'));
   zip.writeZip(zipPath);
@@ -275,22 +339,22 @@ test('importSelectedFiles skips duplicate destination filenames when conflict st
   const poolDir = path.join(tempDir, 'pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
-  writeJson(path.join(poolDir, 'duplicate.json'), {
+  writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
     text: 'Existing text.',
     tags: {
       language: 'es',
       type: 'fiction',
       difficulty: 'easy',
     },
-  });
-  writeJson(sourcePath, {
+  }));
+  writeJson(sourcePath, createSnapshotData({
     text: 'Imported text.',
     tags: {
       language: 'en',
       type: 'fiction',
       difficulty: 'normal',
     },
-  });
+  }));
 
   const result = await importSelectedFiles({
     selectedPaths: [sourcePath],
@@ -313,22 +377,22 @@ test('importSelectedFiles replaces duplicate destination filenames when conflict
   const poolDir = path.join(tempDir, 'pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
-  writeJson(path.join(poolDir, 'duplicate.json'), {
+  writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
     text: 'Existing text.',
     tags: {
       language: 'es',
       type: 'fiction',
       difficulty: 'easy',
     },
-  });
-  writeJson(sourcePath, {
+  }));
+  writeJson(sourcePath, createSnapshotData({
     text: 'Replacement text.',
     tags: {
       language: 'pt',
       type: 'non_fiction',
       difficulty: 'normal',
     },
-  });
+  }));
 
   const result = await importSelectedFiles({
     selectedPaths: [sourcePath],
@@ -352,14 +416,14 @@ test('importSelectedFiles reports failed final writes explicitly', async () => {
   const poolDir = path.join(tempDir, 'pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
-  writeJson(sourcePath, {
+  writeJson(sourcePath, createSnapshotData({
     text: 'Blocked replacement text.',
     tags: {
       language: 'en',
       type: 'fiction',
       difficulty: 'normal',
     },
-  });
+  }));
 
   const blockedDestinationPath = path.join(poolDir, 'blocked.json');
   fs.mkdirSync(blockedDestinationPath, { recursive: true });
@@ -384,7 +448,7 @@ test('importSelectedFiles rejects imported json that contains unsupported tag ke
   const poolDir = path.join(tempDir, 'pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
-  writeJson(sourcePath, {
+  writeJson(sourcePath, createSnapshotData({
     text: 'Invalid imported text.',
     tags: {
       language: 'en',
@@ -392,7 +456,7 @@ test('importSelectedFiles rejects imported json that contains unsupported tag ke
       difficulty: 'normal',
       obsolete: false,
     },
-  });
+  }));
 
   const result = await importSelectedFiles({
     selectedPaths: [sourcePath],
@@ -417,14 +481,14 @@ test('registerIpc returns partial success when imported files are written but po
     webContents: {},
   };
 
-  writeJson(sourcePath, {
+  writeJson(sourcePath, createSnapshotData({
     text: 'Imported text.',
     tags: {
       language: 'en',
       type: 'fiction',
       difficulty: 'normal',
     },
-  });
+  }));
 
   const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({
     statePath,
@@ -460,4 +524,110 @@ test('registerIpc returns partial success when imported files are written but po
     'renderer.reading_test.alerts.pool_import_state_cleanup_failed'
   );
   assert.equal(fs.existsSync(path.join(poolDir, 'sample.json')), true);
+});
+
+test('registerIpc resolves reading-test picker and conflict copy from main dialog translations', async (t) => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'duplicate.json');
+  const poolDir = path.join(tempDir, 'pool');
+  const statePath = path.join(tempDir, 'picker_state.json');
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const dialogOptions = [];
+
+  fs.mkdirSync(poolDir, { recursive: true });
+  writeJson(sourcePath, createSnapshotData({
+    text: 'Replacement text.',
+    tags: { language: 'en', type: 'fiction', difficulty: 'normal' },
+  }));
+  writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
+    text: 'Existing text.',
+    tags: { language: 'en', type: 'fiction', difficulty: 'normal' },
+  }));
+
+  const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({
+    statePath,
+    poolDir,
+    senderWin,
+    dialogOptions,
+    openDialogResult: {
+      canceled: false,
+      filePaths: [sourcePath],
+    },
+    settingsGet() {
+      return { language: 'en' };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  readingTestPoolImport.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+    isReadingTestInteractionLocked: () => false,
+  });
+
+  const result = await ipcMain.invoke(
+    'reading-test-import-pool-files',
+    { sender: senderWin.webContents }
+  );
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(dialogOptions[0].filters.map((filter) => filter.name), [
+    'Reading test files',
+    'JSON',
+    'ZIP',
+    'All files',
+  ]);
+  assert.equal(dialogOptions[1].title, 'Import files');
+  assert.equal(dialogOptions[1].message, 'Some imported files already exist in the pool. How should duplicates be handled?');
+  assert.deepEqual(dialogOptions[1].buttons, [
+    'Skip duplicates',
+    'Replace duplicates',
+    'Cancel import',
+  ]);
+});
+
+test('registerIpc resolves reading-test picker copy through DEFAULT_LANG when settings are unavailable', async (t) => {
+  const tempDir = makeTempDir();
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const dialogOptions = [];
+  const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({
+    statePath: path.join(tempDir, 'picker_state.json'),
+    poolDir: path.join(tempDir, 'pool'),
+    senderWin,
+    dialogOptions,
+    openDialogResult: { canceled: true, filePaths: [] },
+    settingsGet() {
+      throw new Error('settings unavailable');
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  readingTestPoolImport.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+    isReadingTestInteractionLocked: () => false,
+  });
+
+  const result = await ipcMain.invoke(
+    'reading-test-import-pool-files',
+    { sender: senderWin.webContents }
+  );
+
+  assert.deepEqual(result, { ok: true, canceled: true });
+  assert.deepEqual(dialogOptions[0].filters.map((filter) => filter.name), [
+    'Archivos de test de lectura',
+    'JSON',
+    'ZIP',
+    'Todos los archivos',
+  ]);
 });

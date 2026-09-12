@@ -64,3 +64,24 @@ test('saveJson swallows write/setup failures while saveJsonStrict throws them', 
   assert.ok(strictError instanceof Error);
   assert.equal(fs.existsSync(targetPath), false);
 });
+
+test('getTaskFilePickerStateFile keeps Task Editor picker state under the task config directory', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  fsStorage.initStorage({
+    getPath(key) {
+      return key === 'userData' ? tempDir : '';
+    },
+    getAppPath() {
+      return tempDir;
+    },
+    isReady() {
+      return true;
+    },
+  });
+
+  assert.equal(
+    fsStorage.getTaskFilePickerStateFile(),
+    path.join(tempDir, 'config', 'tasks', 'task_file_picker_state.json')
+  );
+});

@@ -9,13 +9,20 @@ const {
 const {
   createTextTimeCalculatorUtils,
 } = require('../../../public/js/lib/text_time_calculator_core');
+const {
+  createReadingDurationUtils,
+} = require('../../../public/js/lib/reading_duration_core');
 
 function createHarness() {
   const stopwatchUtils = createStopwatchTimeUtils();
+  const readingDurationUtils = createReadingDurationUtils();
   return createTextTimeCalculatorUtils({
-    parseStopwatchInput: stopwatchUtils.parseStopwatchInput,
-    formatRoundedSeconds: stopwatchUtils.formatRoundedSeconds,
-    formatInteger: (value) => String(Math.round(Number(value) || 0)),
+    getEstimatedReadingSeconds: readingDurationUtils.getEstimatedReadingSeconds,
+    getWordsForDurationSeconds: readingDurationUtils.getWordsForDurationSeconds,
+    getWpmForDurationSeconds: readingDurationUtils.getWpmForDurationSeconds,
+    formatClockSeconds: stopwatchUtils.formatClockSeconds,
+    parseClockSeconds: stopwatchUtils.parseClockSeconds,
+    formatInteger: (value) => String(value),
   });
 }
 
@@ -32,7 +39,7 @@ test('text_time_calculator_core derives time from words and WPM', () => {
     target: 'time',
     normalized: {
       words: 200,
-      timeMs: 80000,
+      timeSeconds: 80,
       wpm: 150,
     },
     invalid: {
@@ -43,10 +50,42 @@ test('text_time_calculator_core derives time from words and WPM', () => {
     },
     derived: {
       kind: 'time',
-      rawNumber: 80,
       displayText: '00:01:20',
     },
   });
+});
+
+test('text_time_calculator_core uses exact reading-duration rounding for time derivation', () => {
+  const utils = createHarness();
+  const result = utils.evaluateCalculatorState({
+    target: 'time',
+    wordsText: '123',
+    wpmText: '120',
+  });
+
+  assert.deepEqual(result.derived, {
+    kind: 'time',
+    displayText: '00:01:02',
+  });
+  assert.equal(result.normalized.timeSeconds, 62);
+});
+
+test('text_time_calculator_core uses exact reading-duration rounding for inverse derivation', () => {
+  const utils = createHarness();
+
+  const words = utils.evaluateCalculatorState({
+    target: 'words',
+    timeText: '00:00:01',
+    wpmText: '30',
+  });
+  const wpm = utils.evaluateCalculatorState({
+    target: 'wpm',
+    wordsText: '1',
+    timeText: '00:00:40',
+  });
+
+  assert.equal(words.derived.displayText, '1');
+  assert.equal(wpm.derived.displayText, '2');
 });
 
 test('text_time_calculator_core derives words from time and WPM', () => {
@@ -62,7 +101,7 @@ test('text_time_calculator_core derives words from time and WPM', () => {
     target: 'words',
     normalized: {
       words: 900,
-      timeMs: 300000,
+      timeSeconds: 300,
       wpm: 180,
     },
     invalid: {
@@ -73,7 +112,6 @@ test('text_time_calculator_core derives words from time and WPM', () => {
     },
     derived: {
       kind: 'words',
-      rawNumber: 900,
       displayText: '900',
     },
   });
@@ -92,7 +130,7 @@ test('text_time_calculator_core derives WPM from words and time', () => {
     target: 'wpm',
     normalized: {
       words: 600,
-      timeMs: 180000,
+      timeSeconds: 180,
       wpm: 200,
     },
     invalid: {
@@ -103,7 +141,6 @@ test('text_time_calculator_core derives WPM from words and time', () => {
     },
     derived: {
       kind: 'wpm',
-      rawNumber: 200,
       displayText: '200',
     },
   });
@@ -202,6 +239,18 @@ test('text_time_calculator_core rejects non-integer or negative inputs', () => {
     wpmText: '25.5',
   });
   assert.equal(invalidWpm.invalid.wpm, true);
+});
+
+test('text_time_calculator_core does not turn non-string inputs into blank editable values', () => {
+  const utils = createHarness();
+  const result = utils.evaluateCalculatorState({
+    target: 'time',
+    wordsText: false,
+    wpmText: '200',
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.invalid.words, true);
 });
 
 test('text_time_calculator_core normalizes invalid target to WPM', () => {

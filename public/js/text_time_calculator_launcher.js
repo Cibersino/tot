@@ -30,27 +30,16 @@
   let actionsBound = false;
 
   // =============================================================================
-  // Helpers
-  // =============================================================================
-  function getTranslator() {
-    const rendererI18n = window.RendererI18n || null;
-    return rendererI18n && typeof rendererI18n.tRenderer === 'function'
-      ? rendererI18n.tRenderer
-      : null;
-  }
-
-  // =============================================================================
   // Public API
   // =============================================================================
-  function applyTranslations() {
-    const tRenderer = getTranslator();
+  function applyTranslations({ tRenderer } = {}) {
     if (typeof tRenderer !== 'function') {
-      log.warn('RendererI18n.tRenderer unavailable; calculator launcher translations skipped.');
-      return;
+      throw new Error('[text_time_calculator_launcher] tRenderer unavailable; cannot apply launcher semantics');
     }
 
-    button.setAttribute('title', tRenderer('renderer.main.tooltips.text_time_calculator'));
-    button.setAttribute('aria-label', tRenderer('renderer.main.aria.text_time_calculator'));
+    const name = tRenderer('renderer.main.names.text_time_calculator');
+    button.setAttribute('aria-label', name);
+    button.setAttribute('data-tot-tooltip', name);
   }
 
   function bindActions({ onOpenCalculator } = {}) {

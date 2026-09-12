@@ -26,19 +26,21 @@
   const questionsApi = window.readingTestQuestionsAPI || null;
   if (!questionsApi
     || typeof questionsApi.getSettings !== 'function'
-    || typeof questionsApi.onInitData !== 'function') {
+    || typeof questionsApi.onInitData !== 'function'
+    || typeof questionsApi.onSettingsChanged !== 'function') {
     throw new Error('[reading-test-questions] readingTestQuestionsAPI unavailable; cannot continue');
   }
-
+  let questionsI18nTerminal = false;
+  let setQuestionsTerminalUnavailable = () => {};
   const i18nApi = window.RendererI18n || null;
   if (!i18nApi
-    || typeof i18nApi.loadRendererTranslations !== 'function'
+    || typeof i18nApi.transitionRendererTranslations !== 'function'
     || typeof i18nApi.tRenderer !== 'function'
-    || typeof i18nApi.msgRenderer !== 'function'
-    || typeof i18nApi.applyWindowLanguageAttributes !== 'function') {
+    || typeof i18nApi.msgRenderer !== 'function') {
+    reportTerminalQuestionsI18nFailure('startup-api');
     throw new Error('[reading-test-questions] RendererI18n unavailable; cannot continue');
   }
-  const { loadRendererTranslations, tRenderer, msgRenderer, applyWindowLanguageAttributes } = i18nApi;
+  const { transitionRendererTranslations, tRenderer, msgRenderer } = i18nApi;
 
   const appConstants = window.AppConstants || null;
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || !appConstants.DEFAULT_LANG.trim()) {
@@ -65,7 +67,25 @@
   // =============================================================================
   document.addEventListener('DOMContentLoaded', initReadingTestQuestionsWindow);
 
+  function reportTerminalQuestionsI18nFailure(kind) {
+    if (questionsI18nTerminal) return;
+    questionsI18nTerminal = true;
+    setQuestionsTerminalUnavailable();
+    if (typeof questionsApi.reportRendererI18nFailure !== 'function') {
+      log.warn('readingTestQuestionsAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+      if (typeof window.close === 'function') window.close();
+      return;
+    }
+    try {
+      questionsApi.reportRendererI18nFailure({ kind });
+    } catch (reportErr) {
+      log.warn('readingTestQuestionsAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+      if (typeof window.close === 'function') window.close();
+    }
+  }
+
   function initReadingTestQuestionsWindow() {
+    if (questionsI18nTerminal) return;
     function getRequiredElements() {
       // Keep the required DOM contract explicit so the modal aborts before
       // partial wiring if the HTML shell drifts from this renderer script.
@@ -77,6 +97,7 @@
         feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
         feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
         feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
+        summaryRegion: document.querySelector('.reading-test-questions__meta'),
         incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
         resultMessage: document.getElementById('readingTestQuestionsResult'),
         chanceMessage: document.getElementById('readingTestQuestionsChance'),
@@ -106,6 +127,7 @@
       feedbackTitle,
       feedbackPrefix,
       feedbackLink,
+      summaryRegion,
       incompleteMessage,
       resultMessage,
       chanceMessage,
@@ -133,6 +155,7 @@
       lastScore: null,
       fatalKey: '',
       showIncompleteWarning: false,
+      initialValidPayloadRendered: false,
     };
     // Queue UI updates so preload replay and bootstrap settings stay serialized.
     let uiSyncChain = Promise.resolve();
@@ -271,6 +294,21 @@
       });
     }
 
+    function canUseQuestionControls() {
+      return !questionsI18nTerminal
+        && !!state.translationsLoadedFor
+        && state.initialValidPayloadRendered
+        && !state.fatalKey;
+    }
+
+    setQuestionsTerminalUnavailable = () => {
+      btnCheck.disabled = true;
+      form.querySelectorAll('input[type="radio"]').forEach((input) => {
+        input.disabled = true;
+      });
+      btnContinue.disabled = false;
+    };
+
     // =============================================================================
     // Rendering
     // =============================================================================
@@ -281,6 +319,7 @@
       randomTitle.textContent = tr('renderer.reading_test.questions.random_title');
       feedbackTitle.textContent = tr('renderer.reading_test.questions.feedback_title');
       feedbackPrefix.textContent = tr('renderer.reading_test.questions.feedback_prefix');
+      summaryRegion.setAttribute('aria-label', tr('renderer.reading_test.questions.summary_aria'));
       btnCheck.textContent = tr('renderer.reading_test.questions.check_button');
       btnContinue.textContent = tr('renderer.reading_test.questions.continue_button');
     }
@@ -414,7 +453,9 @@
           input.name = `reading-test-question-${question.id}`;
           input.value = option.id;
           input.checked = collectSelectedAnswer(question.id) === option.id;
+          input.disabled = !canUseQuestionControls();
           input.addEventListener('change', () => {
+            if (!canUseQuestionControls()) return;
             state.answersByQuestionId[question.id] = option.id;
           });
 
@@ -431,15 +472,35 @@
       });
     }
 
+    function rebuildQuestionsWithSafeFocus() {
+      // This check intentionally occurs immediately before form replacement:
+      // an async translation load may have allowed focus to move meanwhile.
+      const focusedNode = document.activeElement;
+      const replacingFocusedQuestionControl = !!(
+        focusedNode
+        && focusedNode !== form
+        && form.contains(focusedNode)
+      );
+      renderQuestions();
+      if (replacingFocusedQuestionControl) {
+        btnContinue.focus({ preventScroll: true });
+      }
+    }
+
     function renderControls() {
-      btnCheck.disabled = !!state.fatalKey;
+      const controlsAvailable = canUseQuestionControls();
+      btnCheck.disabled = !controlsAvailable;
+      form.querySelectorAll('input[type="radio"]').forEach((input) => {
+        input.disabled = !controlsAvailable;
+      });
+      btnContinue.disabled = false;
     }
 
     async function renderUi() {
       renderStaticText();
       renderFeedbackLink();
       await renderRandomSummary();
-      renderQuestions();
+      rebuildQuestionsWithSafeFocus();
       await renderStatusMessages();
       renderControls();
     }
@@ -447,26 +508,49 @@
     // =============================================================================
     // UI synchronization
     // =============================================================================
-    async function ensureTranslationsLoaded() {
-      const target = normalizeLanguage(state.currentLanguage);
-      if (state.translationsLoadedFor === target) return;
-      state.currentLanguage = target;
-      applyWindowLanguageAttributes(target);
-      try {
-        await loadRendererTranslations(target);
-        state.translationsLoadedFor = target;
-      } catch (err) {
-        log.warn('Reading-test questions translation load failed (using fallback copy):', err);
+    async function transitionQuestionsTranslations(language, settings) {
+      const target = normalizeLanguage(language || state.currentLanguage);
+      const previousLanguage = state.currentLanguage;
+      const previousSettings = state.settingsCache;
+      const nextSettings = typeof settings === 'undefined'
+        ? state.settingsCache
+        : settings || {};
+      await transitionRendererTranslations(target, {
+        applyTranslations: async ({ language: appliedLanguage, restoring }) => {
+          state.currentLanguage = restoring ? previousLanguage : appliedLanguage;
+          state.settingsCache = restoring ? previousSettings : nextSettings;
+          await renderUi();
+        },
+      });
+      state.translationsLoadedFor = state.currentLanguage;
+    }
+
+    function reportQuestionsI18nFailure(err, { startup = false } = {}) {
+      const transition = err && err.rendererI18nTransition;
+      if (!transition) {
+        return;
       }
+      if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+        log.error('Reading-test questions language transition failed; previous translation state remains authoritative:', err);
+        return;
+      }
+      log.error('Reading-test questions i18n failure requires window closure:', err);
+      reportTerminalQuestionsI18nFailure(startup ? 'startup' : 'transition-restoration');
     }
 
     function enqueueUiSync(updateFn) {
-      // Funnel bootstrap and init-data updates through one queue so translation
-      // readiness and DOM rendering observe the same ordering.
+      // Funnel bootstrap, init-data, and settings updates through one queue so
+      // translation readiness and DOM rendering observe the same ordering.
       const runUpdate = async () => {
-        await updateFn();
-        await ensureTranslationsLoaded();
-        await renderUi();
+        // Main-process closure is asynchronous. Do not admit queued semantic
+        // work after this window has entered terminal i18n failure.
+        if (questionsI18nTerminal) return;
+        const transitionRequest = await updateFn();
+        if (transitionRequest === false) return;
+        await transitionQuestionsTranslations(
+          transitionRequest && transitionRequest.language,
+          transitionRequest && transitionRequest.settings
+        );
       };
       uiSyncChain = uiSyncChain.then(runUpdate, runUpdate);
       return uiSyncChain;
@@ -485,26 +569,45 @@
 
       if (!questionsInfo.ok) {
         setInvalidPayloadState();
-        return;
+        return false;
       }
 
       state.fatalKey = '';
       state.questions = questionsInfo.questions;
       state.answersByQuestionId = {};
       resetEvaluationState();
+      return true;
     }
 
     function handleInitFailure(err) {
       log.error('Reading-test questions init failed:', err);
+      if (err && err.rendererI18nTransition) {
+        reportQuestionsI18nFailure(err, { startup: !state.translationsLoadedFor });
+        return;
+      }
       setInvalidPayloadState();
-      renderUi().catch((renderErr) => {
+      enqueueUiSync(async () => ({
+        language: state.currentLanguage,
+        settings: state.settingsCache,
+      })).catch((renderErr) => {
         log.error('Reading-test questions recovery render failed:', renderErr);
+        reportQuestionsI18nFailure(renderErr, { startup: !state.translationsLoadedFor });
       });
     }
 
     function handleInitData(payload) {
+      if (questionsI18nTerminal) return;
+      let acceptedPayload = false;
       enqueueUiSync(async () => {
-        applyPayloadState(payload);
+        acceptedPayload = applyPayloadState(payload);
+      }).then(() => {
+        if (questionsI18nTerminal) return;
+        if (acceptedPayload) {
+          state.initialValidPayloadRendered = true;
+          renderControls();
+        }
+        const firstAnswer = form.querySelector('input[type="radio"]');
+        ((acceptedPayload && firstAnswer) || btnContinue).focus({ preventScroll: true });
       }).catch((err) => {
         handleInitFailure(err);
       });
@@ -514,17 +617,37 @@
       // Bootstrap may start before persisted settings are available; this path
       // applies the stored language when possible and otherwise keeps DEFAULT_LANG.
       enqueueUiSync(async () => {
+        let nextSettings;
         try {
-          const settings = await questionsApi.getSettings();
-          state.settingsCache = settings || {};
-          state.currentLanguage = normalizeLanguage(readSettingsLanguage(settings));
+          nextSettings = await questionsApi.getSettings() || {};
         } catch (err) {
           log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
-          state.settingsCache = {};
-          state.currentLanguage = DEFAULT_LANG;
+          nextSettings = {};
         }
+        return {
+          language: normalizeLanguage(readSettingsLanguage(nextSettings)),
+          settings: nextSettings,
+        };
       }).catch((err) => {
         log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
+        reportQuestionsI18nFailure(err, { startup: !state.translationsLoadedFor });
+      });
+    }
+
+    function handleSettingsChanged(settings) {
+      if (questionsI18nTerminal) return;
+      enqueueUiSync(async () => {
+        const nextSettings = settings || {};
+        const nextLanguage = normalizeLanguage(readSettingsLanguage(nextSettings));
+        const languageChanged = nextLanguage !== state.currentLanguage;
+        const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
+        if (!languageChanged && !needsTranslationRetry) {
+          state.settingsCache = nextSettings;
+          return false;
+        }
+        return { language: nextLanguage, settings: nextSettings };
+      }).catch((err) => {
+        reportQuestionsI18nFailure(err);
       });
     }
 
@@ -532,7 +655,7 @@
     // Event wiring / startup
     // =============================================================================
     btnCheck.addEventListener('click', () => {
-      if (state.fatalKey) return;
+      if (!canUseQuestionControls()) return;
 
       withAnchoredActionsScroll(() => {
         state.showIncompleteWarning = false;
@@ -553,6 +676,7 @@
     });
 
     questionsApi.onInitData(handleInitData);
+    questionsApi.onSettingsChanged(handleSettingsChanged);
     loadInitialSettings();
   }
 })();

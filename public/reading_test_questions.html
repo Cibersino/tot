@@ -1,6 +1,7 @@
 <!-- public/reading_test_questions.html -->
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
@@ -8,6 +9,7 @@
   <title>Preguntas de comprensión lectora</title>
   <link rel="stylesheet" href="reading_test_questions.css" />
 </head>
+
 <body>
   <main class="reading-test-questions">
     <header class="reading-test-questions__header">
@@ -15,9 +17,12 @@
       <p id="readingTestQuestionsIntro">Responde las preguntas si deseas combinar velocidad y comprensión antes de volver al flujo principal.</p>
     </header>
 
-    <form id="readingTestQuestionsForm" class="reading-test-questions__form"></form>
+    <form
+      id="readingTestQuestionsForm"
+      class="reading-test-questions__form"
+    ></form>
 
-    <section class="reading-test-questions__meta" aria-label="Resumen del test">
+    <section class="reading-test-questions__meta">
       <div class="reading-test-questions__card">
         <h2 id="readingTestQuestionsRandomTitle">Probabilidad al azar</h2>
         <p id="readingTestQuestionsRandomValue">0%</p>
@@ -26,21 +31,55 @@
         <h2 id="readingTestQuestionsFeedbackTitle">Feedback</h2>
         <p id="readingTestQuestionsFeedbackBody">
           <span id="readingTestQuestionsFeedbackPrefix">Para reclamos:</span>
-          <a id="readingTestQuestionsFeedbackLink" class="reading-test-questions__feedback-link" href="mailto:cibersino@gmail.com">cibersino@gmail.com</a>
+          <a
+            id="readingTestQuestionsFeedbackLink"
+            class="reading-test-questions__feedback-link"
+            href="mailto:cibersino@gmail.com"
+          >cibersino@gmail.com</a>
         </p>
       </div>
     </section>
 
-    <section class="reading-test-questions__status" aria-live="polite">
-      <div id="readingTestQuestionsIncomplete" class="reading-test-questions__message" data-visible="false" data-tone="warn"></div>
-      <div id="readingTestQuestionsResult" class="reading-test-questions__message" data-visible="false" data-tone="info"></div>
-      <div id="readingTestQuestionsChance" class="reading-test-questions__message" data-visible="false" data-tone="note"></div>
-      <div id="readingTestQuestionsFatal" class="reading-test-questions__message" data-visible="false" data-tone="error"></div>
+    <section
+      class="reading-test-questions__status"
+      aria-live="polite"
+    >
+      <div
+        id="readingTestQuestionsIncomplete"
+        class="reading-test-questions__message"
+        data-visible="false"
+        data-tone="warn"
+      ></div>
+      <div
+        id="readingTestQuestionsResult"
+        class="reading-test-questions__message"
+        data-visible="false"
+        data-tone="info"
+      ></div>
+      <div
+        id="readingTestQuestionsChance"
+        class="reading-test-questions__message"
+        data-visible="false"
+        data-tone="note"
+      ></div>
+      <div
+        id="readingTestQuestionsFatal"
+        class="reading-test-questions__message"
+        data-visible="false"
+        data-tone="error"
+      ></div>
     </section>
 
     <div class="reading-test-questions__actions">
-      <button id="readingTestQuestionsCheck" type="button">Check result</button>
-      <button id="readingTestQuestionsContinue" type="button">Continue</button>
+      <button
+        id="readingTestQuestionsCheck"
+        type="button"
+        disabled
+      >Check result</button>
+      <button
+        id="readingTestQuestionsContinue"
+        type="button"
+      >Continue</button>
     </div>
   </main>
 

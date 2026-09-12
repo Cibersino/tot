@@ -8,6 +8,7 @@ const vm = require('node:vm');
 
 function createElement(tagName = 'div') {
   const listeners = {};
+  const classes = new Set();
   return {
     tagName,
     value: '',
@@ -18,6 +19,15 @@ function createElement(tagName = 'div') {
     max: '',
     step: '',
     disabled: false,
+    classList: {
+      toggle(name, force) {
+        if (force) classes.add(name);
+        else classes.delete(name);
+      },
+      contains(name) {
+        return classes.has(name);
+      },
+    },
     attributes: {},
     childNodes: [],
     addEventListener(type, listener) {
@@ -42,6 +52,20 @@ function createElement(tagName = 'div') {
     },
     blur() {
       this.dispatch('blur');
+    },
+  };
+}
+
+function createCombobox() {
+  return {
+    value: '',
+    options: [],
+    update(config = {}) {
+      if (Object.prototype.hasOwnProperty.call(config, 'value')) this.value = String(config.value || '');
+      if (Object.prototype.hasOwnProperty.call(config, 'options')) this.options = config.options.slice();
+    },
+    getValue() {
+      return this.value;
     },
   };
 }
@@ -119,7 +143,7 @@ function createHarness({
   const dom = {
     wpmInput: createElement('input'),
     wpmSlider: createElement('input'),
-    presetsSelect: createElement('select'),
+    presetsCombobox: createCombobox(),
     presetDescription: createElement('div'),
   };
   dom.wpmInput.value = '200';
@@ -147,7 +171,7 @@ function createHarness({
   const controller = sandbox.window.WpmControls.createController({
     wpmInput: dom.wpmInput,
     wpmSlider: dom.wpmSlider,
-    presetsSelect: dom.presetsSelect,
+    presetsCombobox: dom.presetsCombobox,
     presetDescription: dom.presetDescription,
     onPresetSelectionChanged() {},
   });
@@ -250,7 +274,7 @@ test('handlePresetCreated reports effective post-resolution selection and WPM ou
     nextSelectedPresetName: 'custom',
     selectedPresetChanged: true,
   });
-  assert.equal(harness.dom.presetsSelect.value, 'custom');
+  assert.equal(harness.dom.presetsCombobox.getValue(), 'custom');
 });
 
 test('preset selection preserves the existing onWpmChanged time-only callback path', async () => {
@@ -274,7 +298,7 @@ test('preset selection preserves the existing onWpmChanged time-only callback pa
     electronAPI: harness.electronAPI,
   });
 
-  harness.dom.presetsSelect.value = 'latin';
+  harness.dom.presetsCombobox.update({ value: 'latin' });
   const selected = await harness.controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'en',
@@ -309,4 +333,20 @@ test('applyExternalWpm preserves the existing WPM callback path used by reading-
 
   assert.equal(nextWpm, 320);
   assert.deepEqual(callbackCalls, [320]);
+});
+
+test('manual WPM input shows invalid chrome until blur normalizes it', () => {
+  const harness = createHarness();
+  const { wpmInput, wpmSlider } = harness.dom;
+
+  wpmInput.value = '1.5';
+  wpmInput.dispatch('input');
+  assert.equal(wpmInput.classList.contains('is-invalid'), true);
+  assert.equal(wpmInput.getAttribute('aria-invalid'), 'true');
+
+  wpmInput.dispatch('blur');
+  assert.equal(wpmInput.value, '10');
+  assert.equal(wpmSlider.value, '10');
+  assert.equal(wpmInput.classList.contains('is-invalid'), false);
+  assert.equal(wpmInput.getAttribute('aria-invalid'), 'false');
 });

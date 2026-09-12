@@ -19,8 +19,7 @@
         "chars": "Sanampakuna: {n}",
         "value_pending": "suyasqa...",
         "value_unavailable": "mana kanchu",
-        "precise_mode": "Chiqap modo",
-        "precise_tooltip": "Intl.Segmenter nisqapi hap'ipakusqa"
+        "precise_mode": "Chiqap modo"
       },
       "crono": {
         "title": "PACHAYUPAQ",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Kunan textopa resultadokunaqa yapamanta yupasqa kachkan...",
         "current_text_waiting_startup": "Kunan textoqa takyachisqa kachkan...",
         "current_text_waiting_editor": "Text Editorpa tikraykuna sincronizasqa kachkan...",
+        "editor_loading": "Qillqa allichana kichakuchkan...",
         "text_extraction_placeholder": "Qichuyta ruwachkan...",
         "text_extraction_preparing": "Qichuy ñanta wakichichkan...",
         "text_extraction_cancellation_pending": "Saqiy mañakurun. Suyay...",
@@ -47,42 +47,43 @@
       },
       "tooltips": {
         "text_extraction": "Archivomanta qillqata qichuy",
+        "browser_extension": "Maskaqpa mast’ariynin"
+      },
+      "names": {
         "text_extraction_abort": "Qichuyta sayachiy",
-        "overwrite_clipboard": "Kunan qillqata portapapeleswan tikray",
+        "overwrite_clipboard": "Kunan qillqata qillqa apachikuqwan tikray",
         "append_clipboard": "Portapapeles nisqata kunan qillqapa tukukuyninman yapay (musuq siqi)",
         "clipboard_repeat_count": "K'askachiy kutiykuna",
-        "edit": "Kunan hunt'a qillqapa ventananta kichay",
+        "edit": "Kunan hunt'a qillqapa qhawananta kichay",
         "clear": "Kunan qillqata pichay",
         "snapshot_load": "Qillqa snapshotta kargay",
-        "snapshot_save": "Kunan qillqata snapshotpi waqaychay",
+        "snapshot_save": "Kunan qillqata qillqa snapshotpi waqaychay",
         "task_new": "Musuq llamk'ana",
         "task_load": "Llamk'anata kargay",
-        "browser_extension": "Navegadorpa extensiónnin",
         "cibersino_website": "Cibersino web",
         "cibersino_kofi": "Ko-fi nisqapi yanapaway",
-        "new_preset": "Musuq preset ruwakuy",
-        "edit_preset": "Akllasqa presetta allichay",
-        "delete_preset": "Akllasqa presetta chinkachiy",
-        "reset_presets": "Kikinmanta presets nisqata kutichiy",
-        "text_time_calculator": "Utqay calculadorata kichay",
+        "new_preset": "Musuq wakichisqa ruwakuy",
+        "edit_preset": "Akllasqa wakichisqata allichay",
+        "delete_preset": "Akllasqa wakichisqata chinkachiy",
+        "reset_presets": "Kikinmanta wakichisqas nisqata kutichiy",
+        "text_time_calculator": "Utqay yupana kichay",
         "help_button": "Allin yuyaychayta rikuchiy",
-        "flotante_window": "Wayraqpi puriq ventana"
+        "crono_toggle": "Pachayupaqta qallariy utaq samachiy",
+        "crono_reset": "Pachayupaqta wakmanta qallariy",
+        "floating_window": "Wayraqpi puriq pachayupaq"
+      },
+      "help": {
+        "preview_spoiler": "Ñawpaq qhawaypa tukukuyninta rikuchiy utaq pakay",
+        "precise_mode": "Intl.Segmenter nisqapi hap'ipakusqa"
       },
       "aria": {
         "text_extraction": "Archivomanta qillqata qichuy",
-        "text_extraction_abort": "Qichuyta sayachiy",
-        "browser_extension": "Navegadorpa extensiónnin dialogota kichay",
-        "clipboard_repeat_count": "K'askachiy kutiykuna",
-        "text_time_calculator": "Utqay calculadorata kichay",
+        "browser_extension": "Maskaqpa mast’ariynin dialogota kichay",
         "wpm_input": "Sapa minutupi simikuna",
         "wpm_slider": "Sapa minutupi simikuna llusk'achiq",
         "speed_presets": "Utqaylla presets",
-        "precise_mode_toggle": "Chiqap modo",
         "crono_controls": "Pachayupaq kamachiqkuna",
         "crono_display": "Pachayupaq qhawachina",
-        "crono_toggle": "Pachayupaqta qallariy utaq samachiy",
-        "crono_reset": "Pachayupaqta wakmanta qallariy",
-        "floating_window_toggle": "Wayraqpi puriq ventana",
         "floating_window_group": "Wayraqpi puriq ventanapa kamachiqnin"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Unidad {index}",
         "unit_counter": "Unidad {index}/{count}",
         "unit_name_placeholder": "Unidadpa sutin munasqalla",
+        "aria": {
+          "route": "{file}paq qillqa hurquy ñan",
+          "unit_assignment": "{file}paq chayana rak’i",
+          "unit_name": "Rak’i {index}/{count}paq suti, munaspa"
+        },
         "new_unit_option": "Musuq unidadta ruwakuy",
         "move_up": "Wichayman apay",
         "move_down": "Urayman apay",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Snapshotkuna carpetata kichay",
         "ok_button": "Allin",
         "close_aria": "T'aqa qichuypa tukup informeta wichq'ay",
-        "split_result_label": "T’aqaypa ruwasqan:",
         "failed_fallback": "Pantarun",
         "failed_with_code": "Pantarun: {code}",
         "applied_truncated": "kuchusqa hina churaska",
@@ -301,28 +306,35 @@
       "increase_text_size": "Qillqapa sayayninta hatunyachiy",
       "reset_text_size": "Qillqapa sayayninta kutichiy",
       "read_progress_label": "Ñawinchisqa",
-      "clear_title": "Pichay",
+      "clear": "Pichay",
+      "help": {
+        "apply": "Qillqa allichanapa qillqasqanta kunan qillqa hina churay",
+        "auto_apply": "Qillqashaspa qillqa allichanapa tikrasqankunata kunan qillqaman kikillanmanta churay",
+        "spellcheck": "Qillqa allichana qillqapi qillqay qhawariqta hap’ichiy utaq wañuchiy"
+      },
       "editor_find": {
         "input_placeholder": "Maskay...",
         "input_aria": "Qillqapi maskay",
-        "expand_title": "Tikrayta rikuchiy",
-        "collapse_title": "Tikrayta pakay",
         "replace_placeholder": "Tikray...",
         "replace_aria": "Tikranapaq qillqa",
         "replace": "Tikray",
         "replace_all": "Llapan tikray",
-        "prev_title": "Ñawpaq tinkuynin",
-        "next_title": "Qatiq tinkuynin",
-        "close_title": "Maskana barrata wichq'ay",
-        "replace_title": "Kunan tinkuyninta tikray",
-        "replace_all_title": "Llapan tinkuyninkunata tikray",
+        "names": {
+          "show_replace": "Tikrayta rikuchiy",
+          "hide_replace": "Tikrayta pakay",
+          "previous_match": "Ñawpaq tinkuynin",
+          "next_match": "Qatiq tinkuynin",
+          "close": "Maskana barrata wichq'ay"
+        },
+        "help": {
+          "replace_current": "Kunan tinkuyninta tikray",
+          "replace_all": "Llapan tinkuyninkunata tikray"
+        },
         "replace_timeout": "Tikrayqa ancha unayta hap'irqan. Wakmanta ruwapay.",
         "status_no_matches": "Mana tinkuyniyuq",
         "status_empty_query": "Maskanapaq qillqay"
       },
       "alerts": {
-        "start_failed": "Text Editor mana qallariyta atirqachu.",
-        "start_timeout": "Text Editor qallariynin ancha unay karqan, chaymi wisqasqa karqan.",
         "paste_too_big": "Qillqa ancha hatunmi chiqapta k'askachinapaq. Hatun ventanapa botonkuna llamk'achiy.",
         "drop_too_big": "Aysasqa qillqa ancha hatunmi. Hatun ventanapa botonkuna llamk'achiy.",
         "paste_no_text": "Portapapeles mana llamp'u qillqayuqchu.",
@@ -338,35 +350,46 @@
     },
     "snapshots": {
       "title": "Qillqa snapshotta waqaychay",
-      "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta munaspa etiquetay.",
+      "message": "Maypi waqaychanaykita akllanaykipaq ñawpaqta kay qillqa snapshotta sutichay, maymantam hamun nispa willay, hinaspa munaspa etiquetay.",
       "search": {
         "placeholder": "Akllanakta filtraypaq qillqay",
         "no_results": "Mana tinkuq akllanak kanchu",
         "create": "\"{label}\" kamay"
       },
       "labels": {
+        "name": "Suti (munaspa)",
+        "source_comment": "Maymanta (munaspa)",
         "language": "Rimay",
         "type": "Laya",
         "difficulty": "Sasaynin"
       },
+      "placeholders": {
+        "name": "Ñawiriy",
+        "source_comment": "chapter-1.pdf, Rak’i 1, icha apamushqa qillqa"
+      },
+      "metrics": {
+        "include_count": "Simikunapa yupayninta yapay",
+        "include_reading": "Ñawinchaypaq yuyasqa pachata WPM-taq yapay"
+      },
       "manager": {
-        "title": "Texto snapshot etiquetankunata kamachiy",
-        "message": "Texto snapshotkunapi chaymanta lote extracción unidadkunapi rikukuq etiquetankunata kamachiy.",
+        "title": "Qillqa snapshot etiquetankunata kamachiy",
+        "message": "Qillqa snapshotkunapi chaymanta lote extracción unidadkunapi rikukuq etiquetankunata kamachiy.",
         "done": "Tukusqa",
-        "close_aria": "Texto snapshot etiqueta kamachiqta wichqay",
+        "close_aria": "Qillqa snapshot etiqueta kamachiqta wichqay",
         "new_tag": "Musuq etiqueta",
         "new_tag_placeholder": "Etiqueta sutin",
+        "new_tag_input_aria": "Musuq etiqueta sutin",
         "add_tag": "Etiqueta yapay",
         "cancel_draft": "Puchukay",
         "sort_alphabetically": "A-Z nisqaman kamachiy",
-        "restore_hidden_defaults": "Kikinmanta etiquetankunata kutichiy ({count})",
+        "restore_hidden_defaults": "Kikinmanta etiquetankunata kutichiy",
         "empty_category": "Kay categoría nisqapi mana rikukuq etiquetankuna kanchu.",
         "move_up": "\"{label}\" wichayman kuyuchiy",
         "move_down": "\"{label}\" urayman kuyuchiy",
         "hide_default": "Kikinmanta etiqueta \"{label}\" pakay",
         "delete_custom": "Ruwasqa etiqueta \"{label}\" qulluy",
         "confirm_hide_default": "¿Kikinmanta etiqueta \"{label}\" pakay? Rikukuq etiquetankuna listamanta hurqusqa kanqa, hinaspa qhipaman kutichisqa kanman.",
-        "confirm_delete_custom": "¿Ruwasqa etiqueta \"{label}\" wiñaypaq qulluy? Kachkanña texto snapshotkuna mana wakmanta qillqasqachu kanqaku.",
+        "confirm_delete_custom": "¿Ruwasqa etiqueta \"{label}\" wiñaypaq qulluy? Kachkanña qillqa snapshotkuna mana wakmanta qillqasqachu kanqaku.",
         "validation": {
           "empty": "Etiqueta sutin mana ch’usaqchu kanan.",
           "control_characters": "Etiqueta sutin mana tabulacionkunata, siqi p’akisqakunata, nitaq huk control caracteres nisqakunata hap’inmanchu.",
@@ -411,6 +434,7 @@
           "qu": "Runasimi",
           "ru": "Ruso",
           "sv": "Sueco Simi",
+          "sw": "Suajili",
           "tr": "Turco",
           "ur": "Urdu",
           "vi": "Vietnamita Simi",
@@ -436,18 +460,19 @@
         "outside": "Snapshotqa waqaychana carpetapa ukunpi kanan.",
         "truncated": "Snapshot hatun kayninmanta aswan karqan hinaspa kuchusqa.",
         "unavailable": "Snapshot ruwana mana kanchu.",
-        "catalog_update_error": "Mana atikunchu texto snapshot etiquetankunata musuqyachiy."
+        "catalog_update_error": "Mana atikunchu qillqa snapshot etiquetankunata musuqyachiy."
       }
     },
     "tasks": {
       "title": "toT — Llamk'anakuna",
       "name": "Suti",
+      "name_placeholder": "Qhawachiy: Ñawinchay plan",
       "save_button": "Waqaychay",
       "delete_button": "Chinkachiy",
       "summary_total": "Llapan",
       "summary_left": "Puchuq",
       "add_row_button": "Siqita yapay",
-      "add_files_button": "Archivokunata yapay",
+      "add_files_button": "Willañiqikunata yapay",
       "open_library_button": "Bibliotecata kichay",
       "columns": {
         "texto": "Qillqa",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Qhipa",
         "enlace": "Link",
-        "comentario": "",
+        "comentario": "R+S",
         "acciones": "Ruwanakuna",
-        "tooltips": {
-          "file_select": "Local archivota akllay",
+        "header_names": {
+          "tiempo": "Ñawinchay pacha chaninchasqa",
+          "percent": "Tukusqa %",
+          "falta": "Puchuq pacha chaninchasqa",
+          "comentario": "Rimay hinaspa qillqa snapshot"
+        },
+        "names": {
+          "file_select": "Kay llamk’achinapi willañiqita akllay",
           "link_open": "Linkta kichay",
           "snapshot_load": "Kay siqipaq qillqa snapshotta kargay",
-          "comment": "Rimayta yapay/allichay",
+          "comment": "Rimayta utaq qillqa snapshotta yapay",
           "move_up": "Siqita wichayman kuyuchiy",
           "move_down": "Siqita urayman kuyuchiy",
           "library_row_save": "Bibliotecapi waqaychay",
           "delete_row": "Siqita chinkachiy"
+        },
+        "descriptions": {
+          "snapshot_path": "Qillqa snapshotpa tinkisqa ñan: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Qillqa snapshotta kunan qillqa hina churay · Ñan: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Rimay",
-        "snapshot_select": "Snapshot akllay",
-        "snapshot_select_tooltip": "Kay siqipaq snapshotta akllay",
-        "snapshot_clear": "Kay siqimanta akllasqa snapshotta qhichuy"
+        "comment_placeholder": "Rimay...",
+        "snapshot_select": "Qillqa snapshotta akllay",
+        "snapshot_clear": "Kay siqimanta akllasqa qillqa snapshotta qhichuy",
+        "close_aria": "Rimayta wichq’ay",
+        "snapshot_source_reminder": {
+          "title": "Qillqa snapshotpa qallariyninmanta yuyarichiy",
+          "message": "Kay siqiqa qillqa snapshotwan tinkisqami. Kay llamk’achinapi willañiqita akllanaykipaq, qallariynin rimayninta ñawpaqta qhawariy.",
+          "source_comment": "Qillqa snapshotpa qallariynin rimaynin:",
+          "select_file": "Kay llamk’achinapi willañiqita akllay",
+          "cancel": "Saqiy",
+          "close_aria": "Qillqa snapshotpa qallariyninmanta yuyarichiyta wichq’ay"
+        },
+        "snapshot_details_confirm": {
+          "title": "¿Akllasqa qillqa snapshotpa willakuyninkunata llamk’achiychu?",
+          "message": "Kay ñawinchayman churanaykipaq, akllasqa qillqa snapshotpa willakuyninkunata qhawariy.",
+          "replace_reading_name": "Ñawinchay sutin tikray",
+          "set_reading_name": "Ñawinchay sutin churay",
+          "current_name": "Kunan suti",
+          "snapshot_name": "Qillqa snapshotpa sutin",
+          "empty": "(ch’usaq)",
+          "replace_time": "Chaninchasqa pachata tikray",
+          "current_time": "Kunan pacha",
+          "snapshot_estimate": "Qillqa snapshotpa chaninchasqan",
+          "reading_speed": "Ñawinchay utqaynin",
+          "apply": "Churay",
+          "apply_selected": "Akllasqakunata churay",
+          "keep": "Kunan chaninkunata waqaychay",
+          "close_aria": "Qillqa snapshotpa willakuynin chiqanchayta wichq’ay"
+        }
       },
       "biblioteca": {
         "library_title": "Biblioteca",
+        "close_aria": "Bibliotecata wichq’ay",
         "search": "Maskay",
         "search_placeholder": "Bibliotecapi maskay...",
         "empty": "(ch'usaq)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Bibliotecapi waqaychay",
-        "library_save_question": "Rimayta churaychu?",
+        "close_aria": "Bibliotecapi waqaychay rimayta wichq’ay",
+        "library_save_question": "Rimayta churaychu? Kay siqipi qillqa snapshot akllasqa kaptinqa, tinkisqan imayna kaptinpas waqaychasqa kanqa.",
         "yes": "Arí",
         "no": "Mana",
         "cancel": "Saqiy"
@@ -499,14 +564,19 @@
         "task_delete_unavailable": "Chinkachinapaq mana waqaychasqa llamk'anachu.",
         "task_invalid_file": "Llamk'ana archivo mana allinchu.",
         "task_invalid_rows": "Llamk'anapi mana allin siqikuna kan.",
+        "task_duration_too_large": "Tareapa llapan yuyasqa pachanqa anchata hatunmi.",
         "task_path_outside": "Archivoqa llamk'anakuna carpetapa ukunpi kanan.",
         "name_required": "Llamk'anapa sutinqa kananpunim.",
         "row_text_required": "Siqipa qillqanqa mana ch'usaq kananchu.",
-        "file_select_error": "Mana atikurqachu archivokuna akllayta tukuyta.",
+        "file_select_error": "Mana atikurqachu willañiqikuna akllayta tukuyta.",
         "library_load_error": "Biblioteca mana kargakunchu.",
         "library_save_error": "Bibliotecapi mana waqaychakunchu.",
         "library_save_success": "Siqi bibliotecapi waqaychasqa.",
         "library_delete_error": "Bibliotecamanta mana chinkachikunchu.",
+        "column_layout_save_error": "Sayaykunapa churayninta mana waqaychayta atirqanchu, chaymi hamuq kutipi mana qhipanmanchu.",
+        "snapshot_missing": "Akllasqa qillqa waqaychasqaqa manañam kachkanchu.",
+        "snapshot_invalid": "Akllasqa qillqa waqaychasqaqa manam allinchu.",
+        "snapshot_read_error": "Akllasqa qillqa waqaychasqata manam ñawiriyta atikurqachu.",
         "link_blocked": "Link hark'asqa.",
         "link_missing": "Archivo mana tarisqachu.",
         "link_error": "Link kichaypi pantay.",
@@ -514,7 +584,7 @@
       }
     },
     "text_time_calculator": {
-      "title": "toT — Utqay calculadora",
+      "title": "toT — Utqay yupana",
       "calculate_label": "Yupay",
       "targets": {
         "words": "Simikuna",
@@ -527,9 +597,9 @@
         "wpm": "WPM"
       },
       "validation": {
-        "words": "Mana negativo entero yupayta qillqay.",
-        "time": "Pachata H+:MM:SS formato nisqapi qillqay.",
-        "wpm": "Positivo entero yupayta qillqay.",
+        "words": "Mana zeromanta aswan huch’uy kaqchu hunt’a yupayta qillqay.",
+        "time": "Pachata H+:MM:SS nisqapi qillqay.",
+        "wpm": "Zeromanta aswan hatun hunt’a yupayta qillqay.",
         "formula": "WPM mana atikun 00:00:00 nisqamanta yupayta."
       }
     },
@@ -538,7 +608,7 @@
         "title": "Ñawinchay utqayninpa testnin",
         "show_instructions": "Kamachiykunata rikuchiy",
         "hide_instructions": "Kamachiykunata pakay",
-        "intro": "Kay testqa pusasqa sesiónwan chiqap ñawinchay utqaynikita yuyarinapaqmi. Appqa qillqata kichanqa hinaspa Wayraqpi Puriq Ventanapi Play (▶) ñit'inaykita suyanqa qallarinaykipaq wakichisqa kachkaspa. Test qallariqtin, ama Pausa (⏸) ñit'iychu ñawinchayta tukunkama: Pausa testta tukun; manan pachayupaqta samachinchu. Testta saqinaykipaqlla Detener/Reiniciar (⏹) llamk'achiy. Chaymantaqa, qillqaqa kanman chayqa, hamut'ay tapukuykunata qhawankiman; tukukuypiqa ruwasqawan preset ruwankiman.\\nQallarinaykipaq ñawpaqta yuyariy: kay prueba qillqakunaqa aswanqa 5manta 15 minutokama mana saqispa yuyayta munanku.\\nKay poolqa taksa qillqakunata llamk'achin; chayrayku ruwasqata ama sinchita hap'iychu. Mana chiqapta hatun qillqakunaman apakunachu, chaypim allin kaqkunapas, hina fluidez/contexto hap'iy, chaymanta mana allin kaqkunapas, hina yuyaypi kutichiy hinaspa sayk'uy, yaykun.",
+        "intro": "Kay yant’ayqa pusasqa ruraywan chiqap ñawinchay utqaynikita yuyarinapaqmi. Appqa qillqata kichanqa hinaspa Wayraqpi puriq pachayupaqpi Play (▶) ñit’inaykita suyanqa qallarinaykipaq wakichisqa kachkaspa. Yant’ay qallariqtin, ama Pause (⏸) ñit’iychu ñawinchayta tukunkama: Pause yant’ayta tukun; manan pachayupaqta samachinchu. Yant’ayta saqinaykipaqlla Stop/Reset (⏹) llamk’achiy. Chaymantaqa, qillqaqa kanman chayqa, hamut’ay tapukuykunata qhawankiman; tukukuypiqa ruwasqawan wakichisqa ruwankiman.\nQallarinaykipaq ñawpaqta yuyariy: kay yant’ay qillqakunaqa aswanqa 5manta 15 minutukama mana saqispa yuyayta munanku.\nKay huñuqa taksa qillqakunata llamk’achin; chayrayku ruwasqata ama sinchita hap’iychu. Mana chiqapta hatun qillqakunaman apakunachu, chaypim allin kaqkunapas, ñawinchaypa allin puriynin hinallataq muyuriynin hap’iy, chaymanta mana allin kaqkunapas, yuyaypi kutichiy hinaspa sayk’uy, yaykun.",
         "eligible_count": "Akllasqa kananpaq archivokuna:",
         "show_bundled_entries": "Test base",
         "get_more_files": "Aswan archivokunata tariy",
@@ -550,28 +620,22 @@
         "close_aria": "Ñawinchay utqaynin test dialogota wichq'ay",
         "start_random_confirm": "Kayqa kunan qillqata poolmanta akllasqa mayqinpas qillqawan qillqanqa. Hinalla riyta munankichu?",
         "reset_confirm": "Kayqa llapan test poolta kutichinqa hinaspa llapan archivonta mana llamk'achisqahina markanqa. Hinalla riyta munankichu?",
-        "tooltips": {
-          "show_bundled_entries": "Poolman yapay apppi kaq qallariy test archivokunata",
-          "get_more_files": "Google Drive carpetamanta aswan test archivokuna tariy",
-          "import_files": "Dispositivoykimanta test archivokuna apamuy",
-          "reset_pool": "Test poolta kutichiy",
-          "start_random_text": "Poolmanta akllasqa mayqinpas qillqawan testta qallariy",
-          "start_current_text": "Kunan qillqawan testta qallariy"
+        "help": {
+          "show_bundled_entries": "Huñuman yapay apppi kaq qallariy yant’ay willañiqikunata",
+          "get_more_files": "Google Drive wayaqamanta aswan yant’ay willañiqikuna tariy",
+          "import_files": "Llamk’achinaykimanta yant’ay willañiqikuna apamuy",
+          "start_random_text": "Huñumanta akllasqa mayqinpas qillqawan yant’ayta qallariy",
+          "start_current_text": "Kunan qillqata apaykachay, mana tikraspa nitaq huñu willañiqita tukuchispa"
+        },
+        "names": {
+          "reset_pool": "Yant’ay huñuta kutichiy"
         },
         "import": {
-          "import_summary": "Apamuy tukusqa. Apamusqa: {imported}. Iskay kuti kaqkuna saqisqa: {skippedDuplicates}. Validación pantasqa: {failedValidation}. Archivo comprimido yaykuna pantasqa: {failedArchiveEntries}. Qillqay pantasqa: {failedWrites}.",
-          "import_conflict": {
-            "title": "Archivokunata apamuy",
-            "message": "Wakin apamusqa archivokunaqa ña poolpi kachkan. Iskay kuti kaqkunata imaynata ruwanki?",
-            "detail": "{count} destino archivo sutikuna ña poolpi kachkan.",
-            "skip_button": "Iskay kuti kaqkunata saqiy",
-            "replace_button": "Iskay kuti kaqkunata tikray",
-            "cancel_button": "Apamuyta saqiy"
-          }
+          "import_summary": "Apamuy tukusqa. Apamusqa: {imported}. Iskay kuti kaqkuna saqisqa: {skippedDuplicates}. Validación pantasqa: {failedValidation}. Archivo comprimido yaykuna pantasqa: {failedArchiveEntries}. Qillqay pantasqa: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Qallarinaykipaq wakichisqa kachkaspa Wayraqpi Puriq Ventanapi Play (▶) ñit'iy. Test qallariqtin, ama Pausa (⏸) ñit'iychu ñawinchayta tukunkama: Pausa testta tukun; manan pachayupaqta samachinchu. Testta saqinaykipaqlla Detener/Reiniciar (⏹) ñit'iy."
+        "reminder": "Qallarinaykipaq wakichisqa kachkaspa Wayraqpi puriq pachayupaqpi Play (▶) ñit’iy. Yant’ay qallariqtin, ama Pause (⏸) ñit’iychu ñawinchayta tukunkama: Pause yant’ayta tukun; manan pachayupaqta samachinchu. Yant’ayta saqinaykipaqlla Stop/Reset (⏹) ñit’iy."
       },
       "questions": {
         "title": "Ñawinchay hamut'ay tapukuykuna",
@@ -580,6 +644,7 @@
         "random_value": "Mayqinpas kutichispa suyakuq puntaje: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "Reclamopaq:",
+        "summary_aria": "Testpa pisichaynin",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Chaninchanaykipaq ñawpaqta llapan tapukuykunata kutichinayki.",
         "result_summary": "{correct} / {total} allin ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "Tupusqa WPM",
         "elapsed_time": "Pacha",
         "word_count": "Simikuna",
+        "summary_aria": "Testpa pisichaynin",
         "continue_button": "Hinalla riy"
       },
       "alerts": {
@@ -607,7 +673,7 @@
         "preset_unavailable": "Testmanta qhipa preset modal mana kichakunchu.",
         "questions_unavailable": "Hamut'ay tapukuy modal mana kichakunchu. Flujoqa preset ruwana ñawpaqta tukurqan.",
         "pool_import_failed": "Ñawinchay utqaynin test archivokuna mana apamuy atikurqanchu.",
-        "pool_import_state_cleanup_failed": "Ñawinchay utqay test archivokunaqa apamuchisqañam, ichaqa poolpa kayninqa mana tukuyta musuqyachikuyta atikurqachu.",
+        "pool_import_state_cleanup_failed": "Ñawinchay utqay yant’ay willañiqikunaqa apamuchisqañam, ichaqa huñupa kayninqa mana tukuyta musuqyachikuyta atikurqachu.",
         "start_failed": "Ñawinchay utqaynin test mana qallariy atikurqanchu.",
         "cancelled": "Ñawinchay utqaynin test saqisqa.",
         "cancelled_window_closed": "Ñawinchay utqaynin test saqisqa, imaraykuchus sesión ventanakunamanta huk wichq'akusqa."
@@ -646,18 +712,23 @@
       }
     },
     "browser_extension": {
-      "title": "Navegadorpa extensiónnin",
-      "subtitle": "Tiempo de lectura",
-      "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka navegadorkunamanqa utqayllam chayanqa.",
-      "chrome_store_aria": "Extensiónpa Chrome Web Store p'ankanta kichay",
-      "close_aria": "Navegadorpa extensiónnin dialogota wichq'ay",
+      "title": "Ñawinchay pacha",
+      "subtitle": "Maskaqpa mast’ariynin",
+      "availability": "Kunanqa Chrome-pi kachkanña. Aswan achka maskaqkunamanqa utqayllam chayanqa.",
+      "chrome_store_aria": "Maskaqpa mast’ariynin Chrome Web Store p'ankanta kichay",
+      "close_aria": "Maskaqpa mast’ariynin dialogota wichq'ay",
       "alerts": {
-        "modal_open_blocked": "Navegador extensión diálogota kunan manam kichayta atikunchu."
+        "modal_open_blocked": "Maskaqpa mast’ariynin dialogota kunan manam kichayta atikunchu."
       }
     },
     "info": {
       "loading": "Kargachkan...",
       "missing_content": "'{name}' nisqapaq mana contenido kanchu.",
+      "close_aria": "Willakuyta wichq’ay",
+      "media_lightbox": {
+        "title": "Jach’achasqa ñawpaq qhaway",
+        "close_aria": "Ñawpaq qhawayta wichq’ay"
+      },
       "external": {
         "blocked": "Link hark'asqa",
         "error": "Link kichaypi pantay"

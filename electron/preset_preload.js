@@ -54,6 +54,7 @@ function onInit(cb) {
 
 const api = {
   createPreset: (preset) => ipcRenderer.invoke('create-preset', preset),
+  reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
 
   // Reliable init hook
   onInit,

@@ -19,8 +19,7 @@
         "chars": "Tecken: {n}",
         "value_pending": "väntar...",
         "value_unavailable": "inte tillgängligt",
-        "precise_mode": "Precist läge",
-        "precise_tooltip": "Baserat på Intl.Segmenter"
+        "precise_mode": "Precist läge"
       },
       "crono": {
         "title": "STOPPUR",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Beräknar om resultaten för aktuell text...",
         "current_text_waiting_startup": "Stabiliserar aktuell text...",
         "current_text_waiting_editor": "Synkroniserar ändringar från Text Editor...",
+        "editor_loading": "Laddar Text Editor...",
         "text_extraction_placeholder": "Extraherar text...",
         "text_extraction_preparing": "Förbereder extraheringsväg...",
         "text_extraction_cancellation_pending": "Avbrytning begärd. Vänta...",
@@ -47,42 +47,43 @@
       },
       "tooltips": {
         "text_extraction": "Extrahera text från fil",
+        "browser_extension": "Webbläsartillägg"
+      },
+      "names": {
         "text_extraction_abort": "Avbryt extrahering",
         "overwrite_clipboard": "Ersätt aktuell text med urklippet",
         "append_clipboard": "Lägg till urklippet i slutet av aktuell text (ny rad)",
-        "clipboard_repeat_count": "Antal upprepningar från urklippet",
+        "clipboard_repeat_count": "Antal inklistringar",
         "edit": "Öppna fönstret med hela aktuella texten",
         "clear": "Rensa aktuell text",
         "snapshot_load": "Läs in textsnapshot",
         "snapshot_save": "Spara aktuell text som snapshot",
         "task_new": "Ny uppgift",
         "task_load": "Läs in uppgift",
-        "browser_extension": "Webbläsartillägg",
         "cibersino_website": "Cibersinos webbplats",
         "cibersino_kofi": "Stöd mig på Ko-fi",
         "new_preset": "Skapa en ny förinställning",
         "edit_preset": "Redigera vald förinställning",
         "delete_preset": "Ta bort vald förinställning",
         "reset_presets": "Återställ standardförinställningar",
-        "text_time_calculator": "Öppna snabbkalkylatorn",
+        "text_time_calculator": "Öppna snabbkalkylator",
         "help_button": "Visa ett användbart tips",
-        "flotante_window": "Flytande fönster"
+        "crono_toggle": "Starta eller pausa stoppuret",
+        "crono_reset": "Nollställ stoppuret",
+        "floating_window": "Flytande fönster"
+      },
+      "help": {
+        "preview_spoiler": "Visa eller dölj slutet av förhandsvisningen",
+        "precise_mode": "Baserat på Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Extrahera text från fil",
-        "text_extraction_abort": "Avbryt extrahering",
         "browser_extension": "Öppna dialogrutan för webbläsartillägget",
-        "clipboard_repeat_count": "Antal inklistringar",
-        "text_time_calculator": "Öppna snabbkalkylatorn",
         "wpm_input": "Ord per minut",
         "wpm_slider": "Reglage för ord per minut",
         "speed_presets": "Hastighetsförinställningar",
-        "precise_mode_toggle": "Precist läge",
         "crono_controls": "Stoppurskontroller",
         "crono_display": "Stoppursvisning",
-        "crono_toggle": "Starta eller pausa stoppuret",
-        "crono_reset": "Nollställ stoppuret",
-        "floating_window_toggle": "Flytande fönster",
         "floating_window_group": "Kontroller för flytande fönster"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Enhet {index}",
         "unit_counter": "Enhet {index}/{count}",
         "unit_name_placeholder": "Valfritt enhetsnamn",
+        "aria": {
+          "route": "Extraktionsväg för {file}",
+          "unit_assignment": "Målenhet för {file}",
+          "unit_name": "Valfritt namn för enhet {index} av {count}"
+        },
         "new_unit_option": "Skapa ny enhet",
         "move_up": "Flytta upp",
         "move_down": "Flytta ned",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Öppna snapshots-mapp",
         "ok_button": "OK",
         "close_aria": "Stäng slutrapporten för satsvis extrahering",
-        "split_result_label": "Delningsresultat:",
         "failed_fallback": "misslyckades",
         "failed_with_code": "misslyckades: {code}",
         "applied_truncated": "tillämpad med trunkering",
@@ -301,28 +306,35 @@
       "increase_text_size": "Öka textstorlek",
       "reset_text_size": "Återställ textstorlek",
       "read_progress_label": "Läst",
-      "clear_title": "Rensa",
+      "clear": "Rensa",
+      "help": {
+        "apply": "Använd editorns text som aktuell text",
+        "auto_apply": "Använd automatiskt ändringar i editorn på den aktuella texten medan du skriver",
+        "spellcheck": "Slå på eller av stavningskontroll för editorns text"
+      },
       "editor_find": {
         "input_placeholder": "Sök...",
         "input_aria": "Sök i text",
-        "expand_title": "Visa ersättningskontroller",
-        "collapse_title": "Dölj ersättningskontroller",
         "replace_placeholder": "Ersätt...",
         "replace_aria": "Ersättningstext",
         "replace": "Ersätt",
         "replace_all": "Ersätt alla",
-        "prev_title": "Föregående träff",
-        "next_title": "Nästa träff",
-        "close_title": "Stäng sökfältet",
-        "replace_title": "Ersätt aktuell träff",
-        "replace_all_title": "Ersätt alla träffar",
+        "names": {
+          "show_replace": "Visa ersättningskontroller",
+          "hide_replace": "Dölj ersättningskontroller",
+          "previous_match": "Föregående träff",
+          "next_match": "Nästa träff",
+          "close": "Stäng sökfältet"
+        },
+        "help": {
+          "replace_current": "Ersätt aktuell träff",
+          "replace_all": "Ersätt alla träffar"
+        },
         "replace_timeout": "Ersättningen tog för lång tid. Försök igen.",
         "status_no_matches": "Inga träffar",
         "status_empty_query": "Skriv för att söka"
       },
       "alerts": {
-        "start_failed": "Text Editor kunde inte startas.",
-        "start_timeout": "Text Editor tog för lång tid att starta och stängdes.",
         "paste_too_big": "Texten är för stor för att klistras in direkt. Använd knapparna i huvudfönstret.",
         "drop_too_big": "Den släppta texten är för stor. Använd knapparna i huvudfönstret för att lägga till stor text.",
         "paste_no_text": "Urklippet innehåller ingen oformaterad text.",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "Spara textsnapshot",
-      "message": "Du kan lägga till valfria taggar för denna textsnapshot innan du väljer var den ska sparas.",
+      "message": "Du kan valfritt namnge denna textsnapshot, beskriva dess ursprung och lägga till taggar innan du väljer var den ska sparas.",
       "search": {
         "placeholder": "Skriv för att filtrera alternativ",
         "no_results": "Inga matchande alternativ",
         "create": "Skapa \"{label}\""
       },
       "labels": {
+        "name": "Namn (valfritt)",
+        "source_comment": "Ursprung (valfritt)",
         "language": "Språk",
         "type": "Typ",
         "difficulty": "Svårighetsgrad"
+      },
+      "placeholders": {
+        "name": "Läsning",
+        "source_comment": "chapter-1.pdf, Enhet 1 eller importerad text"
+      },
+      "metrics": {
+        "include_count": "Inkludera ordantal",
+        "include_reading": "Inkludera beräknad lästid och WPM"
       },
       "manager": {
         "title": "Hantera taggar för text-snapshots",
@@ -356,10 +378,11 @@
         "close_aria": "Stäng tagghanteraren för text-snapshots",
         "new_tag": "Ny tagg",
         "new_tag_placeholder": "Taggnamn",
+        "new_tag_input_aria": "Nytt taggnamn",
         "add_tag": "Lägg till tagg",
         "cancel_draft": "Avbryt",
         "sort_alphabetically": "Sortera A-Z",
-        "restore_hidden_defaults": "Återställ standardtaggar ({count})",
+        "restore_hidden_defaults": "Återställ standardtaggar",
         "empty_category": "Inga synliga taggar i den här kategorin.",
         "move_up": "Flytta \"{label}\" uppåt",
         "move_down": "Flytta \"{label}\" nedåt",
@@ -411,6 +434,7 @@
           "qu": "Quechua",
           "ru": "Ryska",
           "sv": "Svenska",
+          "sw": "Swahili",
           "tr": "Turkiska",
           "ur": "Urdu",
           "vi": "Vietnamesiska",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — Uppgifter",
       "name": "Namn",
+      "name_placeholder": "t.ex. Läsplan",
       "save_button": "Spara",
       "delete_button": "Ta bort",
       "summary_total": "Totalt",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Kvar",
         "enlace": "Länk",
-        "comentario": "",
+        "comentario": "K+T",
         "acciones": "Åtgärder",
-        "tooltips": {
+        "header_names": {
+          "tiempo": "Beräknad lästid",
+          "percent": "Slutförd procentandel",
+          "falta": "Beräknad återstående tid",
+          "comentario": "Kommentar och text-snapshot"
+        },
+        "names": {
           "file_select": "Välj lokal fil",
           "link_open": "Öppna länk",
           "snapshot_load": "Läs in en textsnapshot för denna rad",
-          "comment": "Lägg till/redigera kommentar",
+          "comment": "Lägg till kommentar eller text-snapshot",
           "move_up": "Flytta upp",
           "move_down": "Flytta ned",
           "library_row_save": "Spara i bibliotek",
           "delete_row": "Ta bort rad"
+        },
+        "descriptions": {
+          "snapshot_path": "Sökväg för kopplad text-snapshot: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Läs in text-snapshot som aktuell text · Kopplad sökväg: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Kommentar",
+        "comment_placeholder": "Kommentar...",
         "snapshot_select": "Välj snapshot",
-        "snapshot_select_tooltip": "Välj en textsnapshot för denna rad",
-        "snapshot_clear": "Ta bort vald snapshot från denna rad"
+        "snapshot_clear": "Ta bort vald snapshot från denna rad",
+        "close_aria": "Stäng kommentar",
+        "snapshot_source_reminder": {
+          "title": "Påminnelse om snapshotets källa",
+          "message": "Den här raden är kopplad till en textsnapshot. Kontrollera dess källkommentar innan du väljer en lokal fil.",
+          "source_comment": "Snapshotets källkommentar:",
+          "select_file": "Välj lokal fil",
+          "cancel": "Avbryt",
+          "close_aria": "Stäng påminnelsen om snapshotets källa"
+        },
+        "snapshot_details_confirm": {
+          "title": "Använd data från vald textsnapshot?",
+          "message": "Granska tillgängliga data från den valda textsnapshoten innan de tillämpas på denna läsning.",
+          "replace_reading_name": "Ersätt läsningens namn",
+          "set_reading_name": "Ange läsningens namn",
+          "current_name": "Aktuellt namn",
+          "snapshot_name": "Snapshotnamn",
+          "empty": "(tom)",
+          "replace_time": "Ersätt beräknad tid",
+          "current_time": "Aktuell tid",
+          "snapshot_estimate": "Snapshot-uppskattning",
+          "reading_speed": "Läshastighet",
+          "apply": "Tillämpa",
+          "apply_selected": "Tillämpa valda",
+          "keep": "Behåll aktuella värden",
+          "close_aria": "Stäng bekräftelsen av snapshotdata"
+        }
       },
       "biblioteca": {
         "library_title": "Bibliotek",
+        "close_aria": "Stäng läsbibliotek",
         "search": "Sök",
         "search_placeholder": "Sök i bibliotek...",
         "empty": "(tom)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Spara i bibliotek",
-        "library_save_question": "Inkludera kommentar?",
+        "close_aria": "Stäng dialogen Spara i bibliotek",
+        "library_save_question": "Inkludera kommentar? Om en textsnapshot är vald för den här läsningen sparas kopplingen oavsett vilket alternativ du väljer.",
         "yes": "Ja",
         "no": "Nej",
         "cancel": "Avbryt"
@@ -499,6 +564,7 @@
         "task_delete_unavailable": "Ingen sparad uppgift att ta bort.",
         "task_invalid_file": "Ogiltig uppgiftsfil.",
         "task_invalid_rows": "Det finns ogiltiga rader i uppgiften.",
+        "task_duration_too_large": "Uppgiftens totala uppskattade tidsåtgång är för stor.",
         "task_path_outside": "Filen måste ligga i uppgiftsmappen.",
         "name_required": "Uppgiftsnamn krävs.",
         "row_text_required": "Radtexten får inte vara tom.",
@@ -507,6 +573,10 @@
         "library_save_error": "Kunde inte spara i biblioteket.",
         "library_save_success": "Raden sparades i biblioteket.",
         "library_delete_error": "Kunde inte ta bort från biblioteket.",
+        "column_layout_save_error": "Kolumnlayouten kunde inte sparas och kanske inte behålls nästa gång.",
+        "snapshot_missing": "Den valda textsnapshoten finns inte längre.",
+        "snapshot_invalid": "Den valda textsnapshoten är ogiltig.",
+        "snapshot_read_error": "Det gick inte att läsa den valda textsnapshoten.",
         "link_blocked": "Länk blockerad.",
         "link_missing": "Filen hittades inte.",
         "link_error": "Fel vid öppning av länk.",
@@ -538,7 +608,7 @@
         "title": "Test av läshastighet",
         "show_instructions": "Visa instruktioner",
         "hide_instructions": "Dölj instruktioner",
-        "intro": "Det här testet är avsett att uppskatta din faktiska läshastighet genom en guidad session. Appen öppnar texten och väntar på att du trycker på Play (▶) i det flytande fönstret när du är redo att börja. När testet har startat ska du inte trycka på Pause (⏸) förrän du har läst färdigt: Pause avslutar testet; det pausar inte timern. Använd Stop/Reset (⏹) endast om du vill avbryta testet. Därefter kan du gå igenom förståelsefrågor om texten innehåller sådana och till sist skapa en förinställning från resultatet.\nInnan du börjar bör du tänka på att dessa testtexter vanligtvis kräver mellan 5 och 15 minuters oavbruten koncentration.\nDen här poolen använder korta texter, så tolka resultatet med försiktighet. Det bör inte extrapoleras direkt till långa texter, där positiva faktorer som flyt och kontextuppbyggnad, och negativa faktorer som mental rekapitulation och trötthet, brukar spela in.",
+        "intro": "Det här testet är avsett att uppskatta din faktiska läshastighet genom en guidad session. Appen öppnar texten och väntar på att du trycker på Play (▶) i det flytande stoppuret när du är redo att börja. När testet har startat ska du inte trycka på Pause (⏸) förrän du har läst färdigt: Pause avslutar testet; det pausar inte stoppuret. Använd Stop/Reset (⏹) endast om du vill avbryta testet. Därefter kan du gå igenom förståelsefrågor om texten innehåller sådana och till sist skapa en förinställning från resultatet.\nInnan du börjar bör du tänka på att dessa testtexter vanligtvis kräver mellan 5 och 15 minuters oavbruten koncentration.\nDen här poolen använder korta texter, så tolka resultatet med försiktighet. Det bör inte extrapoleras direkt till långa texter, där positiva faktorer som flyt och kontextuppbyggnad, och negativa faktorer som mental rekapitulation och trötthet, brukar spela in.",
         "eligible_count": "Kvalificerade filer:",
         "show_bundled_entries": "Bastest",
         "get_more_files": "Hämta fler filer",
@@ -550,28 +620,22 @@
         "close_aria": "Stäng dialogen för test av läshastighet",
         "start_random_confirm": "Detta skriver över aktuell text med en slumpmässig kvalificerad text från poolen. Vill du fortsätta?",
         "reset_confirm": "Detta återställer hela testpoolen och markerar alla filer som oanvända igen. Vill du fortsätta?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Inkludera appens inbyggda starttestfiler i poolen",
           "get_more_files": "Hämta fler testfiler från Google Drive-mappen",
           "import_files": "Importera testfiler från din enhet",
-          "reset_pool": "Återställ testpool",
           "start_random_text": "Starta testet med en slumpmässig kvalificerad text från poolen",
-          "start_current_text": "Starta testet med aktuell text"
+          "start_current_text": "Använd den aktuella texten utan att ersätta den eller förbruka en poolfil"
+        },
+        "names": {
+          "reset_pool": "Återställ testpool"
         },
         "import": {
-          "import_summary": "Importen är klar. Importerade: {imported}. Överhoppade dubbletter: {skippedDuplicates}. Misslyckad validering: {failedValidation}. Misslyckade arkivposter: {failedArchiveEntries}. Misslyckade skrivningar: {failedWrites}.",
-          "import_conflict": {
-            "title": "Importera filer",
-            "message": "Vissa importerade filer finns redan i poolen. Hur ska dubbletter hanteras?",
-            "detail": "{count} målfilnamn finns redan i poolen.",
-            "skip_button": "Hoppa över dubbletter",
-            "replace_button": "Ersätt dubbletter",
-            "cancel_button": "Avbryt import"
-          }
+          "import_summary": "Importen är klar. Importerade: {imported}. Överhoppade dubbletter: {skippedDuplicates}. Misslyckad validering: {failedValidation}. Misslyckade arkivposter: {failedArchiveEntries}. Misslyckade skrivningar: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Tryck på Play (▶) i det flytande fönstret när du är redo att börja. När testet har startat ska du inte trycka på Pause (⏸) förrän du har läst färdigt: Pause avslutar testet; det pausar inte timern. Tryck på Stop/Reset (⏹) endast om du vill avbryta testet."
+        "reminder": "Tryck på Play (▶) i det flytande stoppuret när du är redo att börja. När testet har startat ska du inte trycka på Pause (⏸) förrän du har läst färdigt: Pause avslutar testet; det pausar inte stoppuret. Tryck på Stop/Reset (⏹) endast om du vill avbryta testet."
       },
       "questions": {
         "title": "Läsförståelsefrågor",
@@ -580,6 +644,7 @@
         "random_value": "Förväntat resultat vid slumpgissning: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "För klagomål:",
+        "summary_aria": "Testsammanfattning",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Alla frågor måste besvaras innan utvärdering.",
         "result_summary": "{correct} av {total} rätt ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "Uppmätt WPM",
         "elapsed_time": "Tid",
         "word_count": "Ord",
+        "summary_aria": "Testsammanfattning",
         "continue_button": "Fortsätt"
       },
       "alerts": {
@@ -646,8 +712,8 @@
       }
     },
     "browser_extension": {
-      "title": "Webbläsartillägg",
-      "subtitle": "Tiempo de lectura",
+      "title": "Lästid",
+      "subtitle": "Webbläsartillägg",
       "availability": "Finns i Chrome nu. Fler webbläsare kommer snart.",
       "chrome_store_aria": "Öppna tilläggets sida i Chrome Web Store",
       "close_aria": "Stäng dialogrutan för webbläsartillägget",
@@ -658,6 +724,11 @@
     "info": {
       "loading": "Läser in...",
       "missing_content": "Inget innehåll finns tillgängligt för '{name}'.",
+      "close_aria": "Stäng information",
+      "media_lightbox": {
+        "title": "Förstorad förhandsvisning av skärmbild",
+        "close_aria": "Stäng förhandsvisning"
+      },
       "external": {
         "blocked": "Länk blockerad",
         "error": "Fel vid öppning av länk"

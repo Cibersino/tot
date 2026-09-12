@@ -26,22 +26,22 @@
   const resultApi = window.readingTestResultAPI || null;
   if (!resultApi
     || typeof resultApi.getSettings !== 'function'
-    || typeof resultApi.onInitData !== 'function') {
+    || typeof resultApi.onInitData !== 'function'
+    || typeof resultApi.onSettingsChanged !== 'function') {
     throw new Error('[reading-test-result] readingTestResultAPI unavailable; cannot continue');
   }
-
+  let resultI18nTerminal = false;
   const i18nApi = window.RendererI18n || null;
   if (!i18nApi
-    || typeof i18nApi.loadRendererTranslations !== 'function'
+    || typeof i18nApi.transitionRendererTranslations !== 'function'
     || typeof i18nApi.tRenderer !== 'function'
-    || typeof i18nApi.applyWindowLanguageAttributes !== 'function'
     || typeof i18nApi.renderLocalizedLabelWithInvariantValue !== 'function') {
+    reportTerminalResultI18nFailure('startup-api');
     throw new Error('[reading-test-result] RendererI18n unavailable; cannot continue');
   }
   const {
-    loadRendererTranslations,
+    transitionRendererTranslations,
     tRenderer,
-    applyWindowLanguageAttributes,
     renderLocalizedLabelWithInvariantValue,
   } = i18nApi;
 
@@ -62,7 +62,24 @@
   // =============================================================================
   document.addEventListener('DOMContentLoaded', initReadingTestResultWindow);
 
+  function reportTerminalResultI18nFailure(kind) {
+    if (resultI18nTerminal) return;
+    resultI18nTerminal = true;
+    if (typeof resultApi.reportRendererI18nFailure !== 'function') {
+      log.warn('readingTestResultAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+      if (typeof window.close === 'function') window.close();
+      return;
+    }
+    try {
+      resultApi.reportRendererI18nFailure({ kind });
+    } catch (reportErr) {
+      log.warn('readingTestResultAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+      if (typeof window.close === 'function') window.close();
+    }
+  }
+
   function initReadingTestResultWindow() {
+    if (resultI18nTerminal) return;
     // Keep the required DOM contract explicit so the window aborts early if
     // the HTML shell drifts away from the renderer script expectations.
     function getRequiredElements() {
@@ -71,6 +88,7 @@
         wpmLabel: document.getElementById('readingTestResultWpmLabel'),
         wpmValue: document.getElementById('readingTestResultWpmValue'),
         summary: document.getElementById('readingTestResultSummary'),
+        summaryRegion: document.querySelector('.reading-test-result__meta'),
         btnContinue: document.getElementById('readingTestResultContinue'),
       };
 
@@ -88,10 +106,15 @@
     // Keep event-driven updates and bootstrap settings on the same queued render
     // path so translation loading and DOM writes stay serialized.
     function handleInitData(payload) {
+      if (resultI18nTerminal) return;
       enqueueUiSync(async () => {
         applyPayloadState(payload);
+      }).then(() => {
+        if (resultI18nTerminal) return;
+        elements.btnContinue.focus({ preventScroll: true });
       }).catch((err) => {
         log.error('Reading-test result init failed:', err);
+        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
       });
     }
 
@@ -99,17 +122,37 @@
     // persisted language if possible and otherwise keeps the window on DEFAULT_LANG.
     function loadInitialSettings() {
       enqueueUiSync(async () => {
+        let nextSettings;
         try {
-          const settings = await resultApi.getSettings();
-          state.settingsCache = settings || {};
-          state.currentLanguage = normalizeLanguage(settings && settings.language);
+          nextSettings = await resultApi.getSettings() || {};
         } catch (err) {
           log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
-          state.settingsCache = {};
-          state.currentLanguage = DEFAULT_LANG;
+          nextSettings = {};
         }
+        return {
+          language: normalizeLanguage(nextSettings.language),
+          settings: nextSettings,
+        };
       }).catch((err) => {
         log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
+        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
+      });
+    }
+
+    function handleSettingsChanged(settings) {
+      if (resultI18nTerminal) return;
+      enqueueUiSync(async () => {
+        const nextSettings = settings || {};
+        const nextLanguage = normalizeLanguage(nextSettings.language);
+        const languageChanged = nextLanguage !== state.currentLanguage;
+        const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
+        if (!languageChanged && !needsTranslationRetry) {
+          state.settingsCache = nextSettings;
+          return false;
+        }
+        return { language: nextLanguage, settings: nextSettings };
+      }).catch((err) => {
+        reportResultI18nFailure(err);
       });
     }
 
@@ -141,18 +184,35 @@
       return normalized || fallback;
     }
 
-    async function ensureTranslationsLoaded() {
-      const target = normalizeLanguage(state.currentLanguage);
-      state.currentLanguage = target;
-      const windowLanguage = applyWindowLanguageAttributes(target);
-      currentWindowLanguageDirection = windowLanguage && windowLanguage.languageDirection;
-      if (state.translationsLoadedFor === target) return;
-      try {
-        await loadRendererTranslations(target);
-        state.translationsLoadedFor = target;
-      } catch (err) {
-        log.warn('Reading-test result translation load failed (using fallback copy):', err);
+    async function transitionResultTranslations(language, settings) {
+      const target = normalizeLanguage(language || state.currentLanguage);
+      const previousLanguage = state.currentLanguage;
+      const previousSettings = state.settingsCache;
+      const nextSettings = typeof settings === 'undefined'
+        ? state.settingsCache
+        : settings || {};
+      await transitionRendererTranslations(target, {
+        applyTranslations: async ({ language: appliedLanguage, restoring }) => {
+          state.currentLanguage = restoring ? previousLanguage : appliedLanguage;
+          state.settingsCache = restoring ? previousSettings : nextSettings;
+          currentWindowLanguageDirection = document.documentElement.dataset.languageDirection;
+          await renderUi();
+        },
+      });
+      state.translationsLoadedFor = state.currentLanguage;
+    }
+
+    function reportResultI18nFailure(err, { startup = false } = {}) {
+      const transition = err && err.rendererI18nTransition;
+      if (!transition) {
+        return;
       }
+      if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+        log.error('Reading-test result language transition failed; previous translation state remains authoritative:', err);
+        return;
+      }
+      log.error('Reading-test result i18n failure requires window closure:', err);
+      reportTerminalResultI18nFailure(startup ? 'startup' : 'transition-restoration');
     }
 
     async function formatInteger(value) {
@@ -213,6 +273,7 @@
       document.title = tRenderer('renderer.reading_test.result.title');
       elements.title.textContent = tRenderer('renderer.reading_test.result.title');
       elements.wpmLabel.textContent = tRenderer('renderer.reading_test.result.measured_wpm');
+      elements.summaryRegion.setAttribute('aria-label', tRenderer('renderer.reading_test.result.summary_aria'));
       elements.btnContinue.textContent = tRenderer('renderer.reading_test.result.continue_button');
       const measuredWpmText = await formatInteger(state.measuredWpm);
       const wordCountText = await formatInteger(state.wordCount);
@@ -244,9 +305,15 @@
     // readiness and DOM rendering observe the same ordering.
     function enqueueUiSync(updateFn) {
       const runUpdate = async () => {
-        await updateFn();
-        await ensureTranslationsLoaded();
-        await renderUi();
+        // Main-process closure is asynchronous. Do not admit queued semantic
+        // work after this window has entered terminal i18n failure.
+        if (resultI18nTerminal) return;
+        const transitionRequest = await updateFn();
+        if (transitionRequest === false) return;
+        await transitionResultTranslations(
+          transitionRequest && transitionRequest.language,
+          transitionRequest && transitionRequest.settings
+        );
       };
       uiSyncChain = uiSyncChain.then(runUpdate, runUpdate);
       return uiSyncChain;
@@ -260,6 +327,7 @@
     });
 
     resultApi.onInitData(handleInitData);
+    resultApi.onSettingsChanged(handleSettingsChanged);
     loadInitialSettings();
   }
 })();

@@ -28,19 +28,14 @@ function createWarnOnceLogDouble() {
   };
 }
 
-test('createFormatUtils computes exact total seconds and rounded display parts', () => {
+test('createFormatUtils creates number-formatting utilities', () => {
   const utils = createFormatUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
     log: createWarnOnceLogDouble(),
   });
 
-  assert.equal(utils.getExactTotalSeconds(300, 150), 120);
-  assert.equal(utils.getExactTotalSeconds(0, 150), 0);
-  assert.deepEqual(utils.getDisplayTimeParts(3661.2), {
-    hours: 1,
-    minutes: 1,
-    seconds: 1,
-  });
+  assert.equal(typeof utils.obtenerSeparadoresDeNumeros, 'function');
+  assert.equal(typeof utils.formatearNumero, 'function');
 });
 
 test('createFormatUtils resolves separators from the requested language bucket', async () => {

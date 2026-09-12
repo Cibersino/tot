@@ -148,6 +148,10 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(_modal, { initialFocus }) {
+          initialFocus.focus();
+        },
+        deactivateModalFocus() {},
         notifyMain() {},
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);
@@ -212,6 +216,8 @@ function createHarness() {
 
   return {
     elements,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionSingleFileHeavyPdfModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -366,4 +372,28 @@ test('single-file heavy PDF modal shows generated PDF filename only when a retai
   harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, 'cancel');
+});
+
+test('single-file heavy PDF modal refreshes active copy through its canonical render path', async () => {
+  const harness = createHarness();
+  const promptPromise = harness.prompt({
+    caseKind: 'case_a',
+    sourceFileName: 'book.pdf',
+    sourceFileSizeBytes: 458 * 1024 * 1024,
+    totalPages: 516,
+    providerLimitBytes: 50 * 1024 * 1024,
+  });
+
+  harness.translations['renderer.text_extraction.single_file_heavy.case_a_title'] = 'PDF demasiado grande';
+  harness.translations['renderer.text_extraction.single_file_heavy.total_pages_label'] = 'Páginas totales:';
+  harness.applyTranslations();
+
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalTitle.textContent, 'PDF demasiado grande');
+  assert.match(
+    harness.elements.textExtractionSingleFileHeavyPdfModalDetailsRows.innerHTML,
+    /<strong>Páginas totales:<\/strong> <bdi dir="ltr">516<\/bdi>/
+  );
+
+  harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');
+  assert.equal(await promptPromise, 'cancel');
 });

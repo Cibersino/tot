@@ -1,25 +1,43 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>toT</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <main class="popup">
     <header class="header">
-      <img class="logo" src="icons/icon-32.png" alt="">
+      <img
+        class="logo"
+        src="icons/icon-32.png"
+        alt=""
+      >
       <div>
         <h1>toT</h1>
-        <p id="subtitle" class="subtitle"></p>
+        <p
+          id="subtitle"
+          class="subtitle"
+        ></p>
       </div>
     </header>
 
-    <section class="tab-control" aria-labelledby="toggle-label">
+    <section
+      class="tab-control"
+      aria-labelledby="toggle-label"
+    >
       <div>
-        <div id="toggle-label" class="toggle-label"></div>
-        <p id="hint" class="hint"></p>
+        <div
+          id="toggle-label"
+          class="toggle-label"
+        ></div>
+        <p
+          id="hint"
+          class="hint"
+        ></p>
       </div>
 
       <label class="switch">
@@ -27,17 +45,30 @@
           id="tab-toggle"
           type="checkbox"
           aria-labelledby="toggle-label"
-          aria-describedby="hint">
-        <span class="switch-track" aria-hidden="true">
+          aria-describedby="hint"
+        >
+        <span
+          class="switch-track"
+          aria-hidden="true"
+        >
           <span class="switch-thumb"></span>
         </span>
       </label>
     </section>
 
-    <section class="wpm-section" aria-labelledby="wpm-label">
+    <section
+      class="wpm-section"
+      aria-labelledby="wpm-label"
+    >
       <div>
-        <div id="wpm-label" class="section-label"></div>
-        <p id="wpm-hint" class="hint"></p>
+        <div
+          id="wpm-label"
+          class="section-label"
+        ></div>
+        <p
+          id="wpm-hint"
+          class="hint"
+        ></p>
       </div>
 
       <input
@@ -48,16 +79,31 @@
         autocomplete="off"
         spellcheck="false"
         aria-labelledby="wpm-label"
-        aria-describedby="wpm-hint wpm-status">
+        aria-describedby="wpm-hint wpm-status"
+      >
     </section>
 
-    <a id="desktop-link" class="desktop-link" href="https://totapp.org" target="_blank" rel="noreferrer">
+    <a
+      id="desktop-link"
+      class="desktop-link"
+      href="https://totapp.org"
+      target="_blank"
+      rel="noreferrer"
+    >
       <span id="desktop-link-label"></span>
       <span aria-hidden="true">↗️</span>
     </a>
 
-    <p id="status" class="status" aria-live="polite"></p>
-    <p id="wpm-status" class="wpm-status" aria-live="polite"></p>
+    <p
+      id="status"
+      class="status"
+      aria-live="polite"
+    ></p>
+    <p
+      id="wpm-status"
+      class="wpm-status"
+      aria-live="polite"
+    ></p>
   </main>
 
   <script src="logic.js"></script>

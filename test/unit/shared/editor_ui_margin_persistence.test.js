@@ -139,7 +139,6 @@ function createHarness() {
     EDITOR_FONT_SIZE_STEP_PX: 2,
     editorMaximizedLayoutCore: require('../../../public/js/lib/editor_maximized_layout_core'),
     rendererI18n: {
-      async loadRendererTranslations() {},
       tRenderer() { return ''; },
       msgRenderer(_path, params = {}) { return String(params.value ?? ''); },
       resolveUserTextDirection() { return 'ltr'; },

@@ -87,9 +87,7 @@
   // =============================================================================
   function applyToggleIcon(toggleButton, iconName = 'play') {
     if (!toggleButton) return;
-    const configuredSize = toggleButton.getAttribute('data-tot-icon-size') || 'md';
     rendererIcons.applyIconToElement(toggleButton, iconName, {
-      size: configuredSize,
       preserveContent: false,
     });
   }
@@ -110,6 +108,12 @@
     if (cronoDisplay) {
       cronoDisplay.value = displayValue;
     }
+  }
+
+  function setCronoDisplayInvalidState(cronoDisplay, isInvalid) {
+    if (!cronoDisplay) return;
+    cronoDisplay.classList.toggle('is-invalid', isInvalid);
+    cronoDisplay.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
   }
 
   async function openFlotante({
@@ -289,6 +293,7 @@
 
     if (cronoDisplay) {
       cronoDisplay.disabled = newRunning;
+      if (newRunning) setCronoDisplayInvalidState(cronoDisplay, false);
     }
 
     if (cronoDisplay && !cronoEditing) {
@@ -420,17 +425,7 @@
         if (previousText === nextText) return;
 
         if (!nextText) {
-          try {
-            if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
-              electronAPI.sendCronoReset();
-            } else {
-              log.warnOnce('crono.sendCronoReset.missing.textChange', '[crono] sendCronoReset unavailable; applying local reset only');
-            }
-          } catch (err) {
-            log.warn('sendCronoReset failed (ignored):', err);
-          } finally {
-            resetLocalState();
-          }
+          resetLocalState();
           return;
         }
 
@@ -544,6 +539,13 @@
           baselineDisplay = elements.cronoDisplay.value;
         });
 
+        elements.cronoDisplay.addEventListener('input', () => {
+          setCronoDisplayInvalidState(
+            elements.cronoDisplay,
+            parseCronoInput(elements.cronoDisplay.value) === null
+          );
+        });
+
         elements.cronoDisplay.addEventListener('blur', () => {
           cronoEditing = false;
           void applyManualTime({
@@ -569,6 +571,7 @@
             baselineElapsed,
             baselineDisplay
           });
+          setCronoDisplayInvalidState(elements.cronoDisplay, false);
           baselineElapsed = null;
           baselineDisplay = null;
         });

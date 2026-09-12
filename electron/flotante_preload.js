@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 
 const api = {
+  reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
   // Receive status updates from main (channel is now 'crono-state')
   onState: (cb) => {
     const wrapper = (_e, state) => {

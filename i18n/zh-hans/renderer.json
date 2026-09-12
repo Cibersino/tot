@@ -19,8 +19,7 @@
         "chars": "字符数：{n}",
         "value_pending": "待处理...",
         "value_unavailable": "不可用",
-        "precise_mode": "精确模式",
-        "precise_tooltip": "基于 Intl.Segmenter"
+        "precise_mode": "精确模式"
       },
       "crono": {
         "title": "秒表",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "正在重新计算当前文本结果...",
         "current_text_waiting_startup": "正在稳定当前文本...",
         "current_text_waiting_editor": "正在同步 Text Editor 更改...",
+        "editor_loading": "正在加载 Text Editor...",
         "text_extraction_placeholder": "正在处理提取...",
         "text_extraction_preparing": "正在准备提取路径...",
         "text_extraction_cancellation_pending": "已请求取消。请稍候...",
@@ -47,6 +47,9 @@
       },
       "tooltips": {
         "text_extraction": "从文件提取文本",
+        "browser_extension": "浏览器扩展"
+      },
+      "names": {
         "text_extraction_abort": "中止提取",
         "overwrite_clipboard": "用剪贴板内容替换当前文本",
         "append_clipboard": "将剪贴板内容追加到当前文本末尾（新行）",
@@ -57,7 +60,6 @@
         "snapshot_save": "将当前文本保存为快照",
         "task_new": "新建任务",
         "task_load": "加载任务",
-        "browser_extension": "浏览器扩展",
         "cibersino_website": "Cibersino 网站",
         "cibersino_kofi": "在 Ko-fi 支持我",
         "new_preset": "创建新预设",
@@ -66,23 +68,22 @@
         "reset_presets": "恢复默认预设",
         "text_time_calculator": "打开快速计算器",
         "help_button": "显示有用提示",
-        "flotante_window": "悬浮窗口"
+        "crono_toggle": "启动或暂停秒表",
+        "crono_reset": "重置秒表",
+        "floating_window": "悬浮窗口"
+      },
+      "help": {
+        "preview_spoiler": "显示或隐藏预览末尾",
+        "precise_mode": "基于 Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "从文件提取文本",
-        "text_extraction_abort": "中止提取",
         "browser_extension": "打开浏览器扩展对话框",
-        "clipboard_repeat_count": "粘贴重复次数",
-        "text_time_calculator": "打开快速计算器",
         "wpm_input": "每分钟词数",
         "wpm_slider": "每分钟词数滑块",
         "speed_presets": "速度预设",
-        "precise_mode_toggle": "精确模式",
         "crono_controls": "秒表控件",
         "crono_display": "秒表显示",
-        "crono_toggle": "启动或暂停秒表",
-        "crono_reset": "重置秒表",
-        "floating_window_toggle": "悬浮窗口",
         "floating_window_group": "悬浮窗口控件"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "单元 {index}",
         "unit_counter": "单元 {index}/{count}",
         "unit_name_placeholder": "可选单元名称",
+        "aria": {
+          "route": "{file} 的提取路线",
+          "unit_assignment": "{file} 的目标单元",
+          "unit_name": "第 {index}/{count} 个单元的可选名称"
+        },
         "new_unit_option": "创建新单元",
         "move_up": "上移",
         "move_down": "下移",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "打开快照文件夹",
         "ok_button": "确定",
         "close_aria": "关闭批量提取最终报告",
-        "split_result_label": "拆分结果：",
         "failed_fallback": "失败",
         "failed_with_code": "失败：{code}",
         "applied_truncated": "已截断并应用",
@@ -301,28 +306,35 @@
       "increase_text_size": "增大文本大小",
       "reset_text_size": "重置文本大小",
       "read_progress_label": "已读",
-      "clear_title": "清空",
+      "clear": "清空",
+      "help": {
+        "apply": "将编辑器文本应用为当前文本",
+        "auto_apply": "输入时自动将编辑器更改应用到当前文本",
+        "spellcheck": "开启或关闭编辑器文本的拼写检查"
+      },
       "editor_find": {
         "input_placeholder": "查找...",
         "input_aria": "在文本中查找",
-        "expand_title": "显示替换控件",
-        "collapse_title": "隐藏替换控件",
         "replace_placeholder": "替换...",
         "replace_aria": "替换文本",
         "replace": "替换",
         "replace_all": "全部替换",
-        "prev_title": "上一个匹配项",
-        "next_title": "下一个匹配项",
-        "close_title": "关闭查找栏",
-        "replace_title": "替换当前匹配项",
-        "replace_all_title": "替换所有匹配项",
+        "names": {
+          "show_replace": "显示替换控件",
+          "hide_replace": "隐藏替换控件",
+          "previous_match": "上一个匹配项",
+          "next_match": "下一个匹配项",
+          "close": "关闭查找栏"
+        },
+        "help": {
+          "replace_current": "替换当前匹配项",
+          "replace_all": "替换所有匹配项"
+        },
         "replace_timeout": "替换超时。请重试。",
         "status_no_matches": "没有匹配项",
         "status_empty_query": "输入内容以搜索"
       },
       "alerts": {
-        "start_failed": "无法启动 Text Editor。",
-        "start_timeout": "Text Editor 启动时间过长，已被关闭。",
         "paste_too_big": "文本过大，无法直接粘贴。请使用主窗口按钮。",
         "drop_too_big": "拖放的文本过大。请使用主窗口按钮。",
         "paste_no_text": "剪贴板不包含纯文本。",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "保存文本快照",
-      "message": "在选择保存位置前，可选择为此文本快照添加标签。",
+      "message": "在选择保存位置前，您可以为此文本快照命名、描述其来源并添加标签。",
       "search": {
         "placeholder": "输入以筛选选项",
         "no_results": "没有匹配的选项",
         "create": "创建“{label}”"
       },
       "labels": {
+        "name": "名称（可选）",
+        "source_comment": "来源（可选）",
         "language": "语言",
         "type": "类型",
         "difficulty": "难度"
+      },
+      "placeholders": {
+        "name": "阅读",
+        "source_comment": "chapter-1.pdf、单元 1 或导入的文本"
+      },
+      "metrics": {
+        "include_count": "包含字数统计",
+        "include_reading": "包含预计阅读时间和 WPM"
       },
       "manager": {
         "title": "管理文本快照标签",
@@ -356,10 +378,11 @@
         "close_aria": "关闭文本快照标签管理器",
         "new_tag": "新标签",
         "new_tag_placeholder": "标签名称",
+        "new_tag_input_aria": "新标签名称",
         "add_tag": "添加标签",
         "cancel_draft": "取消",
         "sort_alphabetically": "按 A-Z 排序",
-        "restore_hidden_defaults": "恢复默认标签 ({count})",
+        "restore_hidden_defaults": "恢复默认标签",
         "empty_category": "此类别中没有可见标签。",
         "move_up": "上移“{label}”",
         "move_down": "下移“{label}”",
@@ -411,6 +434,7 @@
           "qu": "克丘亚语",
           "ru": "俄语",
           "sv": "瑞典语",
+          "sw": "斯瓦希里语",
           "tr": "土耳其语",
           "ur": "乌尔都语",
           "vi": "越南语",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — 任务",
       "name": "名称",
+      "name_placeholder": "例如：阅读计划",
       "save_button": "保存",
       "delete_button": "删除",
       "summary_total": "总计",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "剩余",
         "enlace": "链接",
-        "comentario": "",
+        "comentario": "评+快",
         "acciones": "操作",
-        "tooltips": {
+        "header_names": {
+          "tiempo": "预计阅读时间",
+          "percent": "完成百分比",
+          "falta": "预计剩余时间",
+          "comentario": "评论和文本快照"
+        },
+        "names": {
           "file_select": "选择本地文件",
           "link_open": "打开链接",
           "snapshot_load": "为此行加载文本快照",
-          "comment": "添加/编辑评论",
+          "comment": "添加评论或文本快照",
           "move_up": "上移行",
           "move_down": "下移行",
           "library_row_save": "保存到库",
           "delete_row": "删除行"
+        },
+        "descriptions": {
+          "snapshot_path": "关联的文本快照路径：{path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "将文本快照加载为当前文本 · 关联路径：{path}"
         }
       },
       "comentario_modal": {
         "comment_title": "评论",
+        "comment_placeholder": "评论...",
         "snapshot_select": "选择快照",
-        "snapshot_select_tooltip": "为此行选择文本快照",
-        "snapshot_clear": "移除此行所选快照"
+        "snapshot_clear": "移除此行所选快照",
+        "close_aria": "关闭评论",
+        "snapshot_source_reminder": {
+          "title": "快照来源提示",
+          "message": "此行关联了一个文本快照。选择本地文件前，请查看其来源评论。",
+          "source_comment": "快照来源评论：",
+          "select_file": "选择本地文件",
+          "cancel": "取消",
+          "close_aria": "关闭快照来源提示"
+        },
+        "snapshot_details_confirm": {
+          "title": "使用所选文本快照中的数据？",
+          "message": "在将数据应用到此阅读项之前，请查看所选文本快照中可用的数据。",
+          "replace_reading_name": "替换阅读名称",
+          "set_reading_name": "设置阅读名称",
+          "current_name": "当前名称",
+          "snapshot_name": "快照名称",
+          "empty": "（空）",
+          "replace_time": "替换预计时间",
+          "current_time": "当前时间",
+          "snapshot_estimate": "快照预计时间",
+          "reading_speed": "阅读速度",
+          "apply": "应用",
+          "apply_selected": "应用所选项",
+          "keep": "保留当前值",
+          "close_aria": "关闭快照数据确认"
+        }
       },
       "biblioteca": {
         "library_title": "库",
+        "close_aria": "关闭阅读库",
         "search": "搜索",
         "search_placeholder": "在库中搜索...",
         "empty": "（空）",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "保存到库",
-        "library_save_question": "包含评论？",
+        "close_aria": "关闭保存到库对话框",
+        "library_save_question": "包含评论？如果此阅读条目已选择文本快照，无论选择哪一项，关联都会保存。",
         "yes": "是",
         "no": "否",
         "cancel": "取消"
@@ -499,6 +564,7 @@
         "task_delete_unavailable": "没有可删除的已保存任务。",
         "task_invalid_file": "任务文件无效。",
         "task_invalid_rows": "任务中存在无效行。",
+        "task_duration_too_large": "任务的总预计时长过大。",
         "task_path_outside": "文件必须位于任务文件夹内。",
         "name_required": "任务名称为必填项。",
         "row_text_required": "行文本不能为空。",
@@ -507,6 +573,10 @@
         "library_save_error": "无法保存到库。",
         "library_save_success": "行已保存到库。",
         "library_delete_error": "无法从库中删除。",
+        "column_layout_save_error": "无法保存列布局，下次可能不会保留。",
+        "snapshot_missing": "所选文本快照已不存在。",
+        "snapshot_invalid": "所选文本快照无效。",
+        "snapshot_read_error": "无法读取所选文本快照。",
         "link_blocked": "链接已被阻止。",
         "link_missing": "未找到文件。",
         "link_error": "打开链接时出错。",
@@ -538,7 +608,7 @@
         "title": "阅读速度测试",
         "show_instructions": "显示说明",
         "hide_instructions": "隐藏说明",
-        "intro": "此测试用于通过引导式会话估计你的真实阅读速度。应用会打开文本，并等待你准备好后在悬浮窗口中按 Play（▶）。测试开始后，在读完之前不要按 Pause（⏸）：Pause 会结束测试，而不是暂停计时。只有在想取消测试时才使用 Stop/Reset（⏹）。之后，如果文本包含理解题，你可以查看这些题目；最后，可以根据结果创建一个预设。\n开始前请注意，这些测试文本通常需要 5 到 15 分钟的连续专注，期间不要中断。\n此文本池使用短文本，因此应谨慎解释结果。它不应直接外推到长文本，因为长文本通常会涉及正向因素，例如流畅度和语境积累，也会涉及负向因素，例如心理回顾和疲劳。",
+        "intro": "此测试用于通过引导式会话估计你的真实阅读速度。应用会打开文本，并等待你准备好后在悬浮秒表中按 Play（▶）。测试开始后，在读完之前不要按 Pause（⏸）：Pause 会结束测试，而不是暂停秒表。只有在想取消测试时才使用 Stop/Reset（⏹）。之后，如果文本包含理解题，你可以查看这些题目；最后，可以根据结果创建一个预设。\n开始前请注意，这些测试文本通常需要 5 到 15 分钟的连续专注，期间不要中断。\n此文本池使用短文本，因此应谨慎解释结果。它不应直接外推到长文本，因为长文本通常会涉及正向因素，例如流畅度和语境积累，也会涉及负向因素，例如心理回顾和疲劳。",
         "eligible_count": "符合条件的文件：",
         "show_bundled_entries": "基础测试",
         "get_more_files": "获取更多文件",
@@ -550,28 +620,22 @@
         "close_aria": "关闭阅读速度测试对话框",
         "start_random_confirm": "这会用文本池中一个符合条件的随机文本覆盖当前文本。要继续吗？",
         "reset_confirm": "这会重置整个测试文本池，并重新将其中所有文件标记为未使用。要继续吗？",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "将应用内置的初始测试文件包含到池中",
           "get_more_files": "从 Google Drive 文件夹获取更多测试文件",
           "import_files": "从你的设备导入测试文件",
-          "reset_pool": "重置测试文本池",
           "start_random_text": "用文本池中符合条件的随机文本开始测试",
-          "start_current_text": "用当前文本开始测试"
+          "start_current_text": "使用当前文本，不替换它，也不消耗池中的文件"
+        },
+        "names": {
+          "reset_pool": "重置测试文本池"
         },
         "import": {
-          "import_summary": "导入完成。已导入：{imported}。跳过的重复项：{skippedDuplicates}。验证失败：{failedValidation}。压缩包条目失败：{failedArchiveEntries}。写入失败：{failedWrites}。",
-          "import_conflict": {
-            "title": "导入文件",
-            "message": "一些导入的文件已存在于文本池中。要如何处理重复项？",
-            "detail": "{count} 个目标文件名已存在于文本池中。",
-            "skip_button": "跳过重复项",
-            "replace_button": "替换重复项",
-            "cancel_button": "取消导入"
-          }
+          "import_summary": "导入完成。已导入：{imported}。跳过的重复项：{skippedDuplicates}。验证失败：{failedValidation}。压缩包条目失败：{failedArchiveEntries}。写入失败：{failedWrites}。"
         }
       },
       "prestart": {
-        "reminder": "准备开始时，请在悬浮窗口中按 Play（▶）。测试开始后，在读完之前不要按 Pause（⏸）：Pause 会结束测试，而不是暂停计时。只有在想取消测试时才按 Stop/Reset（⏹）。"
+        "reminder": "准备开始时，请在悬浮秒表中按 Play（▶）。测试开始后，在读完之前不要按 Pause（⏸）：Pause 会结束测试，而不是暂停秒表。只有在想取消测试时才按 Stop/Reset（⏹）。"
       },
       "questions": {
         "title": "阅读理解题",
@@ -580,6 +644,7 @@
         "random_value": "随机作答的期望分数：{percentage}",
         "feedback_title": "反馈",
         "feedback_prefix": "投诉联系：",
+        "summary_aria": "测试摘要",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "评估前必须回答所有问题。",
         "result_summary": "{total} 题中答对 {correct} 题（{percentage}）",
@@ -593,6 +658,7 @@
         "measured_wpm": "测得 WPM",
         "elapsed_time": "时间",
         "word_count": "词数",
+        "summary_aria": "测试摘要",
         "continue_button": "继续"
       },
       "alerts": {
@@ -646,8 +712,8 @@
       }
     },
     "browser_extension": {
-      "title": "浏览器扩展",
-      "subtitle": "Tiempo de lectura",
+      "title": "阅读时间",
+      "subtitle": "浏览器扩展",
       "availability": "现已在 Chrome 上提供。更多浏览器即将支持。",
       "chrome_store_aria": "打开扩展的 Chrome Web Store 页面",
       "close_aria": "关闭浏览器扩展对话框",
@@ -658,6 +724,11 @@
     "info": {
       "loading": "正在加载...",
       "missing_content": "没有可用于“{name}”的内容。",
+      "close_aria": "关闭信息",
+      "media_lightbox": {
+        "title": "放大的屏幕截图预览",
+        "close_aria": "关闭预览"
+      },
       "external": {
         "blocked": "链接已被阻止",
         "error": "打开链接时出错"

@@ -7,8 +7,8 @@
 // Shared stopwatch time core for renderer and main-process consumers.
 // Responsibilities:
 // - Parse stopwatch-style input using the canonical H+:MM:SS grammar.
+// - Parse and format canonical whole-second clock durations directly.
 // - Format stopwatch milliseconds using floor-to-seconds semantics.
-// - Format derived second totals using nearest-second rounding.
 // - Support both browser-script and CommonJS consumers.
 
 // =============================================================================
@@ -27,9 +27,29 @@
   // Helpers (pure stopwatch parsing + formatting)
   // =============================================================================
   function createStopwatchTimeUtils() {
+    function isWholeClockSeconds(value) {
+      return Number.isSafeInteger(value) && value >= 0;
+    }
+
+    function getClockInputMatch(input) {
+      if (typeof input !== 'string') return null;
+      const match = input.match(/^(\d+):([0-5]\d):([0-5]\d)$/);
+      return match || null;
+    }
+
+    function parseClockSeconds(input) {
+      const match = getClockInputMatch(input);
+      if (match === null) return null;
+      const hours = BigInt(match[1]);
+      const minutes = BigInt(match[2]);
+      const seconds = BigInt(match[3]);
+      const totalSeconds = (hours * 3600n) + (minutes * 60n) + seconds;
+      return totalSeconds <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(totalSeconds) : null;
+    }
+
     function parseStopwatchInput(input) {
-      const match = String(input || '').match(/^(\d+):([0-5]\d):([0-5]\d)$/);
-      if (!match) return null;
+      const match = getClockInputMatch(input);
+      if (match === null) return null;
 
       const hours = Number.parseInt(match[1], 10);
       const minutes = Number.parseInt(match[2], 10);
@@ -41,14 +61,33 @@
       return (hours * 3600 + minutes * 60 + seconds) * 1000;
     }
 
+    function decomposeClockSeconds(totalSeconds) {
+      return {
+        hours: Math.floor(totalSeconds / 3600),
+        minutes: Math.floor((totalSeconds % 3600) / 60),
+        seconds: totalSeconds % 60,
+      };
+    }
+
     function formatClockFromSeconds(totalSeconds) {
       const safeTotalSeconds = Number.isFinite(totalSeconds)
         ? Math.max(0, totalSeconds)
         : 0;
-      const hours = Math.floor(safeTotalSeconds / 3600).toString().padStart(2, '0');
-      const minutes = Math.floor((safeTotalSeconds % 3600) / 60).toString().padStart(2, '0');
-      const seconds = (safeTotalSeconds % 60).toString().padStart(2, '0');
+      const timeParts = decomposeClockSeconds(safeTotalSeconds);
+      const hours = timeParts.hours.toString().padStart(2, '0');
+      const minutes = timeParts.minutes.toString().padStart(2, '0');
+      const seconds = timeParts.seconds.toString().padStart(2, '0');
       return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function formatClockSeconds(totalSeconds) {
+      if (!isWholeClockSeconds(totalSeconds)) return null;
+      return formatClockFromSeconds(totalSeconds);
+    }
+
+    function getClockTimeParts(totalSeconds) {
+      if (!isWholeClockSeconds(totalSeconds)) return null;
+      return decomposeClockSeconds(totalSeconds);
     }
 
     function formatStopwatchMs(ms) {
@@ -56,17 +95,12 @@
       return formatClockFromSeconds(totalSeconds);
     }
 
-    function formatRoundedSeconds(totalSeconds) {
-      const roundedTotalSeconds = Number.isFinite(Number(totalSeconds)) && Number(totalSeconds) > 0
-        ? Math.round(Number(totalSeconds))
-        : 0;
-      return formatClockFromSeconds(roundedTotalSeconds);
-    }
-
     return {
+      formatClockSeconds,
       parseStopwatchInput,
+      parseClockSeconds,
       formatStopwatchMs,
-      formatRoundedSeconds,
+      getClockTimeParts,
     };
   }
 

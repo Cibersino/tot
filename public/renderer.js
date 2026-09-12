@@ -10,7 +10,7 @@
 // - Consume required renderer surfaces that must be loaded before renderer.js runs.
 // - Keep current-text preview, counts, and timing displays in sync with main-owned updates.
 // - Coordinate clipboard, presets, text extraction, Text Editor, Task Editor, and reading-test entry flows.
-// - Host window-level integrations such as the info modal, menu actions, and stopwatch controller.
+// - Host window-level integrations such as menu actions and the stopwatch controller.
 
 // =============================================================================
 // Logger and startup constants
@@ -87,6 +87,7 @@ if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.isCurrentTextProcessingActive !== 'function'
   || typeof textExtractionStatusUi.isProcessingModeActive !== 'function'
   || typeof textExtractionStatusUi.isStandaloneFullRefreshPendingActive !== 'function'
+  || typeof textExtractionStatusUi.setTerminalUnavailable !== 'function'
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
 }
@@ -95,7 +96,19 @@ const textExtractionOcrActivation = window.TextExtractionOcrActivation || null;
 const textExtractionOcrActivationRecovery = window.TextExtractionOcrActivationRecovery || null;
 const textExtractionOcrDisconnect = window.TextExtractionOcrDisconnect || null;
 const browserExtensionModal = window.BrowserExtensionModal || null;
+let browserExtensionCapabilityAvailable = !!browserExtensionModal;
 const mainLogoLinks = window.MainLogoLinks || null;
+let mainLogoLinksCapabilityAvailable = !!mainLogoLinks;
+const activeCustomPromptTranslationOwners = [
+  window.SnapshotSaveTagsModal,
+  window.TextExtractionPdfOptionsModal,
+  window.TextExtractionRouteChoiceModal,
+  window.TextExtractionApplyModal,
+  window.TextExtractionBatchPlanningModal,
+  window.TextExtractionBatchFinalModal,
+  window.TextExtractionSingleFileHeavyPdfModal,
+  window.TextExtractionOcrActivationDisclosureModal,
+];
 const currentTextSelectorSection = window.CurrentTextSelectorSection || null;
 if (!currentTextSelectorSection
   || typeof currentTextSelectorSection.applyTranslations !== 'function'
@@ -103,25 +116,27 @@ if (!currentTextSelectorSection
   || typeof currentTextSelectorSection.getClipboardRepeatCount !== 'function'
   || typeof currentTextSelectorSection.renderPreview !== 'function'
   || typeof currentTextSelectorSection.setEditorLaunchPending !== 'function'
-  || typeof currentTextSelectorSection.setInteractionLocked !== 'function') {
+  || typeof currentTextSelectorSection.setInteractionLocked !== 'function'
+  || typeof currentTextSelectorSection.setPreviewSpoilerEnabled !== 'function') {
   throw new Error('[renderer] CurrentTextSelectorSection unavailable; cannot continue');
 }
 const resultsTimeMultiplier = window.ResultsTimeMultiplier;
 if (!resultsTimeMultiplier
-  || typeof resultsTimeMultiplier.clearBaseTotalSeconds !== 'function'
-  || typeof resultsTimeMultiplier.setBaseTotalSeconds !== 'function') {
+  || typeof resultsTimeMultiplier.clearBaseReadingDuration !== 'function'
+  || typeof resultsTimeMultiplier.setBaseReadingDuration !== 'function') {
   throw new Error('[renderer] ResultsTimeMultiplier unavailable; cannot continue');
 }
 const currentTextRuntime = window.CurrentTextRuntime || null;
 if (!currentTextRuntime
   || typeof currentTextRuntime.applyCurrentTextProcessingState !== 'function'
+  || typeof currentTextRuntime.copyCurrentTextProcessingState !== 'function'
   || typeof currentTextRuntime.configure !== 'function'
   || typeof currentTextRuntime.getCurrentText !== 'function'
   || typeof currentTextRuntime.handleCurrentTextUpdated !== 'function'
-  || typeof currentTextRuntime.installCurrentTextState !== 'function'
   || typeof currentTextRuntime.requestDerivedRefresh !== 'function'
   || typeof currentTextRuntime.requestStatsDisplayRefresh !== 'function'
   || typeof currentTextRuntime.requestTimeOnlyRefresh !== 'function'
+  || typeof currentTextRuntime.setTerminalPresentationUnavailable !== 'function'
   || typeof currentTextRuntime.startDeferredBootstrapSettle !== 'function'
   || typeof currentTextRuntime.syncBootstrapState !== 'function') {
   throw new Error('[renderer] CurrentTextRuntime unavailable; cannot continue');
@@ -138,6 +153,14 @@ if (!textTimeCalculatorLauncher
   || typeof textTimeCalculatorLauncher.setInteractionLocked !== 'function') {
   throw new Error('[renderer] TextTimeCalculatorLauncher unavailable; cannot continue');
 }
+const infoModal = window.InfoModal || null;
+if (!infoModal
+  || typeof infoModal.applyTranslations !== 'function'
+  || typeof infoModal.init !== 'function'
+  || typeof infoModal.isOpen !== 'function'
+  || typeof infoModal.open !== 'function') {
+  throw new Error('[renderer] InfoModal unavailable; cannot continue');
+}
 const readingSpeedTestUi = window.ReadingSpeedTestUi || null;
 if (!readingSpeedTestUi
   || typeof readingSpeedTestUi.applyTranslations !== 'function'
@@ -147,6 +170,16 @@ if (!readingSpeedTestUi
   || typeof readingSpeedTestUi.isSessionActive !== 'function'
   || typeof readingSpeedTestUi.openEntryFlow !== 'function') {
   throw new Error('[renderer] ReadingSpeedTestUi unavailable; cannot continue');
+}
+const {
+  configure: configureCurrentTextSnapshots,
+  saveSnapshot,
+  loadSnapshot,
+} = window.CurrentTextSnapshots || {};
+if (typeof configureCurrentTextSnapshots !== 'function'
+  || typeof saveSnapshot !== 'function'
+  || typeof loadSnapshot !== 'function') {
+  log.warn('CurrentTextSnapshots bridge unavailable; snapshot actions disabled.');
 }
 
 // =============================================================================
@@ -166,16 +199,21 @@ const cronTitle = document.getElementById('cron-title');
 
 const toggleVF = document.getElementById('toggleVF');
 const editorLoader = document.getElementById('editorLoader');
+const editorLoaderStatus = document.getElementById('editorLoaderStatus');
 const startupSplash = document.getElementById('startupSplash');
 const cronoDisplayInput = document.getElementById('cronoDisplay');
 const cronoToggleBtnMain = document.getElementById('cronoToggle');
 const cronoResetBtnMain = document.getElementById('cronoReset');
 
-const presetsSelect = document.getElementById('presets');
+const presetsHost = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
 const btnEditPreset = document.getElementById('btnEditPreset');
 const btnDeletePreset = document.getElementById('btnDeletePreset');
 const btnResetDefaultPresets = document.getElementById('btnResetDefaultPresets');
+
+// The custom combobox must not be exposed before its localized accessible name
+// is applied during the initial translation pass.
+if (presetsHost) presetsHost.hidden = true;
 const presetDescription = document.getElementById('presetDescription');
 
 // =============================================================================
@@ -187,6 +225,8 @@ let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4;
 let modoConteo = 'preciso';
 let idiomaActual = DEFAULT_LANG;
 let settingsCache = null;
+let settingsApplicationQueue = Promise.resolve();
+let mainRendererI18nTerminal = false;
 let cronoController = null;
 // READY stays blocked until both main signals and renderer listeners are fully armed.
 let rendererReadyState = 'PRE_READY';
@@ -198,20 +238,27 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
-let bootstrapCurrentTextPayload = null;
 let textExtractionPrepareAttemptId = 0;
-let bootstrapCurrentTextProcessingState = null;
 let lastHelpTipIdx = -1;
 let lastProcessingLockNoticeAt = 0;
 
-const { WpmControls } = window;
+const { RendererCombobox, WpmControls } = window;
+if (!RendererCombobox || typeof RendererCombobox.create !== 'function') {
+  throw new Error('[renderer] RendererCombobox unavailable; cannot continue');
+}
+const presetsCombobox = RendererCombobox.create({
+  host: presetsHost,
+  mode: 'select',
+  options: [],
+  value: '',
+});
 if (!WpmControls || typeof WpmControls.createController !== 'function') {
   throw new Error('[renderer] WpmControls unavailable; cannot continue');
 }
 const wpmControls = WpmControls.createController({
   wpmInput,
   wpmSlider,
-  presetsSelect,
+  presetsCombobox,
   presetDescription,
   onPresetSelectionChanged: () => {
     syncPresetActionButtons();
@@ -226,6 +273,9 @@ if (!wpmControls
   || typeof wpmControls.handlePresetSelectionChange !== 'function'
   || typeof wpmControls.loadPresets !== 'function') {
   throw new Error('[renderer] WpmControls controller unavailable; cannot continue');
+}
+if (typeof configureCurrentTextSnapshots === 'function') {
+  configureCurrentTextSnapshots({ getCurrentWpm: () => wpmControls.getWpm() });
 }
 
 if (!window.electronAPI || typeof window.electronAPI.resolveCurrentTextProcessing !== 'function') {
@@ -266,7 +316,7 @@ if (!currentTextRefreshPolicy
 const PROCESSING_LOCK_NOTICE_THROTTLE_MS = 1000;
 
 function isRendererReady() {
-  return rendererReadyState === 'READY';
+  return !mainRendererI18nTerminal && rendererReadyState === 'READY';
 }
 
 function isProcessingModeActive() {
@@ -292,7 +342,7 @@ function setControlInteractionLocked(element, locked) {
 }
 
 function hasSelectedPreset() {
-  return !!(presetsSelect && typeof presetsSelect.value === 'string' && presetsSelect.value.trim());
+  return !!presetsCombobox.getValue().trim();
 }
 
 function syncPresetActionButtons({ interactionLocked } = {}) {
@@ -316,6 +366,24 @@ function isReadingTestSessionActive() {
   return !!(readingSpeedTestUi && readingSpeedTestUi.isSessionActive());
 }
 
+function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
+  const wasAvailable = mainLogoLinksCapabilityAvailable;
+  mainLogoLinksCapabilityAvailable = false;
+  ['devLogoLink', 'kofiLogoLink'].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) setControlInteractionLocked(element, true);
+  });
+  if (wasAvailable) {
+    log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, err || '');
+    return;
+  }
+  log.warnOnce(
+    'renderer.mainLogoLinks.unavailable',
+    `Main logo links unavailable for this renderer lifetime: ${reason}`,
+    err || ''
+  );
+}
+
 function syncMainInteractionLockUi() {
   const locked = !isRendererReady()
     || isProcessingModeActive()
@@ -328,7 +396,7 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(btnHelp, locked);
   setControlInteractionLocked(wpmInput, locked);
   setControlInteractionLocked(wpmSlider, locked);
-  setControlInteractionLocked(presetsSelect, locked);
+  presetsCombobox.update({ disabled: locked });
   setControlInteractionLocked(btnNewPreset, locked);
   syncPresetActionButtons({ interactionLocked: locked });
   setControlInteractionLocked(btnResetDefaultPresets, locked);
@@ -339,8 +407,12 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(cronoToggleBtnMain, locked);
   setControlInteractionLocked(cronoResetBtnMain, locked);
   if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
-    browserExtensionModal.setInteractionLocked(locked);
+    browserExtensionModal.setInteractionLocked(locked || !browserExtensionCapabilityAvailable);
   } else {
+    if (!browserExtensionCapabilityAvailable) {
+      const element = document.getElementById('browserExtensionLogoLink');
+      if (element) setControlInteractionLocked(element, true);
+    }
     log.warnOnce(
       'renderer.browserExtensionModal.setInteractionLocked.unavailable',
       'BrowserExtensionModal.setInteractionLocked unavailable; browser extension entry lock state will not sync.'
@@ -385,7 +457,7 @@ function hasBrowserExtensionBlockingModalOpen() {
 }
 
 function hasBlockingMainWindowModalOpen() {
-  return isAriaHiddenElementVisible('infoModal')
+  return infoModal.isOpen()
     || hasBrowserExtensionBlockingModalOpen()
     || isAriaHiddenElementVisible('textExtractionPdfOptionsModal')
     || isAriaHiddenElementVisible('textExtractionRouteModal')
@@ -523,6 +595,7 @@ function scheduleDeferredBootstrapSettleAfterUnlock() {
 }
 
 function maybeUnblockReady() {
+  if (mainRendererI18nTerminal) return;
   if (!rendererInvariantsReady || !startupReadyReceived) return;
   if (rendererReadyState === 'READY') return;
   rendererReadyState = 'READY';
@@ -535,15 +608,17 @@ function maybeUnblockReady() {
 
   sendSplashRemoved();
   syncMainInteractionLockUi();
+  // Keep the bootstrap current-text settle behind the READY/splash unlock because its synchronous recount work can delay the first useful paint.
+  // Current-text derived results may remain pending at READY and settle immediately afterward.
   scheduleDeferredBootstrapSettleAfterUnlock();
 }
 
 function markRendererInvariantsReady() {
   if (rendererInvariantsReady) return;
-  if (!ipcSubscriptionsArmed || !uiListenersArmed) {
+  if (!ipcSubscriptionsArmed || !uiListenersArmed || !hasCurrentTextSubscription) {
     log.warn(
       'BOOTSTRAP: Renderer invariants marked ready before all listeners/subscriptions were armed.',
-      { ipcSubscriptionsArmed, uiListenersArmed }
+      { ipcSubscriptionsArmed, uiListenersArmed, hasCurrentTextSubscription }
     );
   }
   rendererInvariantsReady = true;
@@ -563,24 +638,30 @@ function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage }
   return api[methodName].bind(api);
 }
 
+function getRequiredElectronMethod(methodName) {
+  const api = window.electronAPI;
+  if (!api || typeof api[methodName] !== 'function') {
+    throw new Error(`[renderer] electronAPI.${methodName} unavailable; cannot continue bootstrap`);
+  }
+  return api[methodName].bind(api);
+}
+
 // =============================================================================
 // i18n wiring
 // =============================================================================
 const {
-  loadRendererTranslations,
+  transitionRendererTranslations,
   tRenderer,
   msgRenderer,
   getRendererValue,
-  applyWindowLanguageAttributes,
 } = window.RendererI18n || {};
-if (!loadRendererTranslations
+if (!transitionRendererTranslations
   || !tRenderer
   || !msgRenderer
-  || !getRendererValue
-  || !applyWindowLanguageAttributes) {
+  || !getRendererValue) {
+  reportTerminalRendererI18nFailure('startup-api');
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
-applyWindowLanguageAttributes(DEFAULT_LANG);
 
 function getHelpTipKeyList() {
   const tips = getRendererValue('renderer.tips');
@@ -602,43 +683,71 @@ const getCronoIcons = () => ({
 });
 
 function applyTranslations() {
-  if (!tRenderer) return;
   const applyAriaLabel = (el, key) => {
     if (!el) return;
     const aria = tRenderer(key);
-    if (aria) el.setAttribute('aria-label', aria);
+    if (!aria) return;
+    el.setAttribute('aria-label', aria);
   };
   textExtractionStatusUi.applyTranslations({ tRenderer, msgRenderer });
   textExtractionDragDrop.applyTranslations({ tRenderer });
   readingSpeedTestUi.applyTranslations();
   currentTextSelectorSection.applyTranslations({ tRenderer });
-  textTimeCalculatorLauncher.applyTranslations();
-  if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
-    mainLogoLinks.applyTranslations({ tRenderer });
+  textTimeCalculatorLauncher.applyTranslations({ tRenderer });
+  if (mainLogoLinksCapabilityAvailable
+    && mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
+    try {
+      mainLogoLinks.applyTranslations({ tRenderer });
+    } catch (err) {
+      setMainLogoLinksCapabilityUnavailable('translation application failed', err);
+    }
   } else {
-    log.warn('MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.');
+    setMainLogoLinksCapabilityUnavailable('translation application unavailable');
   }
   if (browserExtensionModal && typeof browserExtensionModal.applyTranslations === 'function') {
-    browserExtensionModal.applyTranslations();
+    try {
+      browserExtensionModal.applyTranslations();
+    } catch (err) {
+      log.warn('BrowserExtensionModal translation application failed; browser extension entry disabled.', err);
+      browserExtensionCapabilityAvailable = false;
+      if (typeof browserExtensionModal.setInteractionLocked === 'function') {
+        browserExtensionModal.setInteractionLocked(true);
+      } else {
+        const element = document.getElementById('browserExtensionLogoLink');
+        if (element) setControlInteractionLocked(element, true);
+      }
+    }
   } else {
-    log.warn('BrowserExtensionModal.applyTranslations unavailable; browser extension labels will use defaults.');
+    log.warn('BrowserExtensionModal.applyTranslations unavailable; browser extension entry disabled.');
+    browserExtensionCapabilityAvailable = false;
+    if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
+      browserExtensionModal.setInteractionLocked(true);
+    } else {
+      const element = document.getElementById('browserExtensionLogoLink');
+      if (element) setControlInteractionLocked(element, true);
+    }
   }
-  const infoModalLoading = document.getElementById('infoModalLoading');
-  if (infoModalLoading) {
-    infoModalLoading.textContent = tRenderer('renderer.info.loading');
+  infoModal.applyTranslations();
+  activeCustomPromptTranslationOwners.forEach((owner) => {
+    if (owner && typeof owner.applyTranslations === 'function') {
+      owner.applyTranslations();
+    }
+  });
+  if (editorLoaderStatus && editorLoader?.classList.contains('visible')) {
+    editorLoaderStatus.textContent = tRenderer('renderer.main.processing.editor_loading');
   }
   // Presets
-  if (btnNewPreset) btnNewPreset.title = tRenderer('renderer.main.tooltips.new_preset');
-  if (btnEditPreset) btnEditPreset.title = tRenderer('renderer.main.tooltips.edit_preset');
-  if (btnDeletePreset) btnDeletePreset.title = tRenderer('renderer.main.tooltips.delete_preset');
-  if (btnResetDefaultPresets) btnResetDefaultPresets.title = tRenderer('renderer.main.tooltips.reset_presets');
-  applyAriaLabel(btnNewPreset, 'renderer.main.tooltips.new_preset');
-  applyAriaLabel(btnEditPreset, 'renderer.main.tooltips.edit_preset');
-  applyAriaLabel(btnDeletePreset, 'renderer.main.tooltips.delete_preset');
-  applyAriaLabel(btnResetDefaultPresets, 'renderer.main.tooltips.reset_presets');
-  // Floating Stopwatch toggle
-  const vfSwitchLabel = document.querySelector('.vf-switch-wrapper label.switch');
-  if (vfSwitchLabel) vfSwitchLabel.title = tRenderer('renderer.main.tooltips.flotante_window');
+  [
+    [btnNewPreset, 'renderer.main.names.new_preset'],
+    [btnEditPreset, 'renderer.main.names.edit_preset'],
+    [btnDeletePreset, 'renderer.main.names.delete_preset'],
+    [btnResetDefaultPresets, 'renderer.main.names.reset_presets'],
+  ].forEach(([element, key]) => {
+    if (!element) return;
+    const name = tRenderer(key);
+    element.setAttribute('aria-label', name);
+    element.setAttribute('data-tot-tooltip', name);
+  });
   // Section titles
   if (velTitle) velTitle.textContent = tRenderer('renderer.main.speed.title');
   if (resultsTitle) resultsTitle.textContent = tRenderer('renderer.main.results.title');
@@ -648,18 +757,21 @@ function applyTranslations() {
   if (wpmLabel) wpmLabel.textContent = tRenderer('renderer.main.speed.wpm_label');
   applyAriaLabel(wpmInput, 'renderer.main.aria.wpm_input');
   applyAriaLabel(wpmSlider, 'renderer.main.aria.wpm_slider');
-  applyAriaLabel(presetsSelect, 'renderer.main.aria.speed_presets');
+  presetsCombobox.update({ ariaLabel: tRenderer('renderer.main.aria.speed_presets') });
+  if (presetsHost) presetsHost.hidden = false;
   // Results: precise mode label
   const togglePrecisoLabel = document.querySelector('.toggle-wrapper .toggle-label');
   if (togglePrecisoLabel) {
     togglePrecisoLabel.textContent = tRenderer('renderer.main.results.precise_mode');
-    togglePrecisoLabel.title = tRenderer('renderer.main.results.precise_tooltip');
     const toggleWrapper = togglePrecisoLabel.closest('.toggle-wrapper');
     if (toggleWrapper) {
-      toggleWrapper.title = tRenderer('renderer.main.results.precise_tooltip');
+      toggleWrapper.setAttribute('data-tot-tooltip', tRenderer('renderer.main.help.precise_mode'));
     }
   }
-  applyAriaLabel(toggleModoPreciso, 'renderer.main.aria.precise_mode_toggle');
+  const preciseModeDescription = document.getElementById('preciseModeDescription');
+  if (preciseModeDescription) {
+    preciseModeDescription.textContent = tRenderer('renderer.main.help.precise_mode');
+  }
   // Stopwatch: speed label and controls aria-label
   const realWpmLabel = document.querySelector('.realwpm');
   if (realWpmLabel && realWpmLabel.firstChild) {
@@ -675,27 +787,79 @@ function applyTranslations() {
   const cronoResetBtn = document.getElementById('cronoReset');
   const vfSwitchWrapper = document.querySelector('.vf-switch-wrapper');
   applyAriaLabel(cronoDisplayEl, 'renderer.main.aria.crono_display');
-  applyAriaLabel(cronoToggleBtn, 'renderer.main.aria.crono_toggle');
-  applyAriaLabel(cronoResetBtn, 'renderer.main.aria.crono_reset');
-  applyAriaLabel(toggleVF, 'renderer.main.aria.floating_window_toggle');
+  [
+    [cronoToggleBtn, 'renderer.main.names.crono_toggle'],
+    [cronoResetBtn, 'renderer.main.names.crono_reset'],
+  ].forEach(([element, key]) => {
+    if (!element) return;
+    const name = tRenderer(key);
+    element.setAttribute('aria-label', name);
+    element.setAttribute('data-tot-tooltip', name);
+  });
+  applyAriaLabel(toggleVF, 'renderer.main.names.floating_window');
   applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');
+  if (vfSwitchWrapper) {
+    vfSwitchWrapper.setAttribute('data-tot-tooltip', tRenderer('renderer.main.names.floating_window'));
+  }
   const iconsCrono = getCronoIcons();
   if (cronoController && typeof cronoController.updateIcons === 'function') {
     cronoController.updateIcons(iconsCrono);
   }
-  // Help button title
+  // Help button name and visual identification
   if (btnHelp) {
-    const helpTitle = tRenderer('renderer.main.tooltips.help_button');
-    if (helpTitle) btnHelp.setAttribute('title', helpTitle);
+    const helpName = tRenderer('renderer.main.names.help_button');
+    if (helpName) {
+      btnHelp.setAttribute('aria-label', helpName);
+      btnHelp.setAttribute('data-tot-tooltip', helpName);
+    }
   }
 }
 
-// =============================================================================
-// Snapshot helpers
-// =============================================================================
-const { saveSnapshot, loadSnapshot } = window.CurrentTextSnapshots || {};
-if (typeof saveSnapshot !== 'function' || typeof loadSnapshot !== 'function') {
-  log.warn('CurrentTextSnapshots bridge unavailable; snapshot actions disabled.');
+async function transitionMainRendererLanguage(
+  language,
+  { candidateSettings = settingsCache, previousSettings = settingsCache } = {}
+) {
+  await transitionRendererTranslations(language, {
+    applyTranslations: ({ language: appliedLanguage, restoring }) => {
+      idiomaActual = appliedLanguage;
+      settingsCache = restoring ? previousSettings : candidateSettings;
+      applyTranslations();
+    },
+  });
+}
+
+function reportRendererI18nFailure(err, { startup = false } = {}) {
+  const transition = err && err.rendererI18nTransition;
+  if (!transition) {
+    return;
+  }
+  if (!startup && transition && !transition.restorationFailed && transition.hadEstablishedState) {
+    log.error('Renderer language transition failed; previous translation state remains authoritative:', err);
+    return;
+  }
+
+  log.error('Renderer i18n failure requires window closure:', err);
+  reportTerminalRendererI18nFailure(startup ? 'startup' : 'transition-restoration');
+}
+
+function reportTerminalRendererI18nFailure(kind) {
+  mainRendererI18nTerminal = true;
+  currentTextRuntime.setTerminalPresentationUnavailable();
+  textExtractionStatusUi.setTerminalUnavailable();
+  syncMainInteractionLockUi();
+  if (!window.electronAPI || typeof window.electronAPI.reportRendererI18nFailure !== 'function') {
+    log.warn('electronAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
+    return;
+  }
+  try {
+    window.electronAPI.reportRendererI18nFailure({
+      kind,
+    });
+  } catch (reportErr) {
+    log.warn('electronAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    if (typeof window.close === 'function') window.close();
+  }
 }
 
 // =============================================================================
@@ -738,11 +902,6 @@ function updateTimeOnlyFromStats() {
   currentTextRuntime.requestTimeOnlyRefresh('wpm change');
 }
 
-function installCurrentTextState(text) {
-  currentTextRuntime.installCurrentTextState(text);
-  return getCurrentTextValue();
-}
-
 function setCurrentTextAndUpdateUI(payload, options = {}) {
   currentTextRuntime.handleCurrentTextUpdated(payload, {
     onAuthoritativeTextChanged: (previousText, nextText) => {
@@ -757,6 +916,7 @@ function setCurrentTextAndUpdateUI(payload, options = {}) {
 // Listen for stopwatch status from main (authoritative state)
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
+    if (mainRendererI18nTerminal) return;
     try {
       if (cronoController && typeof cronoController.handleState === 'function') {
         cronoController.handleState(state);
@@ -792,38 +952,47 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
 // =============================================================================
 // Bootstrapping and subscriptions
 // =============================================================================
-const settingsChangeHandler = async (newSettings) => {
+async function applySettingsChange(newSettings) {
   try {
     const previousSettings = settingsCache || {};
     const previousCountContext = {
       modoConteo,
       idioma: idiomaActual,
     };
-    settingsCache = newSettings || {};
-    const nuevoIdioma = settingsCache.language || DEFAULT_LANG;
+    const nextSettings = newSettings && typeof newSettings === 'object' ? newSettings : {};
+    const nuevoIdioma = nextSettings.language || DEFAULT_LANG;
     const idiomaCambio = (nuevoIdioma !== idiomaActual);
     let presetOutcome = null;
+    let recoveredLanguageFailure = false;
     if (idiomaCambio) {
-      idiomaActual = nuevoIdioma;
-      applyWindowLanguageAttributes(idiomaActual);
       try {
-        await loadRendererTranslations(idiomaActual);
+        await transitionMainRendererLanguage(nuevoIdioma, {
+          candidateSettings: nextSettings,
+          previousSettings,
+        });
       } catch (err) {
-        log.warn(`loadRendererTranslations(${idiomaActual}) failed (ignored):`, err);
+        reportRendererI18nFailure(err);
+        const transition = err && err.rendererI18nTransition;
+        if (!transition || !transition.hadEstablishedState || transition.restorationFailed) {
+          return;
+        }
+        // The failed language is not part of this renderer's established state,
+        // but independent settings from the same full payload still apply.
+        settingsCache = { ...nextSettings, language: idiomaActual };
+        recoveredLanguageFailure = true;
       }
-      try {
-        applyTranslations();
-      } catch (err) {
-        log.warn('applyTranslations failed after settings change (ignored):', err);
+      if (!recoveredLanguageFailure) {
+        try {
+          const presetLoadResult = await loadPresets({ settingsSnapshot: settingsCache });
+          presetOutcome = presetLoadResult && presetLoadResult.selectionOutcome
+            ? presetLoadResult.selectionOutcome
+            : null;
+        } catch (err) {
+          log.error('Error loading presets after language change:', err);
+        }
       }
-      try {
-        const presetLoadResult = await loadPresets({ settingsSnapshot: settingsCache });
-        presetOutcome = presetLoadResult && presetLoadResult.selectionOutcome
-          ? presetLoadResult.selectionOutcome
-          : null;
-      } catch (err) {
-        log.error('Error loading presets after language change:', err);
-      }
+    } else {
+      settingsCache = nextSettings;
     }
     const modeChanged = !!(settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo);
     if (modeChanged) {
@@ -853,34 +1022,43 @@ const settingsChangeHandler = async (newSettings) => {
   } catch (err) {
     log.error('Error handling settings change:', err);
   }
-};
+}
 
-function armIpcSubscriptions() {
-  // Subscribe to updates from main (current text changes)
-  if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
-    hasCurrentTextSubscription = true;
-    window.electronAPI.onCurrentTextUpdated((payload) => {
-      try {
-        if (!isRendererReady()) {
-          bootstrapCurrentTextPayload = payload;
-          const bootstrapText = payload && typeof payload === 'object' && !Array.isArray(payload)
-            ? payload.text
-            : payload;
-          installCurrentTextState(bootstrapText || '');
-          log.warnOnce(
-            'BOOTSTRAP:renderer.preReady.currentTextUpdated',
-            'current-text-updated received pre-READY; state updated only.'
-          );
-          return;
-        }
-        setCurrentTextAndUpdateUI(payload || '', { applyRules: true });
-      } catch (err) {
-        log.error('Error handling current-text-updated:', err);
-      }
-    });
-  } else if (window.electronAPI) {
+function enqueueMainSemanticWork(work) {
+  const run = async () => {
+    // Window closure is coordinated asynchronously through the main process.
+    // Do not admit queued main-renderer semantic work after terminal i18n failure.
+    if (mainRendererI18nTerminal) return;
+    return work();
+  };
+  settingsApplicationQueue = settingsApplicationQueue.then(run, run);
+  return settingsApplicationQueue;
+}
+
+function settingsChangeHandler(newSettings) {
+  const run = () => applySettingsChange(newSettings);
+  // Preload listeners do not await async callbacks. Admit live settings after
+  // the preceding bootstrap or settings semantic operation has settled.
+  return enqueueMainSemanticWork(run);
+}
+
+function armCurrentTextSubscription() {
+  if (hasCurrentTextSubscription) return;
+  if (!window.electronAPI || typeof window.electronAPI.onCurrentTextUpdated !== 'function') {
     throw new Error('[renderer] electronAPI.onCurrentTextUpdated unavailable; cannot maintain current text synchronization');
   }
+
+  window.electronAPI.onCurrentTextUpdated((payload) => {
+    try {
+      setCurrentTextAndUpdateUI(payload, { applyRules: !mainRendererI18nTerminal });
+    } catch (err) {
+      log.error('Error handling current-text-updated:', err);
+    }
+  });
+  hasCurrentTextSubscription = true;
+}
+
+function armIpcSubscriptions() {
 
   // Subscribe to preset create/update notifications from main
   if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
@@ -913,6 +1091,7 @@ function armIpcSubscriptions() {
   if (window.electronAPI) {
     if (typeof window.electronAPI.onStartupReady === 'function') {
       window.electronAPI.onStartupReady(() => {
+        if (mainRendererI18nTerminal) return;
         if (startupReadyReceived) {
           log.warnOnce(
             'renderer.startup.ready.duplicate',
@@ -949,11 +1128,8 @@ function armIpcSubscriptions() {
     if (typeof window.electronAPI.onCurrentTextProcessingStateChanged === 'function') {
       window.electronAPI.onCurrentTextProcessingStateChanged((state) => {
         try {
-          if (!isRendererReady()) {
-            bootstrapCurrentTextProcessingState = state;
-          }
-          textExtractionStatusUi.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
           currentTextRuntime.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
+          textExtractionStatusUi.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
           syncMainInteractionLockUi();
         } catch (err) {
           log.error('Error handling current-text-processing-state-changed:', err);
@@ -1068,7 +1244,7 @@ function setupToggleModoPreciso() {
   }
 }
 
-async function runStartupOrchestrator() {
+async function runMainStartup() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
       dedupeKey: 'BOOTSTRAP:renderer.ipc.getAppConfig.unavailable',
@@ -1114,111 +1290,52 @@ async function runStartupOrchestrator() {
       settingsCache = {};
       settingsSnapshot = settingsCache;
     }
+    currentTextSelectorSection.setPreviewSpoilerEnabled(settingsCache.previewSpoilerEnabled);
 
-    // Load and apply renderer translations
+    // Translation state and required semantic application establish the renderer UI.
     try {
-      applyWindowLanguageAttributes(idiomaActual);
-      await loadRendererTranslations(idiomaActual);
+      await transitionMainRendererLanguage(idiomaActual);
     } catch (err) {
-      log.warn('BOOTSTRAP: initial translations failed; using defaults:', err);
-    }
-    try {
-      applyTranslations();
-    } catch (err) {
-      log.warn('BOOTSTRAP: applyTranslations failed (ignored):', err);
+      reportRendererI18nFailure(err, { startup: true });
+      return;
     }
 
-    let initialText = '';
-    const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentText.unavailable',
-      unavailableMessage: 'getCurrentText unavailable; bootstrap will use empty text.'
-    });
-    if (getCurrentText) {
-      try {
-        initialText = String(await getCurrentText() || '');
-      } catch (err) {
-        log.warn('BOOTSTRAP: getCurrentText failed; bootstrap will use empty text:', err);
-        initialText = '';
+    const getCurrentText = getRequiredElectronMethod('getCurrentText');
+    let initialText = await getCurrentText();
+    if (typeof initialText !== 'string') {
+      throw new Error('getCurrentText returned a non-string value');
+    }
+
+    const getCurrentTextProcessingState = getRequiredElectronMethod('getCurrentTextProcessingState');
+    const currentTextProcessingResult = await getCurrentTextProcessingState();
+    if (!currentTextProcessingResult
+      || typeof currentTextProcessingResult !== 'object'
+      || Array.isArray(currentTextProcessingResult)
+      || typeof currentTextProcessingResult.ok !== 'boolean') {
+      throw new Error('getCurrentTextProcessingState returned an invalid result envelope');
+    }
+    if (currentTextProcessingResult.ok === false) {
+      if (typeof currentTextProcessingResult.code !== 'string' || !currentTextProcessingResult.code) {
+        throw new Error('getCurrentTextProcessingState returned an invalid failed result');
       }
+      throw new Error(`getCurrentTextProcessingState failed: ${currentTextProcessingResult.code}`);
     }
-
-    const getCurrentTextProcessingState = getOptionalElectronMethod('getCurrentTextProcessingState', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getCurrentTextProcessingState.unavailable',
-      unavailableMessage: 'getCurrentTextProcessingState unavailable; current-text pending bootstrap cannot continue.'
-    });
-    if (!getCurrentTextProcessingState) {
-      throw new Error('[renderer] electronAPI.getCurrentTextProcessingState unavailable; cannot bootstrap current-text pending state');
+    if (!Object.prototype.hasOwnProperty.call(currentTextProcessingResult, 'state')) {
+      throw new Error('getCurrentTextProcessingState returned an invalid successful result');
     }
-
-    let startupCurrentTextProcessingState = bootstrapCurrentTextProcessingState || {
-      active: false,
-      requestId: 0,
-      sinceEpochMs: null,
-      source: '',
-      action: '',
-    };
-    try {
-      const currentTextProcessingResult = await getCurrentTextProcessingState();
-      if (currentTextProcessingResult && currentTextProcessingResult.ok === true) {
-        startupCurrentTextProcessingState = currentTextProcessingResult.state || startupCurrentTextProcessingState;
-      } else {
-        log.warn(
-          'BOOTSTRAP: getCurrentTextProcessingState returned non-ok result; keeping current-text pending inactive:',
-          currentTextProcessingResult
-        );
-      }
-    } catch (err) {
-      log.warn('BOOTSTRAP: getCurrentTextProcessingState failed; keeping current-text pending inactive:', err);
-    }
-
-    if (bootstrapCurrentTextPayload) {
-      const bootstrapPayload = (
-        bootstrapCurrentTextPayload
-        && typeof bootstrapCurrentTextPayload === 'object'
-        && !Array.isArray(bootstrapCurrentTextPayload)
-      )
-        ? bootstrapCurrentTextPayload
-        : { text: bootstrapCurrentTextPayload };
-      const bootstrapRequestId = Number(bootstrapPayload.requestId);
-      const startupRequestId = Number(
-        startupCurrentTextProcessingState && startupCurrentTextProcessingState.requestId
-      );
-      if (Number.isInteger(bootstrapRequestId) && bootstrapRequestId > 0) {
-        if (!Number.isInteger(startupRequestId) || bootstrapRequestId >= startupRequestId) {
-          initialText = String(bootstrapPayload.text || '');
-        }
-      } else if (!startupCurrentTextProcessingState.active) {
-        initialText = String(bootstrapPayload.text || '');
-      }
-    }
+    const startupCurrentTextProcessingState = currentTextRuntime.copyCurrentTextProcessingState(
+      currentTextProcessingResult.state
+    );
 
     currentTextRuntime.syncBootstrapState({
       initialText,
       processingState: startupCurrentTextProcessingState,
     });
+    armCurrentTextSubscription();
     textExtractionStatusUi.applyCurrentTextProcessingState(startupCurrentTextProcessingState, {
       source: 'startup_query',
     });
 
-    const getTextExtractionProcessingMode = getOptionalElectronMethod('getTextExtractionProcessingMode', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getTextExtractionProcessingMode.unavailable',
-      unavailableMessage: 'getTextExtractionProcessingMode unavailable; processing mode defaults to inactive.'
-    });
-    if (getTextExtractionProcessingMode) {
-      try {
-        const processingMode = await getTextExtractionProcessingMode();
-        if (processingMode && processingMode.ok === true) {
-          textExtractionStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
-        } else {
-          log.warn(
-            'BOOTSTRAP: getTextExtractionProcessingMode returned non-ok result; keeping processing mode inactive:',
-            processingMode
-          );
-        }
-      } catch (err) {
-        log.warn('BOOTSTRAP: getTextExtractionProcessingMode failed; keeping processing mode inactive:', err);
-      }
-    }
     syncMainInteractionLockUi();
 
     // Load presets and save them to the cache
@@ -1244,358 +1361,8 @@ async function runStartupOrchestrator() {
   }
 }
 
-// =============================================================================
-// Info modal
-// =============================================================================
-const infoModal = document.getElementById('infoModal');
-const infoModalBackdrop = document.getElementById('infoModalBackdrop');
-const infoModalClose = document.getElementById('infoModalClose');
-const infoModalTitle = document.getElementById('infoModalTitle');
-const infoModalContent = document.getElementById('infoModalContent');
-const { bindInfoModalLinks } = window.InfoModalLinks || {};
-
-function closeInfoModal() {
-  try {
-    if (!infoModal || !infoModalContent) return;
-    infoModal.setAttribute('aria-hidden', 'true');
-    const loadingText = tRenderer('renderer.info.loading');
-    infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
-  } catch (err) {
-    log.error('Error closing info modal:', err);
-  }
-}
-
-function focusInfoModalContent() {
-  if (infoModalContent && typeof infoModalContent.focus === 'function') {
-    infoModalContent.focus();
-  }
-}
-
-function bindInfoModalUi() {
-  if (infoModalClose) infoModalClose.addEventListener('click', closeInfoModal);
-  if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', closeInfoModal);
-
-  window.addEventListener('keydown', (ev) => {
-    if (!infoModal) return;
-    if (ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
-      closeInfoModal();
-    }
-  });
-}
-
-async function fetchText(path) {
-  try {
-    const res = await fetch(path, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.text();
-  } catch (err) {
-    log.warn('fetchText failed; info modal will fallback:', path, err);
-    return null;
-  }
-}
-
-async function fetchTextWithFallback(paths) {
-  for (const path of paths) {
-    const html = await fetchText(path);
-    if (html !== null) return { html, path };
-  }
-  return { html: null, path: null };
-}
-
-// Translate HTML fragments using data-i18n and renderer.info.<key>.*
-function translateInfoHtml(htmlString, key) {
-  // If no translation function is available, return the HTML unchanged.
-  if (!tRenderer) return htmlString;
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-    doc.querySelectorAll('[data-i18n]').forEach((el) => {
-      const dataKey = el.getAttribute('data-i18n');
-      if (!dataKey) return;
-      const tKey = `renderer.info.${key}.${dataKey}`;
-      const translated = tRenderer(tKey);
-      if (translated) el.textContent = translated;
-    });
-    return doc.body.innerHTML;
-  } catch (err) {
-    log.warn('translateInfoHtml failed:', err);
-    return htmlString;
-  }
-}
-
-function extractInfoBodyHtml(htmlString) {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-    return doc.body.innerHTML;
-  } catch (err) {
-    log.warn('extractInfoBodyHtml failed:', err);
-    return htmlString;
-  }
-}
-
-async function hydrateAboutVersion(container) {
-  const versionEl = container ? container.querySelector('#appVersion') : null;
-  if (!versionEl) return;
-  const unavailableText = tRenderer('renderer.info.acerca_de.version.unavailable');
-
-  if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-    log.warn('getAppVersion not available for About modal.');
-    versionEl.textContent = unavailableText;
-    return;
-  }
-
-  try {
-    const version = await window.electronAPI.getAppVersion();
-    const cleaned = typeof version === 'string' ? version.trim() : '';
-    if (!cleaned) {
-      log.warn('getAppVersion returned empty; About modal shows N/A.');
-      versionEl.textContent = unavailableText;
-      return;
-    }
-    versionEl.textContent = cleaned;
-  } catch (err) {
-    log.warn('getAppVersion failed; About modal shows N/A:', err);
-    versionEl.textContent = unavailableText;
-  }
-}
-
-async function hydrateAboutEnvironment(container) {
-  const envEl = container ? container.querySelector('#appEnv') : null;
-  const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
-  const sharpRuntimeLicenseRow = container ? container.querySelector('#sharpRuntimeLicenseRow') : null;
-  const sharpRuntimeNoticeRow = container ? container.querySelector('#sharpRuntimeNoticeRow') : null;
-  const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
-  const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
-  if (!envEl) return;
-  const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
-  const defaultSharpRuntimePackage = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-
-  const applyUnavailableEnvironmentState = ({ includeSharpRuntimeNames = false } = {}) => {
-    envEl.textContent = unavailableText;
-    if (runtimeEl) runtimeEl.textContent = unavailableText;
-    if (includeSharpRuntimeNames) {
-      if (sharpRuntimeEl) sharpRuntimeEl.textContent = defaultSharpRuntimePackage;
-      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = defaultSharpRuntimePackage;
-    }
-    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-  };
-
-  if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-    log.warn('getAppRuntimeInfo not available for About modal.');
-    applyUnavailableEnvironmentState();
-    return;
-  }
-
-  try {
-    const info = await window.electronAPI.getAppRuntimeInfo();
-    const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
-    const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
-    const electronVersion = info && typeof info.electronVersion === 'string'
-      ? info.electronVersion.trim()
-      : '';
-    const chromeVersion = info && typeof info.chromeVersion === 'string'
-      ? info.chromeVersion.trim()
-      : '';
-    const nodeVersion = info && typeof info.nodeVersion === 'string'
-      ? info.nodeVersion.trim()
-      : '';
-    const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
-    const osLabel = platformMap[platform] || platform;
-    const sharpRuntimePackageMap = {
-      'win32:x64': '@img/sharp-win32-x64@0.34.4',
-      'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
-      'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
-      'linux:x64': '@img/sharp-linux-x64@0.34.4',
-    };
-    const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
-      || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-
-    if (!osLabel || !arch) {
-      log.warn('getAppRuntimeInfo missing platform/arch; About modal shows N/A.');
-      applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
-      return;
-    }
-
-    envEl.textContent = `${osLabel} (${arch})`;
-    if (sharpRuntimeEl) sharpRuntimeEl.textContent = sharpRuntimePackage;
-    if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
-    if (runtimeEl) {
-      const runtimeParts = [];
-      runtimeParts.push(electronVersion ? `Electron ${electronVersion}` : `Electron ${unavailableText}`);
-      runtimeParts.push(chromeVersion ? `Chromium ${chromeVersion}` : `Chromium ${unavailableText}`);
-      runtimeParts.push(nodeVersion ? `Node.js ${nodeVersion}` : `Node.js ${unavailableText}`);
-      runtimeEl.textContent = runtimeParts.join(' | ');
-    }
-
-    if (
-      window.electronAPI
-      && typeof window.electronAPI.getAppDocAvailability === 'function'
-    ) {
-      try {
-        const [licenseAvailability, noticeAvailability] = await Promise.all([
-          window.electronAPI.getAppDocAvailability('license-text-extraction-image-processing-runtime'),
-          window.electronAPI.getAppDocAvailability('notice-text-extraction-image-processing-runtime'),
-        ]);
-        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
-        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
-      } catch (err) {
-        log.warn('getAppDocAvailability failed; About modal document availability defaults to hidden:', err);
-        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-      }
-    } else {
-      log.warn('getAppDocAvailability unavailable; About modal document availability defaults to hidden.');
-      if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-      if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-    }
-  } catch (err) {
-    log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
-    applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
-  }
-}
-
-const normalizeLangTagSafe = (lang) => {
-  if (window.RendererI18n && typeof window.RendererI18n.normalizeLangTag === 'function') {
-    return window.RendererI18n.normalizeLangTag(lang);
-  }
-  log.warnOnce(
-    'renderer.info.normalizeLangTag.fallback',
-    'RendererI18n.normalizeLangTag unavailable; using local fallback normalization.'
-  );
-  return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
-};
-
-const getLangBaseSafe = (lang) => {
-  if (window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function') {
-    return window.RendererI18n.getLangBase(lang);
-  }
-  log.warnOnce(
-    'renderer.info.getLangBase.fallback',
-    'RendererI18n.getLangBase unavailable; using local fallback language base.'
-  );
-  const normalized = normalizeLangTagSafe(lang);
-  if (!normalized) return '';
-  const idx = normalized.indexOf('-');
-  return idx > 0 ? normalized.slice(0, idx) : normalized;
-};
-
-function getManualFileCandidates(langTag) {
-  const candidates = [];
-  const normalized = normalizeLangTagSafe(langTag);
-  const base = getLangBaseSafe(normalized);
-  if (normalized) candidates.push(normalized);
-  if (base && base !== normalized) candidates.push(base);
-  const defaultLang = normalizeLangTagSafe(DEFAULT_LANG);
-  if (defaultLang && !candidates.includes(defaultLang)) candidates.push(defaultLang);
-  return candidates.map(tag => `./info/instrucciones.${tag}.html`);
-}
-
-async function showInfoModal(key) {
-  // key: 'instrucciones' | 'guia_basica' | 'faq' | 'links_interes' | 'acerca_de'
-  if (!infoModal || !infoModalTitle || !infoModalContent) return;
-
-  // Decide which file to load based on the key.
-  // Basic guide, instructions, and FAQ are served from localized manual HTML.
-  let fileToLoad = null;
-  let sectionId = null;
-  const isManual = (key === 'guia_basica' || key === 'instrucciones' || key === 'faq');
-
-  if (key === 'acerca_de') {
-    fileToLoad = './info/acerca_de.html';
-  } else if (key === 'links_interes') {
-    fileToLoad = './info/links_interes.html';
-  } else if (isManual) {
-    const langTag = (settingsCache && settingsCache.language) ? settingsCache.language : (idiomaActual || DEFAULT_LANG);
-    fileToLoad = getManualFileCandidates(langTag);
-    // Map key to block ID within instructions.html
-    const mapping = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
-    sectionId = mapping[key] || 'instrucciones';
-  } else {
-    log.warn('showInfoModal received unsupported key:', key);
-    return;
-  }
-
-  const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
-  const infoDialogLabel = tRenderer(`renderer.info.${translationKey}.title`);
-  infoModalTitle.textContent = infoDialogLabel;
-
-  // Open modal early so loading state is visible during fetch
-  const loadingText = tRenderer('renderer.info.loading');
-  infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${loadingText}</div>`;
-  infoModal.setAttribute('aria-hidden', 'false');
-
-  // Fetch HTML (manual pages use a language fallback list)
-  const tryHtml = Array.isArray(fileToLoad)
-    ? (await fetchTextWithFallback(fileToLoad)).html
-    : await fetchText(fileToLoad);
-  if (tryHtml === null) {
-    // Fallback: show a simple missing-content message
-    const missingContentText = msgRenderer
-      ? msgRenderer(
-        'renderer.info.missing_content',
-        { name: infoDialogLabel }
-      )
-      : `No hay contenido disponible para '${infoDialogLabel}'.`;
-    infoModalContent.innerHTML = `<p>${missingContentText}</p>`;
-    focusInfoModalContent();
-    return;
-  }
-
-  // Translate non-manual pages; manual HTML is loaded as-is.
-  const renderedHtml = isManual
-    ? extractInfoBodyHtml(tryHtml)
-    : translateInfoHtml(tryHtml, translationKey);
-  infoModalContent.innerHTML = renderedHtml;
-  if (typeof bindInfoModalLinks === 'function') {
-    bindInfoModalLinks(infoModalContent, { electronAPI: window.electronAPI });
-  } else {
-    log.warn('InfoModalLinks.bindInfoModalLinks unavailable; modal links will use default behavior.');
-  }
-  if (key === 'acerca_de') {
-    await hydrateAboutVersion(infoModalContent);
-    await hydrateAboutEnvironment(infoModalContent);
-  }
-
-  // Ensure the panel starts at the top before scrolling
-  const panel = document.querySelector('.info-modal-panel');
-  if (panel) panel.scrollTop = 0;
-
-  // If a specific section was requested, scroll so it appears above the panel
-  if (sectionId) {
-    // Wait for the next frame so the parsed DOM is laid out
-    requestAnimationFrame(() => {
-      try {
-        const target = infoModalContent.querySelector(`#${sectionId}`);
-        if (!target) {
-          // If the ID does not exist, do nothing else
-          focusInfoModalContent();
-          return;
-        }
-
-        try {
-          target.scrollIntoView({ behavior: 'auto', block: 'start' });
-        } catch {
-          // Defensive fallback: calculate relative top without compensating for header
-          const panelRect = panel.getBoundingClientRect();
-          const targetRect = target.getBoundingClientRect();
-          const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
-          const finalTop = Math.max(0, Math.min(desired, panel.scrollHeight - panel.clientHeight));
-          panel.scrollTo({ top: finalTop, behavior: 'auto' });
-        }
-
-        // Focus on the content so the reader can use the keyboard
-        focusInfoModalContent();
-      } catch (err) {
-        log.warn('Info modal section scroll failed (ignored):', err);
-        focusInfoModalContent();
-      }
-    });
-  } else {
-    // No section: focus the content for the whole document
-    focusInfoModalContent();
-  }
+async function runStartupOrchestrator() {
+  return enqueueMainSemanticWork(runMainStartup);
 }
 
 // =============================================================================
@@ -1613,9 +1380,9 @@ function registerMenuActions() {
 
     registerMenuActionGuarded('__menu_processing_lock_notice__', () => { });
 
-    registerMenuActionGuarded('guia_basica', () => { showInfoModal('guia_basica') });
-    registerMenuActionGuarded('instrucciones_completas', () => { showInfoModal('instrucciones') });
-    registerMenuActionGuarded('faq', () => { showInfoModal('faq') });
+    registerMenuActionGuarded('guia_basica', () => { infoModal.open('guia_basica') });
+    registerMenuActionGuarded('instrucciones_completas', () => { infoModal.open('instrucciones') });
+    registerMenuActionGuarded('faq', () => { infoModal.open('faq') });
     registerMenuActionGuarded('diseno_skins', () => {
       window.Notify.notifyMain('renderer.main.alerts.wip.design_skins'); // WIP
     });
@@ -1676,7 +1443,7 @@ function registerMenuActions() {
       await textExtractionOcrDisconnect.startFromPreferencesMenu();
     });
 
-    registerMenuActionGuarded('links_interes', () => { showInfoModal('links_interes') });
+    registerMenuActionGuarded('links_interes', () => { infoModal.open('links_interes') });
 
     registerMenuActionGuarded('actualizar_version', async () => {
       try {
@@ -1691,7 +1458,7 @@ function registerMenuActions() {
       }
     });
 
-    registerMenuActionGuarded('acerca_de', () => { showInfoModal('acerca_de') });
+    registerMenuActionGuarded('acerca_de', () => { infoModal.open('acerca_de') });
     return;
   }
 
@@ -1701,7 +1468,7 @@ function registerMenuActions() {
 // Preset selection wiring
 // =============================================================================
 function bindPresetSelection() {
-  presetsSelect.addEventListener('change', async () => {
+  presetsCombobox.update({ onChange: async () => {
     if (!guardUserAction('preset-change')) return;
     try {
       await wpmControls.handlePresetSelectionChange({
@@ -1713,7 +1480,7 @@ function bindPresetSelection() {
     } finally {
       syncPresetActionButtons();
     }
-  });
+  } });
 }
 
 // =============================================================================
@@ -1750,15 +1517,23 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
   }
 
   const res = await readClipboard();
-  if (res && res.ok === false) {
+  if (!res || typeof res !== 'object' || Array.isArray(res) || typeof res.ok !== 'boolean') {
+    throw new Error('clipboard read returned an invalid result envelope');
+  }
+  if (res.ok === false) {
     if (res.tooLarge === true) {
       window.Notify.notifyMain(tooLargeKey);
       return { ok: false, tooLarge: true };
     }
-    throw new Error(res.error || 'clipboard read failed');
+    if (typeof res.error !== 'string') {
+      throw new Error('clipboard read returned an invalid failed result');
+    }
+    throw new Error(res.error);
   }
-  const text = (res && typeof res === 'object') ? (res.text || '') : (res || '');
-  return { ok: true, text };
+  if (typeof res.text !== 'string') {
+    throw new Error('clipboard read returned an invalid successful result');
+  }
+  return { ok: true, text: res.text };
 }
 
 function getTextApplyCanonicalApi() {
@@ -1961,22 +1736,36 @@ function initializeDelegatedIntegrations() {
     log.warn('BrowserExtensionModal.configure unavailable; browser extension entry disabled.');
   }
 
-  if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
-    mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
+  if (mainLogoLinksCapabilityAvailable
+    && mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
+    mainLogoLinks.bindBrandLinks({
+      electronAPI: window.electronAPI,
+      canAcceptBrandLinkAction: () => isRendererReady() && mainLogoLinksCapabilityAvailable,
+    });
     return;
   }
 
-  log.warn('MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.');
+  if (mainLogoLinksCapabilityAvailable) {
+    setMainLogoLinksCapabilityUnavailable('binding unavailable');
+  }
 }
 
 // Text Editor launch state mirrors the pending UI while the Text Editor window opens.
 function showEditorLoader() {
-  if (editorLoader) editorLoader.classList.add('visible');
+  if (editorLoader) {
+    if (editorLoaderStatus) {
+      editorLoaderStatus.textContent = tRenderer('renderer.main.processing.editor_loading');
+    }
+    editorLoader.classList.add('visible');
+  }
   currentTextSelectorSection.setEditorLaunchPending(true);
 }
 
 function hideEditorLoader() {
-  if (editorLoader) editorLoader.classList.remove('visible');
+  if (editorLoader) {
+    editorLoader.classList.remove('visible');
+    if (editorLoaderStatus) editorLoaderStatus.textContent = '';
+  }
   currentTextSelectorSection.setEditorLaunchPending(false);
 }
 
@@ -2002,12 +1791,8 @@ function handleEditorFirstShowState(payload) {
     return;
   }
 
-  if (payload.reason === 'startup-timeout') {
-    window.Notify.notifyMain('renderer.editor.alerts.start_timeout');
-    return;
-  }
-
-  window.Notify.notifyMain('renderer.editor.alerts.start_failed');
+  // Lifecycle-owned Editor startup failures are disclosed once through Main's
+  // native surface. The main renderer only clears its pending launch state.
 }
 
 // =============================================================================
@@ -2379,7 +2164,7 @@ function bindPresetActions() {
   btnEditPreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-edit')) return;
     try {
-      const selectedName = presetsSelect.value;
+      const selectedName = presetsCombobox.getValue();
       if (!selectedName) {
         log.warn('Preset edit requested without a selected preset; action skipped.');
         syncPresetActionButtons();
@@ -2407,7 +2192,7 @@ function bindPresetActions() {
   btnDeletePreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-delete')) return;
     try {
-      const name = presetsSelect.value || null;
+      const name = presetsCombobox.getValue() || null;
       if (!name) {
         log.warn('Preset delete requested without a selected preset; action skipped.');
         syncPresetActionButtons();
@@ -2529,9 +2314,13 @@ const initCronoController = () => {
 // =============================================================================
 // Renderer bootstrap entrypoint
 // =============================================================================
-// Listener wiring must happen before runStartupOrchestrator() so READY can unblock
-// only after subscriptions and UI guards are in place.
+// Core listener and UI wiring must happen before runStartupOrchestrator().
+// The current-text stream is armed by runMainStartup() after its authoritative
+// bootstrap snapshot is synchronized and before READY can unblock.
 function startRendererBootstrap() {
+  infoModal.init({
+    getCurrentLanguage: () => (settingsCache && settingsCache.language) || idiomaActual || DEFAULT_LANG,
+  });
   armIpcSubscriptions();
   setupToggleModoPreciso();
   currentTextSelectorSection.bindActions({
@@ -2546,11 +2335,16 @@ function startRendererBootstrap() {
     onNewTask: handleNewTask,
     onLoadTask: handleLoadTask,
     onReadingSpeedTest: handleOpenReadingSpeedTest,
+    onPreviewSpoilerEnabledChange: async (enabled) => {
+      const result = await window.electronAPI.setPreviewSpoilerEnabled(enabled);
+      if (!result || result.ok !== true) {
+        throw new Error('setPreviewSpoilerEnabled failed.');
+      }
+    },
   });
   textTimeCalculatorLauncher.bindActions({
     onOpenCalculator: handleOpenTextTimeCalculator,
   });
-  bindInfoModalUi();
   registerMenuActions();
   bindPresetSelection();
   bindSpeedControls();

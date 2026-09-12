@@ -55,6 +55,12 @@ Do not update this document for routine test implementation changes unless those
 
 Current automated coverage maps back to this manual suite roughly as follows:
 
+* `test/unit/shared/combobox.test.js`
+  * covers the production `RendererCombobox` contract in `select` and `editable` modes: ARIA/open state, value and action activation, pointer-hover active state, disabled options, one-open behavior, outside click, keyboard navigation/type-ahead, committed-text restoration, updates, focus, and destruction
+  * supports the shared selector behavior exercised by `SM-07`, `SM-07A`, `SM-10A`, `SM-13`, `REG-PRESETS`, `REG-CALCULATOR`, `REG-IMPORT-08C`, and `REG-SNAPSHOTS`
+* `test/unit/shared/language_window.test.js`
+  * covers fixed-bilingual markup/status ownership, the unchanged visible filter/layout contract, first-run empty selection, persisted selection vs roving focus, keyboard activation, filtering, bootstrap fallback, and selection failure
+  * supports parts of `REG-FR-01` and `REG-I18N-01`; it does not replace the documented screen-reader or real-window checks
 * `electron/settings.js`
   * supports parts of `REG-PERSIST`
   * supports parts of `REG-I18N`
@@ -65,6 +71,10 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-PRESETS-07`
   * supports parts of `REG-PERSIST-01`
   * supports parts of `REG-PERSIST-02`
+  * supports the narrow current-language read used by `REG-FR-01` and `REG-I18N-01`
+* `test/unit/electron/language_preload.test.js`
+  * covers the Language Window's narrow available/current-language reads and normalized selection forwarding
+  * supports parts of `REG-FR-01` and `REG-I18N-01`
 * `test/unit/electron/preload.test.js`
   * supports parts of `SM-07A`
   * supports parts of `REG-CALCULATOR-01`
@@ -93,6 +103,11 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-I18N`
   * supports parts of `REG-PERSIST`
 * `test/unit/shared/editor_find_replace_core.test.js`
+  * supports parts of `REG-EDITOR-05C`
+  * supports parts of `REG-EDITOR-05D`
+* `test/unit/shared/editor_find_renderer.test.js`
+  * supports parts of `REG-EDITOR-05`
+  * supports parts of `REG-EDITOR-05B`
   * supports parts of `REG-EDITOR-05C`
   * supports parts of `REG-EDITOR-05D`
 * `test/unit/shared/editor_engine_commit_policy.test.js`
@@ -243,6 +258,13 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-TASKS-02`
   * supports parts of `REG-TASKS-04`
   * supports parts of `REG-PERSIST-04`
+* `test/unit/electron/tasks_main_column_layout.test.js`
+  * covers the strict versioned Task Editor column-layout persistence contract
+  * supports parts of `REG-TASKS-05`
+  * supports parts of `REG-PERSIST-04`
+* `test/unit/shared/task_editor_column_layout.test.js`
+  * covers responsive width calculation, divider constraints/cancellation, and save-queue ordering
+  * supports parts of `REG-TASKS-05`
 * `test/unit/electron/reading_test_pool.test.js`
   * supports parts of `SM-15`
   * supports parts of `REG-READING-TEST-06`
@@ -267,7 +289,7 @@ Important limitations:
 * the reading speed test still has no renderer/UI automation; current automated coverage now includes pool core, pool import, entry/reset IPC contract handling, and start/rollback flow contracts, but real modal interaction, guided session windows, stopwatch handoff, comprehension UI, and preset handoff are still primarily validated through the manual suite;
 * OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
-* the editable snapshot-tag catalog now has contract coverage for catalog derivation, renderer modal behavior, and permissive snapshot save/load validation, but the native save/load dialogs, real combobox keyboard/focus behavior, and the full cross-window batch-tag flow are still primarily validated through the manual suite;
+* the editable snapshot-tag catalog now has contract coverage for catalog derivation, renderer modal behavior, permissive snapshot save/load validation, and the shared combobox keyboard/focus contract, but native save/load dialogs, integrated visual placement, and the full cross-window batch-tag flow are still primarily validated through the manual suite;
 * packaged-build behaviors in this document are still manual-only.
 
 ---
@@ -389,9 +411,9 @@ Recommended content for the text-like samples:
 
 Prepare these only if you plan to run the deeper snapshot-tag compatibility checks:
 - `snapshot_non_catalog_language.json`
-  - `{"text":"Fixture text","tags":{"language":"es-cl"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"language":"es-cl"}}`
 - `snapshot_unknown_custom_tag.json`
-  - `{"text":"Fixture text","tags":{"type":"custom:type:short-story"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"type":"custom:type:short-story"}}`
 
 Notes:
 - the second fixture is most useful when `custom:type:short-story` is not currently visible in the editable catalog;
@@ -680,13 +702,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### REG-FR — First-run & language selection
 
 #### REG-FR-01 Clean run: language picker behavior
-**Goal:** first-run supports language selection.
+**Goal:** first-run supports fixed-bilingual, accessible language selection without depending on an active application language.
 1. Remove config (2.2).
 2. Launch app.
-3. Use search box to filter language list; select language.
+3. Confirm keyboard focus starts in the existing `Buscar / Search` filter and that no new visible filter label or compressed layout appears.
+4. With a screen reader, confirm the dialog heading and filter name announce both their Spanish and English fragments and respect each fragment's language metadata.
+5. Enter a query with no matches and confirm the bilingual no-match status is announced outside an otherwise empty listbox; clear the query.
+6. Press Arrow Down to enter the language list. Use Arrow Up/Down and Home/End to move focus, then Enter or Space to select a language.
 
 **Expected:**
-- Filtering works; selection applies; window closes.
+- The existing visible layout and `Buscar / Search` placeholder remain unchanged; no tooltip appears.
+- First run does not expose any option as selected.
+- Filtering and keyboard navigation work; moving focus does not change selected state.
+- Selection applies and the window closes.
 
 #### REG-FR-02 Existing state: no first-run surprises
 **Goal:** existing config loads without resets.
@@ -966,15 +994,18 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 6. Use **All together** and **One file per unit** once each.
 7. Rename one unit, move one input, and reassign one input to another unit or to a new unit.
 8. Open **Tags** for a multi-unit plan and apply tags.
-9. For a heavy-PDF unit, confirm pages are fixed to `All pages`, the unit stays isolated, and the planned generated-PDF preview is shown.
-10. Repeat the planner with a non-PDF input included.
-11. Close the planner, reopen the same batch entry flow, and re-check the keep-generated-PDF toggles.
+9. For a heavy-PDF input, confirm pages are fixed to `All pages`, its normal unit-assignment combobox remains available, and its planned generated-PDF preview is shown directly beneath that source input.
+10. Put an ordinary input and a heavy PDF in one unit, then put two heavy PDFs in one unit and confirm each heavy source keeps its own preview.
+11. Confirm generated preview rows cannot be assigned, moved, or regrouped independently.
+12. Repeat the planner with a non-PDF input included.
+13. Close the planner, reopen the same batch entry flow, and re-check the keep-generated-PDF toggles.
 
 **Expected:**
 - Ordinary PDFs expose editable `All pages` / `Page range` controls directly inside the planner.
 - Start is blocked while a visible range draft is invalid.
 - Unit rename, move, and reassignment controls update immediately and stay coherent after rerenders.
-- Heavy-PDF units remain exclusive planner units, keep their generated-input preview, and do not expose editable page controls.
+- Automatic split boundaries and full-source page selection remain fixed while heavy splitting is active, but the heavy source input otherwise participates in normal unit grouping, naming, tags, and ordering.
+- Generated PDF previews remain children of their corresponding heavy source input and never become planner inputs.
 - Non-PDF inputs do not show a fake pages summary.
 - Unit tags are available only where unit-level auto-snapshot tagging is meaningful.
 - When the unit tags prompt is opened, it reuses the same effective snapshot-tag catalog, labels, and visible order as the current-text snapshot-save modal.
@@ -987,8 +1018,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 3. Confirm the first copy row can show unit progress, file progress, and route label while the displayed filename remains a basename only.
 4. After completion, review the final report:
    - unit titles
-   - per-input success/failed/omitted states
-   - heavy generated-child rows when applicable
+   - per-input success/failed/cancelled/omitted states
+   - generated-file status rows nested beneath their heavy source input when applicable
    - elapsed time
    - current-text changed/unchanged summary
    - snapshot guidance when auto snapshots were created
@@ -1001,8 +1032,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Batch execution stays inside one shared processing session and the bar shows accurate unit/file progress plus route context.
-- The final report summarizes per-unit/per-input outcomes and includes heavy split child statuses when present.
-- **Copy report** writes a readable text report that includes failure codes when applicable.
+- The final report summarizes per-unit/per-input outcomes, keeps every heavy PDF as its source input row, and nests generated split-child statuses beneath that row without flat duplicates.
+- **Copy report** preserves the same unit/source/generated-child hierarchy with indentation and includes failure codes when applicable.
 - **Open snapshots folder** opens the snapshots root, not a random last-used folder.
 - Multi-unit runs that produced text create per-unit JSON snapshots automatically; single-unit runs do not.
 - Created batch snapshots are loadable through the normal **📂** flow.
@@ -1131,6 +1162,24 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Mode is restored from settings and reflected in UI toggle.
+
+---
+
+### REG-COMBOBOX — Shared selector placement, scrolling, and input behavior
+
+#### REG-COMBOBOX-01 Popup placement and fixed height
+**Goal:** every shared selector popup opens below its trigger and long lists scroll internally.
+1. Open the main preset selector with enough presets to exceed the visible popup limit.
+2. Open a batch route selector and destination-unit selector, including the **New unit** option.
+3. Open the quick-calculator target selector.
+4. Open each searchable snapshot-tag selector and enter a query that shows value, clear, create, or no-results states as applicable.
+
+**Expected:**
+- Every popup opens below its trigger; none flips upward or detaches into a portal.
+- Popup content stops at `160px` and scrolls vertically when its options exceed that height.
+- Hovering a selectable option moves the active highlight to it without committing; the committed selection remains distinct through its subtle background, weight, and inline accent, disabled options do not become active, and keyboard navigation can take control again.
+- Mouse and keyboard selection, Escape/Tab dismissal, disabled state, active-option visibility, and one-open-at-a-time behavior remain usable.
+- Presentation remains usable in light/dark themes, RTL languages, and existing modal scrolling containers.
 
 ---
 
@@ -1312,6 +1361,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - Match highlight must be visible even when focus is in the find input.
    - Use Next/Prev to jump to matches that are off-screen; verify internal textarea scroll moves to the match.
 7. Scroll the textarea manually (mouse wheel / scrollbar) while Find remains open.
+8. Hover and keyboard-focus the expand/collapse, Previous, Next, Close, Replace, and Replace All controls. With a screen reader or accessibility inspector, verify the icon-only controls retain their action names and the two replacement actions retain their descriptions.
 
 **Expected:**
 - Find opens as a dedicated secondary window and focuses the find input.
@@ -1320,6 +1370,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The editor is not forced into `readOnly`; if focus returns to the textarea, normal editing/paste/drop behavior remains available.
 - The find input itself remains a plain search control; it must not show spellcheck underlines.
 - Match highlight remains visible while focus stays in the find input.
+- No visual tooltip appears from any Editor Find control on hover or focus.
+- The icon-only controls keep their translated accessible names, and Replace / Replace All keep their translated accessible descriptions.
 - **Esc** closes Find and restores focus to the editor.
 
 #### REG-EDITOR-05A Find re-sync on find-window refocus
@@ -1464,6 +1516,71 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The clear button stays visually anchored in the corner instead of collapsing into an orphan row with a large empty gap.
 - No controls overlap, disappear, or become unreachable.
 
+#### REG-EDITOR-11 Text Editor readiness, first presentation, and reopen
+**Goal:** the Editor does not admit editing controls until its required initial text and
+semantics are established, and later opens remain independent live presentations.
+1. Start with a known current text and open the Editor in a normally sized window.
+2. Confirm the text area and bottom-bar controls become available together only after
+   the initial text and translated semantics are visible; then edit once.
+3. Close the Editor, change the current text from the main window, and reopen it.
+4. Save a maximized Editor presentation by maximizing it, closing it, then
+   reopening it; verify the next first presentation uses that saved maximized state.
+5. Open Find while the Editor is ready; use Tab/Shift+Tab, Enter/Space, and Escape.
+
+**Expected:**
+- There is no editable or actionable half-initialized Editor surface.
+- The first ready surface contains the exact current text once; reopening uses the
+  then-current text and does not retain or append a previous opening's seed.
+- Both reduced and maximized first presentations are usable, with no duplicate
+  startup message.
+- Find keeps its Close/Escape route usable and exposes its translated names and
+  descriptions while its semantic controls are available.
+
+#### REG-Q008 — Text Editor readiness and accessibility sign-off matrix
+**Goal:** exercise Q-008's dynamic readiness/unavailability behavior in the supported
+Electron/Chromium runtime before release sign-off. Record the actual Electron and
+Chromium versions from the running app, operating system, and at least one supported
+screen-reader stack (for example, Windows Narrator with the installed Edge/WebView
+accessibility stack) with the run evidence.
+
+1. With keyboard only, open Editor, Find, Task Editor, Reading Test Questions,
+   Quick Calculator, and an Info/About document. For each surface, traverse with
+   Tab/Shift+Tab, invoke its normal actions with Enter/Space, and leave it through
+   its available Escape/Close route.
+2. Where an initializing or unavailable state can be observed safely, confirm native
+   fields and normal actions are truthfully disabled or the owned region is inert;
+   do not use DevTools or production-state mutation to force failures. Confirm the
+   required Close/Continue/Escape route remains usable where that owner provides one.
+3. With a screen reader or accessibility inspector, verify the announced names and
+   descriptions of dynamically admitted controls, Find replacement controls, Task
+   controls, and the Info document's localized unavailable view. Move focus while a
+   region changes from initializing to ready or to unavailable and verify focus is
+   not stranded in an inert region.
+4. Keep each applicable surface open while changing the app language. Confirm Editor,
+   Find, Questions, Calculator, Task Editor, and Info refresh their renderer-owned
+   semantics without losing their permitted close route. For About, request a
+   non-Spanish language and confirm the Spanish document is presented with its actual
+   document language metadata while surrounding modal controls use the active UI
+   language.
+5. In Task Editor, test a clean close, a dirty close with Keep/Cancel, and a dirty
+   close with Discard. Repeat the close request from the main/application close path
+   while another window or active processing is present when practical. Verify the
+   native default/cancel action preserves the Task, and explicit Discard is required
+   before a potentially dirty draft can be disposed.
+
+**Expected:**
+- Keyboard traversal, accessible names/descriptions, and focus restoration remain
+  truthful across readiness changes; no normal action is usable before its owner has
+  admitted it.
+- A real language change updates live renderer semantics without enabling an owner
+  that has become terminally unavailable.
+- Task Keep, cancellation, dialog failure, or missing authorization preserves the
+  Task and prevents destructive parent/application shutdown consequences; only
+  explicit discard authorization permits the relevant close.
+- Record exceptional startup, timeout, terminal, and native-dialog-failure branches
+  that cannot be induced safely as runtime limits rather than simulating them in the
+  product.
+
 ---
 
 ### REG-TASKS — Task editor (lists, library, links)
@@ -1515,13 +1632,27 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Confirmation deny is a no-op.
 
 #### REG-TASKS-05 Column widths persistence
-**Goal:** Resize columns widths.
-1. Resize at least two task editor columns.
-2. Close and reopen the task editor.
-3. Verify the widths persisted.
+**Goal:** Verify exact responsive widths, accessible resizing, and persistence.
+1. Open a fresh Task Editor layout with no `column_widths.json`.
+2. With no vertical scrollbar, inspect the table at a wrapper `clientWidth` of 1093 px.
+3. Add enough rows to create a vertical scrollbar and verify the wrapper changes to 1077 px on the reviewed Windows environment.
+4. Resize at least two utility columns with pointer input; verify only the target utility column and Reading column change.
+5. Focus a divider and exercise Arrow Left, Arrow Right, and Shift+Arrow.
+6. During an active pointer drag, try an Arrow key and, on a touch-capable system, a second pointer on another divider.
+7. Interrupt a pointer drag with window blur or a window-size change.
+8. Narrow the wrapper below the current table minimum, then widen it again.
+9. Close and reopen the Task Editor.
 
 **Expected:**
-- Column widths restore on open.
+- At 1093 px and 1077 px with fresh defaults, Reading is exactly 420 px and 404 px respectively; the utility total is 672 px.
+- The explicit table widths are 1092 px and 1076 px respectively, equal the sum of all seven rendered columns, and leave no horizontal scroll range.
+- Pointer and keyboard resizing respect the 114 px Reading minimum and each utility minimum.
+- An active pointer drag retains sole ownership: Arrow keys and additional pointers do not modify, replace, cancel, or persist its provisional widths.
+- Interrupted pointer resizing restores the pre-drag widths and is not persisted.
+- A narrow wrapper shows horizontal scrolling and disables all six dividers; widening re-enables them.
+- The Comment and Actions controls remain on one row without clipping or intrinsic column expansion.
+- The table order is Text, Comment, Time, %, Left, Link, Actions; the Text width is recalculated from the current wrapper width.
+- The six utility widths restore on reopen; `column_widths.json` contains only `{ "version": 1, "widths": { comentario, tiempo, percent, falta, enlace, acciones } }` in that canonical order.
 
 #### REG-TASKS-06 Link opening
 **Goal:** link opening respects https + allowlist rules.
@@ -1547,6 +1678,32 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 **Expected:**
 - Position and reduced size are restored.
+
+#### REG-TASKS-08 Task input validation and radical-cutover persistence
+**Goal:** Task Editor input behavior matches the approved contract and rejects
+nonconforming persisted data without migration or repair.
+1. Open a new Task Editor with one reading row.
+2. In Time, enter `1:2:03`; verify invalid feedback, then blur the field.
+3. Enter `1:02:03` and commit it with Enter.
+4. In %, enter `101%`, then blur; repeat with `25` and commit it.
+5. Clear the task name and the reading text, click Save, then correct each
+   field and save a valid task.
+6. Close the Task Editor and reopen the valid task; verify its Time and %
+   values round trip unchanged.
+7. With a copy of that saved task file, change one persisted row value to a
+   decimal (for example, `"tiempoSeconds": 12.5`) or add an unknown row
+   property. Attempt to load it, then inspect the file again.
+8. With a copy of `tasks/library.json`, make one library entry nonconforming
+   in the same way. Open the reading library and inspect the file again.
+
+**Expected:**
+- `1:2:03` and `101%` show invalid styling and `aria-invalid="true"` while
+  editing; blur restores the prior canonical values.
+- Valid Time uses `HH:MM:SS`; valid Percentage uses `N%` and stores an integer.
+- A failed save marks the required empty field, moves focus to the first
+  failure, and retains the existing user-facing notice.
+- Invalid task or library data is rejected with no migration, compatibility
+  fallback, repair, or rewrite. The original file bytes remain unchanged.
 
 ---
 
@@ -1637,7 +1794,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Manager changes made from the batch prompt are reflected immediately in the same prompt and in the planner's tag summary.
 
 #### REG-SNAPSHOTS-04 Snapshot load compatibility with custom or non-catalog tags
-**Goal:** loading current-text snapshots remains permissive for otherwise valid snapshot metadata.
+**Goal:** canonical current-text snapshots accept semantically valid custom or non-catalog tags.
 1. Prepare the optional fixtures from 3.4 or equivalent real files under `config/saved_current_texts/`.
 2. Load `snapshot_non_catalog_language.json` through the normal **📂** flow.
 3. Load `snapshot_unknown_custom_tag.json` through the normal **📂** flow.
@@ -1740,7 +1897,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Exhaustion is handled inside the entry modal, not by blocking entry with a separate alert.
 - Pool reset clears external `used` state without rewriting the content files in the dedicated pool folder.
-- Pool files remain ordinary snapshot JSON files with optional `readingTest`, but without inline usage state.
+- Pool files use the canonical text-snapshot schema and may include the optional validated `readingTest` field, but never inline usage state.
 - Normal snapshot loading accepts pool files with optional `readingTest` and applies only the `text` to current text.
 
 #### REG-READING-TEST-07 Pool acquisition/import via Drive link and native picker
@@ -1890,6 +2047,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
    - `allowed_hosts.json` exists
    - `column_widths.json` exists
    - `task_editor_state.json` exists
+   - `column_widths.json` is a version-1 record containing exactly `comentario`, `tiempo`, `percent`, `falta`, `enlace`, and `acciones`, in that order, and no Text width
 9. Relaunch the app.
 10. Open Tasks editor and verify:
     - Window size/position restored and fully visible.
@@ -1959,11 +2117,15 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-I18N-01 Switch language via Preferences menu
 **Goal:** language selection window is reachable and applies.
 1. Menu → Preferences → Language.
-2. Select a different language.
-3. Confirm UI text changes and number formatting remains consistent.
+2. Confirm the existing filter has focus and, with a screen reader or accessibility inspector, that the exact persisted current-language option is selected.
+3. Move keyboard focus to another option and confirm focus movement does not change the selected state.
+4. Select a different language with Enter or Space.
+5. Confirm UI text changes and number formatting remains consistent.
 
 **Expected:**
-- Language window works; UI strings update.
+- Language Window shell remains fixed Spanish/English and does not depend on the active renderer language.
+- Current selection is exposed through `aria-selected` without a new visual selection style.
+- Language selection works and UI strings update.
 - Numbers use correct separators per language settings.
 
 #### REG-I18N-02 Cross-window i18n consistency

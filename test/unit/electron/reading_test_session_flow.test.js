@@ -4,6 +4,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const readingTestSessionFlow = require('../../../electron/reading_test_session_flow');
+const editorWindowLifecycle = require('../../../electron/editor_window_lifecycle');
+const readingTestSessionWindows = require('../../../electron/reading_test_session_windows');
 
 function createLoggerDouble() {
   return {
@@ -12,6 +14,67 @@ function createLoggerDouble() {
     error() {},
   };
 }
+
+test('Reading arming suppresses its renderer notice when Editor creation is lifecycle-owned', async () => {
+  const disclosures = [];
+  const controller = editorWindowLifecycle.createController({
+    editorState: {
+      notifyWindowState() {},
+    },
+    log: createLoggerDouble(),
+    showStartupFailureDisclosure(details) {
+      disclosures.push(details);
+    },
+  });
+  const selectedEntry = { sourceMode: 'current_text' };
+  const state = {
+    active: true,
+    stage: 'arming',
+    selectedEntry,
+  };
+  const failed = [];
+
+  await readingTestSessionFlow.continueArmingSession(selectedEntry, {
+    state,
+    openReadingSessionWindows() {
+      return readingTestSessionWindows.openReadingSessionWindows({
+        resetCrono() {},
+        ensureEditorWindow(options) {
+          return controller.ensureEditorWindowOpen({
+            editorWin: null,
+            mainWin: null,
+            createEditorWindow() {
+              throw new Error('EDITOR_CREATE_FAILED');
+            },
+            options,
+            logContext: 'test.readingCreationFailure',
+          });
+        },
+        ensureFlotanteWindow: async () => {
+          throw new Error('SHOULD_NOT_OPEN_FLOTANTE');
+        },
+        log: createLoggerDouble(),
+        timeoutMs: 1000,
+      });
+    },
+    setActiveSessionWindows() {},
+    showEditorPrestart() {},
+    setArmingReady() {},
+    showEditorWindow() {},
+    waitForWindowVisible: async () => {},
+    failArmingSession(_entry, noticeKey) {
+      failed.push(noticeKey);
+    },
+    log: createLoggerDouble(),
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(disclosures, [{
+    cause: 'EDITOR_STARTUP_CREATE_FAILED',
+    disclosure: 'main-native',
+  }]);
+  assert.deepEqual(failed, [null]);
+});
 
 test('startArmedSession marks pool entry used only when play starts the session', () => {
   const calls = [];

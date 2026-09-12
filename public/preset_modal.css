@@ -1,0 +1,73 @@
+/* Preset modal window styles.
+   Loaded by public/preset_modal.html.
+   Owner boundary: preset modal shell, fields, counter, and actions only. */
+
+:root {
+  --field-radius: 4px;
+}
+
+/* Window shell */
+body {
+  font-family: Arial, sans-serif;
+  margin: 12px;
+}
+
+body > h1 {
+  margin: 18px 0;
+  font-size: 18px;
+}
+
+/* Form layout */
+label {
+  display: block;
+  margin-top: 10px;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: none;
+  height: 64px;
+}
+
+input[type="text"] {
+  border-radius: var(--field-radius);
+}
+
+input[type="number"] {
+  border-radius: var(--field-radius);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Actions and helper copy */
+.buttons {
+  margin-top: 12px;
+  text-align: right;
+}
+
+.buttons button {
+  min-width: 110px;
+  margin-left: 8px;
+  padding: 6px 10px;
+}
+
+.hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+}
+
+#charCount {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: #999;
+  margin-top: 4px;
+}

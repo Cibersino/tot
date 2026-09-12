@@ -46,7 +46,7 @@ function createWindowDouble(name) {
   };
 }
 
-function loadTextState() {
+function loadTextState({ clipboardReadText = () => '', ...options } = {}) {
   const textStateModulePath = path.resolve(
     __dirname,
     '../../../electron/text_state.js'
@@ -54,7 +54,7 @@ function loadTextState() {
   const restoreElectronModule = installElectronModuleMock({
     clipboard: {
       readText() {
-        return '';
+        return clipboardReadText();
       },
     },
     BrowserWindow: {
@@ -83,6 +83,7 @@ function loadTextState() {
         return { requestId: 1 };
       },
     },
+    ...options,
   });
 
   function restore() {
@@ -205,4 +206,107 @@ test('set-current-text rejects object payloads that omit text', async (t) => {
   assert.equal(textState.getCurrentText(), '');
   assert.deepEqual(mainWindowDouble.sends, []);
   assert.deepEqual(editorWindowDouble.sends, []);
+});
+
+test('set-current-text rejects non-string text without converting it to empty text', async (t) => {
+  const { textState, restore } = loadTextState();
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  const result = await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    { text: false, meta: { source: 'main-window', action: 'set' } }
+  );
+
+  assert.deepEqual(result, { ok: false, error: 'invalid payload' });
+  assert.equal(textState.getCurrentText(), '');
+  assert.deepEqual(mainWindowDouble.sends, []);
+  assert.deepEqual(editorWindowDouble.sends, []);
+});
+
+test('clipboard-read-text rejects a malformed native value instead of returning empty text', async (t) => {
+  const { textState, restore } = loadTextState({
+    clipboardReadText() {
+      return false;
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({ mainWin: mainWindowDouble.win }));
+
+  const result = await ipcMain.invoke(
+    'clipboard-read-text',
+    { sender: mainWindowDouble.win.webContents }
+  );
+
+  assert.deepEqual(result, { ok: false, error: 'clipboard read returned a non-string value' });
+});
+
+test('set-current-text notifies empty transition only when authoritative text becomes empty', async (t) => {
+  const emptyTransitions = [];
+  const { textState, restore } = loadTextState({
+    onCurrentTextDidBecomeEmpty(payload) {
+      emptyTransitions.push(payload);
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    {
+      text: 'texto',
+      meta: { source: 'main-window', action: 'overwrite' },
+    }
+  );
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    {
+      text: '',
+      meta: { source: 'main-window', action: 'clear' },
+    }
+  );
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    {
+      text: '',
+      meta: { source: 'main-window', action: 'clear' },
+    }
+  );
+
+  assert.deepEqual(emptyTransitions, [
+    {
+      previousText: 'texto',
+      nextText: '',
+      requestId: 1,
+      meta: { source: 'main-window', action: 'clear' },
+    },
+  ]);
 });

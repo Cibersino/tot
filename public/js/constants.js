@@ -13,10 +13,16 @@
     WPM_SLIDER_CURVE: 'exp', // WPM slider mapping curve ('linear' | 'exp').
     WPM_SLIDER_EXP_STRENGTH: 1.15, // Mild exponential strength for slider distribution.
     MAX_CLIPBOARD_REPEAT: 9_999, // Maximum allowed repetitions for clipboard overwrite/append actions.
-    PRESET_NAME_MAX: 20, // Max chars for preset names.
-    PRESET_DESC_MAX: 120, // Max chars for preset descriptions.
+    MAX_RESULTS_TIME_MULTIPLIER: 9_999, // Maximum allowed multiplier for the estimated reading time.
+    PRESET_NAME_MAX: 20, // Max chars for preset names. Must match electron/constants_main.js.
+    PRESET_DESC_MAX: 120, // Max chars for preset descriptions. Must match electron/constants_main.js.
+    BATCH_UNIT_NAME_MAX: 25, // Max chars for Batch unit names. Must match electron/constants_main.js.
+    SNAPSHOT_TAG_LABEL_MAX_CHARS: 36, // Max chars for custom snapshot tag labels. Must match electron/constants_main.js.
+    SNAPSHOT_NAME_MAX_CHARS: 120, // Max chars for optional text snapshot names. Must match electron/constants_main.js.
+    SNAPSHOT_SOURCE_COMMENT_MAX_CHARS: 65_536, // Max chars for optional text snapshot source comments. Must match electron/constants_main.js.
     TASK_NAME_MAX_CHARS: 50, // Max chars for task list name. Must match electron/constants_main.js.
     TASK_ROW_TEXT_MAX_CHARS: 200, // Max chars for task row "text" (texto). Must match electron/constants_main.js.
+    TASK_ROW_COMMENT_MAX_CHARS: 1200, // Max chars for task row "comment" (comentario). Must match electron/constants_main.js.
     TASK_ROW_LINK_MAX_CHARS: 1000, // Max chars for task row "link" (enlace). Must match electron/constants_main.js.
     EDITOR_FONT_SIZE_MIN_PX: 12, // Minimum font size for the Text Editor textarea.
     EDITOR_FONT_SIZE_MAX_PX: 36, // Maximum font size for the Text Editor textarea.

@@ -108,6 +108,19 @@ test('main preload forwards setCurrentText canonical payloads unchanged', () => 
   ]);
 });
 
+test('main preload forwards preview Spoiler preference updates unchanged', () => {
+  const { exposedApi, invoked } = loadMainPreload();
+
+  exposedApi.api.setPreviewSpoilerEnabled(false);
+
+  assert.deepEqual(invoked, [
+    {
+      channel: 'set-preview-spoiler-enabled',
+      payload: false,
+    },
+  ]);
+});
+
 test('main preload exposes openTextTimeCalculator through electronAPI', () => {
   const { exposedApi, invoked } = loadMainPreload();
 

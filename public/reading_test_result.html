@@ -1,6 +1,7 @@
 <!-- public/reading_test_result.html -->
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
@@ -8,25 +9,41 @@
   <title>Resultado de velocidad de lectura</title>
   <link rel="stylesheet" href="reading_test_result.css" />
 </head>
+
 <body>
   <main class="reading-test-result">
     <header class="reading-test-result__header">
       <h1 id="readingTestResultTitle">Resultado de velocidad de lectura</h1>
     </header>
 
-    <section class="reading-test-result__hero" aria-live="polite">
-      <p id="readingTestResultWpmLabel" class="reading-test-result__hero-label">WPM medidos</p>
-      <p id="readingTestResultWpmValue" class="reading-test-result__hero-value">0</p>
+    <section
+      class="reading-test-result__hero"
+      aria-live="polite"
+    >
+      <p
+        id="readingTestResultWpmLabel"
+        class="reading-test-result__hero-label"
+      >WPM medidos</p>
+      <p
+        id="readingTestResultWpmValue"
+        class="reading-test-result__hero-value"
+      >0</p>
     </section>
 
-    <section class="reading-test-result__meta" aria-label="Resumen del test">
+    <section class="reading-test-result__meta">
       <div class="reading-test-result__summary-card">
-        <p id="readingTestResultSummary" class="reading-test-result__summary-line">Tiempo transcurrido: 00:00:00 · Conteo de palabras: 0</p>
+        <p
+          id="readingTestResultSummary"
+          class="reading-test-result__summary-line"
+        >Tiempo transcurrido: 00:00:00 · Conteo de palabras: 0</p>
       </div>
     </section>
 
     <div class="reading-test-result__actions">
-      <button id="readingTestResultContinue" type="button">Continuar</button>
+      <button
+        id="readingTestResultContinue"
+        type="button"
+      >Continuar</button>
     </div>
   </main>
 

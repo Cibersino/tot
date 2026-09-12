@@ -18,10 +18,11 @@
 // =============================================================================
 const fs = require('fs');
 const path = require('path');
-const { dialog, shell, BrowserWindow } = require('electron');
+const { dialog, shell, BrowserWindow, app } = require('electron');
 const Log = require('./log');
 const menuBuilder = require('./menu_builder');
 const { normalizeSnapshotRelPath } = require('./current_text_snapshots_main');
+const taskDurationCore = require('../public/js/lib/task_duration_core');
 const {
   DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
@@ -37,9 +38,12 @@ const {
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
   getTasksColumnWidthsFile,
+  getTaskFilePickerStateFile,
+  loadJson,
   saveJson,
   saveJsonStrict,
 } = require('./fs_storage');
+const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
 const log = Log.get('tasks-main');
 log.debug('Tasks main starting...');
@@ -48,8 +52,23 @@ log.debug('Tasks main starting...');
 // Constants / shared state
 // =============================================================================
 const TASK_EXT = '.json';
-// Tracks unsaved Task Editor changes across IPC requests.
-let taskEditorDirty = false;
+const TASK_TYPE = 'task';
+const TASK_SAVED_WITH = 'toT (totapp.org)';
+const TASK_COLUMN_LAYOUT_VERSION = 1;
+const TASK_COLUMN_WIDTH_MAX_PX = 100_000;
+const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
+  comentario: 82,
+  tiempo: 88,
+  percent: 63,
+  falta: 65,
+  enlace: 250,
+  acciones: 124,
+});
+const TASK_FILE_PICKER_STATE_FALLBACK = Object.freeze({
+  lastDirectory: '',
+});
+const platformAdapter = getTextExtractionPlatformAdapter(process.platform);
+const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
 
 // =============================================================================
 // Helpers (paths, dialogs, file IO)
@@ -84,7 +103,7 @@ function isPathInsideRoot(rootReal, candidatePath) {
 }
 
 function sanitizeTaskBaseName(base) {
-  let next = String(base || '');
+  let next = base;
   next = next.replace(/\s+/g, '_');
   next = next.replace(/[^A-Za-z0-9_-]/g, '');
   next = next.replace(/_+/g, '_').replace(/-+/g, '-');
@@ -137,7 +156,7 @@ async function showContinueCancelDialog(ownerWin, {
 }
 
 function getDefaultTaskFileName(rootDir, taskName) {
-  const base = sanitizeTaskBaseName(taskName || '');
+  const base = sanitizeTaskBaseName(taskName);
   let candidate = `${base}${TASK_EXT}`;
   if (!fs.existsSync(path.join(rootDir, candidate))) return candidate;
   let idx = 2;
@@ -147,21 +166,8 @@ function getDefaultTaskFileName(rootDir, taskName) {
   return `${base}_${idx}${TASK_EXT}`;
 }
 
-async function confirmTaskEditorDiscardIfDirty({ mainWin, taskEditorWin }) {
-  if (!taskEditorDirty) return true;
-  if (!taskEditorWin || taskEditorWin.isDestroyed()) {
-    taskEditorDirty = false;
-    return true;
-  }
-
-  const dialogRes = await showContinueCancelDialog(mainWin || taskEditorWin || null, {
-    messageKey: 'task_discard_changes_confirm',
-  });
-  return dialogRes.response !== 1;
-}
-
 function normalizeSavePath(filePath) {
-  const resolved = path.resolve(String(filePath || ''));
+  const resolved = path.resolve(filePath);
   const dir = path.dirname(resolved);
   const base = path.basename(resolved, path.extname(resolved));
   const safeBase = sanitizeTaskBaseName(base);
@@ -169,17 +175,26 @@ function normalizeSavePath(filePath) {
 }
 
 function readJsonFile(filePath) {
+  let exists = false;
   try {
-    if (!fs.existsSync(filePath)) {
-      return { ok: false, code: 'NOT_FOUND' };
-    }
-    let raw = fs.readFileSync(filePath, 'utf8');
-    raw = raw.replace(/^\uFEFF/, '');
-    if (!raw.trim()) return { ok: false, code: 'INVALID_JSON', message: 'empty file' };
-    const data = JSON.parse(raw);
-    return { ok: true, data };
+    exists = fs.existsSync(filePath);
   } catch (err) {
-    return { ok: false, code: 'INVALID_JSON', message: String(err) };
+    return { ok: false, code: 'READ_FAILED', error: err };
+  }
+  if (!exists) return { ok: false, code: 'NOT_FOUND' };
+
+  let raw = '';
+  try {
+    raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+  } catch (err) {
+    return { ok: false, code: 'READ_FAILED', error: err };
+  }
+  if (!raw.trim()) return { ok: false, code: 'INVALID_JSON' };
+
+  try {
+    return { ok: true, data: JSON.parse(raw) };
+  } catch (err) {
+    return { ok: false, code: 'INVALID_JSON', error: err };
   }
 }
 
@@ -187,7 +202,7 @@ function readJsonFile(filePath) {
 // Helpers (normalization / validation)
 // =============================================================================
 function normalizeTexto(raw) {
-  let s = String(raw || '');
+  let s = raw;
   s = s.trim().replace(/\s+/g, ' ');
   if (!s) return '';
   try {
@@ -198,101 +213,223 @@ function normalizeTexto(raw) {
   return s.toLowerCase();
 }
 
+const TASK_LIST_KEYS = Object.freeze(['type', 'meta', 'rows']);
+const TASK_LIST_KEYS_WITH_SUMMARY = Object.freeze(['type', 'meta', 'summary', 'rows']);
+const TASK_META_KEYS = Object.freeze(['name', 'createdAt', 'updatedAt', 'savedWith']);
+const TASK_SUMMARY_KEYS = Object.freeze(['estimatedTotalSeconds', 'estimatedRemainingSeconds']);
+const TASK_ROW_KEYS = Object.freeze([
+  'texto',
+  'tiempoSeconds',
+  'percentComplete',
+  'enlace',
+  'comentario',
+  'snapshotRelPath',
+]);
+const TASK_LIBRARY_ENTRY_REQUIRED_KEYS = Object.freeze(['texto', 'tiempoSeconds', 'enlace']);
+const TASK_LIBRARY_ENTRY_OPTIONAL_KEYS = Object.freeze(['comentario', 'snapshotRelPath']);
+const TASK_LIBRARY_SAVE_PAYLOAD_KEYS = Object.freeze(['entry']);
+
+function isCanonicalIsoTimestamp(value) {
+  if (typeof value !== 'string') return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+}
+
+function validateTaskSummary(rawTask, expectedSummary) {
+  const hasSummary = Object.prototype.hasOwnProperty.call(rawTask, 'summary');
+  if (!expectedSummary) {
+    return hasSummary
+      ? { ok: false, code: 'INVALID_SUMMARY' }
+      : { ok: true, summary: null };
+  }
+  if (!hasSummary || !hasExactKeys(rawTask.summary, TASK_SUMMARY_KEYS)) {
+    return { ok: false, code: 'INVALID_SUMMARY' };
+  }
+
+  const summary = rawTask.summary;
+  if (!Number.isSafeInteger(summary.estimatedTotalSeconds)
+    || !Number.isSafeInteger(summary.estimatedRemainingSeconds)
+    || summary.estimatedTotalSeconds <= 0
+    || summary.estimatedRemainingSeconds < 0
+    || summary.estimatedRemainingSeconds > summary.estimatedTotalSeconds
+    || summary.estimatedTotalSeconds !== expectedSummary.estimatedTotalSeconds
+    || summary.estimatedRemainingSeconds !== expectedSummary.estimatedRemainingSeconds) {
+    return { ok: false, code: 'INVALID_SUMMARY' };
+  }
+  return { ok: true, summary: expectedSummary };
+}
+
+function isCanonicalSnapshotRelPath(value) {
+  if (typeof value !== 'string') return false;
+  if (!value) return true;
+  return normalizeSnapshotRelPath(value) === value;
+}
+
+function validateCanonicalTaskText(value, maxLength, { required = false, requireTrimmed = false } = {}) {
+  if (typeof value !== 'string') return { ok: false, code: 'INVALID_TEXT_TYPE' };
+  if (value.length > maxLength) return { ok: false, code: 'TEXT_TOO_LONG' };
+  if (requireTrimmed && value !== value.trim()) return { ok: false, code: 'TEXT_NOT_CANONICAL' };
+  if (required && !value) return { ok: false, code: 'EMPTY_TEXT' };
+  return { ok: true, value };
+}
+
 function normalizeRow(raw) {
-  if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_ROW' };
-  const texto = String(raw.texto || '').trim();
-  if (!texto) return { ok: false, code: 'EMPTY_TEXTO' };
-  if (texto.length > TASK_ROW_TEXT_MAX_CHARS) return { ok: false, code: 'TEXTO_TOO_LONG' };
-  const tiempoSeconds = Number(raw.tiempoSeconds);
-  if (!Number.isFinite(tiempoSeconds) || tiempoSeconds < 0) {
+  if (!hasExactKeys(raw, TASK_ROW_KEYS)) return { ok: false, code: 'INVALID_ROW' };
+
+  const textoRes = validateCanonicalTaskText(raw.texto, TASK_ROW_TEXT_MAX_CHARS, {
+    required: true,
+    requireTrimmed: true,
+  });
+  if (!textoRes.ok) return textoRes;
+  if (!taskDurationUtils.isWholeDurationSeconds(raw.tiempoSeconds)) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
-  const percentComplete = Number(raw.percentComplete);
-  if (!Number.isFinite(percentComplete) || percentComplete < 0 || percentComplete > 100) {
+  if (!taskDurationUtils.isPercentComplete(raw.percentComplete)) {
     return { ok: false, code: 'INVALID_PERCENT' };
   }
-  const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
-  if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
-  const comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
-  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
-  const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
+  const enlaceRes = validateCanonicalTaskText(raw.enlace, TASK_ROW_LINK_MAX_CHARS);
+  if (!enlaceRes.ok) return enlaceRes;
+  const comentarioRes = validateCanonicalTaskText(raw.comentario, TASK_ROW_COMMENT_MAX_CHARS);
+  if (!comentarioRes.ok) return comentarioRes;
+  if (!isCanonicalSnapshotRelPath(raw.snapshotRelPath)) {
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+
   return {
     ok: true,
-    row: { texto, tiempoSeconds, percentComplete, enlace, comentario, snapshotRelPath },
+    row: {
+      texto: textoRes.value,
+      tiempoSeconds: raw.tiempoSeconds,
+      percentComplete: raw.percentComplete,
+      enlace: enlaceRes.value,
+      comentario: comentarioRes.value,
+      snapshotRelPath: raw.snapshotRelPath,
+    },
   };
 }
 
-function normalizeLibraryEntry(raw, includeComment) {
-  if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_ROW' };
-  const texto = String(raw.texto || '').trim();
-  if (!texto) return { ok: false, code: 'EMPTY_TEXTO' };
-  if (texto.length > TASK_ROW_TEXT_MAX_CHARS) return { ok: false, code: 'TEXTO_TOO_LONG' };
-  const tiempoSeconds = Number(raw.tiempoSeconds);
-  if (!Number.isFinite(tiempoSeconds) || tiempoSeconds < 0) {
+function hasExactLibraryEntryKeys(raw) {
+  if (!isPlainObject(raw)) return false;
+  const keys = Object.keys(raw);
+  if (!TASK_LIBRARY_ENTRY_REQUIRED_KEYS.every((key) => Object.prototype.hasOwnProperty.call(raw, key))) {
+    return false;
+  }
+  return keys.every((key) => TASK_LIBRARY_ENTRY_REQUIRED_KEYS.includes(key)
+    || TASK_LIBRARY_ENTRY_OPTIONAL_KEYS.includes(key));
+}
+
+function validateLibraryEntry(raw) {
+  if (!hasExactLibraryEntryKeys(raw)) return { ok: false, code: 'INVALID_LIBRARY_ENTRY' };
+
+  const textoRes = validateCanonicalTaskText(raw.texto, TASK_ROW_TEXT_MAX_CHARS, {
+    required: true,
+    requireTrimmed: true,
+  });
+  if (!textoRes.ok) return textoRes;
+  if (!taskDurationUtils.isWholeDurationSeconds(raw.tiempoSeconds)) {
     return { ok: false, code: 'INVALID_TIEMPO' };
   }
-  const enlace = typeof raw.enlace === 'string' ? raw.enlace : String(raw.enlace || '');
-  if (enlace.length > TASK_ROW_LINK_MAX_CHARS) return { ok: false, code: 'ENLACE_TOO_LONG' };
-  let comentario = typeof raw.comentario === 'string' ? raw.comentario : String(raw.comentario || '');
-  if (!includeComment) comentario = '';
-  if (comentario.length > TASK_ROW_COMMENT_MAX_CHARS) return { ok: false, code: 'COMENTARIO_TOO_LONG' };
-  const snapshotRelPath = normalizeSnapshotRelPath(raw.snapshotRelPath || '');
-  const entry = { texto, tiempoSeconds, enlace };
-  if (comentario) entry.comentario = comentario;
-  if (snapshotRelPath) entry.snapshotRelPath = snapshotRelPath;
+  const enlaceRes = validateCanonicalTaskText(raw.enlace, TASK_ROW_LINK_MAX_CHARS);
+  if (!enlaceRes.ok) return enlaceRes;
+
+  const entry = {
+    texto: textoRes.value,
+    tiempoSeconds: raw.tiempoSeconds,
+    enlace: enlaceRes.value,
+  };
+  if (Object.prototype.hasOwnProperty.call(raw, 'comentario')) {
+    const comentarioRes = validateCanonicalTaskText(raw.comentario, TASK_ROW_COMMENT_MAX_CHARS, { required: true });
+    if (!comentarioRes.ok) return comentarioRes;
+    entry.comentario = comentarioRes.value;
+  }
+  if (Object.prototype.hasOwnProperty.call(raw, 'snapshotRelPath')) {
+    if (!isCanonicalSnapshotRelPath(raw.snapshotRelPath) || !raw.snapshotRelPath) {
+      return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+    }
+    entry.snapshotRelPath = raw.snapshotRelPath;
+  }
   return { ok: true, entry };
 }
 
-function normalizeTaskMeta(rawMeta, { preserveCreatedAt, requireName } = {}) {
-  const meta = rawMeta && typeof rawMeta === 'object' ? rawMeta : {};
-  const rawName = String(meta.name || '').trim();
-  const name = rawName.length > TASK_NAME_MAX_CHARS
-    ? rawName.slice(0, TASK_NAME_MAX_CHARS)
-    : rawName;
-  if (requireName && !name) {
-    return { ok: false, code: 'NAME_REQUIRED' };
+function validateTaskMeta(rawMeta) {
+  if (!hasExactKeys(rawMeta, TASK_META_KEYS)) return { ok: false, code: 'INVALID_META' };
+  const nameRes = validateCanonicalTaskText(rawMeta.name, TASK_NAME_MAX_CHARS, {
+    required: true,
+    requireTrimmed: true,
+  });
+  if (!nameRes.ok) {
+    return { ok: false, code: nameRes.code === 'EMPTY_TEXT' ? 'NAME_REQUIRED' : nameRes.code };
   }
-
-  let createdAt = '';
-  if (typeof meta.createdAt === 'string' && meta.createdAt.trim()) {
-    const t = Date.parse(meta.createdAt);
-    if (Number.isFinite(t)) createdAt = new Date(t).toISOString();
-  } else if (typeof meta.createdAt === 'number' && Number.isFinite(meta.createdAt)) {
-    createdAt = new Date(meta.createdAt).toISOString();
+  if (!isCanonicalIsoTimestamp(rawMeta.createdAt) || !isCanonicalIsoTimestamp(rawMeta.updatedAt)) {
+    return { ok: false, code: 'INVALID_META' };
   }
-
-  if (!createdAt && preserveCreatedAt) {
-    createdAt = preserveCreatedAt;
+  if (rawMeta.savedWith !== TASK_SAVED_WITH) {
+    return { ok: false, code: 'INVALID_META' };
   }
-  if (!createdAt) createdAt = new Date().toISOString();
+  return {
+    ok: true,
+    meta: {
+      name: nameRes.value,
+      createdAt: rawMeta.createdAt,
+      updatedAt: rawMeta.updatedAt,
+      savedWith: TASK_SAVED_WITH,
+    },
+  };
+}
 
-  const updatedAt = new Date().toISOString();
-  return { ok: true, meta: { name, createdAt, updatedAt } };
+function normalizeTaskMeta(rawMeta) {
+  const metaRes = validateTaskMeta(rawMeta);
+  if (!metaRes.ok) return metaRes;
+  return {
+    ok: true,
+    meta: {
+      name: metaRes.meta.name,
+      createdAt: metaRes.meta.createdAt,
+      updatedAt: new Date().toISOString(),
+      savedWith: TASK_SAVED_WITH,
+    },
+  };
 }
 
 function normalizeTaskList(raw) {
-  if (!raw || typeof raw !== 'object') return { ok: false, code: 'INVALID_SCHEMA' };
-  const rowsRaw = Array.isArray(raw.rows) ? raw.rows : null;
-  if (!rowsRaw) return { ok: false, code: 'INVALID_SCHEMA' };
-  if (rowsRaw.length > TASK_LIST_MAX_ROWS) {
+  if (!isPlainObject(raw) || !Array.isArray(raw.rows)) {
+    return { ok: false, code: 'INVALID_SCHEMA' };
+  }
+  const expectedTaskKeys = Object.prototype.hasOwnProperty.call(raw, 'summary')
+    ? TASK_LIST_KEYS_WITH_SUMMARY
+    : TASK_LIST_KEYS;
+  if (!hasExactKeys(raw, expectedTaskKeys)) return { ok: false, code: 'INVALID_SCHEMA' };
+  if (raw.type !== TASK_TYPE) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'INVALID_TASK_TYPE' };
+  }
+  if (raw.rows.length > TASK_LIST_MAX_ROWS) {
     return { ok: false, code: 'ROWS_TOO_MANY' };
   }
 
+  const metaRes = validateTaskMeta(raw.meta);
+  if (!metaRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: metaRes.code };
+
   const normalizedRows = [];
-  for (const r of rowsRaw) {
-    const res = normalizeRow(r);
-    if (!res.ok) return { ok: false, code: 'INVALID_SCHEMA', message: res.code };
-    normalizedRows.push(res.row);
+  for (const row of raw.rows) {
+    const rowRes = normalizeRow(row);
+    if (!rowRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: rowRes.code };
+    normalizedRows.push(rowRes.row);
   }
 
-  const metaRaw = raw.meta && typeof raw.meta === 'object' ? raw.meta : {};
-  const meta = {
-    name: String(metaRaw.name || '').trim(),
-    createdAt: metaRaw.createdAt || new Date().toISOString(),
-    updatedAt: metaRaw.updatedAt || new Date().toISOString(),
-  };
+  const summaryRes = taskDurationUtils.deriveTaskSummary(normalizedRows);
+  if (!summaryRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
+  const validatedSummary = validateTaskSummary(raw, summaryRes.summary);
+  if (!validatedSummary.ok) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: validatedSummary.code };
+  }
 
-  return { ok: true, task: { meta, rows: normalizedRows } };
+  const task = {
+    type: TASK_TYPE,
+    meta: metaRes.meta,
+    ...(validatedSummary.summary ? { summary: validatedSummary.summary } : {}),
+    rows: normalizedRows,
+  };
+  return { ok: true, task };
 }
 
 // =============================================================================
@@ -323,7 +460,18 @@ function loadLibraryData() {
     );
     return { ok: false, code: 'LIBRARY_TOO_LARGE' };
   }
-  return { ok: true, items: res.data };
+  const items = [];
+  for (const rawEntry of res.data) {
+    const entryRes = validateLibraryEntry(rawEntry);
+    if (!entryRes.ok) {
+      log.warn('Task library entry invalid; task library actions unavailable.', {
+        code: entryRes.code,
+      });
+      return { ok: false, code: 'INVALID_SCHEMA' };
+    }
+    items.push(entryRes.entry);
+  }
+  return { ok: true, items };
 }
 
 function saveLibraryData(items) {
@@ -364,16 +512,41 @@ function saveAllowedHosts(set) {
   saveJson(file, arr);
 }
 
-function sanitizeColumnWidths(raw) {
-  if (!raw || typeof raw !== 'object') return null;
-  const out = {};
-  Object.keys(raw).forEach((key) => {
-    const n = Number(raw[key]);
-    if (Number.isFinite(n) && n > 0) {
-      out[key] = Math.round(n);
-    }
-  });
-  return Object.keys(out).length ? out : null;
+function isPlainObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function hasExactKeys(value, expectedKeys) {
+  if (!isPlainObject(value)) return false;
+  const actualKeys = Object.keys(value);
+  return actualKeys.length === expectedKeys.length
+    && expectedKeys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+}
+
+function validateColumnLayoutRecord(raw) {
+  if (!hasExactKeys(raw, ['version', 'widths'])) return null;
+  if (raw.version !== TASK_COLUMN_LAYOUT_VERSION) return null;
+
+  const widthKeys = Object.keys(TASK_UTILITY_COLUMN_MIN_WIDTHS);
+  if (!hasExactKeys(raw.widths, widthKeys)) return null;
+
+  const widths = {};
+  for (const key of widthKeys) {
+    const width = raw.widths[key];
+    if (
+      !Number.isSafeInteger(width)
+      || width < TASK_UTILITY_COLUMN_MIN_WIDTHS[key]
+      || width > TASK_COLUMN_WIDTH_MAX_PX
+    ) return null;
+    widths[key] = width;
+  }
+
+  return {
+    version: TASK_COLUMN_LAYOUT_VERSION,
+    widths,
+  };
 }
 
 function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
@@ -392,39 +565,101 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
   }
 }
 
-function sendTaskEditorInit(taskEditorWin, payload) {
+function sendTaskEditorInit(taskEditorWin, payload, taskEditorLifecycle) {
   if (!taskEditorWin || taskEditorWin.isDestroyed()) {
     log.warn("taskEditorWin send('task-editor-init') unavailable.");
     return false;
   }
-  taskEditorWin.webContents.send('task-editor-init', payload);
-  return true;
+  if (!taskEditorLifecycle
+    || typeof taskEditorLifecycle.prepareInitialization !== 'function'
+    || typeof taskEditorLifecycle.acceptInitializationIssued !== 'function') {
+    log.error('Task Editor initialization lifecycle unavailable.');
+    return false;
+  }
+  const correlatedPayload = taskEditorLifecycle.prepareInitialization(taskEditorWin, payload);
+  if (!correlatedPayload) return false;
+  try {
+    taskEditorWin.webContents.send('task-editor-init', correlatedPayload);
+  } catch (err) {
+    log.warn("taskEditorWin send('task-editor-init') failed (ignored):", err);
+    return false;
+  }
+  return taskEditorLifecycle.acceptInitializationIssued(taskEditorWin, correlatedPayload.initId);
+}
+
+function normalizeTaskFilePickerState(rawState) {
+  const state = rawState && typeof rawState === 'object' ? rawState : {};
+  return {
+    lastDirectory: typeof state.lastDirectory === 'string'
+      ? state.lastDirectory.trim()
+      : '',
+  };
+}
+
+function readTaskFilePickerState() {
+  try {
+    const statePath = getTaskFilePickerStateFile();
+    return {
+      statePath,
+      state: normalizeTaskFilePickerState(loadJson(statePath, TASK_FILE_PICKER_STATE_FALLBACK)),
+    };
+  } catch (err) {
+    log.warn('Failed to read Task Editor file picker state (using defaults):', err);
+    return {
+      statePath: null,
+      state: { ...TASK_FILE_PICKER_STATE_FALLBACK },
+    };
+  }
+}
+
+function persistTaskFilePickerState(statePath, nextState) {
+  if (!statePath) return;
+  try {
+    saveJson(statePath, nextState);
+  } catch (err) {
+    log.warn('Failed to persist Task Editor file picker state (ignored):', err);
+  }
+}
+
+function resolveTaskFilePickerDefaultPath(pickerState) {
+  const persisted = platformAdapter.normalizePersistedDirectory(pickerState.lastDirectory);
+  if (persisted) return persisted;
+  return platformAdapter.resolveDefaultPickerPath({
+    app,
+    cwd: process.cwd(),
+    log,
+  });
 }
 
 async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
   const properties = allowMultiple
     ? ['openFile', 'multiSelections']
     : ['openFile'];
-  const dialogRes = await dialog.showOpenDialog(ownerWin || null, { properties });
+  const stateInfo = readTaskFilePickerState();
+  const defaultPath = resolveTaskFilePickerDefaultPath(stateInfo.state);
+  const dialogRes = await dialog.showOpenDialog(ownerWin || null, { defaultPath, properties });
   if (!dialogRes || dialogRes.canceled) {
     return { ok: false, code: 'CANCELLED' };
   }
 
-  const filePaths = Array.isArray(dialogRes.filePaths)
-    ? dialogRes.filePaths
-      .filter((filePath) => typeof filePath === 'string' && filePath.trim())
-      .map((filePath) => path.resolve(String(filePath)))
-    : [];
-  if (!filePaths.length) {
-    return { ok: false, code: 'READ_FAILED', message: 'file picker returned empty file paths' };
+  if (!Array.isArray(dialogRes.filePaths) || !dialogRes.filePaths.length
+    || dialogRes.filePaths.some((filePath) => typeof filePath !== 'string' || !filePath.trim())) {
+    return { ok: false, code: 'READ_FAILED', message: 'file picker returned invalid file paths' };
   }
+  const filePaths = dialogRes.filePaths.map((filePath) => path.resolve(filePath));
+
+  const selectedDirectory = platformAdapter.normalizeSelectedDirectory(filePaths[0]);
+  if (selectedDirectory) {
+    persistTaskFilePickerState(stateInfo.statePath, { lastDirectory: selectedDirectory });
+  }
+
   return { ok: true, filePaths };
 }
 
 // =============================================================================
 // IPC registration
 // =============================================================================
-function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
+function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLifecycle } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
     throw new Error('[tasks_main] registerIpc requires ipcMain');
   }
@@ -433,17 +668,21 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   const resolveMainWin = () => resolveWins().mainWin || null;
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
 
+  const hasTaskEditorLifecycle = !!(taskEditorLifecycle
+    && typeof taskEditorLifecycle.acceptDirtyState === 'function'
+    && typeof taskEditorLifecycle.confirmReplacement === 'function'
+    && typeof taskEditorLifecycle.prepareInitialization === 'function'
+    && typeof taskEditorLifecycle.acceptInitializationIssued === 'function');
+  if (!hasTaskEditorLifecycle) {
+    log.error('Task Editor lifecycle unavailable; New and Load are disabled.');
+  }
+
   ipcMain.on('task-editor-dirty-state', (event, payload) => {
-    const taskEditorWin = resolveTaskEditorWin();
-    if (!isAuthorizedSender(
-      event,
-      taskEditorWin,
-      'tasks_main.dirty_state.unauthorized',
-      'task-editor-dirty-state unauthorized (ignored).'
-    )) {
+    if (!hasTaskEditorLifecycle) {
+      log.warn('task-editor-dirty-state ignored because Task Editor lifecycle is unavailable.');
       return;
     }
-    taskEditorDirty = !!(payload && payload.dirty);
+    taskEditorLifecycle.acceptDirtyState(event, payload);
   });
 
   // =============================================================================
@@ -466,25 +705,38 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: 'UNAVAILABLE' };
       }
 
-      const mode = payload && payload.mode === 'load' ? 'load' : 'new';
+      if (!isPlainObject(payload) || (payload.mode !== 'new' && payload.mode !== 'load')) {
+        log.warn('open-task-editor received invalid mode payload:', payload);
+        return { ok: false, code: 'INVALID_REQUEST' };
+      }
+      const { mode } = payload;
 
       if (mode === 'new') {
-        const allowDiscard = await confirmTaskEditorDiscardIfDirty({
-          mainWin,
-          taskEditorWin: resolveTaskEditorWin(),
-        });
+        if (!hasTaskEditorLifecycle) {
+          return { ok: false, code: 'UNAVAILABLE' };
+        }
+        const allowDiscard = await taskEditorLifecycle.confirmReplacement(mainWin);
         if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
         ensureTaskEditorWindow();
         const taskEditorWin = resolveTaskEditorWin();
+        const now = new Date().toISOString();
         const didSendInit = sendTaskEditorInit(taskEditorWin, {
           mode: 'new',
-          task: { meta: { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, rows: [] },
+          task: {
+            type: TASK_TYPE,
+            meta: {
+              name: '',
+              createdAt: now,
+              updatedAt: now,
+              savedWith: TASK_SAVED_WITH,
+            },
+            rows: [],
+          },
           sourcePath: null,
-        });
+        }, taskEditorLifecycle);
         if (!didSendInit) {
           return { ok: false, code: 'UNAVAILABLE' };
         }
-        taskEditorDirty = false;
         return { ok: true };
       }
 
@@ -508,7 +760,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      const selectedPath = String(dialogRes.filePaths[0] || '');
+      const selectedPath = dialogRes.filePaths[0];
+      if (typeof selectedPath !== 'string' || !selectedPath.trim()) {
+        log.warn('open-task-editor file picker returned invalid file path:', dialogRes);
+        return { ok: false, code: 'READ_FAILED', message: 'task list file picker returned invalid file path' };
+      }
       const selectedReal = safeRealpath(selectedPath);
       if (!selectedReal) {
         return { ok: false, code: 'READ_FAILED', message: 'task list realpath failed' };
@@ -523,13 +779,15 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       }
       const normalized = normalizeTaskList(jsonRes.data);
       if (!normalized.ok) {
+        log.warn('Task list schema invalid; loading rejected.', { code: normalized.code });
         return { ok: false, code: normalized.code || 'INVALID_SCHEMA', message: normalized.message };
       }
 
-      const allowDiscard = await confirmTaskEditorDiscardIfDirty({
-        mainWin,
-        taskEditorWin: resolveTaskEditorWin(),
-      });
+      if (!hasTaskEditorLifecycle) {
+        return { ok: false, code: 'UNAVAILABLE' };
+      }
+
+      const allowDiscard = await taskEditorLifecycle.confirmReplacement(mainWin);
       if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
 
       ensureTaskEditorWindow();
@@ -538,11 +796,10 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         mode: 'load',
         task: normalized.task,
         sourcePath: selectedReal,
-      });
+      }, taskEditorLifecycle);
       if (!didSendInit) {
         return { ok: false, code: 'UNAVAILABLE' };
       }
-      taskEditorDirty = false;
       return { ok: true };
     } catch (err) {
       log.error('Error processing open-task-editor:', err);
@@ -583,8 +840,13 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         normalizedRows.push(res.row);
       }
 
-      const metaRes = normalizeTaskMeta(payload.meta || {}, { requireName: true });
+      const metaRes = normalizeTaskMeta(payload.meta);
       if (!metaRes.ok) return { ok: false, code: metaRes.code, message: metaRes.code };
+
+      const summaryRes = taskDurationUtils.deriveTaskSummary(normalizedRows);
+      if (!summaryRes.ok) {
+        return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
+      }
 
       const defaultName = getDefaultTaskFileName(root, metaRes.meta.name);
       const defaultPath = path.join(root, defaultName);
@@ -594,8 +856,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
 
-      if (!dialogRes || dialogRes.canceled || !dialogRes.filePath) {
+      if (!dialogRes || dialogRes.canceled) {
         return { ok: false, code: 'CANCELLED' };
+      }
+      if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
+        log.warn('task-list-save file picker returned invalid file path:', dialogRes);
+        return { ok: false, code: 'WRITE_FAILED', message: 'task list file picker returned invalid file path' };
       }
 
       const normalizedPath = normalizeSavePath(dialogRes.filePath);
@@ -611,7 +877,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       }
 
       const taskData = {
+        type: TASK_TYPE,
         meta: metaRes.meta,
+        ...(summaryRes.summary ? { summary: summaryRes.summary } : {}),
         rows: normalizedRows,
       };
       saveJsonStrict(candidateResolved, taskData);
@@ -635,8 +903,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
-      const target = payload && payload.path ? String(payload.path) : '';
-      if (!target) return { ok: false, code: 'INVALID_REQUEST' };
+      if (!isPlainObject(payload) || typeof payload.path !== 'string' || !payload.path) {
+        log.warn('task-list-delete received invalid path payload:', payload);
+        return { ok: false, code: 'INVALID_REQUEST' };
+      }
+      const target = payload.path;
 
       const root = ensureTasksRoot();
       if (!root) return { ok: false, code: 'WRITE_FAILED' };
@@ -681,19 +952,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const res = loadLibraryData();
       if (!res.ok) return { ok: false, code: res.code };
 
-      const items = res.items
-        .filter((entry) => entry && typeof entry === 'object' && typeof entry.texto === 'string')
-        .map((entry) => ({
-          texto: String(entry.texto || '').trim(),
-          tiempoSeconds: Number(entry.tiempoSeconds) || 0,
-          enlace: typeof entry.enlace === 'string' ? entry.enlace : String(entry.enlace || ''),
-          comentario: typeof entry.comentario === 'string' ? entry.comentario : '',
-          snapshotRelPath: normalizeSnapshotRelPath(entry.snapshotRelPath || ''),
-          _norm: normalizeTexto(entry.texto),
-        }))
-        .sort((a, b) => a._norm.localeCompare(b._norm));
-
-      items.forEach((x) => delete x._norm);
+      const items = res.items.slice().sort((a, b) => (
+        normalizeTexto(a.texto).localeCompare(normalizeTexto(b.texto))
+      ));
       return { ok: true, items };
     } catch (err) {
       log.error('task-library-list failed:', err);
@@ -713,15 +974,17 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
-      ensureTasksDirs();
-      const includeComment = !!(payload && payload.includeComment);
-      const resEntry = normalizeLibraryEntry(payload && payload.row, includeComment);
+      if (!hasExactKeys(payload, TASK_LIBRARY_SAVE_PAYLOAD_KEYS)) {
+        return { ok: false, code: 'INVALID_SCHEMA', message: 'INVALID_LIBRARY_SAVE_PAYLOAD' };
+      }
+      const resEntry = validateLibraryEntry(payload.entry);
       if (!resEntry.ok) return { ok: false, code: 'INVALID_SCHEMA', message: resEntry.code };
 
+      ensureTasksDirs();
       const res = loadLibraryData();
       if (!res.ok) return { ok: false, code: res.code };
 
-      const items = res.items || [];
+      const items = res.items;
       const norm = normalizeTexto(resEntry.entry.texto);
       const existingIdx = items.findIndex((it) => normalizeTexto(it.texto) === norm);
 
@@ -763,20 +1026,26 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
-      const texto = payload && typeof payload.texto === 'string' ? payload.texto.trim() : '';
-      if (!texto) return { ok: false, code: 'INVALID_REQUEST' };
+      if (!isPlainObject(payload)
+        || typeof payload.texto !== 'string'
+        || !payload.texto
+        || payload.texto !== payload.texto.trim()) {
+        log.warn('task-library-delete received invalid texto payload:', payload);
+        return { ok: false, code: 'INVALID_REQUEST' };
+      }
+      const texto = payload.texto;
 
       const res = loadLibraryData();
       if (!res.ok) return { ok: false, code: res.code };
 
-      const items = res.items || [];
+      const items = res.items;
       const norm = normalizeTexto(texto);
       const idx = items.findIndex((it) => normalizeTexto(it.texto) === norm);
       if (idx < 0) return { ok: false, code: 'NOT_FOUND' };
 
       const dialogRes = await showContinueCancelDialog(taskEditorWin, {
         messageKey: 'task_library_row_delete',
-        messageReplacements: { name: items[idx].texto || texto },
+        messageReplacements: { name: items[idx].texto },
       });
       if (!dialogRes || dialogRes.response !== 0) {
         return { ok: false, code: 'CONFIRM_DENIED' };
@@ -815,19 +1084,24 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
             'tasks_main.columns.missing',
             'task column widths missing (returning null; may be normal on first run).'
           );
-          return { ok: true, widths: null };
+          return { ok: true, record: null };
         }
-        log.warn('Task column widths JSON invalid; load failed.');
-        return { ok: false, code: res.code };
+        if (res.code === 'INVALID_JSON') {
+          log.warn('Task column layout JSON invalid; returning fresh-default signal.');
+          return { ok: true, record: null };
+        }
+        log.error('Task column layout read failed:', res.error);
+        return { ok: false, code: 'READ_FAILED' };
       }
-      const widths = sanitizeColumnWidths(res.data);
-      if (!widths) {
-        log.warn('Task column widths schema invalid; using null.');
+      const record = validateColumnLayoutRecord(res.data);
+      if (!record) {
+        log.warn('Task column layout schema invalid; returning fresh-default signal.');
+        return { ok: true, record: null };
       }
-      return { ok: true, widths };
+      return { ok: true, record };
     } catch (err) {
       log.error('task-columns-load failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+      return { ok: false, code: 'READ_FAILED' };
     }
   });
 
@@ -844,14 +1118,14 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
-      const widths = sanitizeColumnWidths(payload && payload.widths ? payload.widths : null);
-      if (!widths) return { ok: false, code: 'INVALID_SCHEMA' };
+      const record = validateColumnLayoutRecord(payload && payload.record ? payload.record : null);
+      if (!record) return { ok: false, code: 'INVALID_SCHEMA' };
       const file = getTasksColumnWidthsFile();
-      saveJson(file, widths);
+      saveJsonStrict(file, record);
       return { ok: true };
     } catch (err) {
       log.error('task-columns-save failed:', err);
-      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+      return { ok: false, code: 'WRITE_FAILED' };
     }
   });
 

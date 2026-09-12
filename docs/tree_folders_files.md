@@ -105,6 +105,7 @@ tot/
 │ ├── constants_main.js
 │ ├── current_text_processing_main_bridge.js
 │ ├── current_text_processing_state_ipc.js
+│ ├── current_text_snapshot_schema.js
 │ ├── current_text_snapshots_main.js
 │ ├── editor_find_main.js
 │ ├── editor_find_preload.js
@@ -135,6 +136,7 @@ tot/
 │ ├── spellcheck.js
 │ ├── task_editor_preload.js
 │ ├── task_editor_state.js
+│ ├── task_editor_window_lifecycle.js
 │ ├── tasks_main.js
 │ ├── text_state.js
 │ ├── text_time_calculator_preload.js
@@ -159,7 +161,7 @@ tot/
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
 │ │ └── Baskervville-VariableFont_wght.ttf
 │ ├── info/
-│ │ ├── acerca_de.html
+│ │ ├── acerca_de.es.html
 │ │ ├── instrucciones.en.html
 │ │ ├── instrucciones.es.html
 │ │ └── links_interes.html
@@ -169,12 +171,15 @@ tot/
 │ │ │ ├── editor_find_replace_core.js
 │ │ │ ├── editor_maximized_layout_core.js
 │ │ │ ├── format_core.js
+│ │ │ ├── reading_duration_core.js
 │ │ │ ├── reading_test_filters_core.js
 │ │ │ ├── reading_test_questions_core.js
 │ │ │ ├── snapshot_tag_catalog.js
 │ │ │ ├── stopwatch_time_core.js
+│ │ │ ├── task_duration_core.js
 │ │ │ └── text_time_calculator_core.js
 │ │ ├── browser_extension_modal.js
+│ │ ├── combobox.js
 │ │ ├── constants.js
 │ │ ├── count.js
 │ │ ├── crono.js
@@ -188,6 +193,7 @@ tot/
 │ │ ├── format.js
 │ │ ├── generated_icons.js
 │ │ ├── i18n.js
+│ │ ├── info_modal.js
 │ │ ├── info_modal_links.js
 │ │ ├── log.js
 │ │ ├── main_logo_links.js
@@ -198,6 +204,7 @@ tot/
 │ │ ├── renderer_icons.js
 │ │ ├── results_time_multiplier.js
 │ │ ├── snapshot_save_tags_modal.js
+│ │ ├── task_editor_column_layout.js
 │ │ ├── text_apply_canonical.js
 │ │ ├── text_extraction_apply_modal.js
 │ │ ├── text_extraction_batch_final_modal.js
@@ -216,9 +223,11 @@ tot/
 │ │ ├── text_extraction_single_file_heavy_pdf_modal.js
 │ │ ├── text_extraction_status_ui.js
 │ │ ├── text_time_calculator_launcher.js
+│ │ ├── tooltips.js
 │ │ ├── wpm_controls.js
 │ │ └── wpm_curve.js
 │ ├── third_party_licenses/        # {licencias/notices versionados de terceros redistribuidos}
+│ ├── combobox.css
 │ ├── editor.css
 │ ├── editor.html
 │ ├── editor.js
@@ -229,8 +238,10 @@ tot/
 │ ├── flotante.html
 │ ├── flotante.js
 │ ├── index.html
+│ ├── language_window.css
 │ ├── language_window.html
 │ ├── language_window.js
+│ ├── preset_modal.css
 │ ├── preset_modal.html
 │ ├── preset_modal.js
 │ ├── reading_test_questions.css
@@ -244,7 +255,11 @@ tot/
 │ ├── task_editor.css
 │ ├── task_editor.html
 │ ├── task_editor.js
-│ └── text_time_calculator.js
+│ ├── text_time_calculator.css
+│ ├── text_time_calculator.html
+│ ├── text_time_calculator.js
+│ ├── toasts.css
+│ └── tooltips.css
 ├── test/                          # {tests de desarrollo automátizados de la app}
 | └── README.md
 ├── tools/
@@ -290,7 +305,7 @@ tot/
 - `public/preset_modal.js` — Lógica del modal de presets (nuevo/editar).
 - `public/task_editor.js` — Renderer del Editor de Tareas (UI + tabla + biblioteca + anchos de columnas).
 - `public/flotante.js` — Lógica del Cronómetro Flotante.
-- `public/text_time_calculator.js` — Renderer de la Calculadora rápida: aplica i18n, escucha `settings-updated`, alterna entre dos inputs editables y un valor derivado, y consume los núcleos compartidos de tiempo/cálculo.
+- `public/text_time_calculator.js` — Renderer de la Calculadora rápida: aplica i18n, escucha `settings-updated`, alterna entre dos inputs editables y un valor derivado, usa `RendererCombobox` para elegir el objetivo y consume los núcleos compartidos de tiempo/cálculo.
 - `public/language_window.js` — Lógica de la ventana de selección de idioma.
 - `public/reading_test_questions.js` — Lógica del modal de preguntas/comprensión del reading speed test.
 - `public/reading_test_result.js` — Lógica del modal compacto de resultado del reading speed test (WPM medidos + resumen breve antes de preguntas/preset).
@@ -301,7 +316,8 @@ tot/
 - `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `set-spellcheck-enabled`, `set-editor-font-size-px` y difunde cambios vía `settings-updated` más callback `onSettingsUpdated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`) y persiste `spellcheckEnabled` y `editorFontSizePx`.
 - `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: resuelve el diccionario a usar según el idioma activo de la app, aplica la configuración sobre `session.defaultSession`, respeta `spellcheckEnabled` y deshabilita spellcheck cuando el tag activo no tiene diccionario soportado (p.ej. `arn`, `es-cl`) en vez de delegar silenciosamente al locale del SO.
 - `electron/text_state.js` — Estado del texto actual: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
-- `electron/current_text_snapshots_main.js` — Snapshots del texto actual (save/load): valida payloads del flujo save, abre diálogos nativos o resuelve paths determinísticos no interactivos para callers gestionados, persiste/lee JSON bajo `config/saved_current_texts/` (incluye subcarpetas), acepta snapshots simples `{ "text": "<string>" }`, snapshots etiquetados `{ "text": "<string>", "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos compatibles con payload opcional `readingTest`, expone además la apertura de la carpeta de snapshots, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
+- `electron/current_text_snapshot_schema.js` — Owner compartido del schema canónico de snapshots del texto actual: valida `type`, `meta`, `text` y `tags`, permite únicamente el campo opcional `readingTest` y normaliza tags/preguntas antes de que los consumers apliquen el documento.
+- `electron/current_text_snapshots_main.js` — Snapshots del texto actual (save/load): valida payloads del flujo save, abre diálogos nativos o resuelve paths determinísticos no interactivos para callers gestionados, persiste/lee JSON canónico bajo `config/saved_current_texts/` (incluye subcarpetas), expone además la apertura de la carpeta de snapshots, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
 - `electron/current_text_processing_state_ipc.js` — Controlador main-owned y superficie IPC del estado pendiente del current text: mantiene el lifecycle autoritativo de settle con `lockId`/`requestId`, sanea metadata de contexto, ignora resoluciones stale y expone lectura/broadcast del estado hacia la ventana principal autorizada.
 - `electron/current_text_processing_main_bridge.js` — Bridge main→renderer del estado autoritativo de procesamiento del current text: difunde `current-text-processing-state-changed` hacia la ventana principal cuando existe un `webContents` vivo y siembra el estado inicial al cargar el renderer, tolerando como no-op normal la fase de bootstrap previa a la creación de la ventana principal.
 - `electron/editor_state.js` — Persistencia/estado de la ventana del Editor de Texto (tamaño/posición/maximizado y `maximizedTextWidthPx`), su integración con el `BrowserWindow` y el bridge IPC/notificaciones del estado de ventana hacia el renderer del editor.
@@ -318,6 +334,7 @@ tot/
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_state.js` — Persistencia/estado de la ventana del Editor de Tareas (tamaño, posición y maximizado).
+- `electron/task_editor_window_lifecycle.js` — Controlador main-owned del ciclo de vida del Editor de Tareas: conserva la identidad de la ventana, coordina su inicialización y estado dirty, autentica el transporte renderer→Main sin asumir ownership del borrador y serializa la disposición terminal/cierre nativo, incluido el cierre de la ventana principal.
 - `electron/app_temp_paths.js` — Helper main-owned/importable de temporales de runtime: centraliza el root `os.tmpdir()/tot-temp/`, crea subdirectorios/paths temporales app-owned y expone helpers de contención y cleanup best-effort.
 - `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, permite selección múltiple, guarda la última carpeta usada cuando la selección es válida y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
 - `electron/text_extraction_platform/text_extraction_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.
@@ -364,27 +381,33 @@ tot/
 Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` suele actuar como orquestador.
 
 - `public/js/constants.js` — Constantes compartidas del renderer, incluyendo límites/default/step del tamaño de fuente, ancho de texto maximizado y gutter mínimo del Editor de Texto.
+- `public/js/combobox.js` — Componente compartido production-owned `window.RendererCombobox`: reemplaza los selects nativos mediante los modos `select` y `editable`, y centraliza ARIA, teclado, opción activa, cierre externo, exclusión entre instancias y popups siempre abiertos debajo del trigger; `public/combobox.css` aporta la estructura compartida, el límite fijo de `160px` y el scroll vertical.
+- `public/js/tooltips.js` — Owner compartido de los tooltips authored del renderer: convierte atributos `title` en contenido accesible propio, mantiene los cambios dinámicos sincronizados, posiciona el tooltip para puntero y teclado, y conserva el fallback nativo con diagnóstico si falta `MutationObserver`; `public/tooltips.css` define sus tokens de color, superficie y estado oculto.
 - `public/js/wpm_curve.js` — Mapeo discreto slider↔WPM (lineal/exponencial suave), garantizando cobertura de enteros en el rango configurado.
 - `public/js/wpm_controls.js` — Owner renderer de los controles de velocidad de lectura: centraliza estado WPM, binding slider/input, mapeo vía `wpm_curve`, carga/selección de presets en coordinación con `RendererPresets` y aplicación de cambios externos sin devolver esa lógica a `public/renderer.js`.
 - `public/js/lib/count_core.js` — Núcleo puro/importable de conteo (simple/preciso, `Intl.Segmenter`, regla de unión por guiones) reutilizado por el wrapper renderer y por la suite automatizada.
 - `public/js/lib/editor_find_replace_core.js` — Núcleo puro/importable del find/replace del Editor de Texto: matching literal sobre selección, cómputo determinista de `Replace All` y chequeo puro de elegibilidad por longitud; reutilizado por `public/editor.js` y por la suite automatizada.
 - `public/js/lib/editor_maximized_layout_core.js` — Núcleo puro/importable del layout maximizado del Editor de Texto: clamp del ancho preferido/renderizado de la columna centrada y cálculo del resize simétrico desde cualquiera de los gutters; reutilizado por `public/editor.js` y por la suite automatizada.
-- `public/js/lib/format_core.js` — Núcleo puro/importable de formateo (tiempo estimado, partes de tiempo y separadores numéricos) reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/lib/format_core.js` — Núcleo puro/importable de formateo numérico y resolución de separadores, reutilizado por el wrapper renderer y por la suite automatizada.
+- `public/js/lib/reading_duration_core.js` — Núcleo puro/importable de duración estimada de lectura: representa exactamente la relación palabras/WPM y convierte entre palabras, WPM y segundos enteros con redondeo al más cercano (mitades hacia arriba); lo reutilizan ventana principal, snapshots y calculadora rápida.
 - `public/js/lib/reading_test_filters_core.js` — Núcleo puro/importable del selector del reading speed test: semántica de checkboxes (OR dentro de categoría, AND entre categorías activas), cálculo de elegibles y enabled/disabled state desde combinaciones reales.
+- `public/js/lib/task_duration_core.js` — Núcleo puro/importable del dominio temporal del Task Editor: valida segundos enteros/porcentaje y deriva faltante por fila y resumen agregado con aritmética exacta.
 - `public/js/lib/reading_test_questions_core.js` — Núcleo puro/importable del reading speed test para validar payloads `readingTest.questions`, puntuar respuestas y calcular el baseline probabilístico de respuesta al azar.
 - `public/js/lib/snapshot_tag_catalog.js` — Catálogo puro/importable compartido de tags de snapshot: define los valores canónicos/opciones de `language` / `type` / `difficulty` y centraliza la normalización reutilizada por renderer y main para evitar drift.
-- `public/js/lib/stopwatch_time_core.js` — Núcleo puro/importable compartido de tiempo estilo cronómetro: parsea `H+:MM:SS`, preserva el formateo por truncado usado por el cronómetro y añade el formateo redondeado requerido por la Calculadora rápida.
+- `public/js/lib/stopwatch_time_core.js` — Núcleo puro/importable compartido de tiempo estilo cronómetro: parsea `H+:MM:SS`, formatea directamente duraciones enteras en segundos para los dominios que las usan y preserva las conversiones en milisegundos del cronómetro.
 - `public/js/lib/text_time_calculator_core.js` — Núcleo puro/importable de la Calculadora rápida: valida los dos campos editables, detecta invalidez matemática y deriva `palabras`, `tiempo` o `WPM` sin depender del DOM.
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
-- `public/js/format.js` — Wrapper renderer de formateo: valida dependencias del `window`, construye `window.FormatUtils` desde `format_core.js` y conserva la superficie pública existente.
+- `public/js/format.js` — Wrapper renderer de formateo numérico: valida dependencias del `window` y construye `window.FormatUtils` desde `format_core.js`.
 - `public/js/generated_icons.js` — Artefacto runtime autogenerado del renderer: registra el catálogo serializado de SVGs funcionales a partir de `assets/icons/`; no se edita a mano y se regenera con `npm run generate:icons`.
 - `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
-- `public/js/presets.js` — Bridge/owner renderer de presets: resuelve catálogo por idioma, rellena el selector en DOM, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
+- `public/js/info_modal.js` — Owner renderer del `Info Modal`: expone `window.InfoModal.init/open/isOpen/applyTranslations`, conserva estado, DOM, ciclo asíncrono y foco del modal, carga/parsea documentos localizados mediante `RendererI18n`, preserva la protección contra renders stale y refresca el contenido abierto al cambiar idioma; también hidrata la presentación de About sin devolver ese ownership a `public/renderer.js`.
+- `public/js/presets.js` — Bridge/owner renderer de presets: resuelve el catálogo por idioma, carga sus opciones en el combobox compartido, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/renderer_icons.js` — Helper compartido de íconos funcionales en renderer: consume `generated_icons.js`, resuelve variantes/tamaños y expone la aplicación común de iconos a markup estático y a controles generados por JS.
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto actual: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
-- `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: muestra selects opcionales para `language` / `type` / `difficulty`, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
+- `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: usa tres comboboxes editables para `language` / `type` / `difficulty`, conserva el filtrado, clear e inline-create del catálogo, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
+- `public/js/task_editor_column_layout.js` — Owner renderer del layout exacto de columnas del Editor de Tareas: calcula `texto` desde el ancho útil del wrapper, aplica el ancho explícito de tabla/`colgroup`, coordina los seis dividers accesibles y persiste de forma serializada solo los anchos de utilidad versionados.
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state / WPM aplicado.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.
@@ -393,7 +416,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/results_time_multiplier.js` — Controla el multiplicador de tiempo bajo el resultado estimado: valida el input como numero natural, conserva el estado base recibido desde `public/renderer.js` y renderiza el tiempo multiplicado en la ventana principal.
 - `public/js/text_extraction_pdf_page_selection_ui_model.js` — Owner renderer compartido del modelo `pdfPageSelection` para text extraction: construye drafts de UI, canonicaliza `all/range`, deriva estado visible (`selected count`, `invalid range`, enable/disable de submit) y formatea summaries/range labels para los consumers renderer.
 - `public/js/text_extraction_status_ui.js` — Superficie visual del flujo text extraction en ventana principal: estado prepare, waiting UI honesta, tiempo transcurrido, botón abort, progreso por unidad/archivo y nombre seguro del `processingInputFile` (original, subset materializado o child generado por heavy split) sin exponer paths completos.
-- `public/js/text_extraction_batch_planning_modal.js` — Modal/shared planner del batch extraction: renderiza unidades/inputs reordenables, consume el helper compartido de `pdfPageSelection` para page scope por input y disable/focus de ranges inválidos, aplica failure policy común y permite toggle de conservación de generated PDFs + edición de tags sin mover la lógica de negocio a `renderer.js`.
+- `public/js/text_extraction_batch_planning_modal.js` — Modal/shared planner del batch extraction: renderiza unidades/inputs reordenables, usa comboboxes compartidos para ruta y unidad de destino con restauración de foco tras rerender, consume el helper de `pdfPageSelection` para page scope por input y disable/focus de ranges inválidos, aplica failure policy común y permite toggle de conservación de generated PDFs + edición de tags sin mover la lógica de negocio a `renderer.js`.
 - `public/js/text_extraction_batch_final_modal.js` — Modal final compartido de batch/heavy execution: resume resultados por unidad, acciones de copy report / abrir carpeta de snapshots y reveal de artefactos generados retenidos sin crear una segunda superficie de reporte.
 - `public/js/text_extraction_pdf_options_modal.js` — Modal renderer previo a prepare para PDFs: muestra `totalPages`, recoge `All pages` vs `Page range`, usa el helper compartido de `pdfPageSelection` para live validation / selected-count / disable de `Continue`, controla la policy `keep/delete` cuando aplica y resetea el draft de rango al volver a `All pages`.
 - `public/js/text_extraction_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
@@ -404,7 +427,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/text_extraction_ocr_activation_recovery.js` — Helpers de recuperación para OCR durante text extraction: detectan fallos recuperables de setup/auth, delegan la activación al flujo shared y reintentan `prepare` tras una activación exitosa.
 - `public/js/text_extraction_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
 - `public/js/text_extraction_entry.js` — Orquestador compartido del flujo text extraction desde picker o drag/drop: encadena inspect PDF, modal de opciones PDF, prepare, route choice, execute y apply, deriva a batch planning cuando hay múltiples archivos, reutiliza el formatter compartido de `pdfPageSelection` para el handoff heavy-PDF y activa el synthetic full-source split cuando OCR no conviene como una sola unidad.
-- `public/js/text_extraction_batch_flow.js` — Owner renderer del batch extraction: reutiliza contratos prepare/execute/apply/snapshot para múltiples archivos, centraliza la planificación por unidades, canonicaliza/summary de `pdfPageSelection` vía el helper renderer compartido y coordina la ejecución secuencial con failure policy compartida + handoff sintético del single-file heavy split.
+- `public/js/text_extraction_batch_flow.js` — Owner renderer del batch extraction: reutiliza contratos prepare/execute/apply/snapshot para múltiples archivos, mantiene cada PDF pesado como input lógico normalmente agrupable con sus partes generadas como hijos de ejecución, canonicaliza/summary de `pdfPageSelection` vía el helper renderer compartido y coordina la ejecución secuencial con failure policy compartida + handoff del single-file heavy split.
 - `public/js/text_extraction_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de uno o varios archivos al entry flow compartido, con branch explícito hacia batch planning cuando corresponde.
 - `public/js/text_extraction_single_file_heavy_pdf_modal.js` — Modal blocking del caso heavy PDF en single-file OCR: explica los casos A/B del límite `50 MB`, mantiene explícito el handoff a full-source automatic split y expone reveal del generated PDF retenido cuando existe.
 - `public/js/text_time_calculator_launcher.js` — Owner renderer del botón lanzador de la Calculadora rápida en la ventana principal: aplica tooltip/aria i18n, vincula la acción de apertura y sincroniza el estado disabled con el interaction lock principal.
@@ -414,7 +437,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/editor_startup_presentation.js` — Núcleo renderer del startup presentation del Editor de Texto: parsea los query params de arranque inyectados por main (`initialPresentationMode`, `firstShowGeneration`), conserva estable la intención inicial de presentación hasta que el estado real/nativo esté listo y bufferiza updates de window state mientras el lock de startup sigue activo.
 - `public/js/editor_ui.js` — Módulo UI del Editor de Texto: i18n del editor, `spellcheck`, tamaño de texto, layout maximizado con gutters simétricos y persistencia de `maximizedTextWidthPx`, progreso de lectura, restauración de foco y overlay prestart del reading speed test.
 - `public/js/editor_engine.js` — Módulo de lógica/sync del Editor de Texto: helpers de selección e inserción, `replace current/all`, sincronización con main, truncation handling, paste/drop y aplicación de updates externos.
-- `public/js/notify.js` — Avisos/alertas no intrusivas en UI.
+- `public/js/notify.js` — Owner compartido de la API renderer `window.Notify`: resuelve copy i18n, gestiona alert/confirm, toasts y foco/restauración de modals; `public/toasts.css` define los tokens, posicionamiento, superficie y estados visuales de los toasts authored.
 - `public/js/log.js` — Logger del renderer (política de logs del lado UI).
 
 ### 4) i18n (estructura y responsabilidades)
@@ -437,8 +460,8 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/reading_test_pool_import_state.json` — Estado local del picker del importador del pool del reading speed test (última carpeta utilizada).
 - `config/ocr_google_drive/credentials.json` — Espejo/copia runtime gestionado por la app para la configuración OAuth de Google OCR; en el modelo actual se materializa desde credenciales empaquetadas de la app y no forma parte del onboarding manual del usuario.
 - `config/ocr_google_drive/token.json` — Estado local del token OAuth del usuario final para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.
-- `config/saved_current_texts/` — Carpeta runtime con snapshots del texto actual; admite JSON simples `{ "text": ... }`, snapshots etiquetados `{ "text": ..., "tags"?: { "language"?, "type"?, "difficulty"? } }` y archivos con payload opcional `readingTest`; puede contener subcarpetas. La carga normal de snapshots sigue aplicando solo `text` al current text, sin rechazar metadata adicional compatible.
-- `config/saved_current_texts/reading_speed_test_pool/` — Subcarpeta runtime dedicada al pool del reading speed test; recibe starter files sincronizados al arranque desde `electron/reading_test_pool/`, conserva solo contenido (`text`, tags descriptivos y `readingTest` opcional) y delega el estado mutable del pool a `config/reading_test_pool_state.json`; sigue siendo compatible con el flujo normal de snapshots.
+- `config/saved_current_texts/` — Carpeta runtime con snapshots canónicos del texto actual: `type: "text snapshot"`, `meta.savedAt`, `meta.savedWith`, `text` y `tags`; puede contener subcarpetas. `readingTest` es el único campo opcional permitido. La carga normal aplica solo `text` al current text y rechaza cualquier shape no canónica.
+- `config/saved_current_texts/reading_speed_test_pool/` — Subcarpeta runtime dedicada al pool del reading speed test; recibe starter files canónicos sincronizados al arranque desde `electron/reading_test_pool/`, puede incluir el campo opcional validado `readingTest` y delega el estado mutable del pool a `config/reading_test_pool_state.json`; sigue siendo compatible con el flujo normal de snapshots.
 - `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
 - `config/tasks/allowed_hosts.json` — Allowlist de hosts confiables para enlaces remotos.

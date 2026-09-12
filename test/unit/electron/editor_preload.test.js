@@ -80,6 +80,7 @@ test('editor preload exposes the expected editor API surface', () => {
       'onSettingsChanged',
       'onWindowStateChanged',
       'reportBasePresentationState',
+      'reportRendererI18nFailure',
       'sendReplaceResponse',
       'setCurrentText',
       'setEditorFontSizePx',
@@ -124,6 +125,19 @@ test('editor preload reports base presentation state through the main bridge', (
         generation: 7,
         status: 'ready',
       },
+    },
+  ]);
+});
+
+test('editor preload reports terminal renderer i18n failure through the main bridge', () => {
+  const { exposedApi, sent } = loadEditorPreload();
+
+  exposedApi.api.reportRendererI18nFailure({ kind: 'startup' });
+
+  assert.deepEqual(sent, [
+    {
+      channel: 'renderer-i18n-failed',
+      payload: { kind: 'startup' },
     },
   ]);
 });

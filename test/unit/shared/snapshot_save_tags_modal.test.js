@@ -34,11 +34,13 @@ function createElement(id, tagName = 'div') {
   const attributes = {};
   const children = [];
 
-  return {
+  const classValues = new Set();
+  const element = {
     id,
     tagName,
     hidden: false,
     disabled: false,
+    checked: false,
     value: '',
     placeholder: '',
     className: '',
@@ -46,6 +48,12 @@ function createElement(id, tagName = 'div') {
     parentNode: null,
     style: {},
     _children: children,
+    get children() {
+      return children;
+    },
+    get firstElementChild() {
+      return children[0] || null;
+    },
     get textContent() {
       if (children.length) {
         return children.map((child) => child.textContent).join('');
@@ -70,6 +78,10 @@ function createElement(id, tagName = 'div') {
       return child;
     },
     append(...nodes) {
+      nodes.forEach((node) => this.appendChild(node));
+    },
+    replaceChildren(...nodes) {
+      children.splice(0, children.length);
       nodes.forEach((node) => this.appendChild(node));
     },
     addEventListener(type, handler) {
@@ -110,7 +122,40 @@ function createElement(id, tagName = 'div') {
     select() {
       this._selected = true;
     },
+    contains(node) {
+      let current = node;
+      while (current) {
+        if (current === this) return true;
+        current = current.parentNode;
+      }
+      return false;
+    },
+    querySelector(selector) {
+      if (typeof selector !== 'string' || !selector.startsWith('.')) return null;
+      const className = selector.slice(1);
+      const pending = children.slice();
+      while (pending.length) {
+        const candidate = pending.shift();
+        const classNames = String(candidate.className || '').split(/\s+/);
+        if (classNames.includes(className)) return candidate;
+        pending.push(...candidate._children);
+      }
+      return null;
+    },
+    scrollIntoView() {},
   };
+  element.classList = {
+    add(...names) {
+      names.forEach((name) => classValues.add(name));
+    },
+    remove(...names) {
+      names.forEach((name) => classValues.delete(name));
+    },
+    contains(name) {
+      return classValues.has(name);
+    },
+  };
+  return element;
 }
 
 function walk(node, visit) {
@@ -163,6 +208,16 @@ function createHarness({
     snapshotSaveTagsModalConfirm: createElement('snapshotSaveTagsModalConfirm', 'button'),
     snapshotSaveTagsModalCancel: createElement('snapshotSaveTagsModalCancel', 'button'),
     snapshotSaveTagsModalClose: createElement('snapshotSaveTagsModalClose', 'button'),
+    snapshotSaveMetadataFields: createElement('snapshotSaveMetadataFields'),
+    snapshotSaveName: createElement('snapshotSaveName', 'input'),
+    snapshotSaveNameLabel: createElement('snapshotSaveNameLabel', 'span'),
+    snapshotSaveSourceComment: createElement('snapshotSaveSourceComment', 'input'),
+    snapshotSaveSourceCommentLabel: createElement('snapshotSaveSourceCommentLabel', 'span'),
+    snapshotSaveMetricsOptions: createElement('snapshotSaveMetricsOptions'),
+    snapshotSaveIncludeCount: createElement('snapshotSaveIncludeCount', 'input'),
+    snapshotSaveIncludeCountLabel: createElement('snapshotSaveIncludeCountLabel', 'span'),
+    snapshotSaveIncludeReading: createElement('snapshotSaveIncludeReading', 'input'),
+    snapshotSaveIncludeReadingLabel: createElement('snapshotSaveIncludeReadingLabel', 'span'),
     snapshotTagManagerModal: createElement('snapshotTagManagerModal'),
     snapshotTagManagerModalBackdrop: createElement('snapshotTagManagerModalBackdrop'),
     snapshotTagManagerModalTitle: createElement('snapshotTagManagerModalTitle'),
@@ -172,31 +227,24 @@ function createHarness({
     snapshotTagManagerModalClose: createElement('snapshotTagManagerModalClose', 'button'),
   };
 
-  elements.snapshotSaveTagsLanguageControl.append(
-    elements.snapshotSaveTagsLanguageInput,
-    elements.snapshotSaveTagsLanguageListbox
-  );
-  elements.snapshotSaveTagsTypeControl.append(
-    elements.snapshotSaveTagsTypeInput,
-    elements.snapshotSaveTagsTypeListbox
-  );
-  elements.snapshotSaveTagsDifficultyControl.append(
-    elements.snapshotSaveTagsDifficultyInput,
-    elements.snapshotSaveTagsDifficultyListbox
-  );
-
   const windowListeners = new Map();
   const documentListeners = new Map();
   const translations = {
     'renderer.snapshots.title': 'Save text snapshot',
-    'renderer.snapshots.message': 'Optionally tag this text snapshot before choosing where to save it.',
+    'renderer.snapshots.message': 'Optionally name, describe the source of, and tag this text snapshot before choosing where to save it.',
     'renderer.snapshots.search.placeholder': 'Type to filter options',
     'renderer.snapshots.search.no_results': 'No matching options',
     'renderer.snapshots.search.create': 'Create "{label}"',
     'renderer.snapshots.buttons.manage': 'Manage tags',
     'renderer.snapshots.labels.language': 'Language',
+    'renderer.snapshots.labels.name': 'Name (optional)',
+    'renderer.snapshots.labels.source_comment': 'Origin (optional)',
     'renderer.snapshots.labels.type': 'Type',
     'renderer.snapshots.labels.difficulty': 'Difficulty',
+    'renderer.snapshots.metrics.include_count': 'Include word count',
+    'renderer.snapshots.metrics.include_reading': 'Include reading estimate and WPM',
+    'renderer.snapshots.placeholders.name': 'Reading',
+    'renderer.snapshots.placeholders.source_comment': 'chapter-1.pdf, Unit 1, or imported text',
     'renderer.snapshots.empty.language': 'No language tag',
     'renderer.snapshots.empty.type': 'No type tag',
     'renderer.snapshots.empty.difficulty': 'No difficulty tag',
@@ -220,7 +268,7 @@ function createHarness({
     'renderer.snapshots.manager.add_tag': 'Add tag',
     'renderer.snapshots.manager.cancel_draft': 'Cancel',
     'renderer.snapshots.manager.sort_alphabetically': 'Sort alphabetically',
-    'renderer.snapshots.manager.restore_hidden_defaults': 'Restore {count} hidden defaults',
+    'renderer.snapshots.manager.restore_hidden_defaults': 'Restore hidden defaults',
     'renderer.snapshots.manager.empty_category': 'No visible tags',
     'renderer.snapshots.manager.move_up': 'Move {label} up',
     'renderer.snapshots.manager.move_down': 'Move {label} down',
@@ -230,7 +278,7 @@ function createHarness({
     'renderer.snapshots.manager.confirm_delete_custom': 'Delete {label} permanently?',
     'renderer.snapshots.manager.validation.empty': 'Enter a tag label.',
     'renderer.snapshots.manager.validation.control_characters': 'Control characters are not allowed.',
-    'renderer.snapshots.manager.validation.too_long': 'Tag labels must be 48 characters or shorter.',
+    'renderer.snapshots.manager.validation.too_long': 'Tag labels must be {max} characters or shorter.',
     'renderer.snapshots.manager.validation.duplicate': 'That tag already exists in this category.',
     'renderer.snapshots.alerts.catalog_update_error': 'Could not update the tag catalog.',
   };
@@ -240,10 +288,20 @@ function createHarness({
   const confirmCalls = [];
   const notifications = [];
   const registeredPromptNames = [];
+  const modalOpeners = new Map();
 
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(modal, { initialFocus }) {
+          modalOpeners.set(modal, activeElementRef);
+          initialFocus.focus();
+        },
+        deactivateModalFocus(modal) {
+          const opener = modalOpeners.get(modal);
+          modalOpeners.delete(modal);
+          if (opener) opener.focus();
+        },
         confirmMain(key, params) {
           confirmCalls.push({ key, params });
           return confirmResult;
@@ -273,12 +331,17 @@ function createHarness({
           return interpolate(translations[key] || key, params);
         },
       },
+      AppConstants: {
+        SNAPSHOT_TAG_LABEL_MAX_CHARS: 36,
+        SNAPSHOT_NAME_MAX_CHARS: 120,
+        SNAPSHOT_SOURCE_COMMENT_MAX_CHARS: 65_536,
+      },
       SnapshotTagCatalog: snapshotTagCatalog,
       RendererIcons: {
-        createIconButton({ className = '', title = '', ariaLabel = '' } = {}) {
+        createIconButton({ iconName = '', className = '', ariaLabel = '' } = {}) {
           const button = createElement('', 'button');
           button.className = className;
-          if (title) button.title = title;
+          if (iconName) button.setAttribute('data-tot-icon', iconName);
           if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
           return button;
         },
@@ -303,6 +366,11 @@ function createHarness({
         if (!windowListeners.has(type)) return;
         windowListeners.set(type, windowListeners.get(type).filter((candidate) => candidate !== handler));
       },
+      setTimeout(handler) {
+        if (typeof handler === 'function') handler();
+        return 0;
+      },
+      clearTimeout() {},
     },
     document: {
       get activeElement() {
@@ -339,13 +407,31 @@ function createHarness({
   };
 
   vm.createContext(sandbox);
+  const comboboxSource = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/combobox.js'),
+    'utf8'
+  );
+  vm.runInContext(comboboxSource, sandbox, { filename: 'public/js/combobox.js' });
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/snapshot_save_tags_modal.js'),
     'utf8'
   );
   vm.runInContext(source, sandbox, { filename: 'public/js/snapshot_save_tags_modal.js' });
 
+  function syncComboboxElementAliases() {
+    const mappings = [
+      ['Language', elements.snapshotSaveTagsLanguageControl],
+      ['Type', elements.snapshotSaveTagsTypeControl],
+      ['Difficulty', elements.snapshotSaveTagsDifficultyControl],
+    ];
+    mappings.forEach(([name, control]) => {
+      elements[`snapshotSaveTags${name}Input`] = control._children[0];
+      elements[`snapshotSaveTags${name}Listbox`] = control._children[1];
+    });
+  }
+
   function getOptionTexts(listboxId) {
+    syncComboboxElementAliases();
     return elements[listboxId]._children.map((child) => child.textContent);
   }
 
@@ -379,7 +465,18 @@ function createHarness({
 
   return {
     elements,
-    prompt: sandbox.window.Notify.promptSnapshotSaveTags,
+    translations,
+    applyTranslations: sandbox.window.SnapshotSaveTagsModal.applyTranslations,
+    prompt(...args) {
+      const result = sandbox.window.Notify.promptSnapshotSave(...args);
+      syncComboboxElementAliases();
+      return result;
+    },
+    promptTags(...args) {
+      const result = sandbox.window.Notify.promptSnapshotTags(...args);
+      syncComboboxElementAliases();
+      return result;
+    },
     promptManager: sandbox.window.Notify.promptSnapshotTagManager,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
@@ -410,7 +507,8 @@ test('snapshot save tags modal registers public prompts through window.Notify.re
 
   assert.deepEqual(harness.getRegisteredPromptNames(), [
     'promptSnapshotTagManager',
-    'promptSnapshotSaveTags',
+    'promptSnapshotSave',
+    'promptSnapshotTags',
   ]);
   assert.equal(typeof harness.prompt, 'function');
   assert.equal(typeof harness.promptManager, 'function');
@@ -426,16 +524,101 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
   assert.match(harness.elements.snapshotSaveTagsModalMessage.textContent, /text snapshot/);
   assert.equal(harness.elements.snapshotSaveTagsModalConfirm.textContent, 'Save Text Snapshot');
   assert.equal(harness.elements.snapshotSaveTagsLanguageInput.placeholder, 'Type to filter options');
+  assert.equal(harness.elements.snapshotSaveSourceCommentLabel.textContent, 'Origin (optional)');
+  assert.equal(harness.elements.snapshotSaveName.placeholder, 'Reading');
+  assert.equal(
+    harness.elements.snapshotSaveSourceComment.placeholder,
+    'chapter-1.pdf, Unit 1, or imported text'
+  );
   assert.equal(harness.elements.snapshotSaveTagsManageButton.textContent, 'Manage tags');
-  assert.equal(harness.elements.snapshotSaveTagsManageButton.title, 'Manage tags');
+  assert.equal(harness.elements.snapshotSaveTagsManageButton.title, undefined);
   assert.equal(
     harness.elements.snapshotSaveTagsManageButton.getAttribute('aria-label'),
-    'Manage snapshot tags'
+    null
+  );
+  assert.equal(harness.elements.snapshotSaveIncludeCountLabel.textContent, 'Include word count');
+  assert.equal(
+    harness.elements.snapshotSaveIncludeReadingLabel.textContent,
+    'Include reading estimate and WPM'
   );
 
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
+});
+
+test('snapshot save modal returns optional name and source-comment fields', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+
+  assert.equal(harness.elements.snapshotSaveMetadataFields.hidden, false);
+  assert.equal(harness.elements.snapshotSaveMetricsOptions.hidden, false);
+  assert.equal(harness.elements.snapshotSaveName.maxLength, 120);
+  assert.equal(harness.elements.snapshotSaveSourceComment.maxLength, 65_536);
+
+  harness.elements.snapshotSaveName.value = 'Reading';
+  harness.elements.snapshotSaveSourceComment.value = 'chapter-1.pdf, Unit 1';
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    tags: null,
+    includeCount: true,
+    includeReading: true,
+    name: 'Reading',
+    sourceComment: 'chapter-1.pdf, Unit 1',
+  });
+});
+
+test('snapshot save translation refresh preserves the active metadata, metrics, and tag draft', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.prompt({ initialTags: { language: 'es' } });
+  await flushMicrotasks();
+  harness.elements.snapshotSaveName.value = 'Lectura';
+  harness.elements.snapshotSaveSourceComment.value = 'capitulo-1.pdf';
+  harness.elements.snapshotSaveIncludeCount.checked = false;
+  harness.elements.snapshotSaveIncludeCount.dispatch('change');
+  harness.translations['renderer.snapshots.title'] = 'Guardar instantánea de texto';
+  harness.translations['renderer.snapshots.labels.name'] = 'Nombre opcional';
+
+  harness.applyTranslations();
+  harness.getOptionTexts('snapshotSaveTagsLanguageListbox');
+
+  assert.equal(harness.elements.snapshotSaveTagsModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.snapshotSaveTagsModalTitle.textContent, 'Guardar instantánea de texto');
+  assert.equal(harness.elements.snapshotSaveNameLabel.textContent, 'Nombre opcional');
+  assert.equal(harness.elements.snapshotSaveName.value, 'Lectura');
+  assert.equal(harness.elements.snapshotSaveSourceComment.value, 'capitulo-1.pdf');
+  assert.equal(harness.elements.snapshotSaveIncludeCount.checked, false);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, false);
+  assert.equal(harness.elements.snapshotSaveTagsLanguageInput.value, 'Spanish');
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    tags: { language: 'es' },
+    includeCount: false,
+    includeReading: false,
+    name: 'Lectura',
+    sourceComment: 'capitulo-1.pdf',
+  });
+});
+
+test('snapshot tags prompt hides save-only metadata and metric controls', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+
+  assert.equal(harness.elements.snapshotSaveMetadataFields.hidden, true);
+  assert.equal(harness.elements.snapshotSaveMetricsOptions.hidden, true);
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { tags: null });
 });
 
 test('snapshot save tags modal creates and selects a custom tag from the inline create option', async () => {
@@ -462,8 +645,41 @@ test('snapshot save tags modal creates and selects a custom tag from the inline 
   const result = await promptPromise;
   assert.deepEqual(
     JSON.parse(JSON.stringify(result)),
-    { tags: { type: customValue } }
+    {
+      tags: { type: customValue },
+      includeCount: true,
+      includeReading: true,
+    }
   );
+});
+
+test('snapshot save metrics choices default to both selected and enforce count before reading', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+
+  assert.equal(harness.elements.snapshotSaveIncludeCount.checked, true);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, true);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.disabled, false);
+
+  harness.elements.snapshotSaveIncludeCount.checked = false;
+  harness.elements.snapshotSaveIncludeCount.dispatch('change');
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, false);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.disabled, true);
+
+  harness.elements.snapshotSaveIncludeCount.checked = true;
+  harness.elements.snapshotSaveIncludeCount.dispatch('change');
+  assert.equal(harness.elements.snapshotSaveIncludeReading.checked, false);
+  assert.equal(harness.elements.snapshotSaveIncludeReading.disabled, false);
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  const result = await promptPromise;
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    tags: null,
+    includeCount: true,
+    includeReading: false,
+  });
 });
 
 test('snapshot save tags modal shows the inline create option before matching catalog options', async () => {
@@ -533,15 +749,60 @@ test('snapshot tag manager moves focus into the modal on open', async () => {
   await managerPromise;
 });
 
-test('snapshot tag manager renders text action buttons at normal size', async () => {
+test('snapshot tag manager translation refresh retains its draft and uses the modal fallback only for replaced focus', async () => {
   const harness = createHarness();
+
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
+  harness.findInManagerByText('New tag').dispatch('click');
+  await flushMicrotasks();
+  let draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
+  assert.ok(draftInput);
+  draftInput.value = 'Whodunit';
+  draftInput.dispatch('input');
+  harness.elements.snapshotTagManagerModalDone.focus();
+  harness.translations['renderer.snapshots.manager.new_tag_placeholder'] = 'Escribe una etiqueta nueva';
+
+  harness.applyTranslations();
+  draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
+
+  assert.equal(harness.elements.snapshotTagManagerModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(draftInput.value, 'Whodunit');
+  assert.equal(draftInput.placeholder, 'Escribe una etiqueta nueva');
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotTagManagerModalDone);
+
+  draftInput.focus();
+  harness.applyTranslations();
+  assert.equal(harness.getActiveElement(), harness.elements.snapshotTagManagerModalClose);
+
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
+});
+
+test('snapshot tag manager renders the restore action as a reset icon with its hidden-default count', async () => {
+  const storedPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  storedPreferences.language.hiddenDefaults = ['en'];
+  const harness = createHarness({ storedPreferences });
 
   const managerPromise = harness.promptManager({ initialPreferences: null });
   await flushMicrotasks();
 
   assert.equal(harness.findInManagerByText('New tag').className, 'btn-standard');
   assert.equal(harness.findInManagerByText('Sort alphabetically').className, 'btn-standard');
-  assert.equal(harness.findInManagerByText('Restore 0 hidden defaults').className, 'btn-standard');
+  const restoreButton = harness.findInManagerByAriaLabel('Restore hidden defaults (1)');
+  assert.ok(restoreButton);
+  assert.equal(restoreButton.className, 'btn-standard snapshot-tag-manager-restore-button');
+  assert.equal(restoreButton.getAttribute('data-tot-icon'), 'reset-small');
+  assert.equal(
+    restoreButton.getAttribute('data-tot-tooltip'),
+    'Restore hidden defaults'
+  );
+  assert.equal(restoreButton.title, undefined);
+  assert.equal(restoreButton.textContent, '(1)');
+
+  restoreButton.dispatch('click');
+  await flushMicrotasks();
+  assert.equal(harness.getStoredPreferences().language.hiddenDefaults.includes('en'), false);
 
   harness.elements.snapshotTagManagerModalDone.dispatch('click');
   await managerPromise;
@@ -558,6 +819,7 @@ test('snapshot tag manager escape in new-tag input cancels only the draft', asyn
 
   const draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
   assert.ok(draftInput);
+  assert.equal(draftInput.maxLength, 36);
 
   const keyEvent = draftInput.dispatch('keydown', { key: 'Escape' });
   if (!keyEvent.propagationStopped) {
@@ -567,6 +829,30 @@ test('snapshot tag manager escape in new-tag input cancels only the draft', asyn
 
   assert.equal(harness.findInManagerByClassName('snapshot-tag-manager-draft-input'), null);
   assert.equal(harness.elements.snapshotTagManagerModal.getAttribute('aria-hidden'), 'false');
+
+  harness.elements.snapshotTagManagerModalDone.dispatch('click');
+  await managerPromise;
+});
+
+test('snapshot tag manager reports the shared custom-label cap', async () => {
+  const harness = createHarness();
+
+  const managerPromise = harness.promptManager({ initialPreferences: null });
+  await flushMicrotasks();
+  harness.findInManagerByText('New tag').dispatch('click');
+  await flushMicrotasks();
+
+  const draftInput = harness.findInManagerByClassName('snapshot-tag-manager-draft-input');
+  assert.ok(draftInput);
+  draftInput.value = 'a'.repeat(37);
+  draftInput.dispatch('input');
+  harness.findInManagerByText('Add tag').dispatch('click');
+  await flushMicrotasks();
+
+  assert.equal(
+    harness.findInManagerByClassName('snapshot-tag-manager-validation').textContent,
+    'Tag labels must be 36 characters or shorter.'
+  );
 
   harness.elements.snapshotTagManagerModalDone.dispatch('click');
   await managerPromise;

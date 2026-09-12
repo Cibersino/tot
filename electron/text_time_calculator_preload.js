@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const api = {
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
   onSettingsChanged: (cb) => {
     const listener = (_event, settings) => {
       try {

@@ -19,8 +19,7 @@
         "chars": "Characters: {n}",
         "value_pending": "pending...",
         "value_unavailable": "unavailable",
-        "precise_mode": "Precise mode",
-        "precise_tooltip": "Based on Intl.Segmenter"
+        "precise_mode": "Precise mode"
       },
       "crono": {
         "title": "STOPWATCH",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Recalculating current text results...",
         "current_text_waiting_startup": "Settling current text...",
         "current_text_waiting_editor": "Syncing Text Editor changes...",
+        "editor_loading": "Loading Text Editor...",
         "text_extraction_placeholder": "Extracting text...",
         "text_extraction_preparing": "Preparing extraction route...",
         "text_extraction_cancellation_pending": "Cancellation requested. Please wait...",
@@ -47,6 +47,9 @@
       },
       "tooltips": {
         "text_extraction": "Extract text from files",
+        "browser_extension": "Browser extension"
+      },
+      "names": {
         "text_extraction_abort": "Abort extraction",
         "overwrite_clipboard": "Replace the current text with clipboard text",
         "append_clipboard": "Append clipboard text to the end of the current text",
@@ -57,7 +60,6 @@
         "snapshot_save": "Save current text to a text snapshot",
         "task_new": "New task",
         "task_load": "Load task",
-        "browser_extension": "Browser extension",
         "cibersino_website": "Cibersino website",
         "cibersino_kofi": "Support me on Ko-fi",
         "new_preset": "Create a new preset",
@@ -66,23 +68,22 @@
         "reset_presets": "Restore default presets",
         "text_time_calculator": "Open quick calculator",
         "help_button": "Show a useful tip",
-        "flotante_window": "Floating Stopwatch"
+        "crono_toggle": "Start or pause stopwatch",
+        "crono_reset": "Stop and reset stopwatch",
+        "floating_window": "Floating Stopwatch"
+      },
+      "help": {
+        "preview_spoiler": "Show or hide the end of the preview",
+        "precise_mode": "Based on Intl.Segmenter"
       },
       "aria": {
         "text_extraction": "Select files to extract text from",
-        "text_extraction_abort": "Abort extraction",
         "browser_extension": "Open browser extension window",
-        "clipboard_repeat_count": "Paste repetitions",
-        "text_time_calculator": "Open quick calculator",
         "wpm_input": "Words per minute",
         "wpm_slider": "Words per minute slider",
         "speed_presets": "Speed presets",
-        "precise_mode_toggle": "Precise mode toggle",
         "crono_controls": "Stopwatch controls",
         "crono_display": "Stopwatch display",
-        "crono_toggle": "Start or pause stopwatch",
-        "crono_reset": "Stop and reset stopwatch",
-        "floating_window_toggle": "Floating Stopwatch",
         "floating_window_group": "Floating Stopwatch controls"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Unit {index}",
         "unit_counter": "Unit {index}/{count}",
         "unit_name_placeholder": "Optional unit name",
+        "aria": {
+          "route": "Extraction route for {file}",
+          "unit_assignment": "Destination unit for {file}",
+          "unit_name": "Optional name for unit {index} of {count}"
+        },
         "new_unit_option": "Create new unit",
         "move_up": "Move up",
         "move_down": "Move down",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Open text snapshots folder",
         "ok_button": "OK",
         "close_aria": "Close batch extraction final report",
-        "split_result_label": "Split result:",
         "failed_fallback": "failed",
         "failed_with_code": "failed: {code}",
         "applied_truncated": "applied with truncation",
@@ -301,28 +306,35 @@
       "increase_text_size": "Increase text size",
       "reset_text_size": "Reset text size",
       "read_progress_label": "Read",
-      "clear_title": "Clear",
+      "clear": "Clear",
+      "help": {
+        "apply": "Apply the editor text as the current text",
+        "auto_apply": "Automatically apply editor changes to the current text while typing",
+        "spellcheck": "Turn spellcheck on or off for the editor text"
+      },
       "editor_find": {
         "input_placeholder": "Find...",
         "input_aria": "Find in text",
-        "expand_title": "Show replace controls",
-        "collapse_title": "Hide replace controls",
         "replace_placeholder": "Replace...",
         "replace_aria": "Replacement text",
         "replace": "Replace",
         "replace_all": "Replace all",
-        "prev_title": "Previous match",
-        "next_title": "Next match",
-        "close_title": "Close find bar",
-        "replace_title": "Replace current match",
-        "replace_all_title": "Replace all matches",
+        "names": {
+          "show_replace": "Show replace controls",
+          "hide_replace": "Hide replace controls",
+          "previous_match": "Previous match",
+          "next_match": "Next match",
+          "close": "Close find bar"
+        },
+        "help": {
+          "replace_current": "Replace current match",
+          "replace_all": "Replace all matches"
+        },
         "replace_timeout": "Replace timed out. Try again.",
         "status_no_matches": "No matches",
         "status_empty_query": "Type to search"
       },
       "alerts": {
-        "start_failed": "The Text Editor could not be started.",
-        "start_timeout": "The Text Editor took too long to start and was closed.",
         "paste_too_big": "Text too large to paste directly. Use the main window buttons.",
         "drop_too_big": "Dropped text is too large. Use the main window buttons to add large text.",
         "paste_no_text": "Clipboard does not contain plain text.",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "Save text snapshot",
-      "message": "You can optionally tag this text snapshot before choosing where to save it.",
+      "message": "You can optionally name, describe the source of, and tag this text snapshot before choosing where to save it.",
       "search": {
         "placeholder": "Type to filter options",
         "no_results": "No matching options",
         "create": "Create \"{label}\""
       },
       "labels": {
+        "name": "Name (optional)",
+        "source_comment": "Origin (optional)",
         "language": "Language",
         "type": "Type",
         "difficulty": "Difficulty"
+      },
+      "placeholders": {
+        "name": "Reading",
+        "source_comment": "chapter-1.pdf, Unit 1, or imported text"
+      },
+      "metrics": {
+        "include_count": "Include word count",
+        "include_reading": "Include reading estimate and WPM"
       },
       "manager": {
         "title": "Manage text snapshot tags",
@@ -356,10 +378,11 @@
         "close_aria": "Close text snapshot tag manager",
         "new_tag": "New tag",
         "new_tag_placeholder": "Tag label",
+        "new_tag_input_aria": "New tag label",
         "add_tag": "Add tag",
         "cancel_draft": "Cancel",
         "sort_alphabetically": "Sort A-Z",
-        "restore_hidden_defaults": "Restore default tags ({count})",
+        "restore_hidden_defaults": "Restore default tags",
         "empty_category": "No visible tags in this category.",
         "move_up": "Move \"{label}\" up",
         "move_down": "Move \"{label}\" down",
@@ -411,6 +434,7 @@
           "qu": "Quechua",
           "ru": "Russian",
           "sv": "Swedish",
+          "sw": "Swahili",
           "tr": "Turkish",
           "ur": "Urdu",
           "vi": "Vietnamese",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — Task Editor",
       "name": "Name",
+      "name_placeholder": "e.g., Reading plan",
       "save_button": "Save",
       "delete_button": "Delete",
       "summary_total": "Total",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Left",
         "enlace": "Link or local path",
-        "comentario": "",
+        "comentario": "C+S",
         "acciones": "Actions",
-        "tooltips": {
+        "header_names": {
+          "tiempo": "Estimated reading time",
+          "percent": "Percentage completed",
+          "falta": "Estimated time remaining",
+          "comentario": "Comment and text snapshot"
+        },
+        "names": {
           "file_select": "Select local file",
           "link_open": "Open link or local path",
           "snapshot_load": "Load text snapshot as current text",
-          "comment": "Add or edit comment",
+          "comment": "Add a comment or a text snapshot",
           "move_up": "Move up",
           "move_down": "Move down",
           "library_row_save": "Save reading to the library",
           "delete_row": "Delete row"
+        },
+        "descriptions": {
+          "snapshot_path": "Associated text snapshot path: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Load text snapshot as current text · Associated path: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Comment",
+        "comment_placeholder": "Add a comment...",
         "snapshot_select": "Select text snapshot",
-        "snapshot_select_tooltip": "Select a text snapshot for this row",
-        "snapshot_clear": "Remove selected snapshot from this row"
+        "snapshot_clear": "Remove selected snapshot from this row",
+        "close_aria": "Close comment",
+        "snapshot_source_reminder": {
+          "title": "Snapshot source reminder",
+          "message": "This row is associated with a text snapshot. Check its source comment before selecting a local file.",
+          "source_comment": "Snapshot source comment:",
+          "select_file": "Select local file",
+          "cancel": "Cancel",
+          "close_aria": "Close snapshot source reminder"
+        },
+        "snapshot_details_confirm": {
+          "title": "Use data from selected text snapshot?",
+          "message": "Review the available data from the selected text snapshot before applying it to this reading.",
+          "replace_reading_name": "Replace reading name",
+          "set_reading_name": "Set reading name",
+          "current_name": "Current name",
+          "snapshot_name": "Snapshot name",
+          "empty": "(empty)",
+          "replace_time": "Replace estimated time",
+          "current_time": "Current time",
+          "snapshot_estimate": "Snapshot estimate",
+          "reading_speed": "Reading speed",
+          "apply": "Apply",
+          "apply_selected": "Apply selected",
+          "keep": "Keep current values",
+          "close_aria": "Close snapshot details confirmation"
+        }
       },
       "biblioteca": {
         "library_title": "Reading library",
+        "close_aria": "Close reading library",
         "search": "Search",
         "search_placeholder": "Search library...",
         "empty": "(empty)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Save reading to the library",
-        "library_save_question": "Include comment?",
+        "close_aria": "Close save-to-library dialog",
+        "library_save_question": "Include the comment? If this reading has a selected text snapshot, its association will be saved either way.",
         "yes": "Yes",
         "no": "No",
         "cancel": "Cancel"
@@ -499,6 +564,7 @@
         "task_delete_unavailable": "No saved task to delete.",
         "task_invalid_file": "Invalid task file.",
         "task_invalid_rows": "There are invalid rows in the task.",
+        "task_duration_too_large": "The task's total estimated duration is too large.",
         "task_path_outside": "The file must be inside the tasks folder.",
         "name_required": "Task name is required.",
         "row_text_required": "Row name cannot be empty.",
@@ -507,6 +573,10 @@
         "library_save_error": "Could not save the reading to the library.",
         "library_save_success": "Reading saved to the library.",
         "library_delete_error": "Could not delete the reading from the library.",
+        "column_layout_save_error": "The column layout could not be saved and may not be retained next time.",
+        "snapshot_missing": "The selected text snapshot no longer exists.",
+        "snapshot_invalid": "The selected text snapshot is invalid.",
+        "snapshot_read_error": "Could not read the selected text snapshot.",
         "link_blocked": "Link blocked.",
         "link_missing": "File not found.",
         "link_error": "Error opening link or local path.",
@@ -538,7 +608,7 @@
         "title": "Reading speed test",
         "show_instructions": "Show instructions",
         "hide_instructions": "Hide instructions",
-        "intro": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.",
+        "intro": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the stopwatch. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play.",
         "eligible_count": "Eligible files:",
         "show_bundled_entries": "Built-in tests",
         "get_more_files": "Get more files",
@@ -550,28 +620,22 @@
         "close_aria": "Close reading speed test window",
         "start_random_confirm": "This will replace the current text with a random eligible text from the pool. Do you want to continue?",
         "reset_confirm": "This will reset the whole test pool and mark all of its files as unused again. Do you want to continue?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Include the app's bundled starter test files in the pool",
           "get_more_files": "Get more test files from the Google Drive folder",
           "import_files": "Import test files from your device",
-          "reset_pool": "Reset test pool",
           "start_random_text": "Start the test with a random eligible text from the pool",
-          "start_current_text": "Start the test with the current text"
+          "start_current_text": "Use the current text without replacing it or consuming a pool file"
+        },
+        "names": {
+          "reset_pool": "Reset test pool"
         },
         "import": {
-          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}.",
-          "import_conflict": {
-            "title": "Import files",
-            "message": "Some imported files already exist in the pool. How should duplicates be handled?",
-            "detail": "The pool already contains {count} of the destination filenames.",
-            "skip_button": "Skip duplicates",
-            "replace_button": "Replace duplicates",
-            "cancel_button": "Cancel import"
-          }
+          "import_summary": "Import finished. Imported: {imported}. Skipped duplicates: {skippedDuplicates}. Failed validation: {failedValidation}. Failed archive entries: {failedArchiveEntries}. Failed writes: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
+        "reminder": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the stopwatch. Press Stop/Reset (⏹) only if you want to cancel the test."
       },
       "questions": {
         "title": "Reading comprehension questions",
@@ -580,6 +644,7 @@
         "random_value": "Expected score under random guessing: {percentage}",
         "feedback_title": "Feedback",
         "feedback_prefix": "For complaints:",
+        "summary_aria": "Test summary",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "All questions must be answered before evaluating.",
         "result_summary": "{correct} out of {total} correct ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "Measured WPM",
         "elapsed_time": "Time",
         "word_count": "Words",
+        "summary_aria": "Test summary",
         "continue_button": "Continue"
       },
       "alerts": {
@@ -646,8 +712,8 @@
       }
     },
     "browser_extension": {
-      "title": "Browser extension",
-      "subtitle": "Reading time",
+      "title": "Reading time",
+      "subtitle": "Browser extension",
       "availability": "Available on Chrome now. More browsers coming soon.",
       "chrome_store_aria": "Open the extension Chrome Web Store page",
       "close_aria": "Close browser extension window",
@@ -658,6 +724,11 @@
     "info": {
       "loading": "Loading...",
       "missing_content": "No content is available for \"{name}\".",
+      "close_aria": "Close information",
+      "media_lightbox": {
+        "title": "Expanded screenshot preview",
+        "close_aria": "Close preview"
+      },
       "external": {
         "blocked": "Link blocked",
         "error": "Error opening link"

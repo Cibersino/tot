@@ -45,6 +45,7 @@
   const btnOpenSnapshots = document.getElementById('textExtractionBatchFinalModalOpenSnapshots');
   const btnOk = document.getElementById('textExtractionBatchFinalModalOk');
   const btnClose = document.getElementById('textExtractionBatchFinalModalClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -104,17 +105,6 @@
     return parent;
   }
 
-  function focusElementWithoutScroll(element) {
-    if (!element || typeof element.focus !== 'function') {
-      return;
-    }
-    try {
-      element.focus({ preventScroll: true });
-    } catch (_err) {
-      element.focus();
-    }
-  }
-
   function setElementVisibility(element, isVisible) {
     element.hidden = isVisible !== true;
     element.setAttribute('aria-hidden', isVisible === true ? 'false' : 'true');
@@ -162,24 +152,13 @@
     const button = rendererIcons.createIconButton({
       iconName: 'open-target',
       className: 'btn-standard btn-standard--square-half',
-      size: 'md',
-      title: label,
       ariaLabel: label,
       type: 'button',
     });
+    button.setAttribute('data-tot-tooltip', label);
     button.setAttribute('data-action', 'reveal-generated-pdf');
     button.setAttribute('data-artifact-path', artifactPath);
     return button;
-  }
-
-  function isHeavySplitGeneratedRowsUnit(unit) {
-    return !!(
-      unit
-      && unit.exclusiveHeavy === true
-      && unit.heavyGeneratedInputRows === true
-      && Array.isArray(unit.inputs)
-      && unit.inputs.length
-    );
   }
 
   function normalizeReportState(state) {
@@ -241,6 +220,33 @@
     );
   }
 
+  function getReportItemStatusKind(item) {
+    const normalizedState = normalizeReportState(item && item.state);
+    if (normalizedState === 'success') {
+      return item && item.applyTruncated === true ? 'truncated' : '';
+    }
+    return normalizedState;
+  }
+
+  function createReportItemLabel(displayName, item) {
+    const label = createDomElement('span', {
+      className: 'text-extraction-batch-final-item-label',
+    });
+    label.appendChild(createDomElement('span', {
+      textContent: displayName,
+    }));
+
+    const statusSuffix = getReportItemStatusSuffix(item);
+    const statusKind = getReportItemStatusKind(item);
+    if (statusSuffix && statusKind) {
+      label.appendChild(createDomElement('span', {
+        className: `text-extraction-batch-final-status text-extraction-batch-final-status--${statusKind}`,
+        textContent: ` ${statusSuffix}`,
+      }));
+    }
+    return label;
+  }
+
   function getRetainedArtifactPath(item) {
     return item
       && item.generatedPdfArtifact
@@ -253,40 +259,7 @@
       : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
   }
 
-  function getHeavySplitOverallStatusText(unit) {
-    if (!unit || !isHeavySplitGeneratedRowsUnit(unit)) {
-      return '';
-    }
-    return formatReportStatusText(unit.overallState, unit.overallCode || '', {
-      applyTruncated: unit.applyTruncated === true,
-    });
-  }
-
-  function renderHeavySplitUnitMetaRows(unit) {
-    if (!isHeavySplitGeneratedRowsUnit(unit)) {
-      return [];
-    }
-
-    const rows = [];
-    if (unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
-      rows.push(createDomElement('div', {
-        className: 'text-extraction-batch-final-unit-meta',
-        textContent: `${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`,
-      }));
-    }
-
-    const overallStatusText = getHeavySplitOverallStatusText(unit);
-    if (overallStatusText) {
-      rows.push(createDomElement('div', {
-        className: 'text-extraction-batch-final-unit-meta text-extraction-batch-final-unit-meta--status',
-        textContent: `${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`,
-      }));
-    }
-    return rows;
-  }
-
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
-    const label = getReportItemStatusSuffix(generatedInput);
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-generated',
       attributes: {
@@ -294,16 +267,13 @@
         'data-index': index,
       },
     });
-    const labelText = createDomElement('span', {
-      textContent: `${generatedInput.fileName} ${label}`.trim(),
-    });
+    const label = createReportItemLabel(generatedInput.fileName, generatedInput);
     const revealButton = createRevealGeneratedPdfButton(getRetainedArtifactPath(generatedInput));
-    appendChildren(row, [labelText, revealButton]);
+    appendChildren(row, [label, revealButton]);
     return row;
   }
 
   function renderInputRow(input, index, unitKey) {
-    const label = getReportItemStatusSuffix(input);
     const row = createDomElement('div', {
       className: 'text-extraction-batch-final-input',
       attributes: {
@@ -313,11 +283,9 @@
     const main = createDomElement('div', {
       className: 'text-extraction-batch-final-input-main',
     });
-    const mainText = createDomElement('span', {
-      textContent: `${(input.displayName || input.fileName)} ${label}`.trim(),
-    });
+    const label = createReportItemLabel(input.displayName || input.fileName, input);
     const revealButton = createRevealGeneratedPdfButton(getRetainedArtifactPath(input));
-    appendChildren(main, [mainText, revealButton]);
+    appendChildren(main, [label, revealButton]);
     row.appendChild(main);
 
     if (Array.isArray(input.generatedInputs) && input.generatedInputs.length) {
@@ -340,7 +308,6 @@
     section.appendChild(createDomElement('h3', {
       textContent: unit.unitTitle,
     }));
-    renderHeavySplitUnitMetaRows(unit).forEach((row) => section.appendChild(row));
     (Array.isArray(unit.inputs) ? unit.inputs : []).forEach((input, inputIndex) => {
       section.appendChild(renderInputRow(input, inputIndex, `unit-${unitIndex}`));
     });
@@ -375,13 +342,6 @@
     lines.push('');
     report.units.forEach((unit) => {
       lines.push(unit.unitTitle);
-      if (isHeavySplitGeneratedRowsUnit(unit) && unit.sourceFileName && unit.unitTitle !== unit.sourceFileName) {
-        lines.push(`${tRenderer('renderer.text_extraction.single_file_heavy.source_file_label')} ${unit.sourceFileName}`);
-      }
-      const overallStatusText = getHeavySplitOverallStatusText(unit);
-      if (overallStatusText) {
-        lines.push(`${tRenderer('renderer.text_extraction.batch_report.split_result_label')} ${overallStatusText}`);
-      }
       unit.inputs.forEach((input) => {
         const label = getReportItemStatusSuffix(input);
         lines.push(`- ${input.displayName || input.fileName}${label ? ` ${label}` : ''}`);
@@ -408,6 +368,10 @@
     await navigator.clipboard.writeText(reportText);
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public prompt
   // =============================================================================
@@ -427,29 +391,38 @@
     }
     const safeReport = normalizeReport(report);
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
-    const reportText = buildReportText(safeReport, normalizedElapsedValueText);
-
-    title.textContent = safeReport.flowKind === 'single_file_split'
-      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
-      : tRenderer('renderer.text_extraction.batch_report.title');
-    summary.textContent = buildSummaryText(safeReport);
-    if (normalizedElapsedValueText) {
-      elapsed.textContent = `${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`;
-    } else {
-      elapsed.textContent = '';
-    }
-    setElementVisibility(elapsed, !!normalizedElapsedValueText);
-    replaceReportBody(safeReport.units);
-    btnCopy.textContent = tRenderer('renderer.text_extraction.batch_report.copy_report');
-    btnOpenSnapshots.textContent = tRenderer('renderer.text_extraction.batch_report.open_snapshots_folder');
-    btnOk.textContent = tRenderer('renderer.text_extraction.batch_report.ok_button');
-    btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.batch_report.close_aria'));
+    let reportText = '';
+    const renderModalCopy = () => {
+      reportText = buildReportText(safeReport, normalizedElapsedValueText);
+      title.textContent = safeReport.flowKind === 'single_file_split'
+        ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
+        : tRenderer('renderer.text_extraction.batch_report.title');
+      summary.textContent = buildSummaryText(safeReport);
+      if (normalizedElapsedValueText) {
+        elapsed.textContent = `${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`;
+      } else {
+        elapsed.textContent = '';
+      }
+      setElementVisibility(elapsed, !!normalizedElapsedValueText);
+      replaceReportBody(safeReport.units);
+      btnCopy.textContent = tRenderer('renderer.text_extraction.batch_report.copy_report');
+      btnOpenSnapshots.textContent = tRenderer('renderer.text_extraction.batch_report.open_snapshots_folder');
+      btnOk.textContent = tRenderer('renderer.text_extraction.batch_report.ok_button');
+      btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.batch_report.close_aria'));
+    };
+    renderModalCopy();
 
     return new Promise((resolve) => {
       let settled = false;
-      const previousActiveElement = document.activeElement || null;
-
+      const refreshModalTranslations = () => {
+        const scrollTop = typeof panel.scrollTop === 'number' ? panel.scrollTop : 0;
+        const hadBodyFocus = !!(document.activeElement && body.contains(document.activeElement));
+        renderModalCopy();
+        if (typeof panel.scrollTop === 'number') panel.scrollTop = scrollTop;
+        if (hadBodyFocus) btnClose.focus({ preventScroll: true });
+      };
       const cleanup = () => {
+        activePromptTranslations = null;
         body.removeEventListener('click', onBodyClick);
         btnCopy.removeEventListener('click', onCopy);
         btnOpenSnapshots.removeEventListener('click', onOpenSnapshots);
@@ -458,9 +431,7 @@
         backdrop.removeEventListener('click', onOk);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
-        if (previousActiveElement && previousActiveElement !== document.activeElement) {
-          focusElementWithoutScroll(previousActiveElement);
-        }
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = () => {
@@ -518,12 +489,16 @@
       btnClose.addEventListener('click', onOk);
       backdrop.addEventListener('click', onOk);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = refreshModalTranslations;
 
       modal.setAttribute('aria-hidden', 'false');
-      focusElementWithoutScroll(btnClose || btnOk);
       if (typeof panel.scrollTop === 'number') {
         panel.scrollTop = 0;
       }
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnClose,
+        fallbackFocus: btnClose,
+      });
     });
   }
 
@@ -532,6 +507,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionBatchFinalReport', promptBatchFinalReport);
+  window.TextExtractionBatchFinalModal = { applyTranslations };
 })();
 
 // =============================================================================

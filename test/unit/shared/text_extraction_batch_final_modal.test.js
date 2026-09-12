@@ -193,6 +193,14 @@ function createElement(id, tagName = 'div') {
       }
       return null;
     },
+    contains(node) {
+      let current = node;
+      while (current) {
+        if (current === this) return true;
+        current = current.parentNode;
+      }
+      return false;
+    },
     focus() {
       activeElementRef = this;
     },
@@ -214,6 +222,7 @@ function findDescendantByAttribute(root, attributeName, attributeValue) {
 function createHarness() {
   activeElementRef = null;
   const registeredPromptNames = [];
+  const modalOpeners = new Map();
   const elements = {
     outsideLauncher: createElement('outsideLauncher', 'button'),
     textExtractionBatchFinalModal: createElement('textExtractionBatchFinalModal'),
@@ -243,7 +252,6 @@ function createHarness() {
     'renderer.text_extraction.batch_report.open_snapshots_folder': 'Open snapshots folder',
     'renderer.text_extraction.batch_report.ok_button': 'OK',
     'renderer.text_extraction.batch_report.close_aria': 'Close final report',
-    'renderer.text_extraction.batch_report.split_result_label': 'Split result:',
     'renderer.text_extraction.batch_report.reveal_generated_pdf': 'Reveal generated PDF',
     'renderer.text_extraction.batch_report.failed_fallback': 'FAILED',
     'renderer.text_extraction.batch_report.cancelled_fallback': 'cancelled',
@@ -261,6 +269,15 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(modal, { initialFocus }) {
+          modalOpeners.set(modal, activeElementRef);
+          initialFocus.focus();
+        },
+        deactivateModalFocus(modal) {
+          const opener = modalOpeners.get(modal);
+          modalOpeners.delete(modal);
+          if (opener) opener.focus();
+        },
         notifyMain(key) {
           notifiedKeys.push(key);
         },
@@ -279,11 +296,10 @@ function createHarness() {
         };
       },
       RendererIcons: {
-        createIconButton({ iconName, className = '', size = 'md', title = '', ariaLabel = '', type = 'button' } = {}) {
+        createIconButton({ iconName, className = '', size = 'md', ariaLabel = '', type = 'button' } = {}) {
           const button = createElement('', 'button');
           button.type = type;
           button.className = className;
-          if (title) button.title = title;
           if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
           if (iconName) button.setAttribute('data-tot-icon', iconName);
           if (size) button.setAttribute('data-tot-icon-size', size);
@@ -338,6 +354,8 @@ function createHarness() {
     elements,
     clipboardWrites,
     notifiedKeys,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionBatchFinalModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -355,6 +373,48 @@ test('batch final modal registers its public prompt through window.Notify.regist
     'promptTextExtractionBatchFinalReport',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('batch final translation refresh updates copied report text, retains scroll, and falls back from replaced report focus', async () => {
+  const harness = createHarness();
+  const promptPromise = harness.prompt({
+    report: {
+      flowKind: 'batch',
+      hadOutput: false,
+      units: [
+        {
+          unitTitle: 'unit_1',
+          snapshotResult: { state: 'not_created', text: 'Snapshot not created' },
+          inputs: [{
+            fileName: 'source.pdf',
+            state: 'success',
+            generatedPdfArtifact: { retainedArtifactPath: 'C:\\tmp\\source.pdf' },
+          }],
+        },
+      ],
+    },
+  });
+  const reportRow = findDescendantByAttribute(
+    harness.elements.textExtractionBatchFinalModalBody,
+    'data-action',
+    'reveal-generated-pdf'
+  );
+  assert.ok(reportRow);
+  reportRow.focus();
+  harness.elements.textExtractionBatchFinalModalPanel.scrollTop = 146;
+  harness.translations['renderer.text_extraction.batch_report.title'] = 'Informe de extracción por lotes';
+
+  harness.applyTranslations();
+
+  assert.equal(harness.elements.textExtractionBatchFinalModalTitle.textContent, 'Informe de extracción por lotes');
+  assert.equal(harness.elements.textExtractionBatchFinalModalPanel.scrollTop, 146);
+  assert.equal(harness.getActiveElement(), harness.elements.textExtractionBatchFinalModalClose);
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.match(harness.clipboardWrites.at(-1), /Informe de extracción por lotes/u);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
 });
 
 test('batch final modal renders report rows with explicit DOM and exposes reveal/copy actions', async () => {
@@ -422,8 +482,12 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.match(harness.elements.textExtractionBatchFinalModalBody.innerHTML, /source_pages_1_4\.pdf/);
   assert.match(harness.elements.textExtractionBatchFinalModalBody.innerHTML, /heavy\.pdf/);
   assert.match(
-    harness.elements.textExtractionBatchFinalModalBody.innerHTML,
+    harness.elements.textExtractionBatchFinalModalBody.textContent,
     /heavy_pages_1_2\.pdf \(failed: ocr_input_too_large\)/
+  );
+  assert.ok(
+    harness.elements.textExtractionBatchFinalModalBody.innerHTML.indexOf('heavy.pdf')
+      < harness.elements.textExtractionBatchFinalModalBody.innerHTML.indexOf('heavy_pages_1_2.pdf')
   );
   const sourceRevealButton = findDescendantByAttribute(
     harness.elements.textExtractionBatchFinalModalBody,
@@ -438,8 +502,9 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.ok(sourceRevealButton);
   assert.ok(heavyChildRevealButton);
   assert.equal(sourceRevealButton.getAttribute('data-tot-icon'), 'open-target');
-  assert.equal(sourceRevealButton.title, 'Reveal generated PDF');
   assert.equal(sourceRevealButton.getAttribute('aria-label'), 'Reveal generated PDF');
+  assert.equal(sourceRevealButton.getAttribute('data-tot-tooltip'), 'Reveal generated PDF');
+  assert.equal(sourceRevealButton.title, '');
   assert.match(sourceRevealButton.className, /btn-standard--square-half/);
   assert.equal(
     findDescendantByAttribute(
@@ -459,6 +524,9 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.equal(harness.clipboardWrites.length, 1);
   assert.match(harness.clipboardWrites[0], /Batch extraction complete/);
   assert.match(harness.clipboardWrites[0], /Execution time: 00:42/);
+  assert.match(harness.clipboardWrites[0], /- heavy\.pdf \(FAILED\)/);
+  assert.match(harness.clipboardWrites[0], /  - heavy_pages_1_2\.pdf \(failed: ocr_input_too_large\)/);
+  assert.doesNotMatch(harness.clipboardWrites[0], /\n- heavy_pages_1_2\.pdf/);
   assert.match(harness.clipboardWrites[0], /heavy_pages_1_2\.pdf \(failed: ocr_input_too_large\)/);
 
   harness.elements.textExtractionBatchFinalModalOpenSnapshots.dispatch('click');
@@ -555,10 +623,14 @@ test('batch final modal renders ordinary failed, cancelled, and omitted rows con
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /failed\.pdf \(failed: native_extraction_failed\)/);
-  assert.match(renderedHtml, /cancelled\.pdf \(cancelled: aborted_by_user\)/);
-  assert.match(renderedHtml, /omitted\.pdf \(Omitted\)/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  const renderedHtml = renderedBody.innerHTML;
+  assert.match(renderedBody.textContent, /failed\.pdf \(failed: native_extraction_failed\)/);
+  assert.match(renderedBody.textContent, /cancelled\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /omitted\.pdf \(Omitted\)/);
+  assert.match(renderedHtml, /text-extraction-batch-final-status--failed/);
+  assert.match(renderedHtml, /text-extraction-batch-final-status--cancelled/);
+  assert.match(renderedHtml, /text-extraction-batch-final-status--omitted/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
@@ -605,11 +677,11 @@ test('batch final modal renders direct labels for payload-too-large and text-lim
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /too-large\.pdf \(too large to apply\)/);
-  assert.match(renderedHtml, /limit\.pdf \(text limit reached\)/);
-  assert.doesNotMatch(renderedHtml, /failed: too large to apply/);
-  assert.doesNotMatch(renderedHtml, /failed: text limit reached/);
+  const renderedText = harness.elements.textExtractionBatchFinalModalBody.textContent;
+  assert.match(renderedText, /too-large\.pdf \(too large to apply\)/);
+  assert.match(renderedText, /limit\.pdf \(text limit reached\)/);
+  assert.doesNotMatch(renderedText, /failed: too large to apply/);
+  assert.doesNotMatch(renderedText, /failed: text limit reached/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
@@ -652,8 +724,9 @@ test('batch final modal renders truncation labels for successful ordinary rows',
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /truncated\.pdf \(applied with truncation\)/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  assert.match(renderedBody.textContent, /truncated\.pdf \(applied with truncation\)/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--truncated/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
@@ -664,7 +737,7 @@ test('batch final modal renders truncation labels for successful ordinary rows',
   await promptPromise;
 });
 
-test('batch final modal renders heavy split success with custom unit title, source line, and child rows only', async () => {
+test('batch final modal renders a heavy source row with nested generated children under a normal unit title', async () => {
   const harness = createHarness();
 
   const report = {
@@ -673,29 +746,31 @@ test('batch final modal renders heavy split success with custom unit title, sour
     units: [
       {
         unitTitle: 'Chapter 3 OCR',
-        exclusiveHeavy: true,
-        sourceFileName: 'book.pdf',
-        overallState: 'success',
-        overallCode: '',
-        heavyGeneratedInputRows: true,
         snapshotResult: {
           state: 'not_created',
           text: 'Snapshot not created',
         },
         inputs: [
           {
-            fileName: 'book_pages_001_020.pdf',
+            fileName: 'book.pdf',
+            displayName: 'book.pdf',
             state: 'success',
-            generatedPdfArtifact: {
-              retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
-            },
-          },
-          {
-            fileName: 'book_pages_021_040.pdf',
-            state: 'success',
-            generatedPdfArtifact: {
-              retainedArtifactPath: 'C:\\tmp\\book_pages_021_040.pdf',
-            },
+            generatedInputs: [
+              {
+                fileName: 'book_pages_001_020.pdf',
+                state: 'success',
+                generatedPdfArtifact: {
+                  retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
+                },
+              },
+              {
+                fileName: 'book_pages_021_040.pdf',
+                state: 'success',
+                generatedPdfArtifact: {
+                  retainedArtifactPath: 'C:\\tmp\\book_pages_021_040.pdf',
+                },
+              },
+            ],
           },
         ],
       },
@@ -709,23 +784,24 @@ test('batch final modal renders heavy split success with custom unit title, sour
 
   const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
   assert.match(renderedHtml, /Chapter 3 OCR/);
-  assert.match(renderedHtml, /Source file: book\.pdf/);
-  assert.doesNotMatch(renderedHtml, /Split result:/);
-  assert.match(renderedHtml, /book_pages_001_020\.pdf/);
-  assert.match(renderedHtml, /book_pages_021_040\.pdf/);
+  assert.match(renderedHtml, /book\.pdf/);
+  assert.ok(renderedHtml.indexOf('book.pdf') < renderedHtml.indexOf('book_pages_001_020.pdf'));
+  assert.ok(renderedHtml.indexOf('book_pages_001_020.pdf') < renderedHtml.indexOf('book_pages_021_040.pdf'));
+  assert.match(renderedHtml, /text-extraction-batch-final-generated-list/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
   assert.equal(harness.clipboardWrites.length, 1);
   assert.match(harness.clipboardWrites[0], /Chapter 3 OCR/);
-  assert.match(harness.clipboardWrites[0], /Source file: book\.pdf/);
-  assert.doesNotMatch(harness.clipboardWrites[0], /- book\.pdf(?:\r?\n|$)/);
+  assert.match(harness.clipboardWrites[0], /- book\.pdf/);
+  assert.match(harness.clipboardWrites[0], /  - book_pages_001_020\.pdf/);
+  assert.doesNotMatch(harness.clipboardWrites[0], /\n- book_pages_001_020\.pdf/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;
 });
 
-test('batch final modal renders heavy split overall status when child rows exist', async () => {
+test('batch final modal distinguishes cancelled heavy parent and generated child statuses', async () => {
   const harness = createHarness();
 
   const report = {
@@ -733,25 +809,27 @@ test('batch final modal renders heavy split overall status when child rows exist
     hadOutput: false,
     units: [
       {
-        unitTitle: 'book.pdf',
-        exclusiveHeavy: true,
-        sourceFileName: 'book.pdf',
-        overallState: 'cancelled',
-        overallCode: 'aborted_by_user',
-        heavyGeneratedInputRows: true,
+        unitTitle: 'unit_1',
         snapshotResult: {
           state: 'not_created',
           text: 'Snapshot not created',
         },
         inputs: [
           {
-            fileName: 'book_pages_001_020.pdf',
+            fileName: 'book.pdf',
             state: 'cancelled',
             code: 'aborted_by_user',
-          },
-          {
-            fileName: 'book_pages_021_040.pdf',
-            state: 'omitted',
+            generatedInputs: [
+              {
+                fileName: 'book_pages_001_020.pdf',
+                state: 'cancelled',
+                code: 'aborted_by_user',
+              },
+              {
+                fileName: 'book_pages_021_040.pdf',
+                state: 'omitted',
+              },
+            ],
           },
         ],
       },
@@ -763,25 +841,24 @@ test('batch final modal renders heavy split overall status when child rows exist
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /book\.pdf/);
-  assert.match(renderedHtml, /Split result: cancelled: aborted_by_user/);
-  assert.doesNotMatch(renderedHtml, /Source file: book\.pdf/);
-  assert.match(renderedHtml, /book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
-  assert.match(renderedHtml, /book_pages_021_040\.pdf \(Omitted\)/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  assert.match(renderedBody.textContent, /book\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /book_pages_021_040\.pdf \(Omitted\)/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--cancelled/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--omitted/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
   assert.equal(harness.clipboardWrites.length, 1);
-  assert.match(harness.clipboardWrites[0], /Split result: cancelled: aborted_by_user/);
-  assert.match(harness.clipboardWrites[0], /- book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
-  assert.doesNotMatch(harness.clipboardWrites[0], /- book\.pdf(?:\r?\n|$)/);
+  assert.match(harness.clipboardWrites[0], /- book\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(harness.clipboardWrites[0], /  - book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;
 });
 
-test('batch final modal renders heavy split truncation in the overall status row', async () => {
+test('batch final modal renders heavy split truncation on the source input row', async () => {
   const harness = createHarness();
 
   const report = {
@@ -790,23 +867,24 @@ test('batch final modal renders heavy split truncation in the overall status row
     units: [
       {
         unitTitle: 'Chapter 3 OCR',
-        exclusiveHeavy: true,
-        sourceFileName: 'book.pdf',
-        overallState: 'success',
-        overallCode: '',
-        applyTruncated: true,
-        heavyGeneratedInputRows: true,
         snapshotResult: {
           state: 'not_created',
           text: 'Snapshot not created',
         },
         inputs: [
           {
-            fileName: 'book_pages_001_020.pdf',
+            fileName: 'book.pdf',
             state: 'success',
-            generatedPdfArtifact: {
-              retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
-            },
+            applyTruncated: true,
+            generatedInputs: [
+              {
+                fileName: 'book_pages_001_020.pdf',
+                state: 'success',
+                generatedPdfArtifact: {
+                  retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf',
+                },
+              },
+            ],
           },
         ],
       },
@@ -818,13 +896,14 @@ test('batch final modal renders heavy split truncation in the overall status row
     elapsedValueText: '00:42',
   });
 
-  const renderedHtml = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
-  assert.match(renderedHtml, /Split result: applied with truncation/);
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  assert.match(renderedBody.textContent, /book\.pdf \(applied with truncation\)/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--truncated/);
 
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
   assert.equal(harness.clipboardWrites.length, 1);
-  assert.match(harness.clipboardWrites[0], /Split result: applied with truncation/);
+  assert.match(harness.clipboardWrites[0], /- book\.pdf \(applied with truncation\)/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;

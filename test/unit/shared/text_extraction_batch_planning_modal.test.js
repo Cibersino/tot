@@ -105,6 +105,9 @@ function createElement(id, tagName = 'div') {
     get children() {
       return children;
     },
+    get firstElementChild() {
+      return children[0] || null;
+    },
     get textContent() {
       if (children.length) {
         return children.map((child) => child.textContent).join('');
@@ -190,6 +193,14 @@ function createElement(id, tagName = 'div') {
       }
       return null;
     },
+    contains(node) {
+      let current = node;
+      while (current) {
+        if (current === this) return true;
+        current = current.parentNode;
+      }
+      return false;
+    },
     focus() {
       activeElementRef = this;
     },
@@ -241,9 +252,23 @@ function findNodeByAttributes(node, expectedAttributes = {}) {
   return null;
 }
 
+function findNodesByAttributes(node, expectedAttributes = {}, matches = []) {
+  if (!node) return matches;
+  if (typeof node.getAttribute === 'function') {
+    const isMatch = Object.entries(expectedAttributes).every(([name, value]) => node.getAttribute(name) === value);
+    if (isMatch) {
+      matches.push(node);
+    }
+  }
+  const children = Array.isArray(node._children) ? node._children : [];
+  children.forEach((child) => findNodesByAttributes(child, expectedAttributes, matches));
+  return matches;
+}
+
 function createHarness() {
   activeElementRef = null;
   const registeredPromptNames = [];
+  const modalOpeners = new Map();
   const elements = {
     outsideLauncher: createElement('outsideLauncher'),
     textExtractionBatchPlanModal: createElement('textExtractionBatchPlanModal'),
@@ -293,6 +318,9 @@ function createHarness() {
     'renderer.text_extraction.pdf_options.to_page_label': 'To page',
     'renderer.text_extraction.pdf_options.selected_page_count_label': 'Selected pages: ',
     'renderer.text_extraction.pdf_options.invalid_range': 'Enter a contiguous page range between 1 and {totalPages}.',
+    'renderer.text_extraction.batch_plan.aria.route': 'Extraction route for {file}',
+    'renderer.text_extraction.batch_plan.aria.unit_assignment': 'Unit assignment for {file}',
+    'renderer.text_extraction.batch_plan.aria.unit_name': 'Optional name for unit {index}/{count}',
   };
 
   function toPositiveIntegerOrNull(rawValue) {
@@ -334,6 +362,15 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(modal, { initialFocus }) {
+          modalOpeners.set(modal, activeElementRef);
+          initialFocus.focus();
+        },
+        deactivateModalFocus(modal) {
+          const opener = modalOpeners.get(modal);
+          modalOpeners.delete(modal);
+          if (opener) opener.focus();
+        },
         notifyMain() {},
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);
@@ -349,21 +386,75 @@ function createHarness() {
           error() {},
         };
       },
+      AppConstants: {
+        BATCH_UNIT_NAME_MAX: 25,
+      },
       RendererIcons: {
-        createIconButton({ iconName, className = '', size = 'md', title = '', ariaLabel = '', type = 'button' } = {}) {
+        createIconButton({ iconName, className = '', size = 'md', ariaLabel = '', type = 'button' } = {}) {
           const button = createElement('', 'button');
           button.type = type;
           button.className = className;
-          if (title) button.title = title;
           if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
           if (iconName) button.setAttribute('data-tot-icon', iconName);
           if (size) button.setAttribute('data-tot-icon-size', size);
           return button;
         },
       },
+      RendererCombobox: {
+        create(config) {
+          const host = config.host;
+          const trigger = createElement('', 'input');
+          host.appendChild(trigger);
+          let value = '';
+          let options = [];
+          let onChange = null;
+          const combobox = {
+            update(nextConfig = {}) {
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'options')) {
+                options = nextConfig.options.slice();
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'value')) {
+                value = String(nextConfig.value || '');
+                trigger.value = value;
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'onChange')) {
+                onChange = nextConfig.onChange;
+              }
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'ariaLabel')) {
+                trigger.setAttribute('aria-label', nextConfig.ariaLabel);
+              }
+            },
+            getValue() {
+              return value;
+            },
+            open() {},
+            close() {},
+            focus() {
+              trigger.focus();
+            },
+            destroy() {
+              host.replaceChildren();
+            },
+          };
+          combobox.update(config);
+          trigger._comboboxOptions = () => options.slice();
+          trigger.addEventListener('change', () => {
+            value = trigger.value;
+            const selected = options.find((option) => option.value === value) || null;
+            if (onChange) onChange(value, selected);
+          });
+          return combobox;
+        },
+      },
       RendererI18n: {
         tRenderer(key) {
           return translations[key] || key;
+        },
+        msgRenderer(key, params = {}) {
+          return Object.entries(params).reduce(
+            (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+            translations[key] || key
+          );
         },
       },
       TextExtractionPdfPageSelection: {
@@ -477,6 +568,8 @@ function createHarness() {
 
   return {
     elements,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionBatchPlanningModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -496,6 +589,122 @@ test('batch planning modal registers its public prompt through window.Notify.reg
   assert.equal(typeof harness.prompt, 'function');
 });
 
+test('batch planning modal keeps each heavy preview under its groupable source input in a mixed unit', async () => {
+  const harness = createHarness();
+  const groupOptions = [{ unitKey: 'unit-1', label: 'Unit 1' }];
+  const createInput = ({ inputId, fileName, heavySplitActive, generatedInputsPreview = [] }) => ({
+    inputId,
+    fileName,
+    alertCode: '',
+    activeRoute: heavySplitActive ? 'ocr' : 'native',
+    routeOptions: heavySplitActive ? ['native', 'ocr'] : ['native'],
+    pagesSummary: heavySplitActive ? 'All pages' : '',
+    canEditPages: false,
+    pdfPageSelection: heavySplitActive
+      ? { mode: 'all', fromPage: 1, toPage: 12, selectedPageCount: 12, totalPages: 12 }
+      : null,
+    pdfTotalPages: heavySplitActive ? 12 : 1,
+    canToggleKeep: heavySplitActive,
+    keepGeneratedPdf: false,
+    groupKey: 'unit-1',
+    canMoveUp: false,
+    canMoveDown: false,
+    groupOptions,
+    heavySplitActive,
+    generatedInputsPreview,
+  });
+  const model = {
+    flowKind: 'batch',
+    failurePolicy: 'finish_unit_after_last_success',
+    startDisabled: false,
+    unitCount: 1,
+    units: [
+      {
+        unitKey: 'unit-1',
+        title: 'unit_1',
+        displayLabel: 'Unit 1',
+        customName: '',
+        tagsSummary: 'No tags',
+        canConfigureTags: false,
+        canMoveUp: false,
+        canMoveDown: false,
+        inputs: [
+          createInput({ inputId: 'ordinary', fileName: 'ordinary.docx', heavySplitActive: false }),
+          createInput({
+            inputId: 'heavy-a',
+            fileName: 'heavy-a.pdf',
+            heavySplitActive: true,
+            generatedInputsPreview: [
+              { processingInputFileName: 'heavy-a_pages_01_06.pdf' },
+              { processingInputFileName: 'heavy-a_pages_07_12.pdf' },
+            ],
+          }),
+          createInput({
+            inputId: 'heavy-b',
+            fileName: 'heavy-b.pdf',
+            heavySplitActive: true,
+            generatedInputsPreview: [
+              { processingInputFileName: 'heavy-b_pages_01_12.pdf' },
+            ],
+          }),
+        ],
+      },
+    ],
+  };
+  const controller = {
+    getViewModel() {
+      return model;
+    },
+    applyAction() {},
+    async validateStart() {
+      return true;
+    },
+  };
+
+  const promptPromise = harness.prompt({ controller });
+  const body = harness.elements.textExtractionBatchPlanUnits;
+  const ordinaryRow = findNodeByAttributes(body, { 'data-input-id': 'ordinary' });
+  const heavyARow = findNodeByAttributes(body, { 'data-input-id': 'heavy-a' });
+  const heavyBRow = findNodeByAttributes(body, { 'data-input-id': 'heavy-b' });
+
+  assert.ok(ordinaryRow);
+  assert.ok(heavyARow);
+  assert.ok(heavyBRow);
+  assert.doesNotMatch(ordinaryRow.innerHTML, /text-extraction-batch-plan-heavy-preview/);
+  assert.match(heavyARow.innerHTML, /heavy-a_pages_01_06\.pdf/);
+  assert.match(heavyARow.innerHTML, /heavy-a_pages_07_12\.pdf/);
+  assert.doesNotMatch(heavyARow.innerHTML, /heavy-b_pages_01_12\.pdf/);
+  assert.match(heavyBRow.innerHTML, /heavy-b_pages_01_12\.pdf/);
+  assert.doesNotMatch(heavyBRow.innerHTML, /heavy-a_pages_01_06\.pdf/);
+  assert.equal(findNodesByAttributes(heavyARow, { 'data-action': 'assign-input-group' }).length, 1);
+  const routeTrigger = findNodeByAttributes(heavyARow, {
+    'data-action': 'set-input-route',
+    'data-input-id': 'heavy-a',
+  });
+  const unitTrigger = findNodeByAttributes(heavyARow, {
+    'data-action': 'assign-input-group',
+    'data-input-id': 'heavy-a',
+  });
+  const unitNameInput = findNodeByAttributes(body, {
+    'data-action': 'rename-unit',
+    'data-unit-key': 'unit-1',
+  });
+  assert.equal(
+    routeTrigger.getAttribute('aria-label'),
+    'Extraction route for \u2068heavy-a.pdf\u2069'
+  );
+  assert.equal(
+    unitTrigger.getAttribute('aria-label'),
+    'Unit assignment for \u2068heavy-a.pdf\u2069'
+  );
+  assert.equal(unitNameInput.getAttribute('aria-label'), 'Optional name for unit 1/1');
+  assert.equal(findNodesByAttributes(heavyBRow, { 'data-action': 'assign-input-group' }).length, 1);
+  assert.equal(findNodesByAttributes(heavyARow, { 'data-input-id': 'heavy-a_pages_01_06.pdf' }).length, 0);
+
+  harness.elements.textExtractionBatchPlanCancel.dispatch('click');
+  await promptPromise;
+});
+
 test('batch planning modal exposes direct all-pages and range controls for ordinary PDFs', async () => {
   const harness = createHarness();
   const applyActionCalls = [];
@@ -510,11 +719,9 @@ test('batch planning modal exposes direct all-pages and range controls for ordin
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -703,11 +910,9 @@ test('batch planning modal shows keep control when page inputs auto-promote sele
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -830,11 +1035,9 @@ test('batch planning modal preserves typed invalid to-page drafts while editing'
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -908,6 +1111,23 @@ test('batch planning modal preserves typed invalid to-page drafts while editing'
   const pageSelectionActions = applyActionCalls.filter((action) => action.type === 'set_pdf_page_selection');
   assert.equal(pageSelectionActions.length, 0);
 
+  harness.elements.textExtractionBatchPlanModalPanel.scrollTop = 89;
+  toInput.focus();
+  harness.translations['renderer.text_extraction.batch_plan.title'] = 'Planificar extracción por lotes';
+  harness.applyTranslations();
+
+  const refreshedToInput = findNodeByAttribute(
+    harness.elements.textExtractionBatchPlanUnits,
+    'data-action',
+    'set-page-to'
+  );
+  assert.equal(harness.elements.textExtractionBatchPlanModalTitle.textContent, 'Planificar extracción por lotes');
+  assert.equal(harness.elements.textExtractionBatchPlanModalPanel.scrollTop, 89);
+  assert.ok(refreshedToInput);
+  assert.equal(refreshedToInput.value, '');
+  assert.equal(harness.elements.textExtractionBatchPlanStart.disabled, true);
+  assert.equal(harness.getActiveElement(), harness.elements.textExtractionBatchPlanClose);
+
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
@@ -927,11 +1147,9 @@ test('batch planning modal blocks start while a visible page-range draft is inva
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: false,
         canMoveUp: false,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1046,11 +1264,9 @@ test('batch planning modal preserves panel scroll and control focus across reren
         unitKey: 'unit-1',
         title: 'unit_1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1085,11 +1301,9 @@ test('batch planning modal preserves panel scroll and control focus across reren
         unitKey: 'unit-2',
         title: 'unit_2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-2',
@@ -1163,16 +1377,8 @@ test('batch planning modal preserves panel scroll and control focus across reren
   );
   assert.ok(unitSelect);
   unitSelect.focus();
-
-  harness.elements.textExtractionBatchPlanUnits.dispatch('change', {
-    target: createEventTarget(
-      {
-        'data-action': 'assign-input-group',
-        'data-input-id': 'input-1',
-      },
-      { value: '__new__' }
-    ),
-  });
+  unitSelect.value = '__new__';
+  unitSelect.dispatch('change');
 
   assert.equal(harness.elements.textExtractionBatchPlanModalPanel.scrollTop, 135);
   const activeElement = harness.getActiveElement();
@@ -1185,7 +1391,7 @@ test('batch planning modal preserves panel scroll and control focus across reren
   assert.equal(result, null);
 });
 
-test('batch planning modal focuses the top close button on open and restores prior focus on close', async () => {
+test('batch planning modal focuses the top Close button and restores prior focus on close', async () => {
   const harness = createHarness();
   const controller = {
     getViewModel() {
@@ -1229,11 +1435,9 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
         customName: '',
         displayLabel: 'Unit 1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1270,11 +1474,9 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
         customName: '',
         displayLabel: 'Unit 2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-2',
@@ -1340,11 +1542,19 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
   renameInput.value = 'Essays';
   harness.elements.textExtractionBatchPlanUnits.dispatch('input', { target: renameInput });
 
-  assert.match(
-    harness.elements.textExtractionBatchPlanUnits.innerHTML,
-    /Unit 1 - Essays/
+  const unitComboboxTrigger = findNodeByAttributes(
+    harness.elements.textExtractionBatchPlanUnits,
+    {
+      'data-action': 'assign-input-group',
+      'data-input-id': 'input-1',
+    }
   );
-  assert.equal(renameInput.maxLength, 60);
+  assert.ok(unitComboboxTrigger);
+  assert.equal(
+    unitComboboxTrigger._comboboxOptions().some((option) => option.label === 'Unit 1 - Essays'),
+    true
+  );
+  assert.equal(renameInput.maxLength, 25);
 
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
   const result = await promptPromise;
@@ -1366,11 +1576,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
         customName: '',
         displayLabel: 'Unit 1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-1',
@@ -1434,11 +1642,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
         customName: '',
         displayLabel: 'Unit 2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [],
       },
     ],
@@ -1462,8 +1668,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
   );
   assert.ok(moveUpButton);
   assert.equal(moveUpButton.getAttribute('data-tot-icon'), 'arrow-up-strong');
-  assert.equal(moveUpButton.title, 'Move up');
   assert.equal(moveUpButton.getAttribute('aria-label'), 'Move up');
+  assert.equal(moveUpButton.getAttribute('data-tot-tooltip'), 'Move up');
+  assert.equal(moveUpButton.title, '');
   assert.match(moveUpButton.className, /btn-standard--square/);
 
   const removeButton = findNodeByAttributes(
@@ -1475,8 +1682,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
   );
   assert.ok(removeButton);
   assert.equal(removeButton.getAttribute('data-tot-icon'), 'trash');
-  assert.equal(removeButton.title, 'Remove');
   assert.equal(removeButton.getAttribute('aria-label'), 'Remove');
+  assert.equal(removeButton.getAttribute('data-tot-tooltip'), 'Remove');
+  assert.equal(removeButton.title, '');
   assert.match(removeButton.className, /btn-standard--square/);
 
   const tagsButton = findNodeByAttributes(
@@ -1488,7 +1696,9 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
   );
   assert.ok(tagsButton);
   assert.equal(tagsButton.textContent, 'Tags');
-  assert.equal(tagsButton.title, 'Tags');
+  assert.equal(tagsButton.getAttribute('aria-label'), null);
+  assert.equal(tagsButton.getAttribute('data-tot-tooltip'), null);
+  assert.equal(tagsButton.title, '');
   assert.doesNotMatch(tagsButton.className, /btn-standard--square/);
 
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
@@ -1511,11 +1721,9 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
         customName: '',
         displayLabel: 'Unit 1',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: false,
         canMoveDown: true,
-        generatedInputsPreview: [],
         inputs: [
           {
             inputId: 'input-pdf',
@@ -1571,21 +1779,25 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
         customName: '',
         displayLabel: 'Unit 2',
         tagsSummary: 'No tags',
-        exclusiveHeavy: false,
         canConfigureTags: true,
         canMoveUp: true,
         canMoveDown: false,
-        generatedInputsPreview: [],
         inputs: [],
       },
     ],
   };
 
+  const appliedActions = [];
   const controller = {
     getViewModel() {
       return model;
     },
-    applyAction() {},
+    applyAction(action) {
+      appliedActions.push(action);
+      if (action.type === 'set_input_route') {
+        model.units[0].inputs[0].activeRoute = action.route;
+      }
+    },
   };
 
   const promptPromise = harness.prompt({ controller });
@@ -1612,6 +1824,20 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
 
   assert.match(heavyRow.innerHTML, /All pages/);
   assert.doesNotMatch(textRow.innerHTML, /All pages/);
+
+  const routeComboboxTrigger = findNodeByAttributes(
+    harness.elements.textExtractionBatchPlanUnits,
+    {
+      'data-action': 'set-input-route',
+      'data-input-id': 'input-pdf',
+    }
+  );
+  assert.ok(routeComboboxTrigger);
+  routeComboboxTrigger.value = 'native';
+  routeComboboxTrigger.dispatch('change');
+  assert.equal(appliedActions.at(-1).type, 'set_input_route');
+  assert.equal(appliedActions.at(-1).inputId, 'input-pdf');
+  assert.equal(appliedActions.at(-1).route, 'native');
 
   harness.elements.textExtractionBatchPlanCancel.dispatch('click');
   const result = await promptPromise;

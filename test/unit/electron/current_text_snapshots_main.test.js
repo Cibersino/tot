@@ -14,6 +14,8 @@ const {
   installElectronModuleMock,
 } = require('../../helpers/electron_module_mock');
 
+const BUNDLED_POOL_DIR = path.resolve(__dirname, '../../../electron/reading_test_pool');
+
 function createIpcMainDouble() {
   const handlers = new Map();
 
@@ -30,12 +32,43 @@ function createIpcMainDouble() {
   };
 }
 
+function createSnapshotFileData(text, tags = {}) {
+  return {
+    type: 'text snapshot',
+    meta: {
+      savedAt: '2026-01-02T03:04:05.000Z',
+      savedWith: 'toT (totapp.org)',
+    },
+    text,
+    tags,
+  };
+}
+
+function createSnapshotWithReadingEstimate(text) {
+  return {
+    ...createSnapshotFileData(text),
+    metrics: {
+      count: {
+        words: 100,
+        mode: 'preciso',
+        locale: 'en',
+      },
+      reading: {
+        estimatedSeconds: 30,
+        wpm: 200,
+      },
+    },
+  };
+}
+
 function loadSnapshotsMainWithMocks({
   senderWin,
   rootDir,
   currentText = 'Snapshot text',
+  settings = { language: 'en' },
   shellOpenPathResult = '',
   messageBoxResponse = 0,
+  saveDialogResult = null,
   saveJsonStrictImpl = null,
 }) {
   const snapshotsModulePath = path.resolve(
@@ -66,9 +99,15 @@ function loadSnapshotsMainWithMocks({
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const openPathCalls = [];
   const showMessageBoxCalls = [];
+  const showSaveDialogCalls = [];
   const restoreElectronModule = installElectronModuleMock({
     dialog: {
-      async showSaveDialog() {
+      async showSaveDialog(ownerWin, options) {
+        showSaveDialogCalls.push({ ownerWin, options });
+        if (typeof saveDialogResult === 'function') {
+          return saveDialogResult(ownerWin, options);
+        }
+        if (saveDialogResult) return saveDialogResult;
         throw new Error('showSaveDialog should not be used in non-interactive snapshot tests');
       },
       async showOpenDialog() {
@@ -136,7 +175,7 @@ function loadSnapshotsMainWithMocks({
     loaded: true,
     exports: {
       getSettings() {
-        return { language: 'en' };
+        return settings;
       },
     },
   };
@@ -197,8 +236,112 @@ function loadSnapshotsMainWithMocks({
     restore,
     openPathCalls,
     showMessageBoxCalls,
+    showSaveDialogCalls,
   };
 }
+
+test('task-row snapshot inspection returns canonical optional metadata and reading metrics', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-inspect');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  fs.mkdirSync(rootDir, { recursive: true });
+  const estimatedSnapshot = createSnapshotWithReadingEstimate('Estimated snapshot');
+  estimatedSnapshot.name = 'Estimated reading';
+  estimatedSnapshot.sourceComment = 'chapter-1.pdf';
+  fs.writeFileSync(
+    path.join(rootDir, 'with-estimate.json'),
+    JSON.stringify(estimatedSnapshot, null, 2)
+  );
+  fs.writeFileSync(
+    path.join(rootDir, 'without-estimate.json'),
+    JSON.stringify(createSnapshotFileData('Unestimated snapshot'), null, 2)
+  );
+  fs.writeFileSync(
+    path.join(rootDir, 'legacy.json'),
+    JSON.stringify({ text: 'Legacy snapshot', tags: {} }, null, 2)
+  );
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const withEstimate = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/with-estimate.json' }
+  );
+  assert.deepEqual(withEstimate, {
+    ok: true,
+    name: 'Estimated reading',
+    sourceComment: 'chapter-1.pdf',
+    estimatedSeconds: 30,
+    wpm: 200,
+  });
+
+  const withoutEstimate = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/without-estimate.json' }
+  );
+  assert.deepEqual(withoutEstimate, {
+    ok: true,
+    name: null,
+    sourceComment: null,
+    estimatedSeconds: null,
+    wpm: null,
+  });
+
+  const legacy = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/legacy.json' }
+  );
+  assert.deepEqual(legacy, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'invalid snapshot schema',
+  });
+
+  const noncanonicalPath = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: 'with-estimate.json' }
+  );
+  assert.deepEqual(noncanonicalPath, {
+    ok: false,
+    code: 'INVALID_SNAPSHOT_PATH',
+  });
+
+  const malformedPath = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: false }
+  );
+  assert.deepEqual(malformedPath, {
+    ok: false,
+    code: 'INVALID_SNAPSHOT_PATH',
+  });
+
+  const malformedLoadPath = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: false }
+  );
+  assert.deepEqual(malformedLoadPath, {
+    ok: false,
+    code: 'INVALID_SNAPSHOT_PATH',
+  });
+});
 
 test('non-interactive snapshot save creates deterministic collision-safe files and preserves tags', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots');
@@ -227,7 +370,11 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
     { sender: senderWin.webContents },
     {
       nonInteractive: true,
-      autoFileBaseName: 'Unit 1',
+      autoFileBaseName: 'Lección ñ / Unit 1',
+      name: 'Reading',
+      sourceComment: 'chapter-1.pdf, Unit 1',
+      includeCount: true,
+      includeReading: false,
       tags: {
         language: 'es',
       },
@@ -235,23 +382,440 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   );
 
   assert.equal(firstSave.ok, true);
-  assert.equal(firstSave.filename, 'Unit_1.json');
+  assert.equal(firstSave.filename, 'Lección_ñ_Unit_1.json');
   const firstPayload = JSON.parse(fs.readFileSync(path.join(rootDir, firstSave.filename), 'utf8'));
+  assert.equal(firstPayload.type, 'text snapshot');
+  assert.equal(firstPayload.meta.savedWith, 'toT (totapp.org)');
+  assert.equal(new Date(firstPayload.meta.savedAt).toISOString(), firstPayload.meta.savedAt);
   assert.equal(firstPayload.text, 'Batch snapshot text');
+  assert.equal(firstPayload.name, 'Reading');
+  assert.equal(firstPayload.sourceComment, 'chapter-1.pdf, Unit 1');
   assert.deepEqual(firstPayload.tags, { language: 'es' });
+  assert.deepEqual(firstPayload.metrics, {
+    count: {
+      words: 3,
+      mode: 'preciso',
+      locale: 'en',
+    },
+  });
 
   const secondSave = await ipcMain.invoke(
     'current-text-snapshot-save',
     { sender: senderWin.webContents },
     {
       nonInteractive: true,
-      autoFileBaseName: 'Unit 1',
+      autoFileBaseName: 'Lección ñ / Unit 1',
+      includeCount: true,
+      includeReading: false,
       tags: null,
     }
   );
 
   assert.equal(secondSave.ok, true);
-  assert.equal(secondSave.filename, 'Unit_1_2.json');
+  assert.equal(secondSave.filename, 'Lección_ñ_Unit_1_2.json');
+  const secondPayload = JSON.parse(fs.readFileSync(path.join(rootDir, secondSave.filename), 'utf8'));
+  assert.deepEqual(secondPayload.tags, {});
+});
+
+test('non-interactive snapshot save normalizes reserved and fallback filename stems', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-derived-filenames');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const reservedResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'COM1',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+  assert.equal(reservedResult.filename, '_COM1.json');
+
+  const fallbackResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: '///',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+  assert.equal(fallbackResult.filename, 'current_text.json');
+});
+
+test('non-interactive snapshot save keeps the default sequence when no filename stem is supplied', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-default-filename');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.filename, 'current_text_1.json');
+});
+
+test('snapshot save derives count and reading metrics from exact text and settings', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-metrics');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'uno dos tres',
+    settings: { language: 'es-cl', modeConteo: 'simple' },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Metrics',
+      includeCount: true,
+      includeReading: true,
+      wpm: 180,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(payload.metrics, {
+    count: {
+      words: 3,
+      mode: 'simple',
+      locale: 'es-CL',
+    },
+    reading: {
+      estimatedSeconds: 1,
+      wpm: 180,
+    },
+  });
+});
+
+test('snapshot save rounds exact half-second reading estimates upward', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-half-second-metrics');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: Array.from({ length: 123 }, () => 'word').join(' '),
+    settings: { language: 'en', modeConteo: 'simple' },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Half second metrics',
+      includeCount: true,
+      includeReading: true,
+      wpm: 120,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(payload.metrics.reading, {
+    estimatedSeconds: 62,
+    wpm: 120,
+  });
+});
+
+test('snapshot save accepts an intentional no-metrics request and rejects reading without count', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-no-metrics');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({ senderWin, rootDir });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const noMetricsResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'No Metrics',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+  assert.equal(noMetricsResult.ok, true);
+  const noMetricsPayload = JSON.parse(
+    fs.readFileSync(path.join(rootDir, noMetricsResult.filename), 'utf8')
+  );
+  assert.equal(Object.prototype.hasOwnProperty.call(noMetricsPayload, 'metrics'), false);
+
+  const invalidResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Invalid Metrics',
+      includeCount: false,
+      includeReading: true,
+      wpm: 180,
+    }
+  );
+  assert.deepEqual(invalidResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'snapshot reading requires count',
+  });
+
+  const invalidWpmResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Invalid WPM',
+      includeCount: true,
+      includeReading: true,
+      wpm: 9,
+    }
+  );
+  assert.deepEqual(invalidWpmResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'snapshot WPM invalid',
+  });
+});
+
+test('manual snapshot save uses the optional name as its default filename and persists metadata', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-manual-metadata');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore, showSaveDialogCalls } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult: { canceled: false, filePath: path.join(rootDir, 'selected.json') },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      name: 'Lectura ñ / Unit 1',
+      sourceComment: 'texto importado',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(showSaveDialogCalls.length, 1);
+  assert.equal(
+    showSaveDialogCalls[0].options.defaultPath,
+    path.join(rootDir, 'Lectura_ñ_Unit_1.json')
+  );
+  const saved = JSON.parse(fs.readFileSync(path.join(rootDir, 'selected.json'), 'utf8'));
+  assert.equal(saved.name, 'Lectura ñ / Unit 1');
+  assert.equal(saved.sourceComment, 'texto importado');
+});
+
+test('manual snapshot save escapes Windows device basenames before extensions', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-windows-device-names');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const selectedCases = [
+    { inputBaseName: 'CON', selectedFileName: 'CON.json', expectedFileName: '_CON.json' },
+    { inputBaseName: 'con', selectedFileName: 'con.json', expectedFileName: '_con.json' },
+    { inputBaseName: 'CON.txt', selectedFileName: 'CON.txt.json', expectedFileName: '_CON.txt.json' },
+    { inputBaseName: 'PRN.foo.bar', selectedFileName: 'PRN.foo.bar.json', expectedFileName: '_PRN.foo.bar.json' },
+    { inputBaseName: 'COM1', selectedFileName: 'COM1.json', expectedFileName: '_COM1.json' },
+    { inputBaseName: 'COM1.json', selectedFileName: 'COM1.json.json', expectedFileName: '_COM1.json.json' },
+    { inputBaseName: 'LPT9.test', selectedFileName: 'LPT9.test.json', expectedFileName: '_LPT9.test.json' },
+    { inputBaseName: 'COM¹.foo', selectedFileName: 'COM¹.foo.json', expectedFileName: '_COM¹.foo.json' },
+    { inputBaseName: 'LPT³', selectedFileName: 'LPT³.json', expectedFileName: '_LPT³.json' },
+    { inputBaseName: 'COM10', selectedFileName: 'COM10.json', expectedFileName: 'COM10.json' },
+    { inputBaseName: 'LPT10', selectedFileName: 'LPT10.json', expectedFileName: 'LPT10.json' },
+    { inputBaseName: 'report-CON.txt', selectedFileName: 'report-CON.txt.json', expectedFileName: 'report-CON.txt.json' },
+    { inputBaseName: 'CONSOLE', selectedFileName: 'CONSOLE.json', expectedFileName: 'CONSOLE.json' },
+    { inputBaseName: 'Lección, №1', selectedFileName: 'Lección, №1.json', expectedFileName: 'Lección, №1.json' },
+  ];
+  let selectedCaseIndex = 0;
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult() {
+      const selectedCase = selectedCases[selectedCaseIndex];
+      return {
+        canceled: false,
+        filePath: path.join(rootDir, `case-${selectedCaseIndex}`, selectedCase.selectedFileName),
+      };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  for (const selectedCase of selectedCases) {
+    const result = await ipcMain.invoke(
+      'current-text-snapshot-save',
+      { sender: senderWin.webContents },
+      {
+        includeCount: false,
+        includeReading: false,
+      }
+    );
+
+    assert.equal(result.ok, true, selectedCase.inputBaseName);
+    assert.equal(result.filename, selectedCase.expectedFileName, selectedCase.inputBaseName);
+    selectedCaseIndex += 1;
+  }
+});
+
+test('snapshot save rejects invalid optional name and source-comment values', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-metadata-limit');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const invalidNameResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'source-filename',
+      name: 'x'.repeat(121),
+      includeCount: true,
+      includeReading: false,
+      tags: null,
+    }
+  );
+
+  assert.deepEqual(invalidNameResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'snapshot name invalid',
+  });
+
+  const invalidSourceCommentResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'source-filename',
+      sourceComment: 'source\ncomment',
+      includeCount: true,
+      includeReading: false,
+      tags: null,
+    }
+  );
+  assert.deepEqual(invalidSourceCommentResult, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'snapshot source comment invalid',
+  });
+  assert.deepEqual(fs.readdirSync(rootDir), []);
 });
 
 test('non-interactive snapshot save accepts permitted custom tag values', async (t) => {
@@ -284,6 +848,8 @@ test('non-interactive snapshot save accepts permitted custom tag values', async 
     {
       nonInteractive: true,
       autoFileBaseName: 'Custom Unit',
+      includeCount: true,
+      includeReading: false,
       tags: {
         language: customLanguage,
         type: customType,
@@ -327,6 +893,8 @@ test('non-interactive snapshot save accepts valid non-catalog language tags', as
     {
       nonInteractive: true,
       autoFileBaseName: 'Open Language Unit',
+      includeCount: true,
+      includeReading: false,
       tags: {
         language: 'es-cl',
       },
@@ -370,6 +938,8 @@ test('snapshot save maps saveJsonStrict failures to WRITE_FAILED', async (t) => 
     {
       nonInteractive: true,
       autoFileBaseName: 'Failure Unit',
+      includeCount: true,
+      includeReading: false,
       tags: null,
     }
   );
@@ -377,6 +947,43 @@ test('snapshot save maps saveJsonStrict failures to WRITE_FAILED', async (t) => 
   assert.equal(saveResult.ok, false);
   assert.equal(saveResult.code, 'WRITE_FAILED');
   assert.match(String(saveResult.message || ''), /disk full/i);
+});
+
+test('snapshot save rejects a non-string current-text state instead of saving an empty snapshot', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-invalid-current-text');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: false,
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, 'WRITE_FAILED');
+  assert.deepEqual(fs.readdirSync(rootDir), []);
 });
 
 test('open snapshots folder delegates to shell.openPath using the snapshots root', async (t) => {
@@ -424,7 +1031,7 @@ test('snapshot load skips overwrite confirmation when current text is empty', as
   };
   const snapshotPath = path.join(rootDir, 'empty-target.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+  fs.writeFileSync(snapshotPath, JSON.stringify(createSnapshotFileData('Loaded snapshot text'), null, 2));
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -461,7 +1068,7 @@ test('snapshot load still asks for overwrite confirmation when current text is n
   };
   const snapshotPath = path.join(rootDir, 'confirm-target.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Loaded snapshot text' }, null, 2));
+  fs.writeFileSync(snapshotPath, JSON.stringify(createSnapshotFileData('Loaded snapshot text'), null, 2));
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -498,12 +1105,12 @@ test('snapshot load accepts custom snapshot tags that are unknown to the current
   const customLanguage = snapshotTagCatalog.buildCustomTagValue('language', 'Plain text');
   const snapshotPath = path.join(rootDir, 'custom-tags.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({
-    text: 'Loaded custom snapshot text',
-    tags: {
+  fs.writeFileSync(
+    snapshotPath,
+    JSON.stringify(createSnapshotFileData('Loaded custom snapshot text', {
       language: customLanguage,
-    },
-  }, null, 2));
+    }), null, 2)
+  );
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -540,12 +1147,12 @@ test('snapshot load accepts valid non-catalog language tags', async (t) => {
   };
   const snapshotPath = path.join(rootDir, 'open-language-tags.json');
   fs.mkdirSync(rootDir, { recursive: true });
-  fs.writeFileSync(snapshotPath, JSON.stringify({
-    text: 'Loaded open-language snapshot text',
-    tags: {
+  fs.writeFileSync(
+    snapshotPath,
+    JSON.stringify(createSnapshotFileData('Loaded open-language snapshot text', {
       language: 'fr-CA',
-    },
-  }, null, 2));
+    }), null, 2)
+  );
 
   const { snapshotsMain, restore, showMessageBoxCalls } = loadSnapshotsMainWithMocks({
     senderWin,
@@ -568,4 +1175,79 @@ test('snapshot load accepts valid non-catalog language tags', async (t) => {
   assert.equal(result.ok, true);
   assert.equal(result.filename, 'open-language-tags.json');
   assert.equal(showMessageBoxCalls.length, 0);
+});
+
+test('snapshot load rejects files without the canonical text-snapshot shape', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-load-missing-canonical-fields');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'incomplete.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify({ text: 'Incomplete snapshot' }, null, 2));
+  const originalFile = fs.readFileSync(snapshotPath, 'utf8');
+
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/incomplete.json' }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'invalid snapshot schema',
+  });
+  assert.equal(fs.readFileSync(snapshotPath, 'utf8'), originalFile);
+});
+
+test('normal snapshot loading accepts every built-in reading-test snapshot', async (t) => {
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir: BUNDLED_POOL_DIR,
+    currentText: '',
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const fileNames = fs.readdirSync(BUNDLED_POOL_DIR)
+    .filter((fileName) => fileName.endsWith('.json'))
+    .sort((left, right) => left.localeCompare(right));
+  assert.equal(fileNames.length, 13);
+
+  for (const fileName of fileNames) {
+    const result = await ipcMain.invoke(
+      'current-text-snapshot-load',
+      { sender: senderWin.webContents },
+      { snapshotRelPath: `/${fileName}` }
+    );
+    assert.equal(result.ok, true, fileName);
+  }
 });

@@ -23,7 +23,8 @@ const log = Log.get('presets-main');
 log.debug('Presets main starting...');
 const {
   DEFAULT_LANG,
-  MAX_PRESET_STR_CHARS,
+  PRESET_NAME_MAX,
+  PRESET_DESC_MAX,
   PRESET_WPM_MIN,
   PRESET_WPM_MAX
 } = require('./constants_main');
@@ -91,8 +92,12 @@ function sanitizePresetInput(raw) {
     return { ok: false, error: 'invalid preset payload', code: 'INVALID_PRESET' };
   }
 
-  if (name.length > MAX_PRESET_STR_CHARS || description.length > MAX_PRESET_STR_CHARS) {
-    return { ok: false, error: 'preset payload too large', code: 'PAYLOAD_TOO_LARGE' };
+  if (name.length > PRESET_NAME_MAX) {
+    return { ok: false, error: 'preset name too long', code: 'PRESET_NAME_TOO_LONG' };
+  }
+
+  if (description.length > PRESET_DESC_MAX) {
+    return { ok: false, error: 'preset description too long', code: 'PRESET_DESCRIPTION_TOO_LONG' };
   }
 
   if (!Number.isFinite(wpmNum)) {
@@ -572,7 +577,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
       if (typeof name === 'string') {
         const trimmed = name.trim();
-        if (trimmed.length > MAX_PRESET_STR_CHARS) {
+        if (trimmed.length > PRESET_NAME_MAX) {
           log.warnOnce(
             'presets_main.request-delete-preset.name_too_large',
             '[presets_main] request-delete-preset name too large (ignored).'

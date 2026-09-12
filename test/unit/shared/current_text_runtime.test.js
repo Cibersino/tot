@@ -5,6 +5,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const {
+  createReadingDurationUtils,
+} = require('../../../public/js/lib/reading_duration_core');
+const {
+  createStopwatchTimeUtils,
+} = require('../../../public/js/lib/stopwatch_time_core');
 
 function createClassList() {
   const values = new Set();
@@ -65,10 +71,14 @@ async function flushAsyncWork() {
   await Promise.resolve();
 }
 
-function createHarness() {
+function createHarness({
+  readingDurationUtils = createReadingDurationUtils(),
+  resolveCurrentTextProcessing = async () => ({ ok: true }),
+} = {}) {
   const warnings = [];
   const errors = [];
   const previewCalls = [];
+  const resolveCalls = [];
   const countCalls = [];
   const standalonePendingCalls = [];
   const separatorQueue = [];
@@ -95,7 +105,8 @@ function createHarness() {
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
   };
-  let baseTotalSeconds = null;
+  let baseReadingDuration = null;
+  const stopwatchTimeUtils = createStopwatchTimeUtils();
 
   const sandbox = {
     window: {
@@ -129,16 +140,6 @@ function createHarness() {
         },
       },
       FormatUtils: {
-        getExactTotalSeconds(words, currentWpm) {
-          return (words * 100) + currentWpm;
-        },
-        getDisplayTimeParts(totalSeconds) {
-          return {
-            hours: 0,
-            minutes: 0,
-            seconds: totalSeconds,
-          };
-        },
         async obtenerSeparadoresDeNumeros(_idioma, settings) {
           separatorCalls += 1;
           if (separatorQueue.length > 0) {
@@ -154,6 +155,12 @@ function createHarness() {
         },
         formatearNumero(value, separadorMiles, separadorDecimal) {
           return `${value}[${separadorMiles}${separadorDecimal}]`;
+        },
+      },
+      ReadingDurationUtils: readingDurationUtils,
+      StopwatchTimeCore: {
+        createStopwatchTimeUtils() {
+          return stopwatchTimeUtils;
         },
       },
       RendererI18n: {
@@ -207,11 +214,11 @@ function createHarness() {
       },
     },
     resultsTimeMultiplier: {
-      clearBaseTotalSeconds() {
-        baseTotalSeconds = null;
+      clearBaseReadingDuration() {
+        baseReadingDuration = null;
       },
-      setBaseTotalSeconds(value) {
-        baseTotalSeconds = value;
+      setBaseReadingDuration(value) {
+        baseReadingDuration = value;
       },
     },
     getCountContext() {
@@ -223,8 +230,9 @@ function createHarness() {
     getWpm() {
       return wpm;
     },
-    async resolveCurrentTextProcessing() {
-      return { ok: true };
+    async resolveCurrentTextProcessing(payload) {
+      resolveCalls.push({ ...payload });
+      return resolveCurrentTextProcessing(payload);
     },
     applyStandaloneFullRefreshPendingState(state, context = {}) {
       standalonePendingCalls.push({
@@ -240,10 +248,12 @@ function createHarness() {
     elements,
     errors,
     previewCalls,
+    resolveCalls,
     warnings,
-    get baseTotalSeconds() {
-      return baseTotalSeconds;
+    get baseReadingDuration() {
+      return baseReadingDuration;
     },
+    readingDurationUtils,
     get separatorCalls() {
       return separatorCalls;
     },
@@ -269,10 +279,12 @@ function createHarness() {
 test('standalone full refresh enters pending before deferred recount starts and settles afterward', async () => {
   const harness = createHarness();
 
-  harness.api.installCurrentTextState('uno dos tres');
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos tres' });
+  await flushAsyncWork();
+  const countCallsBeforeRefresh = harness.countCalls.length;
   harness.api.requestDerivedRefresh('mode toggle');
 
-  assert.equal(harness.countCalls.length, 0);
+  assert.equal(harness.countCalls.length, countCallsBeforeRefresh);
   assert.equal(harness.standalonePendingCalls.length, 1);
   assert.equal(harness.standalonePendingCalls[0].state.active, true);
   assert.equal(
@@ -287,7 +299,7 @@ test('standalone full refresh enters pending before deferred recount starts and 
 
   await flushAsyncWork();
 
-  assert.equal(harness.countCalls.length, 1);
+  assert.equal(harness.countCalls.length, countCallsBeforeRefresh + 1);
   assert.equal(harness.standalonePendingCalls.at(-1).state.active, false);
   assert.equal(
     harness.elements.selectorSection.classList.contains('current-text-status--pending'),
@@ -326,7 +338,8 @@ test('display-only refreshes queue behind a standalone full refresh before count
 test('standalone full refresh failure clears pending and leaves degraded values visible', async () => {
   const harness = createHarness();
 
-  harness.api.installCurrentTextState('uno dos tres');
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos tres' });
+  await flushAsyncWork();
   harness.queueSeparatorResolver(() => Promise.reject(new Error('separator failure')));
   harness.api.requestDerivedRefresh('mode toggle');
 
@@ -398,13 +411,94 @@ test('time_only refresh preserves cached stats and avoids recounting', async () 
 
   const countCallsBefore = harness.countCalls.length;
   const charsBefore = harness.elements.resChars.textContent;
-  harness.setWpm(350);
+  harness.setWpm(40);
   harness.api.requestTimeOnlyRefresh('wpm change');
 
   assert.equal(harness.countCalls.length, countCallsBefore);
   assert.equal(harness.elements.resChars.textContent, charsBefore);
-  assert.equal(harness.elements.resTime.textContent, 'Time|0h 0m 550s');
-  assert.equal(harness.baseTotalSeconds, 550);
+  assert.equal(harness.elements.resTime.textContent, 'Time|0h 0m 3s');
+  assert.equal(
+    harness.readingDurationUtils.getRoundedReadingSeconds(harness.baseReadingDuration),
+    3
+  );
+});
+
+test('time_only refresh treats a failed reading-duration calculation as an invariant violation', async () => {
+  const exactReadingDurationUtils = createReadingDurationUtils();
+  let shouldFailDurationCalculation = false;
+  const harness = createHarness({
+    readingDurationUtils: {
+      ...exactReadingDurationUtils,
+      getRoundedReadingSeconds(duration, multiplier) {
+        return shouldFailDurationCalculation
+          ? null
+          : exactReadingDurationUtils.getRoundedReadingSeconds(duration, multiplier);
+      },
+    },
+  });
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos' });
+  await flushAsyncWork();
+  const timeBeforeFailure = harness.elements.resTime.textContent;
+
+  shouldFailDurationCalculation = true;
+  assert.throws(
+    () => harness.api.requestTimeOnlyRefresh('duration invariant test'),
+    /estimated reading duration unavailable/
+  );
+  assert.equal(harness.elements.resTime.textContent, timeBeforeFailure);
+});
+
+test('current-text runtime rejects malformed authoritative text before it can become an empty estimate', async () => {
+  const harness = createHarness();
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos' });
+  await flushAsyncWork();
+  const textBeforeFailure = harness.api.getCurrentText();
+  const timeBeforeFailure = harness.elements.resTime.textContent;
+
+  assert.throws(
+    () => harness.api.handleCurrentTextUpdated({ text: false }),
+    /current-text-updated requires an object with string text/
+  );
+  assert.equal(harness.api.getCurrentText(), textBeforeFailure);
+  assert.equal(harness.elements.resTime.textContent, timeBeforeFailure);
+});
+
+test('current-text runtime validates request IDs through the live update path', async () => {
+  const harness = createHarness();
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos', requestId: 7 });
+  await flushAsyncWork();
+  assert.equal(harness.api.getCurrentText(), 'uno dos');
+
+  assert.throws(
+    () => harness.api.handleCurrentTextUpdated({ text: 'tres cuatro', requestId: '8' }),
+    /requestId must be a positive safe integer/
+  );
+  assert.equal(harness.api.getCurrentText(), 'uno dos');
+});
+
+test('current-text runtime rejects malformed processing state without replacing canonical state', () => {
+  const harness = createHarness();
+  const canonicalState = {
+    active: true,
+    requestId: 1,
+    sinceEpochMs: Date.now(),
+    source: 'main',
+    action: 'overwrite',
+  };
+
+  harness.api.applyCurrentTextProcessingState(canonicalState);
+  assert.deepEqual({ ...harness.api.copyCurrentTextProcessingState(canonicalState) }, canonicalState);
+  assert.throws(
+    () => harness.api.applyCurrentTextProcessingState({
+      ...canonicalState,
+      requestId: '1',
+    }),
+    /current-text processing state is invalid/
+  );
+  assert.doesNotThrow(() => harness.api.applyCurrentTextProcessingState(canonicalState));
 });
 
 test('stats_display requests queue behind an in-flight standalone full derive when stats are not ready yet', async () => {
@@ -561,6 +655,78 @@ test('non-startup current-text pending paths still settle without deferred boots
   await flushAsyncWork();
 
   assert.equal(harness.countCalls.length, 1);
+});
+
+test('terminal presentation fencing preserves successful settlement of admitted current-text work', async () => {
+  const harness = createHarness();
+  const deferredSeparators = createDeferred();
+  harness.queueSeparatorResolver(() => deferredSeparators.promise.then(() => ({
+    separadorMiles: '.',
+    separadorDecimal: ',',
+  })));
+
+  harness.api.applyCurrentTextProcessingState({
+    active: true,
+    requestId: 3,
+    sinceEpochMs: Date.now(),
+    source: 'main',
+    action: 'overwrite',
+  });
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos tres', requestId: 3 });
+  const previewCallsBeforeTerminal = harness.previewCalls.length;
+  const charsBeforeTerminal = harness.elements.resChars.textContent;
+  harness.api.setTerminalPresentationUnavailable();
+
+  deferredSeparators.resolve();
+  await flushAsyncWork();
+
+  assert.deepEqual(harness.resolveCalls, [{ requestId: 3, ok: true }]);
+  assert.equal(harness.previewCalls.length, previewCallsBeforeTerminal);
+  assert.equal(harness.elements.resChars.textContent, charsBeforeTerminal);
+  assert.equal(harness.baseReadingDuration, null);
+});
+
+test('terminal Runtime processes a later authoritative active request with its matching text', async () => {
+  const harness = createHarness();
+  harness.api.setTerminalPresentationUnavailable();
+
+  harness.api.applyCurrentTextProcessingState({
+    active: true,
+    requestId: 4,
+    sinceEpochMs: Date.now(),
+    source: 'main',
+    action: 'overwrite',
+  });
+  harness.api.handleCurrentTextUpdated({ text: 'cuatro cinco', requestId: 4 });
+  await flushAsyncWork();
+
+  assert.equal(harness.api.getCurrentText(), 'cuatro cinco');
+  assert.equal(harness.countCalls.length, 1);
+  assert.deepEqual(harness.resolveCalls, [{ requestId: 4, ok: true }]);
+  assert.equal(harness.previewCalls.length, 0);
+  assert.equal(harness.elements.resChars.textContent, '');
+});
+
+test('terminal presentation fencing preserves genuine current-text failure settlement', async () => {
+  const harness = createHarness();
+  const deferredSeparators = createDeferred();
+  harness.queueSeparatorResolver(() => deferredSeparators.promise);
+  harness.api.setTerminalPresentationUnavailable();
+
+  harness.api.applyCurrentTextProcessingState({
+    active: true,
+    requestId: 5,
+    sinceEpochMs: Date.now(),
+    source: 'main',
+    action: 'overwrite',
+  });
+  harness.api.handleCurrentTextUpdated({ text: 'seis siete', requestId: 5 });
+  deferredSeparators.reject(new Error('separator failure'));
+  await flushAsyncWork();
+
+  assert.deepEqual(harness.resolveCalls, [{ requestId: 5, ok: false }]);
+  assert.equal(harness.previewCalls.length, 0);
+  assert.equal(harness.elements.resChars.textContent, '');
 });
 
 test('stale queued standalone follow-up does not leak into a later successful full derive', async () => {

@@ -43,6 +43,7 @@ body {
   margin: 10px 0 0;
   font-size: 2.4rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   color: #1f5a2d;
 }
@@ -87,6 +88,7 @@ body {
 .reading-test-result__summary-metric bdi {
   unicode-bidi: isolate;
   margin-inline-start: 0.3em;
+  font-variant-numeric: tabular-nums;
 }
 
 .reading-test-result__summary-separator {

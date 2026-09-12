@@ -21,8 +21,15 @@ const fs = require('fs');
 const path = require('path');
 const { dialog, BrowserWindow, shell } = require('electron');
 const Log = require('./log');
-const { DEFAULT_LANG } = require('./constants_main');
+const {
+  DEFAULT_LANG,
+  PRESET_WPM_MIN,
+  PRESET_WPM_MAX,
+} = require('./constants_main');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
+const countCore = require('../public/js/lib/count_core');
+const readingDurationCore = require('../public/js/lib/reading_duration_core');
+const currentTextSnapshotSchema = require('./current_text_snapshot_schema');
 const {
   getCurrentTextSnapshotsDir,
   ensureCurrentTextSnapshotsDir,
@@ -40,11 +47,7 @@ log.debug('Current text snapshots main starting...');
 // =============================================================================
 
 if (!snapshotTagCatalog
-  || !Array.isArray(snapshotTagCatalog.TAG_KEYS)
-  || typeof snapshotTagCatalog.isPlainObject !== 'function'
-  || typeof snapshotTagCatalog.normalizeLanguageTag !== 'function'
-  || typeof snapshotTagCatalog.normalizeTypeTag !== 'function'
-  || typeof snapshotTagCatalog.normalizeDifficultyTag !== 'function') {
+  || typeof snapshotTagCatalog.isPlainObject !== 'function') {
   throw new Error('[current_text_snapshots] SnapshotTagCatalog unavailable; cannot continue');
 }
 
@@ -52,8 +55,28 @@ if (!snapshotTagCatalog
 // Constants / config
 // =============================================================================
 const SNAPSHOT_EXT = '.json';
+const {
+  SNAPSHOT_TYPE,
+  SNAPSHOT_SAVED_WITH,
+  normalizeSnapshotCountLocale,
+} = currentTextSnapshotSchema;
 const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
-const { TAG_KEYS: SNAPSHOT_TAG_KEYS } = snapshotTagCatalog;
+const SNAPSHOT_SAVE_PAYLOAD_KEYS = Object.freeze([
+  'nonInteractive',
+  'autoFileBaseName',
+  'name',
+  'sourceComment',
+  'tags',
+  'includeCount',
+  'includeReading',
+  'wpm',
+]);
+const countUtils = countCore.createCountUtils({
+  DEFAULT_LANG,
+  log,
+  intlObject: typeof Intl !== 'undefined' ? Intl : null,
+});
+const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 
 // =============================================================================
 // Helpers (paths)
@@ -98,6 +121,29 @@ function normalizeSnapshotRelPath(raw) {
   return rel;
 }
 
+function getRequestedSnapshotRelPath(payload, { allowOmitted = false } = {}) {
+  if (typeof payload === 'undefined') {
+    if (allowOmitted) return { ok: true, snapshotRelPath: null };
+    log.warn('snapshot request omitted snapshotRelPath payload.');
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+  if (!snapshotTagCatalog.isPlainObject(payload)
+    || !Object.prototype.hasOwnProperty.call(payload, 'snapshotRelPath')
+    || typeof payload.snapshotRelPath !== 'string') {
+    log.warn('snapshot request received invalid snapshotRelPath payload:', payload);
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+
+  const snapshotRelPath = normalizeSnapshotRelPath(payload.snapshotRelPath);
+  if (!snapshotRelPath || snapshotRelPath !== payload.snapshotRelPath) {
+    log.warn('snapshot request received invalid snapshotRelPath:', {
+      snapshotRelPath: payload.snapshotRelPath,
+    });
+    return { ok: false, code: 'INVALID_SNAPSHOT_PATH' };
+  }
+  return { ok: true, snapshotRelPath };
+}
+
 function resolveSnapshotFromRelPath(rootReal, snapshotRelPath) {
   const rel = normalizeSnapshotRelPath(snapshotRelPath);
   if (!rootReal || !rel) return null;
@@ -123,17 +169,34 @@ function getDefaultSnapshotName(rootDir) {
   return `current_text_${maxNum + 1}.json`;
 }
 
+function isWindowsReservedDeviceName(baseName) {
+  return /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(baseName);
+}
+
 function sanitizeSnapshotBaseName(base) {
-  let next = String(base || '');
-  next = next.replace(/\s+/g, '_');
-  next = next.replace(/[^A-Za-z0-9_-]/g, '');
+  let next = base.trim().normalize('NFC');
+  next = next.replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ');
+  next = next.replace(/\s+/g, ' ').trim();
+  next = next.replace(/[. ]+$/g, '');
+  if (isWindowsReservedDeviceName(next)) {
+    next = `_${next}`;
+  }
+  return next || 'current_text';
+}
+
+function normalizeDerivedSnapshotBaseName(base) {
+  let next = base.trim().normalize('NFC');
+  next = next.replace(/[^\p{L}\p{N}\p{M}_-]+/gu, '_');
   next = next.replace(/_+/g, '_').replace(/-+/g, '-');
   next = next.replace(/^[_-]+|[_-]+$/g, '');
+  if (isWindowsReservedDeviceName(next)) {
+    next = `_${next}`;
+  }
   return next || 'current_text';
 }
 
 function normalizeSavePath(filePath) {
-  const resolved = path.resolve(String(filePath || ''));
+  const resolved = path.resolve(filePath);
   const dir = path.dirname(resolved);
   const base = path.basename(resolved, path.extname(resolved));
   const safeBase = sanitizeSnapshotBaseName(base);
@@ -141,7 +204,7 @@ function normalizeSavePath(filePath) {
 }
 
 function resolveDeterministicAutoSnapshotPath(rootDir, rawBaseName) {
-  const safeBaseName = sanitizeSnapshotBaseName(rawBaseName);
+  const safeBaseName = normalizeDerivedSnapshotBaseName(rawBaseName);
   let candidateName = `${safeBaseName}${SNAPSHOT_EXT}`;
   let candidatePath = path.join(rootDir, candidateName);
   let collisionIndex = 2;
@@ -212,75 +275,149 @@ async function promptForSnapshotSelection(ownerWin, root, rootReal) {
     return { ok: false, code: 'CANCELLED' };
   }
 
-  const selectedPath = String(dialogResult.filePaths[0] || '');
+  const selectedPath = dialogResult.filePaths[0];
+  if (typeof selectedPath !== 'string' || !selectedPath.trim()) {
+    log.warn('snapshot file picker returned invalid file path:', dialogResult);
+    return { ok: false, code: 'READ_FAILED', message: 'snapshot file picker returned invalid file path' };
+  }
   return validateSelectedSnapshot(rootReal, selectedPath);
 }
 
 // =============================================================================
 // Helpers (schema + payloads)
 // =============================================================================
-function sanitizeSnapshotTags(rawTags, { allowMissing = false } = {}) {
-  if (rawTags == null) {
-    return allowMissing
-      ? { ok: true, tags: null }
-      : { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags missing' };
-  }
-  if (!snapshotTagCatalog.isPlainObject(rawTags)) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags must be an object' };
-  }
-
-  const rawKeys = Object.keys(rawTags);
-  if (rawKeys.some((key) => !SNAPSHOT_TAG_KEYS.includes(key))) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags contain unsupported keys' };
-  }
-
-  const tags = {};
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'language')) {
-    const language = snapshotTagCatalog.normalizeLanguageTag(rawTags.language);
-    if (!language) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot language tag invalid' };
-    }
-    tags.language = language;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'type')) {
-    const type = snapshotTagCatalog.normalizeTypeTag(rawTags.type);
-    if (!type) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot type tag invalid' };
-    }
-    tags.type = type;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'difficulty')) {
-    const difficulty = snapshotTagCatalog.normalizeDifficultyTag(rawTags.difficulty);
-    if (!difficulty) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot difficulty tag invalid' };
-    }
-    tags.difficulty = difficulty;
-  }
-
-  return { ok: true, tags: Object.keys(tags).length ? tags : null };
-}
-
 function sanitizeSnapshotSavePayload(payload) {
-  if (payload == null) return { ok: true, tags: null };
   if (!snapshotTagCatalog.isPlainObject(payload)) {
     return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload must be an object' };
   }
-  const autoFileBaseName = typeof payload.autoFileBaseName === 'string'
-    ? payload.autoFileBaseName.trim()
-    : '';
-  const nonInteractive = payload.nonInteractive === true;
-  if (!Object.prototype.hasOwnProperty.call(payload, 'tags')) {
-    return { ok: true, tags: null, autoFileBaseName, nonInteractive };
+
+  const payloadKeys = Object.keys(payload);
+  if (payloadKeys.some((key) => !SNAPSHOT_SAVE_PAYLOAD_KEYS.includes(key))) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot save payload contains unsupported keys' };
   }
-  const tagsInfo = sanitizeSnapshotTags(payload.tags, { allowMissing: true });
-  if (!tagsInfo.ok) return tagsInfo;
-  const tags = snapshotTagCatalog.isPlainObject(tagsInfo.tags)
-    ? { ...tagsInfo.tags }
-    : null;
-  return { ok: true, tags, autoFileBaseName, nonInteractive };
+  if (typeof payload.includeCount !== 'boolean' || typeof payload.includeReading !== 'boolean') {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot metric flags invalid' };
+  }
+  if (payload.includeReading && !payload.includeCount) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot reading requires count' };
+  }
+
+  const hasNonInteractive = Object.prototype.hasOwnProperty.call(payload, 'nonInteractive');
+  if (hasNonInteractive && typeof payload.nonInteractive !== 'boolean') {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot nonInteractive flag invalid' };
+  }
+  const nonInteractive = payload.nonInteractive === true;
+
+  const hasAutoFileBaseName = Object.prototype.hasOwnProperty.call(payload, 'autoFileBaseName');
+  if (hasAutoFileBaseName && typeof payload.autoFileBaseName !== 'string') {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot automatic filename invalid' };
+  }
+  const autoFileBaseName = hasAutoFileBaseName ? payload.autoFileBaseName.trim() : '';
+
+  let name = '';
+  if (Object.prototype.hasOwnProperty.call(payload, 'name')) {
+    const nameInfo = currentTextSnapshotSchema.validateSnapshotName(payload.name);
+    if (!nameInfo.ok) return nameInfo;
+    name = nameInfo.value;
+  }
+
+  let sourceComment = '';
+  if (Object.prototype.hasOwnProperty.call(payload, 'sourceComment')) {
+    const sourceCommentInfo = currentTextSnapshotSchema.validateSnapshotSourceComment(payload.sourceComment);
+    if (!sourceCommentInfo.ok) return sourceCommentInfo;
+    sourceComment = sourceCommentInfo.value;
+  }
+
+  if (hasAutoFileBaseName && !nonInteractive) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot automatic fields require nonInteractive' };
+  }
+
+  const hasWpm = Object.prototype.hasOwnProperty.call(payload, 'wpm');
+  if (payload.includeReading) {
+    if (!hasWpm
+      || !Number.isSafeInteger(payload.wpm)
+      || payload.wpm < PRESET_WPM_MIN
+      || payload.wpm > PRESET_WPM_MAX) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot WPM invalid' };
+    }
+  } else if (hasWpm) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot WPM requires reading' };
+  }
+
+  let tags = null;
+  if (Object.prototype.hasOwnProperty.call(payload, 'tags') && payload.tags != null) {
+    const tagsInfo = currentTextSnapshotSchema.validateSnapshotTags(payload.tags);
+    if (!tagsInfo.ok) return tagsInfo;
+    tags = Object.keys(tagsInfo.tags).length ? { ...tagsInfo.tags } : null;
+  }
+
+  return {
+    ok: true,
+    tags,
+    autoFileBaseName,
+    name,
+    sourceComment,
+    nonInteractive,
+    includeCount: payload.includeCount,
+    includeReading: payload.includeReading,
+    wpm: payload.includeReading ? payload.wpm : null,
+  };
+}
+
+function resolveSnapshotCountContext() {
+  let settings = null;
+  try {
+    settings = settingsState.getSettings();
+  } catch (err) {
+    log.warn('Snapshot count settings read failed; using defaults.', err);
+  }
+
+  const mode = settings && settings.modeConteo === 'simple' ? 'simple' : 'preciso';
+  const requestedLocale = settings && typeof settings.language === 'string'
+    ? settings.language
+    : DEFAULT_LANG;
+  const locale = normalizeSnapshotCountLocale(requestedLocale)
+    || normalizeSnapshotCountLocale(DEFAULT_LANG);
+  if (!locale) {
+    throw new Error('snapshot count locale unavailable');
+  }
+  if (!normalizeSnapshotCountLocale(requestedLocale)) {
+    log.warn('Snapshot count locale invalid; using default locale:', { requestedLocale, locale });
+  }
+  return { mode, locale };
+}
+
+function buildSnapshotMetrics(text, payloadInfo) {
+  if (!payloadInfo.includeCount) return null;
+
+  const countContext = resolveSnapshotCountContext();
+  const stats = countUtils.contarTexto(text, {
+    modoConteo: countContext.mode,
+    idioma: countContext.locale,
+  });
+  const words = stats && stats.palabras;
+  if (!Number.isSafeInteger(words) || words < 0) {
+    throw new Error('snapshot word count invalid');
+  }
+
+  const metrics = {
+    count: {
+      words,
+      mode: countContext.mode,
+      locale: countContext.locale,
+    },
+  };
+  if (!payloadInfo.includeReading) return metrics;
+
+  const estimatedSeconds = readingDurationUtils.getEstimatedReadingSeconds(words, payloadInfo.wpm);
+  if (!Number.isSafeInteger(estimatedSeconds) || estimatedSeconds < 0) {
+    throw new Error('snapshot estimated reading duration invalid');
+  }
+  metrics.reading = {
+    estimatedSeconds,
+    wpm: payloadInfo.wpm,
+  };
+  return metrics;
 }
 
 function parseSnapshotFile(selectedReal) {
@@ -299,18 +436,56 @@ function parseSnapshotFile(selectedReal) {
     return { ok: false, code: 'INVALID_JSON', message: String(err) };
   }
 
-  if (!parsed || typeof parsed !== 'object' || typeof parsed.text !== 'string') {
-    log.warn('snapshot schema invalid:', { selectedReal });
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'invalid snapshot schema' };
+  const snapshotInfo = currentTextSnapshotSchema.validateSnapshotDocument(parsed);
+  if (!snapshotInfo.ok) {
+    log.warn('snapshot schema invalid:', { selectedReal, message: snapshotInfo.message });
+    return snapshotInfo;
   }
 
-  const tagsInfo = sanitizeSnapshotTags(parsed.tags, { allowMissing: true });
-  if (!tagsInfo.ok) {
-    log.warn('snapshot tags schema invalid:', { selectedReal, message: tagsInfo.message });
-    return { ok: false, code: 'INVALID_SCHEMA', message: tagsInfo.message };
+  const tags = snapshotInfo.snapshot.tags;
+  const reading = snapshotInfo.snapshot.metrics && snapshotInfo.snapshot.metrics.reading;
+  return {
+    ok: true,
+    text: snapshotInfo.snapshot.text,
+    tags: Object.keys(tags).length ? tags : null,
+    name: Object.prototype.hasOwnProperty.call(snapshotInfo.snapshot, 'name')
+      ? snapshotInfo.snapshot.name
+      : null,
+    sourceComment: Object.prototype.hasOwnProperty.call(snapshotInfo.snapshot, 'sourceComment')
+      ? snapshotInfo.snapshot.sourceComment
+      : null,
+    estimatedSeconds: reading ? reading.estimatedSeconds : null,
+    wpm: reading ? reading.wpm : null,
+  };
+}
+
+function inspectSnapshotAtRelPath(snapshotRelPath) {
+  const rootInfo = getSnapshotsRoot('read');
+  if (!rootInfo.ok) return rootInfo;
+  const { rootReal } = rootInfo;
+  const selectedReal = resolveSnapshotFromRelPath(rootReal, snapshotRelPath);
+  if (!selectedReal) {
+    log.warn('snapshot inspection blocked outside root:', { snapshotRelPath });
+    return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
+  }
+  if (!fs.existsSync(selectedReal)) {
+    log.warn('snapshot inspection target not found:', { snapshotRelPath, selectedReal });
+    return { ok: false, code: 'NOT_FOUND' };
   }
 
-  return { ok: true, text: parsed.text, tags: tagsInfo.tags };
+  const selectedInfo = validateSelectedSnapshot(rootReal, selectedReal);
+  if (!selectedInfo.ok) return selectedInfo;
+
+  const parsed = parseSnapshotFile(selectedInfo.selectedReal);
+  if (!parsed.ok) return parsed;
+
+  return {
+    ok: true,
+    name: parsed.name,
+    sourceComment: parsed.sourceComment,
+    estimatedSeconds: parsed.estimatedSeconds,
+    wpm: parsed.wpm,
+  };
 }
 
 // =============================================================================
@@ -354,7 +529,11 @@ async function confirmLoadOverwrite(ownerWin, name = '') {
 }
 
 function hasCurrentTextToOverwrite() {
-  return String(textState.getCurrentText() || '').length > 0;
+  const currentText = textState.getCurrentText();
+  if (typeof currentText !== 'string') {
+    throw new Error('textState.getCurrentText returned a non-string value');
+  }
+  return currentText.length > 0;
 }
 
 function resolveMainWin(getWindows) {
@@ -444,13 +623,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { root, rootReal } = rootInfo;
       let normalizedPath = '';
       if (payloadInfo.nonInteractive) {
+        const defaultBaseName = path.basename(getDefaultSnapshotName(root), SNAPSHOT_EXT);
         const autoPath = resolveDeterministicAutoSnapshotPath(
           root,
-          payloadInfo.autoFileBaseName || getDefaultSnapshotName(root)
+          payloadInfo.autoFileBaseName === ''
+            ? defaultBaseName
+            : payloadInfo.autoFileBaseName
         );
         normalizedPath = normalizeSavePath(autoPath.candidatePath);
       } else {
-        const defaultName = getDefaultSnapshotName(root);
+        const defaultName = payloadInfo.name
+          ? `${normalizeDerivedSnapshotBaseName(payloadInfo.name)}${SNAPSHOT_EXT}`
+          : getDefaultSnapshotName(root);
         const defaultPath = path.join(root, defaultName);
 
         const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event, getWindows), {
@@ -458,8 +642,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           filters: [{ name: 'JSON', extensions: ['json'] }],
         });
 
-        if (!dialogRes || dialogRes.canceled || !dialogRes.filePath) {
+        if (!dialogRes || dialogRes.canceled) {
           return { ok: false, code: 'CANCELLED' };
+        }
+        if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
+          log.warn('snapshot save file picker returned invalid file path:', dialogRes);
+          return { ok: false, code: 'WRITE_FAILED', message: 'snapshot save file picker returned invalid file path' };
         }
 
         normalizedPath = normalizeSavePath(dialogRes.filePath);
@@ -478,9 +666,23 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
       }
 
-      const text = textState.getCurrentText() || '';
-      const snapshotData = { text: String(text) };
-      if (payloadInfo.tags) snapshotData.tags = payloadInfo.tags;
+      const text = textState.getCurrentText();
+      if (typeof text !== 'string') {
+        throw new Error('textState.getCurrentText returned a non-string value');
+      }
+      const metrics = buildSnapshotMetrics(text, payloadInfo);
+      const snapshotData = {
+        type: SNAPSHOT_TYPE,
+        meta: {
+          savedAt: new Date().toISOString(),
+          savedWith: SNAPSHOT_SAVED_WITH,
+        },
+        ...(payloadInfo.name ? { name: payloadInfo.name } : {}),
+        ...(payloadInfo.sourceComment ? { sourceComment: payloadInfo.sourceComment } : {}),
+        text,
+        tags: payloadInfo.tags === null ? {} : payloadInfo.tags,
+        ...(metrics ? { metrics } : {}),
+      };
       saveJsonStrict(candidateResolved, snapshotData);
       const stats = fs.statSync(candidateResolved);
 
@@ -490,7 +692,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         filename: path.basename(candidateResolved),
         bytes: stats.size,
         mtime: stats.mtimeMs,
-        length: String(text).length,
+        length: text.length,
         tags: payloadInfo.tags,
       };
     } catch (err) {
@@ -539,6 +741,17 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   });
 
+  ipcMain.handle('current-text-snapshot-inspect', async (_event, payload) => {
+    try {
+      const request = getRequestedSnapshotRelPath(payload);
+      if (!request.ok) return request;
+      return inspectSnapshotAtRelPath(request.snapshotRelPath);
+    } catch (err) {
+      log.error('snapshot inspection failed:', err);
+      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    }
+  });
+
   ipcMain.handle('current-text-snapshot-load', async (event, payload) => {
     try {
       const rootInfo = getSnapshotsRoot('read');
@@ -548,15 +761,16 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       let selectedReal = '';
       let snapshotRelPath = '';
       let stats = null;
-      const requestedRelPath = normalizeSnapshotRelPath(payload && payload.snapshotRelPath ? payload.snapshotRelPath : '');
-      if (requestedRelPath) {
-        selectedReal = resolveSnapshotFromRelPath(rootReal, requestedRelPath);
+      const request = getRequestedSnapshotRelPath(payload, { allowOmitted: true });
+      if (!request.ok) return request;
+      if (request.snapshotRelPath !== null) {
+        selectedReal = resolveSnapshotFromRelPath(rootReal, request.snapshotRelPath);
         if (!selectedReal) {
-          log.warn('snapshot load blocked outside root from rel path:', { requestedRelPath });
+          log.warn('snapshot load blocked outside root from rel path:', { snapshotRelPath: request.snapshotRelPath });
           return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
         }
         if (!fs.existsSync(selectedReal)) {
-          log.warn('snapshot load target not found:', { requestedRelPath, selectedReal });
+          log.warn('snapshot load target not found:', { snapshotRelPath: request.snapshotRelPath, selectedReal });
           return { ok: false, code: 'NOT_FOUND' };
         }
         const selectedInfo = validateSelectedSnapshot(rootReal, selectedReal);

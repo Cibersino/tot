@@ -24,8 +24,8 @@ log.debug('Task Editor state starting...');
 // =============================================================================
 const DEFAULT_REDUCED_WIDTH = 1130;
 const DEFAULT_REDUCED_HEIGHT = 720;
-const MIN_REDUCED_WIDTH = 900;
-const MIN_REDUCED_HEIGHT = 560;
+const MIN_REDUCED_WIDTH = 756;
+const MIN_REDUCED_HEIGHT = 400;
 const MIN_VISIBLE_EDGE_PX = 40;
 
 const DEFAULT_STATE = Object.freeze({
@@ -148,6 +148,9 @@ function isLiveWindow(taskEditorWin) {
 }
 
 function readCurrentState(loader, stateFile) {
+  // A native first-open move can run before this file exists. Keep the
+  // read-before-write path so every update starts from normalized persisted
+  // state; the second expected missing-file fallback precedes its first save.
   return normalizeState(loader(stateFile, DEFAULT_STATE));
 }
 

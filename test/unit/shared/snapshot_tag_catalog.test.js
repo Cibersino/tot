@@ -2,8 +2,45 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
+
+test('snapshot language defaults match the shipped-language manifest and default renderer labels', () => {
+  const manifest = JSON.parse(fs.readFileSync(
+    path.resolve(__dirname, '../../../i18n/languages.json'),
+    'utf8'
+  ));
+
+  assert.deepEqual(
+    snapshotTagCatalog.LANGUAGE_OPTIONS.map((option) => option.value),
+    manifest.map(({ tag }) => tag)
+  );
+  assert.deepEqual(
+    manifest.find(({ tag }) => tag === 'sw'),
+    { tag: 'sw', label: 'Kiswahili' }
+  );
+  const swRenderer = JSON.parse(fs.readFileSync(
+    path.resolve(__dirname, '../../../i18n/sw/renderer.json'),
+    'utf8'
+  ));
+  assert.equal(swRenderer.renderer.snapshots.options.language.sw, 'Kiswahili');
+
+  ['es', 'en'].forEach((language) => {
+    const renderer = JSON.parse(fs.readFileSync(
+      path.resolve(__dirname, `../../../i18n/${language}/renderer.json`),
+      'utf8'
+    ));
+    const labels = renderer.renderer.snapshots.options.language;
+
+    snapshotTagCatalog.LANGUAGE_OPTIONS.forEach((option) => {
+      const labelKey = option.labelKey.split('.').at(-1);
+      assert.equal(typeof labels[labelKey], 'string', `${language} label missing for ${option.value}`);
+      assert.ok(labels[labelKey].trim(), `${language} label empty for ${option.value}`);
+    });
+  });
+});
 
 function getDefaultLabel(option) {
   const labels = {
@@ -24,6 +61,12 @@ test('buildCustomTagValue uses a category namespace and normalized slug', () => 
     snapshotTagCatalog.buildCustomTagValue('type', '  Short   story  '),
     'custom:type:short-story'
   );
+});
+
+test('custom tag labels use the shared 36-character cap', () => {
+  assert.equal(snapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH, 36);
+  assert.equal(snapshotTagCatalog.validateCustomLabel('a'.repeat(36)).ok, true);
+  assert.equal(snapshotTagCatalog.validateCustomLabel('a'.repeat(37)).code, 'too_long');
 });
 
 test('normalizeLanguageTag keeps valid non-catalog language tags open', () => {

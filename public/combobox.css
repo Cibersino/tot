@@ -1,0 +1,35 @@
+/* Shared renderer combobox styles.
+   Loaded by public/index.html and public/text_time_calculator.html.
+   Owner boundary: shared combobox structure, state mechanics, and popup behavior only. */
+
+.renderer-combobox {
+  position: relative;
+}
+
+.renderer-combobox__input {
+  cursor: text;
+}
+
+.renderer-combobox[data-mode="select"] .renderer-combobox__input {
+  cursor: default;
+}
+
+.renderer-combobox__input:disabled {
+  cursor: not-allowed;
+}
+
+.renderer-combobox__listbox {
+  position: absolute;
+}
+
+.renderer-combobox__listbox[hidden] {
+  display: none;
+}
+
+.renderer-combobox__option {
+  cursor: default;
+}
+
+.renderer-combobox__option.is-disabled {
+  cursor: not-allowed;
+}

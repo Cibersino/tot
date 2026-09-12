@@ -115,7 +115,7 @@ function createMainWindowDouble() {
   return { mainWin, sends };
 }
 
-function createController() {
+function createController({ showStartupFailureDisclosure = null } = {}) {
   const log = createLogDouble();
   const notifyWindowStateCalls = [];
   const controller = editorWindowLifecycle.createController({
@@ -125,6 +125,7 @@ function createController() {
         notifyWindowStateCalls.push({ win, source });
       },
     },
+    showStartupFailureDisclosure,
   });
 
   return { controller, log, notifyWindowStateCalls };
@@ -241,7 +242,7 @@ test('fresh ordinary open starts a hidden startup cycle and passes startup query
       firstShowGeneration: 1,
     },
   ]);
-  assert.deepEqual(calls, ['maximize']);
+  assert.deepEqual(calls, []);
   controller.handleEditorWindowClosed({
     mainWin,
     logContext: 'test.cleanup.freshOrdinaryOpen',
@@ -420,6 +421,35 @@ test('ordinary bootstrap failure emits failed/bootstrap-failed and disposes the 
   ]);
 });
 
+test('lifecycle observes a reportable startup rejection immediately and owns native disclosure metadata', async () => {
+  const disclosures = [];
+  const { controller } = createController({
+    showStartupFailureDisclosure(details) {
+      disclosures.push(details);
+    },
+  });
+  const { mainWin } = createMainWindowDouble();
+  const { editorWin } = createEditorWindowDouble({ visible: false });
+  const { firstShowGeneration } = createFreshOrdinaryStartup(controller, mainWin, editorWin);
+
+  controller.handleBasePresentationStateReport({
+    event: { sender: editorWin.webContents },
+    editorWin,
+    mainWin,
+    payload: {
+      generation: firstShowGeneration,
+      status: 'failed',
+    },
+    logContext: 'test.lifecycleDisclosure',
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(disclosures, [{
+    cause: 'EDITOR_BOOTSTRAP_FAILED',
+    disclosure: 'main-native',
+  }]);
+});
+
 test('reading-test bootstrap failure marks the later hidden editor close as lifecycle-owned', () => {
   const { controller } = createController();
   const { editorWin, calls } = createEditorWindowDouble({ visible: false, maximized: false });
@@ -454,7 +484,7 @@ test('reading-test bootstrap failure marks the later hidden editor close as life
   });
 
   assert.equal(accepted, true);
-  assert.deepEqual(calls, ['maximize', 'destroy']);
+  assert.deepEqual(calls, ['destroy']);
   assert.equal(controller.handleEditorWindowClosed({
     editorWin,
     mainWin: null,
@@ -646,7 +676,7 @@ test('reading-test startup timeout marks the later hidden editor close as lifecy
 
     timeoutCallback();
 
-    assert.deepEqual(calls, ['maximize', 'destroy']);
+    assert.deepEqual(calls, ['destroy']);
     assert.equal(controller.handleEditorWindowClosed({
       editorWin,
       mainWin: null,

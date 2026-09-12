@@ -14,6 +14,7 @@ async function flushMicrotasks() {
 function createElement(id) {
   const listeners = new Map();
   const attributes = {};
+  const classes = new Set();
 
   return {
     id,
@@ -23,6 +24,15 @@ function createElement(id) {
     textContent: '',
     focusCount: 0,
     selectCount: 0,
+    classList: {
+      toggle(name, force) {
+        if (force) classes.add(name);
+        else classes.delete(name);
+      },
+      contains(name) {
+        return classes.has(name);
+      },
+    },
     addEventListener(type, handler) {
       if (!listeners.has(type)) {
         listeners.set(type, []);
@@ -45,6 +55,9 @@ function createElement(id) {
     },
     focus() {
       this.focusCount += 1;
+    },
+    blur() {
+      this.dispatch('blur');
     },
     select() {
       this.selectCount += 1;
@@ -92,6 +105,10 @@ function createHarness() {
   const sandbox = {
     window: {
       Notify: {
+        activateModalFocus(_modal, { initialFocus }) {
+          initialFocus.focus();
+        },
+        deactivateModalFocus() {},
         notifyMain(key) {
           notifiedKeys.push(key);
         },
@@ -153,6 +170,8 @@ function createHarness() {
   return {
     elements,
     notifiedKeys,
+    translations,
+    applyTranslations: sandbox.window.TextExtractionApplyModal.applyTranslations,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -189,12 +208,32 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
   assert.equal(harness.elements.textExtractionApplyModalSavedPdf.hidden, false);
   assert.equal(harness.elements.textExtractionApplyModalSavedPdfFile.textContent, 'Generated PDF: output.pdf');
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '3');
-  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.focusCount, 1);
-  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.selectCount, 1);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.focusCount, 0);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.selectCount, 0);
+  assert.equal(harness.elements.textExtractionApplyModalOverwrite.focusCount, 1);
 
   harness.elements.textExtractionApplyModalRepeatInput.value = '9';
+  harness.elements.textExtractionApplyModalRepeatInput.dispatch('input');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), true);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.getAttribute('aria-invalid'), 'true');
   harness.elements.textExtractionApplyModalRepeatInput.dispatch('blur');
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '5');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), false);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.getAttribute('aria-invalid'), 'false');
+
+  let prevented = false;
+  harness.elements.textExtractionApplyModalRepeatInput.value = '0';
+  harness.elements.textExtractionApplyModalRepeatInput.dispatch('input');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), true);
+  harness.elements.textExtractionApplyModalRepeatInput.dispatch('keydown', {
+    key: 'Enter',
+    preventDefault() {
+      prevented = true;
+    },
+  });
+  assert.equal(prevented, true);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '1');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.classList.contains('is-invalid'), false);
 
   harness.elements.textExtractionApplyModalRevealSavedPdf.dispatch('click');
   await flushMicrotasks();
@@ -205,7 +244,7 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
 
   assert.deepEqual(
     JSON.parse(JSON.stringify(result)),
-    { mode: 'overwrite', repetitions: 5 }
+    { mode: 'overwrite', repetitions: 1 }
   );
 });
 
@@ -229,4 +268,26 @@ test('apply modal reports retained PDF reveal failures through window.Notify.not
   harness.elements.textExtractionApplyModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
+});
+
+test('apply modal refreshes active copy through its canonical render path without resetting prompt state', async () => {
+  const harness = createHarness();
+  const promptPromise = harness.prompt({
+    elapsedValueText: '00:42',
+    defaultRepeat: 3,
+    maxRepeat: 5,
+  });
+
+  harness.elements.textExtractionApplyModalRepeatInput.value = '4';
+  harness.translations['renderer.text_extraction.apply_modal.title'] = 'Aplicar texto extraído';
+  harness.translations['renderer.text_extraction.apply_modal.repeat_label'] = 'Repeticiones';
+  harness.applyTranslations();
+
+  assert.equal(harness.elements.textExtractionApplyModalTitle.textContent, 'Aplicar texto extraído');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatLabel.textContent, 'Repeticiones');
+  assert.equal(harness.elements.textExtractionApplyModalElapsed.textContent, 'Elapsed: 00:42');
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '4');
+
+  harness.elements.textExtractionApplyModalCancel.dispatch('click');
+  assert.equal(await promptPromise, null);
 });

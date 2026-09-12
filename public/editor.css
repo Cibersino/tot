@@ -4,6 +4,8 @@
 
 /* Design tokens */
 :root {
+  --button-radius: 5px;
+  --font-ui: Arial, sans-serif;
   --bg: #fff;
   --border: #e6e6e6;
   --toolbar-bg: #f6f6f6;
@@ -14,13 +16,9 @@
   --editor-maximized-gutter-bg: #ebebeb;
   --editor-maximized-gutter-handle: rgba(129, 129, 129, 0.38);
   --editor-maximized-gutter-handle-active: rgba(129, 129, 129, 0.58);
-  --tot-icon-size-xs: 12px;
-  --tot-icon-size-sm: 16px;
-  --tot-icon-size-md: 18px;
-}
-
-.tot-icon-host {
-  line-height: 1;
+  --control-height-md: 30px;
+  --tot-icon-size-sm: 14px;
+  --tot-icon-size-md: 28px;
 }
 
 .tot-icon-slot {
@@ -30,12 +28,7 @@
   justify-content: center;
   flex: 0 0 auto;
   height: var(--tot-icon-size);
-  line-height: 0;
   pointer-events: none;
-}
-
-.tot-icon-slot--xs {
-  --tot-icon-size: var(--tot-icon-size-xs);
 }
 
 .tot-icon-slot--sm {
@@ -50,8 +43,6 @@
   display: block;
   width: auto;
   height: 100%;
-  max-width: none;
-  color: currentColor;
   overflow: visible;
 }
 
@@ -63,6 +54,19 @@ body {
   padding: 0;
   background: var(--bg);
   box-sizing: border-box;
+}
+
+.editor-accessible-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 body {
@@ -144,33 +148,79 @@ body {
   min-width: 0;
 }
 
-/* Bottom bar: calculate action */
-#btnCalc,
-#btnTrash,
-.btn-text-size {
-  transition:
-    background 0.12s ease-out,
-    border-color 0.12s ease-out,
-    transform 0.05s linear;
-}
-
-#btnCalc {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #f4f4f4;
+/* Shared controls */
+.btn-standard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 8px;
+  height: var(--control-height-md);
+  line-height: 1;
+  font-size: 0.9375rem;
+  font-family: var(--font-ui);
+  border-radius: var(--button-radius);
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: inherit;
   cursor: pointer;
-  font-weight: 600;
-  height: 36px;
+  transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
+  box-shadow: none;
+  user-select: none;
 }
 
-#btnCalc::before {
+.btn-standard[hidden] {
+  display: none;
+}
+
+.btn-standard--square {
+  width: var(--control-height-md);
+  flex: 0 0 auto;
+}
+
+.btn-standard--half-width {
+  width: calc(var(--control-height-md) / 2);
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.btn-standard--square-half {
+  width: calc(var(--control-height-md) / 2);
+  height: calc(var(--control-height-md) / 2);
+  padding: 0;
+  font-size: 0.46875rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.btn-standard--square-half .tot-icon-slot {
+  --tot-icon-size: var(--tot-icon-size-sm);
+}
+
+.btn-standard:hover {
+  background: #f4f4f4;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
+}
+
+.btn-standard:active {
+  transform: translateY(1px);
+}
+
+.btn-standard:focus {
+  outline: 3px solid rgb(30 130 230 / 0.12);
+  outline-offset: 2px;
+}
+
+.btn-standard:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Bottom bar: calculate action */
+#btnCalc::before,
+#btnTextSizeDecrease::before,
+#btnTextSizeIncrease::before {
   content: attr(data-label);
-}
-
-#btnCalc[disabled] {
-  opacity: 0.65;
-  cursor: default;
 }
 
 /* Bottom bar: toggle labels */
@@ -199,41 +249,6 @@ body {
   margin-left: 12px;
 }
 
-.btn-text-size {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 32px;
-  padding: 0 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #222;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-}
-
-.btn-text-size::before {
-  content: attr(data-label);
-}
-
-.btn-text-size[data-tot-icon]::before,
-#btnTrash[data-tot-icon]::before {
-  content: none;
-}
-
-.btn-text-size[data-tot-icon],
-#btnTrash[data-tot-icon] {
-  gap: 0;
-}
-
-.btn-text-size[disabled] {
-  opacity: 0.6;
-  cursor: default;
-}
-
 /* Bottom bar: read progress */
 .editor-text-size-controls + .editor-read-progress {
   margin-left: 12px;
@@ -258,13 +273,20 @@ body {
   justify-content: center;
   height: 32px;
   box-sizing: border-box;
-  border-radius: 6px;
   border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.55);
   color: #333;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   user-select: none;
+}
+
+.editor-text-size-value {
+  border-radius: 6px;
+}
+
+.editor-read-progress-value {
+  border-radius: 6px;
 }
 
 .editor-text-size-value::before,
@@ -295,39 +317,6 @@ body {
   justify-content: flex-end;
   align-self: end;
   justify-self: end;
-}
-
-#btnTrash {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  height: 36px;
-  border-radius: 6px;
-  background: none;
-  border: 1px solid transparent;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-#btnTrash::before {
-  content: attr(data-label);
-}
-
-/* Bottom bar: shared interactive states */
-#btnCalc:not([disabled]):hover,
-.btn-text-size:not([disabled]):hover,
-#btnTrash:hover {
-  background: #fff5f5;
-  border-color: #e6bebe;
-}
-
-#btnCalc:not([disabled]):active,
-.btn-text-size:not([disabled]):active,
-#btnTrash:active {
-  background: #ffe0e0;
-  border-color: #d99b9b;
-  transform: translateY(1px);
 }
 
 /* Maximized layout */
@@ -414,13 +403,6 @@ body.editor-margin-dragging .editor-gutter::after {
   .bottom-bar {
     padding: 6px;
     gap: 8px;
-  }
-
-  #btnCalc,
-  #btnTrash,
-  .btn-text-size {
-    padding: 6px 8px;
-    height: 32px;
   }
 
   .editor-read-progress-value {

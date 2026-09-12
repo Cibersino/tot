@@ -1,6 +1,27 @@
 // public/task_editor.js
 'use strict';
 
+// A required dependency can fail before the Task Editor's normal coordinator
+// exists. Report the no-draft terminal state through the already-exposed
+// lifecycle bridge when it is available; no renderer draft has been admitted
+// at this point.
+function reportNoDraftTaskBootstrapFailure(kind) {
+  const api = typeof window !== 'undefined' ? window.taskEditorAPI : null;
+  if (!api || typeof api.reportTerminalState !== 'function') return false;
+  try {
+    api.reportTerminalState({
+      kind,
+      phase: 'no-draft',
+      initId: null,
+      dirty: null,
+    });
+    return true;
+  } catch (err) {
+    console.error('Task Editor startup terminal report failed:', err);
+    return false;
+  }
+}
+
 // =============================================================================
 // Overview
 // =============================================================================
@@ -15,47 +36,100 @@
 // Logger / constants
 // =============================================================================
 if (typeof window.getLogger !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw new Error('[task-editor] window.getLogger unavailable; cannot continue');
 }
-const log = window.getLogger('task-editor');
+let log = null;
+try {
+  log = window.getLogger('task-editor');
+} catch (err) {
+  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
+  throw err;
+}
+if (!log || typeof log.debug !== 'function' || typeof log.warn !== 'function'
+  || typeof log.warnOnce !== 'function' || typeof log.error !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
+  throw new Error('[task-editor] task editor logger unavailable; cannot continue');
+}
 log.debug('Task Editor starting...');
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons
   || typeof rendererIcons.applyIconToElement !== 'function'
   || typeof rendererIcons.createIconButton !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-renderer-icons');
   throw new Error('[task-editor] RendererIcons unavailable; cannot continue');
 }
 const { AppConstants } = window;
 if (!AppConstants) {
+  reportNoDraftTaskBootstrapFailure('bootstrap-constants');
   throw new Error('[task-editor] AppConstants unavailable; verify constants.js load order');
 }
 const {
   DEFAULT_LANG,
+  WPM_MIN,
+  WPM_MAX,
+  SNAPSHOT_NAME_MAX_CHARS,
+  SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
   TASK_NAME_MAX_CHARS,
   TASK_ROW_TEXT_MAX_CHARS,
+  TASK_ROW_COMMENT_MAX_CHARS,
   TASK_ROW_LINK_MAX_CHARS,
 } = AppConstants;
+const stopwatchTimeCore = window.StopwatchTimeCore || null;
+if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-stopwatch-time');
+  throw new Error('[task-editor] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
+}
+const stopwatchTimeUtils = stopwatchTimeCore.createStopwatchTimeUtils();
+const {
+  formatClockSeconds,
+  parseClockSeconds,
+} = stopwatchTimeUtils;
+const taskDurationCore = window.TaskDurationCore || null;
+if (!taskDurationCore || typeof taskDurationCore.createTaskDurationUtils !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-task-duration');
+  throw new Error('[task-editor] TaskDurationCore.createTaskDurationUtils unavailable; cannot continue');
+}
+const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
+const EMPTY_TASK_ROW = Object.freeze({
+  texto: '',
+  tiempoSeconds: 0,
+  percentComplete: 0,
+  enlace: '',
+  comentario: '',
+  snapshotRelPath: '',
+});
+const taskEditorRoot = document.querySelector('.task-editor');
 
 // =============================================================================
 // i18n
 // =============================================================================
 let idiomaActual = DEFAULT_LANG;
-let translationsLoadedFor = null;
+let taskEditorSemanticQueue = Promise.resolve();
+let taskEditorTranslationsReady = false;
+let taskEditorI18nTerminal = false;
+let taskEditorNormalInteractionAvailable = false;
+let taskEditorHasInitializedDraft = false;
+let taskEditorCurrentInitId = null;
+let taskEditorLatestInitId = null;
+const pendingTaskInitPayloads = [];
 
-const { loadRendererTranslations, tRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !applyWindowLanguageAttributes) {
+const {
+  transitionRendererTranslations,
+  tRenderer,
+  msgRenderer,
+} = window.RendererI18n || {};
+if (!transitionRendererTranslations || !tRenderer || !msgRenderer) {
+  closeTaskEditorAfterI18nFailure({ startup: true });
   throw new Error('[task-editor] RendererI18n unavailable; cannot continue');
+}
+const taskEditorColumnLayout = window.TaskEditorColumnLayout || null;
+if (!taskEditorColumnLayout || typeof taskEditorColumnLayout.createController !== 'function') {
+  closeTaskEditorAfterI18nFailure({ startup: true });
+  throw new Error('[task-editor] TaskEditorColumnLayout unavailable; cannot continue');
 }
 
 const tr = (path) => tRenderer(path);
-
-async function ensureTaskEditorTranslations(lang) {
-  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-  if (translationsLoadedFor === target) return;
-  applyWindowLanguageAttributes(target);
-  await loadRendererTranslations(target);
-  translationsLoadedFor = target;
-}
 
 // =============================================================================
 // DOM references (task_editor.html ids)
@@ -74,15 +148,22 @@ const btnTaskLoadLibrary = document.getElementById('btnTaskLoadLibrary');
 const tableBody = document.getElementById('taskTableBody');
 
 // Table columns
-const thTexto = document.getElementById('thTexto');
 const thTiempo = document.getElementById('thTiempo');
 const thPercent = document.getElementById('thPercent');
 const thFalta = document.getElementById('thFalta');
 const thEnlace = document.getElementById('thEnlace');
 const thComentario = document.getElementById('thComentario');
 const thAcciones = document.getElementById('thAcciones');
+const thTextoLabel = document.getElementById('thTextoLabel');
+const thTiempoLabel = document.getElementById('thTiempoLabel');
+const thPercentLabel = document.getElementById('thPercentLabel');
+const thFaltaLabel = document.getElementById('thFaltaLabel');
+const thEnlaceLabel = document.getElementById('thEnlaceLabel');
+const thComentarioLabel = document.getElementById('thComentarioLabel');
+const thAccionesLabel = document.getElementById('thAccionesLabel');
 const taskTable = document.getElementById('taskTable');
 const taskColGroup = document.getElementById('taskColGroup');
+const taskTableWrap = document.querySelector('.task-table-wrap');
 
 // Modals
 const commentModal = document.getElementById('commentModal');
@@ -95,6 +176,42 @@ const commentTitle = document.getElementById('commentTitle');
 const commentSnapshotSelect = document.getElementById('commentSnapshotSelect');
 const commentSnapshotClear = document.getElementById('commentSnapshotClear');
 const commentSnapshotPath = document.getElementById('commentSnapshotPath');
+
+const snapshotSourceReminderModal = document.getElementById('snapshotSourceReminderModal');
+const snapshotSourceReminderBackdrop = document.getElementById('snapshotSourceReminderBackdrop');
+const snapshotSourceReminderClose = document.getElementById('snapshotSourceReminderClose');
+const snapshotSourceReminderCancel = document.getElementById('snapshotSourceReminderCancel');
+const snapshotSourceReminderSelectFile = document.getElementById('snapshotSourceReminderSelectFile');
+const snapshotSourceReminderTitle = document.getElementById('snapshotSourceReminderTitle');
+const snapshotSourceReminderText = document.getElementById('snapshotSourceReminderText');
+const snapshotSourceReminderCommentLabel = document.getElementById('snapshotSourceReminderCommentLabel');
+const snapshotSourceReminderCommentValue = document.getElementById('snapshotSourceReminderCommentValue');
+
+const snapshotDetailsConfirmModal = document.getElementById('snapshotDetailsConfirmModal');
+const snapshotDetailsConfirmBackdrop = document.getElementById('snapshotDetailsConfirmBackdrop');
+const snapshotDetailsConfirmClose = document.getElementById('snapshotDetailsConfirmClose');
+const snapshotDetailsConfirmApply = document.getElementById('snapshotDetailsConfirmApply');
+const snapshotDetailsConfirmKeep = document.getElementById('snapshotDetailsConfirmKeep');
+const snapshotDetailsConfirmTitle = document.getElementById('snapshotDetailsConfirmTitle');
+const snapshotDetailsConfirmText = document.getElementById('snapshotDetailsConfirmText');
+const snapshotDetailsConfirmTextSection = document.getElementById('snapshotDetailsConfirmTextSection');
+const snapshotDetailsConfirmTextChoice = document.getElementById('snapshotDetailsConfirmTextChoice');
+const snapshotDetailsConfirmApplyText = document.getElementById('snapshotDetailsConfirmApplyText');
+const snapshotDetailsConfirmApplyTextLabel = document.getElementById('snapshotDetailsConfirmApplyTextLabel');
+const snapshotDetailsConfirmCurrentTextLabel = document.getElementById('snapshotDetailsConfirmCurrentTextLabel');
+const snapshotDetailsConfirmCurrentTextValue = document.getElementById('snapshotDetailsConfirmCurrentTextValue');
+const snapshotDetailsConfirmSnapshotNameLabel = document.getElementById('snapshotDetailsConfirmSnapshotNameLabel');
+const snapshotDetailsConfirmSnapshotNameValue = document.getElementById('snapshotDetailsConfirmSnapshotNameValue');
+const snapshotDetailsConfirmTimeSection = document.getElementById('snapshotDetailsConfirmTimeSection');
+const snapshotDetailsConfirmTimeChoice = document.getElementById('snapshotDetailsConfirmTimeChoice');
+const snapshotDetailsConfirmApplyTime = document.getElementById('snapshotDetailsConfirmApplyTime');
+const snapshotDetailsConfirmApplyTimeLabel = document.getElementById('snapshotDetailsConfirmApplyTimeLabel');
+const snapshotDetailsConfirmCurrentTimeLabel = document.getElementById('snapshotDetailsConfirmCurrentTimeLabel');
+const snapshotDetailsConfirmCurrentTimeValue = document.getElementById('snapshotDetailsConfirmCurrentTimeValue');
+const snapshotDetailsConfirmEstimateLabel = document.getElementById('snapshotDetailsConfirmEstimateLabel');
+const snapshotDetailsConfirmEstimateValue = document.getElementById('snapshotDetailsConfirmEstimateValue');
+const snapshotDetailsConfirmWpmLabel = document.getElementById('snapshotDetailsConfirmWpmLabel');
+const snapshotDetailsConfirmWpmValue = document.getElementById('snapshotDetailsConfirmWpmValue');
 
 const libraryModal = document.getElementById('libraryModal');
 const libraryBackdrop = document.getElementById('libraryBackdrop');
@@ -119,33 +236,58 @@ const includeCommentText = document.getElementById('includeCommentText');
 // =============================================================================
 // Mutable editor session state; reset on load/delete.
 let rows = [];
-let meta = { name: '', createdAt: '', updatedAt: '' };
+let meta = { name: '', createdAt: '', updatedAt: '', savedWith: '' };
 let sourcePath = null;
 let dirty = false;
 let rowIdCounter = 1;
 let pendingCommentRowId = null;
 let pendingCommentSnapshotRelPath = '';
+let pendingSnapshotDetailsConfirmation = null;
+let pendingSnapshotSourceReminderFileSelection = null;
+let commentSaveInFlight = false;
 let pendingLibraryRowId = null;
 let libraryItemsCache = [];
-let columnWidths = {};
-let activeResize = null;
+let renderedRowFields = new Map();
 
-const COLUMN_KEYS = [
-  { key: 'texto', th: thTexto },
-  { key: 'tiempo', th: thTiempo },
-  { key: 'percent', th: thPercent },
-  { key: 'falta', th: thFalta },
-  { key: 'enlace', th: thEnlace },
-  { key: 'comentario', th: thComentario },
-  { key: 'acciones', th: thAcciones },
-];
-
-const MIN_COL_WIDTH = 10;
+let columnLayoutController = null;
+try {
+  columnLayoutController = taskEditorColumnLayout.createController({
+    wrapper: taskTableWrap,
+    table: taskTable,
+    colGroup: taskColGroup,
+    utilityHeaders: {
+      comentario: thComentario,
+      tiempo: thTiempo,
+      percent: thPercent,
+      falta: thFalta,
+      enlace: thEnlace,
+      acciones: thAcciones,
+    },
+  });
+} catch (err) {
+  closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout-controller' });
+  throw err;
+}
+if (!columnLayoutController
+  || typeof columnLayoutController.initialize !== 'function'
+  || typeof columnLayoutController.cancelActiveResize !== 'function') {
+  closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout-controller' });
+  throw new Error('[task-editor] TaskEditorColumnLayout controller unavailable; cannot continue');
+}
 
 // =============================================================================
 // Helpers
 // =============================================================================
+function setTaskEditorNormalInteractionAvailable(available) {
+  const nextAvailable = available === true && !taskEditorI18nTerminal;
+  taskEditorNormalInteractionAvailable = nextAvailable;
+  if (!taskEditorRoot) return;
+  taskEditorRoot.toggleAttribute('inert', !nextAvailable);
+  taskEditorRoot.setAttribute('aria-busy', nextAvailable ? 'false' : 'true');
+}
+
 function markDirty() {
+  if (!taskEditorNormalInteractionAvailable) return;
   if (dirty) return;
   dirty = true;
   syncDirtyState();
@@ -158,29 +300,41 @@ function resetDirty() {
 }
 
 function syncDirtyState() {
+  if (!taskEditorHasInitializedDraft || !Number.isInteger(taskEditorCurrentInitId)) return;
   const api = window.taskEditorAPI;
   if (!api || typeof api.setDirtyState !== 'function') {
     log.warnOnce('task_editor.setDirtyState.missing', 'taskEditorAPI.setDirtyState unavailable; dirty state sync disabled.');
     return;
   }
   try {
-    api.setDirtyState(dirty);
+    api.setDirtyState({
+      dirty,
+      initId: taskEditorCurrentInitId,
+    });
   } catch (err) {
     log.warnOnce('task_editor.setDirtyState.failed', 'taskEditorAPI.setDirtyState failed (ignored):', err);
   }
 }
 
-syncDirtyState();
+function setTaskFieldInvalidState(input, isInvalid) {
+  if (!input) return;
+  input.classList.toggle('is-invalid', isInvalid);
+  input.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+}
+
+function resetTaskEditorValidationState() {
+  // Table inputs are recreated by renderTable; the task name input persists across sessions.
+  setTaskFieldInvalidState(taskNameInput, false);
+}
 
 function clampTaskName(input) {
-  const name = String(input || '');
-  return name.length > TASK_NAME_MAX_CHARS
-    ? name.slice(0, TASK_NAME_MAX_CHARS)
-    : name;
+  return input.length > TASK_NAME_MAX_CHARS
+    ? input.slice(0, TASK_NAME_MAX_CHARS)
+    : input;
 }
 
 function normalizeSnapshotRelPath(input) {
-  const raw = String(input || '').trim();
+  const raw = input.trim();
   if (!raw) return '';
   const normalizedSlashes = raw.replace(/\\/g, '/');
   const withoutLeading = normalizedSlashes.startsWith('/')
@@ -194,92 +348,106 @@ function normalizeSnapshotRelPath(input) {
   return rel;
 }
 
+function isCanonicalSnapshotRelPath(value) {
+  return typeof value === 'string' && normalizeSnapshotRelPath(value) === value;
+}
+
 function setCommentSnapshotDisplay(snapshotRelPath) {
   if (!commentSnapshotPath) return;
-  const safeRel = normalizeSnapshotRelPath(snapshotRelPath);
-  if (!safeRel) {
+  if (!isCanonicalSnapshotRelPath(snapshotRelPath)) {
+    throw new Error('[task-editor] setCommentSnapshotDisplay requires canonical snapshotRelPath');
+  }
+  if (!snapshotRelPath) {
     commentSnapshotPath.textContent = '';
     commentSnapshotPath.hidden = true;
     if (commentSnapshotClear) commentSnapshotClear.hidden = true;
     return;
   }
-  commentSnapshotPath.textContent = safeRel;
+  commentSnapshotPath.textContent = snapshotRelPath;
   commentSnapshotPath.hidden = false;
   if (commentSnapshotClear) commentSnapshotClear.hidden = false;
 }
 
 function formatDuration(totalSeconds) {
-  const sec = Math.max(0, Math.floor(Number(totalSeconds) || 0));
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  if (!taskDurationUtils.isWholeDurationSeconds(totalSeconds)) {
+    throw new Error('[task-editor] formatDuration requires canonical whole seconds');
+  }
+  const formattedDuration = formatClockSeconds(totalSeconds);
+  if (formattedDuration === null) {
+    throw new Error('[task-editor] formatClockSeconds rejected canonical duration');
+  }
+  return formattedDuration;
 }
 
 function parseDuration(input) {
-  const raw = String(input || '').trim();
-  if (!raw) return null;
-  const parts = raw.split(':');
-  if (parts.length !== 2 && parts.length !== 3) return null;
-
-  const nums = parts.map((p) => (p.trim() === '' ? NaN : Number(p)));
-  if (nums.some((n) => !Number.isFinite(n) || !Number.isInteger(n))) return null;
-
-  let h = 0;
-  let m = 0;
-  let s = 0;
-  if (parts.length === 2) {
-    m = nums[0];
-    s = nums[1];
-  } else {
-    h = nums[0];
-    m = nums[1];
-    s = nums[2];
-  }
-  if (h < 0 || m < 0 || s < 0) return null;
-  if (m > 59 || s > 59) return null;
-  return (h * 3600) + (m * 60) + s;
+  return parseClockSeconds(input);
 }
 
 function parsePercent(input) {
-  const raw = String(input || '').trim();
+  const raw = input.trim();
   if (!raw) return null;
   const cleaned = raw.endsWith('%') ? raw.slice(0, -1).trim() : raw;
   if (!/^\d+$/.test(cleaned)) return null;
   const n = Number(cleaned);
-  if (!Number.isFinite(n) || n < 0 || n > 100) return null;
-  return n;
+  return taskDurationUtils.isPercentComplete(n) ? n : null;
 }
 
 function getFaltaSeconds(row) {
-  const tiempo = Number(row.tiempoSeconds) || 0;
-  const pct = Number(row.percentComplete) || 0;
-  return tiempo * (1 - pct / 100);
+  const remainingSeconds = taskDurationUtils.getRowRemainingSeconds(
+    row.tiempoSeconds,
+    row.percentComplete
+  );
+  if (remainingSeconds === null) {
+    throw new Error('[task-editor] getRowRemainingSeconds rejected canonical row');
+  }
+  return remainingSeconds;
+}
+
+function renderTaskSummary(summary) {
+  const estimatedTotalSeconds = summary === null ? 0 : summary.estimatedTotalSeconds;
+  const estimatedRemainingSeconds = summary === null ? 0 : summary.estimatedRemainingSeconds;
+
+  if (taskSummaryTotalValue) {
+    taskSummaryTotalValue.textContent = formatDuration(estimatedTotalSeconds);
+  }
+  if (taskSummaryLeftValue) {
+    taskSummaryLeftValue.textContent = formatDuration(estimatedRemainingSeconds);
+  }
 }
 
 function updateSummary() {
-  const summary = rows.reduce((acc, row) => {
-    acc.totalSeconds += Number(row.tiempoSeconds) || 0;
-    acc.leftSeconds += getFaltaSeconds(row);
-    return acc;
-  }, { totalSeconds: 0, leftSeconds: 0 });
-
-  if (taskSummaryTotalValue) {
-    taskSummaryTotalValue.textContent = formatDuration(summary.totalSeconds);
+  const summaryResult = taskDurationUtils.deriveTaskSummary(rows);
+  if (!summaryResult.ok) {
+    throw new Error(`[task-editor] deriveTaskSummary failed: ${summaryResult.code}`);
   }
-  if (taskSummaryLeftValue) {
-    taskSummaryLeftValue.textContent = formatDuration(summary.leftSeconds);
-  }
+  renderTaskSummary(summaryResult.summary);
 }
 
-function openModal(modalEl) {
+function validateCandidateTaskRows(candidateRows) {
+  const summaryResult = taskDurationUtils.deriveTaskSummary(candidateRows);
+  if (summaryResult.ok) return summaryResult;
+  if (summaryResult.code === 'INVALID_SUMMARY') {
+    log.warn('Task Editor duration change rejected because the aggregate summary exceeds the safe range.');
+    window.Notify.notifyEditor('renderer.tasks.alerts.task_duration_too_large');
+    return summaryResult;
+  }
+  throw new Error(`[task-editor] candidate deriveTaskSummary failed: ${summaryResult.code}`);
+}
+
+function openModal(modalEl, initialFocusEl) {
   if (!modalEl) return;
   modalEl.setAttribute('aria-hidden', 'false');
+  const fallbackFocus = modalEl.querySelector('.modal-header button');
+  window.Notify.activateModalFocus(modalEl, {
+    initialFocus: initialFocusEl,
+    fallbackFocus,
+  });
 }
 
 function closeModal(modalEl) {
   if (!modalEl) return;
   modalEl.setAttribute('aria-hidden', 'true');
+  window.Notify.deactivateModalFocus(modalEl);
 }
 
 // Centralized modal close wiring for consistent behavior across dialogs.
@@ -287,6 +455,25 @@ function wireModalClose(modalEl, ...closeTriggers) {
   closeTriggers.forEach((trigger) => {
     if (trigger) trigger.addEventListener('click', () => closeModal(modalEl));
   });
+}
+
+function handleTaskEditorModalEscape(event) {
+  if (!event || event.key !== 'Escape' || event.defaultPrevented) return;
+
+  const closeEntries = [
+    { modal: commentModal, close: dismissCommentModal },
+    { modal: libraryModal, close: () => closeModal(libraryModal) },
+    { modal: includeCommentModal, close: () => closeModal(includeCommentModal) },
+    { modal: snapshotSourceReminderModal, close: () => resolveSnapshotSourceReminder(false) },
+    { modal: snapshotDetailsConfirmModal, close: () => resolveSnapshotDetailsConfirmation(false) },
+  ];
+  const isVisible = ({ modal }) => modal && modal.getAttribute('aria-hidden') === 'false';
+  const focusedEntry = closeEntries.find(({ modal }) => isVisible({ modal }) && modal.contains(document.activeElement));
+  const entry = focusedEntry || closeEntries.slice().reverse().find(isVisible);
+  if (!entry) return;
+
+  event.preventDefault();
+  entry.close();
 }
 
 // Shared guard for taskEditorAPI methods; emits a user notice and warnOnce on missing APIs.
@@ -301,46 +488,432 @@ function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.
 }
 
 function isFailedTaskEditorResult(result) {
-  return !result || result.ok === false;
+  return !result || result.ok !== true;
 }
 
 function getTaskEditorResultCode(result, fallbackCode) {
-  return result && result.code ? result.code : fallbackCode;
+  return result && typeof result.code === 'string' && result.code
+    ? result.code
+    : fallbackCode;
 }
 
 function isCancelledTaskEditorResultCode(code) {
   return code === 'CANCELLED' || code === 'CONFIRM_DENIED';
 }
 
+function setCommentSaveInFlight(inFlight) {
+  commentSaveInFlight = inFlight;
+  [
+    commentClose,
+    commentCancel,
+    commentSave,
+    commentSnapshotSelect,
+    commentSnapshotClear,
+  ].forEach((control) => {
+    if (control) control.disabled = inFlight;
+  });
+}
+
+function getSnapshotDetailsConfirmationState(confirmation) {
+  const hasTextChange = !!confirmation && typeof confirmation.texto === 'string';
+  const hasTimeChange = !!(confirmation && confirmation.reading);
+  return {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection: hasTextChange && hasTimeChange,
+  };
+}
+
+function updateSnapshotDetailsConfirmationDisplay() {
+  const confirmation = pendingSnapshotDetailsConfirmation;
+  const row = confirmation && rows.find((candidate) => candidate.id === confirmation.rowId);
+  if (!confirmation || !row) return false;
+
+  const {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection,
+  } = getSnapshotDetailsConfirmationState(confirmation);
+  if (snapshotDetailsConfirmTextSection) {
+    snapshotDetailsConfirmTextSection.hidden = !hasTextChange;
+  }
+  if (snapshotDetailsConfirmTimeSection) {
+    snapshotDetailsConfirmTimeSection.hidden = !hasTimeChange;
+  }
+  if (snapshotDetailsConfirmTextChoice) {
+    snapshotDetailsConfirmTextChoice.hidden = !allowsIndividualSelection;
+  }
+  if (snapshotDetailsConfirmTimeChoice) {
+    snapshotDetailsConfirmTimeChoice.hidden = !allowsIndividualSelection;
+  }
+
+  if (hasTextChange) {
+    const hasCurrentName = typeof row.texto === 'string' && !!row.texto.trim();
+    if (snapshotDetailsConfirmApplyTextLabel) {
+      snapshotDetailsConfirmApplyTextLabel.textContent = tr(
+        hasCurrentName
+          ? 'renderer.tasks.comentario_modal.snapshot_details_confirm.replace_reading_name'
+          : 'renderer.tasks.comentario_modal.snapshot_details_confirm.set_reading_name'
+      );
+    }
+    if (snapshotDetailsConfirmCurrentTextValue) {
+      snapshotDetailsConfirmCurrentTextValue.textContent = hasCurrentName
+        ? row.texto
+        : tr('renderer.tasks.comentario_modal.snapshot_details_confirm.empty');
+      snapshotDetailsConfirmCurrentTextValue.classList.toggle('is-empty', !hasCurrentName);
+    }
+    if (snapshotDetailsConfirmSnapshotNameValue) {
+      snapshotDetailsConfirmSnapshotNameValue.textContent = confirmation.texto;
+    }
+  }
+
+  if (hasTimeChange) {
+    if (snapshotDetailsConfirmCurrentTimeValue) {
+      snapshotDetailsConfirmCurrentTimeValue.textContent = formatDuration(row.tiempoSeconds);
+    }
+    if (snapshotDetailsConfirmEstimateValue) {
+      snapshotDetailsConfirmEstimateValue.textContent = formatDuration(confirmation.reading.estimatedSeconds);
+    }
+    if (snapshotDetailsConfirmWpmValue) {
+      snapshotDetailsConfirmWpmValue.textContent = `${confirmation.reading.wpm} WPM`;
+    }
+  }
+  return hasTextChange || hasTimeChange;
+}
+
+function updateSnapshotDetailsConfirmationApplyState() {
+  const confirmation = pendingSnapshotDetailsConfirmation;
+  if (!snapshotDetailsConfirmApply || !confirmation) return;
+
+  const {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection,
+  } = getSnapshotDetailsConfirmationState(confirmation);
+  const textSelected = hasTextChange
+    && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyText && snapshotDetailsConfirmApplyText.checked));
+  const timeSelected = hasTimeChange
+    && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyTime && snapshotDetailsConfirmApplyTime.checked));
+  snapshotDetailsConfirmApply.textContent = tr(
+    allowsIndividualSelection
+      ? 'renderer.tasks.comentario_modal.snapshot_details_confirm.apply_selected'
+      : 'renderer.tasks.comentario_modal.snapshot_details_confirm.apply'
+  );
+  snapshotDetailsConfirmApply.disabled = !textSelected && !timeSelected;
+}
+
+function openSnapshotDetailsConfirmation(row, changes) {
+  pendingSnapshotDetailsConfirmation = {
+    rowId: row.id,
+    texto: changes.texto,
+    reading: changes.reading,
+  };
+  if (!updateSnapshotDetailsConfirmationDisplay()) {
+    pendingSnapshotDetailsConfirmation = null;
+    return false;
+  }
+  if (snapshotDetailsConfirmApplyText) {
+    snapshotDetailsConfirmApplyText.checked = typeof changes.texto === 'string';
+  }
+  if (snapshotDetailsConfirmApplyTime) {
+    snapshotDetailsConfirmApplyTime.checked = !!changes.reading;
+  }
+  updateSnapshotDetailsConfirmationApplyState();
+  const { allowsIndividualSelection } = getSnapshotDetailsConfirmationState(
+    pendingSnapshotDetailsConfirmation
+  );
+  const initialFocus = allowsIndividualSelection
+    ? snapshotDetailsConfirmApplyText || snapshotDetailsConfirmApply
+    : snapshotDetailsConfirmApply;
+  openModal(snapshotDetailsConfirmModal, initialFocus);
+  return true;
+}
+
+function openSnapshotSourceReminder(row, fields, sourceComment) {
+  if (!snapshotSourceReminderCommentValue || !snapshotSourceReminderSelectFile) return false;
+  pendingSnapshotSourceReminderFileSelection = { row, fields };
+  snapshotSourceReminderCommentValue.textContent = sourceComment;
+  openModal(snapshotSourceReminderModal, snapshotSourceReminderSelectFile);
+  return true;
+}
+
+function dismissSnapshotSourceReminder() {
+  pendingSnapshotSourceReminderFileSelection = null;
+  if (snapshotSourceReminderCommentValue) snapshotSourceReminderCommentValue.textContent = '';
+  closeModal(snapshotSourceReminderModal);
+}
+
+async function resolveSnapshotSourceReminder(shouldSelectFile) {
+  const selection = pendingSnapshotSourceReminderFileSelection;
+  dismissSnapshotSourceReminder();
+  if (!shouldSelectFile || !selection) return;
+
+  try {
+    await selectTaskFileForRow(selection.row, selection.fields);
+  } catch (err) {
+    log.error('selectTaskFileForRow failed after snapshot source reminder:', err);
+  }
+}
+
 function resetPendingCommentDraft() {
   pendingCommentRowId = null;
   pendingCommentSnapshotRelPath = '';
+  pendingSnapshotDetailsConfirmation = null;
   setCommentSnapshotDisplay('');
 }
 
 function dismissCommentModal() {
+  if (pendingSnapshotDetailsConfirmation) {
+    resolveSnapshotDetailsConfirmation(false);
+    return;
+  }
+  if (commentSaveInFlight) return;
   resetPendingCommentDraft();
   closeModal(commentModal);
 }
 
-function applyCommentChangesAndDismiss() {
+function commitCommentChangesAndDismiss({ texto = null, estimatedSeconds = null } = {}) {
   const row = rows.find((r) => r.id === pendingCommentRowId);
-  if (row) {
-    const nextComment = commentInput.value || '';
-    const nextSnapshotRelPath = normalizeSnapshotRelPath(pendingCommentSnapshotRelPath || '');
-    let changed = false;
-    if (row.comentario !== nextComment) {
-      row.comentario = nextComment;
-      changed = true;
-    }
-    if (normalizeSnapshotRelPath(row.snapshotRelPath || '') !== nextSnapshotRelPath) {
-      row.snapshotRelPath = nextSnapshotRelPath;
-      changed = true;
-      renderTable();
-    }
-    if (changed) markDirty();
+  if (!row) {
+    dismissCommentModal();
+    return true;
   }
+  if (texto !== null && typeof texto !== 'string') {
+    throw new Error('[task-editor] commitCommentChangesAndDismiss requires texto to be a string or null');
+  }
+  if (estimatedSeconds !== null && !taskDurationUtils.isWholeDurationSeconds(estimatedSeconds)) {
+    throw new Error('[task-editor] commitCommentChangesAndDismiss requires canonical estimatedSeconds or null');
+  }
+
+  const nextRow = {
+    ...row,
+    comentario: commentInput.value,
+    snapshotRelPath: pendingCommentSnapshotRelPath,
+  };
+  if (texto !== null) nextRow.texto = texto;
+  if (estimatedSeconds !== null) nextRow.tiempoSeconds = estimatedSeconds;
+
+  const summaryResult = validateCandidateTaskRows(rows.map((candidate) => (
+    candidate === row ? nextRow : candidate
+  )));
+  if (!summaryResult.ok) return false;
+
+  const changed = row.comentario !== nextRow.comentario
+    || row.snapshotRelPath !== nextRow.snapshotRelPath
+    || row.texto !== nextRow.texto
+    || row.tiempoSeconds !== nextRow.tiempoSeconds;
+  const needsRender = row.snapshotRelPath !== nextRow.snapshotRelPath
+    || row.texto !== nextRow.texto
+    || row.tiempoSeconds !== nextRow.tiempoSeconds;
+  Object.assign(row, nextRow);
+  if (needsRender) renderTable();
+  if (changed) markDirty();
   dismissCommentModal();
+  return true;
+}
+
+function notifySnapshotInspectionFailure(code) {
+  if (code === 'NOT_FOUND') {
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_missing');
+    return;
+  }
+  if (code === 'INVALID_JSON'
+    || code === 'INVALID_SCHEMA'
+    || code === 'INVALID_SNAPSHOT_PATH'
+    || code === 'PATH_OUTSIDE_SNAPSHOTS') {
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_invalid');
+    return;
+  }
+  window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+}
+
+function getSnapshotInspectionReading(result) {
+  if (!result
+    || !Object.prototype.hasOwnProperty.call(result, 'estimatedSeconds')
+    || !Object.prototype.hasOwnProperty.call(result, 'wpm')) {
+    return { ok: false };
+  }
+  if (result.estimatedSeconds === null || result.wpm === null) {
+    return result.estimatedSeconds === null && result.wpm === null
+      ? { ok: true, reading: null }
+      : { ok: false };
+  }
+  if (!Number.isSafeInteger(result.estimatedSeconds)
+    || result.estimatedSeconds < 0
+    || !Number.isSafeInteger(result.wpm)
+    || result.wpm < WPM_MIN
+    || result.wpm > WPM_MAX) {
+    return { ok: false };
+  }
+  return {
+    ok: true,
+    reading: {
+      estimatedSeconds: result.estimatedSeconds,
+      wpm: result.wpm,
+    },
+  };
+}
+
+function getSnapshotInspectionDetails(result) {
+  if (!result
+    || !Object.prototype.hasOwnProperty.call(result, 'name')
+    || !Object.prototype.hasOwnProperty.call(result, 'sourceComment')) {
+    return { ok: false };
+  }
+  const name = result.name;
+  if (name !== null
+    && (typeof name !== 'string'
+      || !name.trim()
+      || name.length > SNAPSHOT_NAME_MAX_CHARS
+      || /[\r\n]/.test(name))) {
+    return { ok: false };
+  }
+
+  const sourceComment = result.sourceComment;
+  if (sourceComment !== null
+    && (typeof sourceComment !== 'string'
+      || !sourceComment.trim()
+      || sourceComment.length > SNAPSHOT_SOURCE_COMMENT_MAX_CHARS
+      || /[\r\n]/.test(sourceComment))) {
+    return { ok: false };
+  }
+
+  const readingInfo = getSnapshotInspectionReading(result);
+  if (!readingInfo.ok) return { ok: false };
+  return {
+    ok: true,
+    name,
+    sourceComment,
+    reading: readingInfo.reading,
+  };
+}
+
+function getSnapshotDetailsChanges(row, details) {
+  const texto = details.name !== null && details.name !== row.texto
+    ? details.name
+    : null;
+  const reading = details.reading && details.reading.estimatedSeconds !== row.tiempoSeconds
+    ? details.reading
+    : null;
+  return { texto, reading };
+}
+
+async function getSnapshotSourceReminderComment(row) {
+  if (!row) return '';
+  const snapshotRelPath = row.snapshotRelPath;
+  if (!snapshotRelPath) return '';
+
+  const api = getTaskEditorApi('inspectTaskRowSnapshot', null);
+  if (!api) return '';
+
+  let result = null;
+  try {
+    result = await api.inspectTaskRowSnapshot(snapshotRelPath);
+  } catch (err) {
+    log.warn('Snapshot source reminder inspection failed (ignored):', err);
+    return '';
+  }
+
+  if (isFailedTaskEditorResult(result)) {
+    const code = getTaskEditorResultCode(result, 'READ_FAILED');
+    log.warn('Snapshot source reminder inspection failed (ignored):', {
+      code,
+      snapshotRelPath,
+      response: result || null,
+    });
+    return '';
+  }
+
+  const details = getSnapshotInspectionDetails(result);
+  if (!details.ok) {
+    log.warn('Snapshot source reminder inspection returned invalid details (ignored):', result || null);
+    return '';
+  }
+  return details.sourceComment === null ? '' : details.sourceComment;
+}
+
+function resolveSnapshotDetailsConfirmation(applySelectedDetails) {
+  const confirmation = pendingSnapshotDetailsConfirmation;
+  if (!confirmation) return;
+  const {
+    hasTextChange,
+    hasTimeChange,
+    allowsIndividualSelection,
+  } = getSnapshotDetailsConfirmationState(confirmation);
+  pendingSnapshotDetailsConfirmation = null;
+  const committed = commitCommentChangesAndDismiss({
+    texto: applySelectedDetails
+      && hasTextChange
+      && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyText && snapshotDetailsConfirmApplyText.checked))
+      ? confirmation.texto
+      : null,
+    estimatedSeconds: applySelectedDetails
+      && hasTimeChange
+      && (!allowsIndividualSelection || !!(snapshotDetailsConfirmApplyTime && snapshotDetailsConfirmApplyTime.checked))
+      ? confirmation.reading.estimatedSeconds
+      : null,
+  });
+  if (!committed) {
+    pendingSnapshotDetailsConfirmation = confirmation;
+    return;
+  }
+  closeModal(snapshotDetailsConfirmModal);
+}
+
+async function applyCommentChangesAndDismiss() {
+  if (commentSaveInFlight || pendingSnapshotDetailsConfirmation) return;
+
+  const row = rows.find((candidate) => candidate.id === pendingCommentRowId);
+  if (!row) {
+    dismissCommentModal();
+    return;
+  }
+
+  const nextSnapshotRelPath = pendingCommentSnapshotRelPath;
+  const currentSnapshotRelPath = row.snapshotRelPath;
+  const snapshotChanged = currentSnapshotRelPath !== nextSnapshotRelPath;
+  if (!snapshotChanged || !nextSnapshotRelPath) {
+    commitCommentChangesAndDismiss();
+    return;
+  }
+
+  const api = getTaskEditorApi('inspectTaskRowSnapshot');
+  if (!api) return;
+
+  setCommentSaveInFlight(true);
+  let result = null;
+  try {
+    result = await api.inspectTaskRowSnapshot(nextSnapshotRelPath);
+  } catch (err) {
+    log.warn('inspectTaskRowSnapshot failed:', err);
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+    return;
+  } finally {
+    setCommentSaveInFlight(false);
+  }
+
+  if (isFailedTaskEditorResult(result)) {
+    const code = getTaskEditorResultCode(result, 'READ_FAILED');
+    log.warn('inspectTaskRowSnapshot returned failure:', { code, response: result || null });
+    notifySnapshotInspectionFailure(code);
+    return;
+  }
+
+  const details = getSnapshotInspectionDetails(result);
+  if (!details.ok) {
+    log.warn('inspectTaskRowSnapshot returned invalid snapshot details:', result || null);
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+    return;
+  }
+  const changes = getSnapshotDetailsChanges(row, details);
+  if (!changes.texto && !changes.reading) {
+    commitCommentChangesAndDismiss();
+    return;
+  }
+  if (!openSnapshotDetailsConfirmation(row, changes)) {
+    log.error('Snapshot details confirmation could not be opened.');
+    window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
+  }
 }
 
 async function selectSnapshotForPendingCommentRow() {
@@ -359,9 +932,9 @@ async function selectSnapshotForPendingCommentRow() {
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
-  const safeRel = normalizeSnapshotRelPath(res.snapshotRelPath || '');
-  if (!safeRel) {
-    log.warn('selectTaskRowSnapshot returned invalid snapshotRelPath:', { snapshotRelPath: res.snapshotRelPath || '' });
+  const safeRel = res.snapshotRelPath;
+  if (!safeRel || !isCanonicalSnapshotRelPath(safeRel)) {
+    log.warn('selectTaskRowSnapshot returned invalid snapshotRelPath:', { snapshotRelPath: res.snapshotRelPath });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
@@ -376,7 +949,8 @@ function clearSnapshotForPendingCommentRow() {
 }
 
 async function loadSnapshotForRow(row) {
-  const snapshotRelPath = normalizeSnapshotRelPath(row && row.snapshotRelPath ? row.snapshotRelPath : '');
+  if (!row) return;
+  const snapshotRelPath = row.snapshotRelPath;
   if (!snapshotRelPath) return;
   const api = getTaskEditorApi('loadTaskRowSnapshot');
   if (!api) return;
@@ -398,7 +972,19 @@ async function loadSnapshotForRow(row) {
   }
 }
 
-async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
+async function selectFileForRow(row, fields = {}) {
+  if (pendingSnapshotSourceReminderFileSelection) return;
+
+  const sourceComment = await getSnapshotSourceReminderComment(row);
+  if (sourceComment) {
+    if (openSnapshotSourceReminder(row, fields, sourceComment)) return;
+    log.error('Snapshot source reminder could not be opened; file selection will continue.');
+  }
+
+  await selectTaskFileForRow(row, fields);
+}
+
+async function selectTaskFileForRow(row, { textoInput, enlaceInput } = {}) {
   const api = getTaskEditorApi('selectTaskFile');
   if (!api) return;
   const res = await api.selectTaskFile();
@@ -409,9 +995,9 @@ async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
   }
-  const filePath = typeof res.filePath === 'string' ? res.filePath.trim() : '';
-  if (!filePath) {
-    log.warn('selectTaskFile returned empty filePath:', res || null);
+  const filePath = res.filePath;
+  if (typeof filePath !== 'string' || !filePath.trim()) {
+    log.warn('selectTaskFile returned invalid filePath:', res || null);
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
   }
@@ -421,7 +1007,7 @@ async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
     if (enlaceInput) enlaceInput.value = filePath;
     changed = true;
   }
-  if (!String(row.texto || '').trim()) {
+  if (!row.texto.trim()) {
     const derivedText = deriveRowTextFromPath(filePath);
     if (derivedText && derivedText !== row.texto) {
       row.texto = derivedText;
@@ -435,26 +1021,150 @@ async function selectFileForRow(row, { textoInput, enlaceInput } = {}) {
 // =============================================================================
 // Rendering / table
 // =============================================================================
-function makeRowId() {
-  const id = rowIdCounter;
-  rowIdCounter += 1;
-  return id;
+function hasOwn(value, key) {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }
 
-function createRow(data = {}) {
+function copyTaskRowData(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('[task-editor] copyTaskRowData requires a row object');
+  }
+  if (!taskDurationUtils.isWholeDurationSeconds(data.tiempoSeconds)) {
+    throw new Error('[task-editor] copyTaskRowData requires canonical tiempoSeconds');
+  }
+  if (!taskDurationUtils.isPercentComplete(data.percentComplete)) {
+    throw new Error('[task-editor] copyTaskRowData requires canonical percentComplete');
+  }
+  if (typeof data.texto !== 'string'
+    || typeof data.enlace !== 'string'
+    || typeof data.comentario !== 'string'
+    || typeof data.snapshotRelPath !== 'string') {
+    throw new Error('[task-editor] copyTaskRowData requires string task fields');
+  }
+  if (!isCanonicalSnapshotRelPath(data.snapshotRelPath)) {
+    throw new Error('[task-editor] copyTaskRowData requires canonical snapshotRelPath');
+  }
   return {
-    id: makeRowId(),
-    texto: String(data.texto || ''),
-    tiempoSeconds: Number.isFinite(data.tiempoSeconds) ? data.tiempoSeconds : 0,
-    percentComplete: Number.isFinite(data.percentComplete) ? data.percentComplete : 0,
-    enlace: String(data.enlace || ''),
-    comentario: String(data.comentario || ''),
-    snapshotRelPath: normalizeSnapshotRelPath(data.snapshotRelPath || ''),
+    texto: data.texto,
+    tiempoSeconds: data.tiempoSeconds,
+    percentComplete: data.percentComplete,
+    enlace: data.enlace,
+    comentario: data.comentario,
+    snapshotRelPath: data.snapshotRelPath,
+  };
+}
+
+function copyTaskMeta(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)
+    || typeof data.name !== 'string'
+    || typeof data.createdAt !== 'string'
+    || typeof data.updatedAt !== 'string'
+    || typeof data.savedWith !== 'string') {
+    throw new Error('[task-editor] task metadata requires string operational fields');
+  }
+  return {
+    name: data.name,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    savedWith: data.savedWith,
+  };
+}
+
+function copyTaskInitPayload(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)
+    || !payload.task || typeof payload.task !== 'object' || Array.isArray(payload.task)
+    || !Array.isArray(payload.task.rows)
+    || !hasOwn(payload, 'sourcePath')
+    || !Number.isInteger(payload.initId) || payload.initId <= 0) {
+    throw new Error('[task-editor] task-editor-init payload missing operational task state');
+  }
+
+  const sourcePath = payload.sourcePath;
+  if (sourcePath !== null && (typeof sourcePath !== 'string' || !sourcePath)) {
+    throw new Error('[task-editor] task-editor-init payload has invalid sourcePath');
+  }
+
+  return {
+    initId: payload.initId,
+    meta: copyTaskMeta(payload.task.meta),
+    rows: payload.task.rows.map((row) => copyTaskRowData(row)),
+    sourcePath,
+  };
+}
+
+function copyLibraryEntryData(entry) {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+    throw new Error('[task-editor] library entry requires an object');
+  }
+  if (typeof entry.texto !== 'string' || !entry.texto || entry.texto !== entry.texto.trim()) {
+    throw new Error('[task-editor] library entry requires canonical nonempty texto');
+  }
+  if (!taskDurationUtils.isWholeDurationSeconds(entry.tiempoSeconds)) {
+    throw new Error('[task-editor] library entry requires whole-second tiempoSeconds');
+  }
+  if (typeof entry.enlace !== 'string') {
+    throw new Error('[task-editor] library entry enlace must be a string');
+  }
+
+  const libraryEntry = {
+    texto: entry.texto,
+    tiempoSeconds: entry.tiempoSeconds,
+    enlace: entry.enlace,
+  };
+  if (hasOwn(entry, 'comentario')) {
+    if (typeof entry.comentario !== 'string') {
+      throw new Error('[task-editor] library entry comentario must be a string when supplied');
+    }
+    libraryEntry.comentario = entry.comentario;
+  }
+  if (hasOwn(entry, 'snapshotRelPath')) {
+    if (typeof entry.snapshotRelPath !== 'string'
+      || !entry.snapshotRelPath
+      || !isCanonicalSnapshotRelPath(entry.snapshotRelPath)) {
+      throw new Error('[task-editor] library entry snapshotRelPath must be canonical when supplied');
+    }
+    libraryEntry.snapshotRelPath = entry.snapshotRelPath;
+  }
+  return libraryEntry;
+}
+
+function copyLibraryEntryAsTaskRow(entry) {
+  const libraryEntry = copyLibraryEntryData(entry);
+  return copyTaskRowData({
+    texto: libraryEntry.texto,
+    tiempoSeconds: libraryEntry.tiempoSeconds,
+    percentComplete: 0,
+    enlace: libraryEntry.enlace,
+    comentario: hasOwn(libraryEntry, 'comentario') ? libraryEntry.comentario : '',
+    snapshotRelPath: hasOwn(libraryEntry, 'snapshotRelPath') ? libraryEntry.snapshotRelPath : '',
+  });
+}
+
+function copySavedTaskResult(result) {
+  if (!result || result.ok !== true
+    || typeof result.path !== 'string' || !result.path
+    || !hasOwn(result, 'meta')) {
+    throw new Error('[task-editor] saveTaskList returned an invalid successful result');
+  }
+  return {
+    path: result.path,
+    meta: copyTaskMeta(result.meta),
+  };
+}
+
+function materializeTaskRows(canonicalRows) {
+  const nextRowIdCounter = rowIdCounter + canonicalRows.length;
+  return {
+    rows: canonicalRows.map((canonicalData, index) => ({
+      id: rowIdCounter + index,
+      ...canonicalData,
+    })),
+    nextRowIdCounter,
   };
 }
 
 function deriveRowTextFromPath(filePath) {
-  const raw = String(filePath || '').trim();
+  const raw = filePath.trim();
   if (!raw) return '';
   const segments = raw.split(/[\\/]+/).filter(Boolean);
   const fileName = segments.length ? segments[segments.length - 1] : raw;
@@ -466,17 +1176,35 @@ function deriveRowTextFromPath(filePath) {
     : next;
 }
 
-function buildActionButton(iconName, titleKey, onClick, { className = 'icon-btn', size = 'lg' } = {}) {
-  const title = tr(titleKey);
+function buildActionButton(iconName, nameKey, onClick, { className = 'btn-standard btn-standard--square' } = {}) {
+  const name = tr(nameKey);
   const btn = rendererIcons.createIconButton({
     iconName,
     className,
-    size,
-    title,
-    ariaLabel: title,
+    ariaLabel: name,
   });
+  btn.setAttribute('data-tot-tooltip', name);
   btn.addEventListener('click', onClick);
   return btn;
+}
+
+function renderTechnicalValueDescription(container, template, token, value) {
+  const placeholder = `{${token}}`;
+  const placeholderIndex = template.indexOf(placeholder);
+  const prefix = document.createElement('span');
+  const technicalValue = document.createElement('bdi');
+  const suffix = document.createElement('span');
+
+  container.textContent = '';
+  prefix.textContent = placeholderIndex >= 0 ? template.slice(0, placeholderIndex) : template;
+  technicalValue.setAttribute('dir', 'ltr');
+  technicalValue.textContent = value;
+  suffix.textContent = placeholderIndex >= 0
+    ? template.slice(placeholderIndex + placeholder.length)
+    : '';
+  container.appendChild(prefix);
+  container.appendChild(technicalValue);
+  container.appendChild(suffix);
 }
 
 function renderRow(row) {
@@ -489,9 +1217,12 @@ function renderRow(row) {
   const textoInput = document.createElement('input');
   textoInput.type = 'text';
   textoInput.maxLength = TASK_ROW_TEXT_MAX_CHARS;
+  textoInput.setAttribute('aria-labelledby', 'thTexto');
+  textoInput.setAttribute('aria-invalid', 'false');
   textoInput.value = row.texto;
   textoInput.addEventListener('input', () => {
     const next = textoInput.value;
+    if (next.trim()) setTaskFieldInvalidState(textoInput, false);
     if (next !== row.texto) {
       row.texto = next;
       markDirty();
@@ -501,23 +1232,39 @@ function renderRow(row) {
 
   // Duration
   const tdTiempo = document.createElement('td');
+  tdTiempo.className = 'task-cell--time';
   const tiempoInput = document.createElement('input');
   tiempoInput.type = 'text';
+  tiempoInput.setAttribute('aria-labelledby', 'thTiempo');
+  tiempoInput.setAttribute('aria-invalid', 'false');
   tiempoInput.value = formatDuration(row.tiempoSeconds);
   const commitTiempo = () => {
     const parsed = parseDuration(tiempoInput.value);
     if (parsed === null) {
       tiempoInput.value = formatDuration(row.tiempoSeconds);
+      setTaskFieldInvalidState(tiempoInput, false);
       return;
     }
     if (parsed !== row.tiempoSeconds) {
+      const summaryResult = validateCandidateTaskRows(rows.map((candidate) => (
+        candidate === row ? { ...candidate, tiempoSeconds: parsed } : candidate
+      )));
+      if (!summaryResult.ok) {
+        tiempoInput.value = formatDuration(row.tiempoSeconds);
+        setTaskFieldInvalidState(tiempoInput, false);
+        return;
+      }
       row.tiempoSeconds = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateSummary();
+      renderTaskSummary(summaryResult.summary);
       markDirty();
     }
     tiempoInput.value = formatDuration(row.tiempoSeconds);
+    setTaskFieldInvalidState(tiempoInput, false);
   };
+  tiempoInput.addEventListener('input', () => {
+    setTaskFieldInvalidState(tiempoInput, parseDuration(tiempoInput.value) === null);
+  });
   tiempoInput.addEventListener('blur', commitTiempo);
   tiempoInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') tiempoInput.blur();
@@ -526,23 +1273,39 @@ function renderRow(row) {
 
   // Percent complete
   const tdPercent = document.createElement('td');
+  tdPercent.className = 'task-cell--percent';
   const percentInput = document.createElement('input');
   percentInput.type = 'text';
+  percentInput.setAttribute('aria-labelledby', 'thPercent');
+  percentInput.setAttribute('aria-invalid', 'false');
   percentInput.value = `${row.percentComplete}%`;
   const commitPercent = () => {
     const parsed = parsePercent(percentInput.value);
     if (parsed === null) {
       percentInput.value = `${row.percentComplete}%`;
+      setTaskFieldInvalidState(percentInput, false);
       return;
     }
     if (parsed !== row.percentComplete) {
+      const summaryResult = validateCandidateTaskRows(rows.map((candidate) => (
+        candidate === row ? { ...candidate, percentComplete: parsed } : candidate
+      )));
+      if (!summaryResult.ok) {
+        percentInput.value = `${row.percentComplete}%`;
+        setTaskFieldInvalidState(percentInput, false);
+        return;
+      }
       row.percentComplete = parsed;
       tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
-      updateSummary();
+      renderTaskSummary(summaryResult.summary);
       markDirty();
     }
     percentInput.value = `${row.percentComplete}%`;
+    setTaskFieldInvalidState(percentInput, false);
   };
+  percentInput.addEventListener('input', () => {
+    setTaskFieldInvalidState(percentInput, parsePercent(percentInput.value) === null);
+  });
   percentInput.addEventListener('blur', commitPercent);
   percentInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') percentInput.blur();
@@ -551,6 +1314,7 @@ function renderRow(row) {
 
   // Remaining
   const tdFalta = document.createElement('td');
+  tdFalta.className = 'task-cell--remaining';
   tdFaltaValue.textContent = formatDuration(getFaltaSeconds(row));
   tdFalta.appendChild(tdFaltaValue);
 
@@ -561,33 +1325,37 @@ function renderRow(row) {
   const enlaceInput = document.createElement('input');
   enlaceInput.type = 'text';
   enlaceInput.maxLength = TASK_ROW_LINK_MAX_CHARS;
+  enlaceInput.setAttribute('aria-labelledby', 'thEnlace');
+  enlaceInput.setAttribute('aria-invalid', 'false');
   enlaceInput.value = row.enlace;
   enlaceInput.addEventListener('input', () => {
     const next = enlaceInput.value;
     if (next !== row.enlace) {
+      setTaskFieldInvalidState(enlaceInput, false);
       row.enlace = next;
       markDirty();
     }
   });
-  const linkBrowseTitle = tr('renderer.tasks.columns.tooltips.file_select');
+  enlaceInput.addEventListener('blur', () => {
+    setTaskFieldInvalidState(enlaceInput, false);
+  });
+  const linkBrowseName = tr('renderer.tasks.columns.names.file_select');
   const enlaceSelectBtn = rendererIcons.createIconButton({
     iconName: 'folder',
-    className: 'icon-btn',
-    size: 'lg',
-    title: linkBrowseTitle,
-    ariaLabel: linkBrowseTitle,
+    className: 'btn-standard btn-standard--square',
+    ariaLabel: linkBrowseName,
   });
+  enlaceSelectBtn.setAttribute('data-tot-tooltip', linkBrowseName);
   enlaceSelectBtn.addEventListener('click', () => {
     selectFileForRow(row, { textoInput, enlaceInput }).catch((err) => log.error('selectFileForRow failed:', err));
   });
-  const linkTitle = tr('renderer.tasks.columns.tooltips.link_open');
+  const linkName = tr('renderer.tasks.columns.names.link_open');
   const enlaceBtn = rendererIcons.createIconButton({
     iconName: 'open-target',
-    className: 'icon-btn',
-    size: 'lg',
-    title: linkTitle,
-    ariaLabel: linkTitle,
+    className: 'btn-standard btn-standard--square',
+    ariaLabel: linkName,
   });
+  enlaceBtn.setAttribute('data-tot-tooltip', linkName);
   enlaceBtn.addEventListener('click', async () => {
     const raw = enlaceInput.value;
     const api = getTaskEditorApi('openTaskLink');
@@ -597,12 +1365,14 @@ function renderRow(row) {
       const code = getTaskEditorResultCode(res, 'ERROR');
       if (code === 'CONFIRM_DENIED') return;
       log.warn('openTaskLink failed:', { code, response: res || null });
-      if (code === 'LINK_MISSING') {
-        window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
-        return;
-      }
-      if (code === 'LINK_BLOCKED') {
-        window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
+      if (code === 'LINK_MISSING' || code === 'LINK_BLOCKED') {
+        setTaskFieldInvalidState(enlaceInput, true);
+        enlaceInput.focus();
+        window.Notify.notifyEditor(
+          code === 'LINK_MISSING'
+            ? 'renderer.tasks.alerts.link_missing'
+            : 'renderer.tasks.alerts.link_blocked'
+        );
         return;
       }
       window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
@@ -616,36 +1386,52 @@ function renderRow(row) {
 
   // Comment
   const tdComentario = document.createElement('td');
+  tdComentario.className = 'task-cell--comment';
   const commentActions = document.createElement('div');
   commentActions.className = 'cell-actions';
-  const snapshotRelPath = normalizeSnapshotRelPath(row.snapshotRelPath || '');
+  const snapshotRelPath = row.snapshotRelPath;
   if (snapshotRelPath) {
-    const snapshotBtn = buildActionButton(
-      'task-text-snapshot-load',
-      'renderer.tasks.columns.tooltips.snapshot_load',
-      () => {
-        loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
-      }
+    const snapshotName = tr('renderer.tasks.columns.names.snapshot_load');
+    const snapshotBtn = rendererIcons.createIconButton({
+      iconName: 'task-text-snapshot-load',
+      className: 'btn-standard btn-standard--square',
+      ariaLabel: snapshotName,
+    });
+    const snapshotDescription = document.createElement('span');
+    snapshotDescription.id = `taskSnapshotDescription-${row.id}`;
+    snapshotDescription.className = 'task-editor-accessible-description';
+    renderTechnicalValueDescription(
+      snapshotDescription,
+      tr('renderer.tasks.columns.descriptions.snapshot_path'),
+      'path',
+      snapshotRelPath
     );
-    const snapshotTitle = tr('renderer.tasks.columns.tooltips.snapshot_load');
-    snapshotBtn.title = `${snapshotTitle} ${snapshotRelPath}`.trim();
-    snapshotBtn.setAttribute('aria-label', snapshotBtn.title);
+    snapshotBtn.setAttribute('aria-describedby', snapshotDescription.id);
+    snapshotBtn.setAttribute(
+      'data-tot-tooltip',
+      msgRenderer('renderer.tasks.columns.tooltips.snapshot_load_with_path', {
+        path: `\u2068${snapshotRelPath}\u2069`,
+      })
+    );
+    snapshotBtn.addEventListener('click', () => {
+      loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
+    });
     commentActions.appendChild(snapshotBtn);
+    commentActions.appendChild(snapshotDescription);
   }
-  const commentButtonTitle = tr('renderer.tasks.columns.tooltips.comment');
+  const commentButtonName = tr('renderer.tasks.columns.names.comment');
   const commentBtn = rendererIcons.createIconButton({
     iconName: 'task-comment',
-    className: 'icon-btn',
-    size: 'lg',
-    title: commentButtonTitle,
-    ariaLabel: commentButtonTitle,
+    className: 'btn-standard btn-standard--square',
+    ariaLabel: commentButtonName,
   });
+  commentBtn.setAttribute('data-tot-tooltip', commentButtonName);
   commentBtn.addEventListener('click', () => {
     pendingCommentRowId = row.id;
     pendingCommentSnapshotRelPath = snapshotRelPath;
-    commentInput.value = row.comentario || '';
+    commentInput.value = row.comentario;
     setCommentSnapshotDisplay(pendingCommentSnapshotRelPath);
-    openModal(commentModal);
+    openModal(commentModal, commentInput);
   });
   commentActions.appendChild(commentBtn);
   tdComentario.appendChild(commentActions);
@@ -655,16 +1441,16 @@ function renderRow(row) {
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'cell-actions';
 
-  const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.tooltips.move_up', () => moveRow(row.id, -1), {
-    className: 'icon-btn icon-btn--half',
+  const btnUp = buildActionButton('arrow-up', 'renderer.tasks.columns.names.move_up', () => moveRow(row.id, -1), {
+    className: 'btn-standard btn-standard--half-width',
   });
-  const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.tooltips.move_down', () => moveRow(row.id, 1), {
-    className: 'icon-btn icon-btn--half',
+  const btnDown = buildActionButton('arrow-down', 'renderer.tasks.columns.names.move_down', () => moveRow(row.id, 1), {
+    className: 'btn-standard btn-standard--half-width',
   });
-  const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.tooltips.delete_row', () => deleteRow(row.id));
-  const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.tooltips.library_row_save', () => {
+  const btnDelete = buildActionButton('trash', 'renderer.tasks.columns.names.delete_row', () => deleteRow(row.id));
+  const btnSaveLib = buildActionButton('task-row-save', 'renderer.tasks.columns.names.library_row_save', () => {
     pendingLibraryRowId = row.id;
-    openModal(includeCommentModal);
+    openModal(includeCommentModal, includeCommentYes);
   });
 
   actionsWrap.appendChild(btnUp);
@@ -674,166 +1460,46 @@ function renderRow(row) {
   tdActions.appendChild(actionsWrap);
 
   trEl.appendChild(tdTexto);
+  trEl.appendChild(tdComentario);
   trEl.appendChild(tdTiempo);
   trEl.appendChild(tdPercent);
   trEl.appendChild(tdFalta);
   trEl.appendChild(tdEnlace);
-  trEl.appendChild(tdComentario);
   trEl.appendChild(tdActions);
 
+  renderedRowFields.set(row.id, { textoInput });
   return trEl;
 }
 
 function renderTable() {
   if (!tableBody) return;
   tableBody.innerHTML = '';
+  renderedRowFields = new Map();
   rows.forEach((row) => {
     tableBody.appendChild(renderRow(row));
   });
   updateSummary();
 }
 
-function collectDefaultColumnWidths() {
-  const out = {};
-  if (!taskColGroup) return out;
-  const cols = taskColGroup.querySelectorAll('col');
-  cols.forEach((col) => {
-    const key = col.dataset.col;
-    const def = Number(col.dataset.default);
-    if (key && Number.isFinite(def) && def > 0) {
-      out[key] = def;
-    }
-  });
-  return out;
-}
-
-function applyColumnWidths(widths) {
-  if (!taskColGroup) return;
-  const cols = taskColGroup.querySelectorAll('col');
-  let sum = 0;
-  cols.forEach((col) => {
-    const key = col.dataset.col;
-    const w = key && widths && Number.isFinite(widths[key]) ? widths[key] : null;
-    if (w && w > 0) {
-      col.style.width = `${w}px`;
-      sum += w;
-    }
-  });
-  if (taskTable) {
-    taskTable.style.width = '';
-    taskTable.style.minWidth = sum > 0 ? `${sum}px` : '';
-  }
-}
-
-function filterKnownColumnWidths(widths) {
-  if (!widths || typeof widths !== 'object') return {};
-  const knownKeys = new Set(COLUMN_KEYS.map(({ key }) => key));
-  const filtered = {};
-  Object.keys(widths).forEach((key) => {
-    if (!knownKeys.has(key)) return;
-    const width = widths[key];
-    if (Number.isFinite(width) && width > 0) {
-      filtered[key] = width;
-    }
-  });
-  return filtered;
-}
-
-async function saveColumnWidths() {
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.saveColumnWidths !== 'function') {
-    log.warnOnce('task_editor.columnWidths.save.missingApi', 'task column widths save unavailable (ignored).');
-    return;
-  }
-  try {
-    await window.taskEditorAPI.saveColumnWidths(columnWidths);
-  } catch (err) {
-    log.warnOnce('task_editor.columnWidths.save', 'saveColumnWidths failed (ignored):', err);
-  }
-}
-
-async function loadColumnWidths() {
-  const defaults = collectDefaultColumnWidths();
-  if (!window.taskEditorAPI || typeof window.taskEditorAPI.getColumnWidths !== 'function') {
-    log.warnOnce('BOOTSTRAP:task_editor.columnWidths.missingApi', 'task column widths unavailable; using defaults.');
-    columnWidths = { ...defaults };
-    applyColumnWidths(columnWidths);
-    await saveColumnWidths();
-    return;
-  }
-  const res = await window.taskEditorAPI.getColumnWidths();
-  if (!res || res.ok === false || !res.widths) {
-    log.warnOnce('BOOTSTRAP:task_editor.columnWidths.load', 'task column widths load failed; using defaults.', res);
-    columnWidths = { ...defaults };
-    applyColumnWidths(columnWidths);
-    await saveColumnWidths();
-    return;
-  }
-  columnWidths = { ...defaults, ...filterKnownColumnWidths(res.widths) };
-  applyColumnWidths(columnWidths);
-}
-
-function setupColumnResizers() {
-  if (!taskColGroup) return;
-  const cols = taskColGroup.querySelectorAll('col');
-  const colMap = {};
-  cols.forEach((col) => {
-    const key = col.dataset.col;
-    if (key) colMap[key] = col;
-  });
-
-  COLUMN_KEYS.forEach(({ key, th }) => {
-    if (!th || !key) return;
-    const handle = document.createElement('div');
-    handle.className = 'col-resizer';
-    handle.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      const col = colMap[key];
-      const startWidth = col
-        ? col.getBoundingClientRect().width
-        : th.getBoundingClientRect().width;
-      activeResize = {
-        key,
-        startX: e.clientX,
-        startWidth,
-      };
-      document.body.classList.add('is-resizing');
-    });
-    th.appendChild(handle);
-  });
-
-  const onMouseMove = (e) => {
-    if (!activeResize) return;
-    const delta = e.clientX - activeResize.startX;
-    const nextWidth = Math.max(MIN_COL_WIDTH, activeResize.startWidth + delta);
-    columnWidths[activeResize.key] = Math.round(nextWidth);
-    applyColumnWidths(columnWidths);
-  };
-
-  const onMouseUp = () => {
-    if (!activeResize) return;
-    activeResize = null;
-    document.body.classList.remove('is-resizing');
-    saveColumnWidths();
-  };
-
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
-}
-
 // =============================================================================
 // Row operations
 // =============================================================================
-function addRow(data = {}) {
-  rows.push(createRow(data));
-  markDirty();
-  renderTable();
+function addRow(data = EMPTY_TASK_ROW) {
+  return addRows([data]);
 }
 
 function addRows(items) {
-  if (!Array.isArray(items) || !items.length) return;
-  rows.push(...items.map((item) => createRow(item)));
+  if (!Array.isArray(items) || !items.length) return false;
+  const addedRowData = items.map((item) => copyTaskRowData(item));
+  const summaryResult = validateCandidateTaskRows([...rows, ...addedRowData]);
+  if (!summaryResult.ok) return false;
+
+  const addedRows = materializeTaskRows(addedRowData);
+  rows = [...rows, ...addedRows.rows];
+  rowIdCounter = addedRows.nextRowIdCounter;
   markDirty();
   renderTable();
+  return true;
 }
 
 async function addRowsFromSelectedFiles() {
@@ -848,10 +1514,11 @@ async function addRowsFromSelectedFiles() {
     return;
   }
   const filePaths = Array.isArray(res.filePaths)
-    ? res.filePaths.filter((filePath) => typeof filePath === 'string' && filePath.trim())
-    : [];
-  if (!filePaths.length) {
-    log.warn('selectTaskFiles returned empty filePaths:', res || null);
+    ? res.filePaths
+    : null;
+  if (!filePaths || !filePaths.length
+    || filePaths.some((filePath) => typeof filePath !== 'string' || !filePath.trim())) {
+    log.warn('selectTaskFiles returned invalid filePaths:', res || null);
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
   }
@@ -889,36 +1556,65 @@ function moveRow(id, delta) {
 // Task lifecycle (load/save/delete)
 // =============================================================================
 function applyTaskPayload(payload) {
-  const task = payload && payload.task ? payload.task : null;
-  if (!task || !task.meta || !Array.isArray(task.rows)) {
-    log.warn('task-editor-init payload invalid (ignored):', payload);
-    return;
+  // tasks_main owns persisted-task schema validation. The renderer validates only
+  // the operational fields it will materialize and use for Task Editor state.
+  const nextTask = copyTaskInitPayload(payload);
+  const summaryResult = taskDurationUtils.deriveTaskSummary(nextTask.rows);
+  if (!summaryResult.ok) {
+    throw new Error(`[task-editor] task-editor-init summary invalid: ${summaryResult.code}`);
   }
-  const safeName = clampTaskName(task.meta.name || '');
-  meta = {
-    name: safeName,
-    createdAt: task.meta.createdAt || new Date().toISOString(),
-    updatedAt: task.meta.updatedAt || new Date().toISOString(),
-  };
-  sourcePath = payload.sourcePath || null;
-  rows = task.rows.map((r) => createRow(r));
-  resetDirty();
-  taskNameInput.value = safeName;
+  const nextRows = materializeTaskRows(nextTask.rows);
+
+  meta = nextTask.meta;
+  sourcePath = nextTask.sourcePath;
+  rows = nextRows.rows;
+  rowIdCounter = nextRows.nextRowIdCounter;
+  dirty = false;
+  taskNameInput.value = nextTask.meta.name;
   renderTable();
+  resetTaskEditorValidationState();
+  taskEditorCurrentInitId = nextTask.initId;
+  taskEditorLatestInitId = nextTask.initId;
+  taskEditorHasInitializedDraft = true;
+  syncDirtyState();
+  setTaskEditorNormalInteractionAvailable(true);
+}
+
+function normalizeRowTexto(row) {
+  const normalizedTexto = row.texto.trim();
+  if (row.texto === normalizedTexto) return normalizedTexto;
+  row.texto = normalizedTexto;
+  const renderedFields = renderedRowFields.get(row.id);
+  if (renderedFields && renderedFields.textoInput) {
+    renderedFields.textoInput.value = normalizedTexto;
+  }
+  markDirty();
+  return normalizedTexto;
 }
 
 function validateBeforeSave() {
   const name = clampTaskName(taskNameInput.value).trim();
   if (taskNameInput.value !== name) taskNameInput.value = name;
+  setTaskFieldInvalidState(taskNameInput, !name);
+
+  const invalidRows = [];
+  for (const row of rows) {
+    const normalizedTexto = normalizeRowTexto(row);
+    const renderedFields = renderedRowFields.get(row.id);
+    const isInvalid = !normalizedTexto;
+    setTaskFieldInvalidState(renderedFields && renderedFields.textoInput, isInvalid);
+    if (isInvalid) invalidRows.push(renderedFields && renderedFields.textoInput);
+  }
+
   if (!name) {
+    taskNameInput.focus();
     window.Notify.notifyEditor('renderer.tasks.alerts.name_required');
     return null;
   }
-  for (const row of rows) {
-    if (!String(row.texto || '').trim()) {
-      window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
-      return null;
-    }
+  if (invalidRows.length) {
+    if (invalidRows[0]) invalidRows[0].focus();
+    window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
+    return null;
   }
   return name;
 }
@@ -938,7 +1634,7 @@ async function saveTask() {
       percentComplete: r.percentComplete,
       enlace: r.enlace,
       comentario: r.comentario,
-      snapshotRelPath: normalizeSnapshotRelPath(r.snapshotRelPath || ''),
+      snapshotRelPath: r.snapshotRelPath,
     })),
     sourcePath,
   };
@@ -964,8 +1660,9 @@ async function saveTask() {
     return;
   }
 
-  if (res.meta) meta = res.meta;
-  if (res.path) sourcePath = res.path;
+  const savedTask = copySavedTaskResult(res);
+  meta = savedTask.meta;
+  sourcePath = savedTask.path;
   resetDirty();
   window.Notify.notifyEditor('renderer.tasks.alerts.task_save_success');
 }
@@ -986,12 +1683,20 @@ async function deleteTask() {
     return;
   }
 
-  meta = { name: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const now = new Date().toISOString();
+  const savedWith = meta.savedWith;
+  meta = {
+    name: '',
+    createdAt: now,
+    updatedAt: now,
+    savedWith,
+  };
   sourcePath = null;
   rows = [];
   resetDirty();
   taskNameInput.value = '';
   renderTable();
+  resetTaskEditorValidationState();
 }
 
 // =============================================================================
@@ -1012,9 +1717,9 @@ function renderLibraryItems(items) {
     li.className = 'library-item';
     const text = document.createElement('div');
     text.className = 'library-item__text';
-    text.textContent = `${entry.texto}`;
+    text.textContent = entry.texto;
 
-    const durationSeconds = Math.max(0, Number(entry.tiempoSeconds) || 0);
+    const durationSeconds = entry.tiempoSeconds;
     const controls = document.createElement('div');
     controls.className = 'library-item__controls';
     const time = document.createElement('span');
@@ -1028,15 +1733,8 @@ function renderLibraryItems(items) {
     actions.className = 'cell-actions';
 
     const btnLoad = buildActionButton('task-row-load', 'renderer.tasks.biblioteca.library_row_load', () => {
-      addRow({
-        texto: entry.texto,
-        tiempoSeconds: Number(entry.tiempoSeconds) || 0,
-        percentComplete: 0,
-        enlace: entry.enlace || '',
-        comentario: entry.comentario || '',
-        snapshotRelPath: entry.snapshotRelPath || '',
-      });
-      closeModal(libraryModal);
+      const didAdd = addRow(copyLibraryEntryAsTaskRow(entry));
+      if (didAdd) closeModal(libraryModal);
     });
     const btnDelete = buildActionButton('trash', 'renderer.tasks.biblioteca.library_row_delete', async () => {
       const api = getTaskEditorApi('deleteLibraryEntry');
@@ -1069,16 +1767,13 @@ function filterLibraryItems() {
     return;
   }
   const filtered = libraryItemsCache.filter((entry) => {
-    const texto = String(entry.texto || '').toLowerCase();
-    return texto.includes(term);
+    return entry.texto.toLowerCase().includes(term);
   });
   renderLibraryItems(filtered);
 }
 
 async function refreshLibraryList() {
   if (!libraryList) return;
-  libraryList.innerHTML = '';
-  libraryEmpty.hidden = true;
 
   const api = getTaskEditorApi('listLibrary');
   if (!api) return;
@@ -1090,8 +1785,34 @@ async function refreshLibraryList() {
     return;
   }
 
-  libraryItemsCache = Array.isArray(res.items) ? res.items : [];
+  if (!Array.isArray(res.items)) {
+    log.warn('listLibrary returned invalid items:', { response: res || null });
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
+    return;
+  }
+
+  let nextLibraryItems = null;
+  try {
+    nextLibraryItems = res.items.map((entry) => copyLibraryEntryData(entry));
+  } catch (err) {
+    log.warn('listLibrary returned invalid library entries:', err);
+    window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
+    return;
+  }
+
+  libraryItemsCache = nextLibraryItems;
   filterLibraryItems();
+}
+
+function createLibraryEntryFromRow(row, includeComment) {
+  const entry = {
+    texto: row.texto,
+    tiempoSeconds: row.tiempoSeconds,
+    enlace: row.enlace,
+  };
+  if (includeComment && row.comentario) entry.comentario = row.comentario;
+  if (row.snapshotRelPath) entry.snapshotRelPath = row.snapshotRelPath;
+  return entry;
 }
 
 async function saveRowToLibrary(includeComment) {
@@ -1099,17 +1820,22 @@ async function saveRowToLibrary(includeComment) {
   pendingLibraryRowId = null;
   closeModal(includeCommentModal);
   if (!row) return;
-  if (!String(row.texto || '').trim()) {
+  const normalizedTexto = normalizeRowTexto(row);
+  const renderedFields = renderedRowFields.get(row.id);
+  const textoInput = renderedFields && renderedFields.textoInput;
+  setTaskFieldInvalidState(textoInput, !normalizedTexto);
+  if (!normalizedTexto) {
+    if (textoInput) textoInput.focus();
     window.Notify.notifyEditor('renderer.tasks.alerts.row_text_required');
     return;
   }
-  const api = getTaskEditorApi('saveLibraryRow');
+  const api = getTaskEditorApi('saveLibraryEntry');
   if (!api) return;
-  const res = await api.saveLibraryRow(row, includeComment);
+  const res = await api.saveLibraryEntry(createLibraryEntryFromRow(row, includeComment));
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'WRITE_FAILED');
     if (code === 'CONFIRM_DENIED') return;
-    log.warn('saveLibraryRow failed:', { code, response: res || null, rowId: row.id });
+    log.warn('saveLibraryEntry failed:', { code, response: res || null, rowId: row.id });
     window.Notify.notifyEditor('renderer.tasks.alerts.library_save_error');
     return;
   }
@@ -1120,9 +1846,9 @@ async function saveRowToLibrary(includeComment) {
 // Translations apply
 // =============================================================================
 async function applyTaskEditorTranslations() {
-  await ensureTaskEditorTranslations(idiomaActual);
   document.title = tr('renderer.tasks.title');
   if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.name');
+  if (taskNameInput) taskNameInput.setAttribute('placeholder', tr('renderer.tasks.name_placeholder'));
   if (taskSummaryTotalLabel) taskSummaryTotalLabel.textContent = tr('renderer.tasks.summary_total');
   if (taskSummaryLeftLabel) taskSummaryLeftLabel.textContent = tr('renderer.tasks.summary_left');
   if (btnTaskSave) btnTaskSave.textContent = tr('renderer.tasks.save_button');
@@ -1131,40 +1857,129 @@ async function applyTaskEditorTranslations() {
   if (btnTaskAddFiles) btnTaskAddFiles.textContent = tr('renderer.tasks.add_files_button');
   if (btnTaskLoadLibrary) btnTaskLoadLibrary.textContent = tr('renderer.tasks.open_library_button');
 
-  if (thTexto) thTexto.textContent = tr('renderer.tasks.columns.texto');
-  if (thTiempo) thTiempo.textContent = tr('renderer.tasks.columns.tiempo');
-  if (thPercent) thPercent.textContent = tr('renderer.tasks.columns.percent');
-  if (thFalta) thFalta.textContent = tr('renderer.tasks.columns.falta');
-  if (thEnlace) thEnlace.textContent = tr('renderer.tasks.columns.enlace');
-  if (thComentario) thComentario.textContent = tr('renderer.tasks.columns.comentario');
-  if (thAcciones) thAcciones.textContent = tr('renderer.tasks.columns.acciones');
+  if (thTextoLabel) thTextoLabel.textContent = tr('renderer.tasks.columns.texto');
+  if (thEnlaceLabel) thEnlaceLabel.textContent = tr('renderer.tasks.columns.enlace');
+  if (thAccionesLabel) thAccionesLabel.textContent = tr('renderer.tasks.columns.acciones');
+  [
+    [thComentario, thComentarioLabel, 'comentario'],
+    [thTiempo, thTiempoLabel, 'tiempo'],
+    [thPercent, thPercentLabel, 'percent'],
+    [thFalta, thFaltaLabel, 'falta'],
+  ].forEach(([header, label, key]) => {
+    if (!header || !label) return;
+    label.textContent = tr(`renderer.tasks.columns.${key}`);
+    const expandedName = tr(`renderer.tasks.columns.header_names.${key}`);
+    header.setAttribute('aria-label', expandedName);
+    header.setAttribute('data-tot-tooltip', expandedName);
+  });
 
   if (commentTitle) commentTitle.textContent = tr('renderer.tasks.comentario_modal.comment_title');
+  if (commentClose) {
+    commentClose.setAttribute('aria-label', tr('renderer.tasks.comentario_modal.close_aria'));
+  }
+  if (commentInput) {
+    commentInput.setAttribute('placeholder', tr('renderer.tasks.comentario_modal.comment_placeholder'));
+    commentInput.setAttribute('aria-label', tr('renderer.tasks.comentario_modal.comment_title'));
+  }
   if (commentSave) commentSave.textContent = tr('renderer.tasks.save_button');
   if (commentCancel) commentCancel.textContent = tr('renderer.tasks.guardar_lectura_modal.cancel');
   if (commentSnapshotSelect) {
     commentSnapshotSelect.textContent = tr('renderer.tasks.comentario_modal.snapshot_select');
-    commentSnapshotSelect.title = tr('renderer.tasks.comentario_modal.snapshot_select_tooltip');
-    commentSnapshotSelect.setAttribute('aria-label', commentSnapshotSelect.title || commentSnapshotSelect.textContent || '');
+    commentSnapshotSelect.removeAttribute('aria-label');
   }
   if (commentSnapshotClear) {
-    commentSnapshotClear.title = tr('renderer.tasks.comentario_modal.snapshot_clear');
-    commentSnapshotClear.setAttribute('aria-label', commentSnapshotClear.title || '');
+    const snapshotClearName = tr('renderer.tasks.comentario_modal.snapshot_clear');
+    commentSnapshotClear.setAttribute('aria-label', snapshotClearName);
+    commentSnapshotClear.setAttribute('data-tot-tooltip', snapshotClearName);
     rendererIcons.applyIconToElement(commentSnapshotClear, 'unlink', {
-      size: 'md',
       preserveContent: false,
-      title: commentSnapshotClear.title,
-      ariaLabel: commentSnapshotClear.title,
+      ariaLabel: snapshotClearName,
     });
   }
 
+  if (snapshotSourceReminderTitle) {
+    snapshotSourceReminderTitle.textContent = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.title');
+  }
+  if (snapshotSourceReminderText) {
+    snapshotSourceReminderText.textContent = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.message');
+  }
+  if (snapshotSourceReminderCommentLabel) {
+    snapshotSourceReminderCommentLabel.textContent = tr(
+      'renderer.tasks.comentario_modal.snapshot_source_reminder.source_comment'
+    );
+  }
+  if (snapshotSourceReminderCancel) {
+    snapshotSourceReminderCancel.textContent = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.cancel');
+  }
+  if (snapshotSourceReminderSelectFile) {
+    snapshotSourceReminderSelectFile.textContent = tr(
+      'renderer.tasks.comentario_modal.snapshot_source_reminder.select_file'
+    );
+  }
+  if (snapshotSourceReminderClose) {
+    const closeName = tr('renderer.tasks.comentario_modal.snapshot_source_reminder.close_aria');
+    snapshotSourceReminderClose.setAttribute('aria-label', closeName);
+    rendererIcons.applyIconToElement(snapshotSourceReminderClose, 'close', {
+      preserveContent: false,
+      ariaLabel: closeName,
+    });
+  }
+
+  if (snapshotDetailsConfirmTitle) {
+    snapshotDetailsConfirmTitle.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.title');
+  }
+  if (snapshotDetailsConfirmText) {
+    snapshotDetailsConfirmText.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.message');
+  }
+  if (snapshotDetailsConfirmCurrentTextLabel) {
+    snapshotDetailsConfirmCurrentTextLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.current_name');
+  }
+  if (snapshotDetailsConfirmSnapshotNameLabel) {
+    snapshotDetailsConfirmSnapshotNameLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.snapshot_name');
+  }
+  if (snapshotDetailsConfirmApplyTimeLabel) {
+    snapshotDetailsConfirmApplyTimeLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.replace_time');
+  }
+  if (snapshotDetailsConfirmCurrentTimeLabel) {
+    snapshotDetailsConfirmCurrentTimeLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.current_time');
+  }
+  if (snapshotDetailsConfirmEstimateLabel) {
+    snapshotDetailsConfirmEstimateLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.snapshot_estimate');
+  }
+  if (snapshotDetailsConfirmWpmLabel) {
+    snapshotDetailsConfirmWpmLabel.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.reading_speed');
+  }
+  if (snapshotDetailsConfirmApply) {
+    snapshotDetailsConfirmApply.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.apply');
+  }
+  if (snapshotDetailsConfirmKeep) {
+    snapshotDetailsConfirmKeep.textContent = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.keep');
+  }
+  if (snapshotDetailsConfirmClose) {
+    const closeName = tr('renderer.tasks.comentario_modal.snapshot_details_confirm.close_aria');
+    snapshotDetailsConfirmClose.setAttribute('aria-label', closeName);
+    rendererIcons.applyIconToElement(snapshotDetailsConfirmClose, 'close', {
+      preserveContent: false,
+      ariaLabel: closeName,
+    });
+  }
+  updateSnapshotDetailsConfirmationDisplay();
+  updateSnapshotDetailsConfirmationApplyState();
+
   if (libraryTitle) libraryTitle.textContent = tr('renderer.tasks.biblioteca.library_title');
+  if (libraryClose) libraryClose.setAttribute('aria-label', tr('renderer.tasks.biblioteca.close_aria'));
   if (librarySearchLabel) librarySearchLabel.textContent = tr('renderer.tasks.biblioteca.search');
   if (librarySearchInput) {
     librarySearchInput.setAttribute('placeholder', tr('renderer.tasks.biblioteca.search_placeholder'));
   }
 
   if (includeCommentTitle) includeCommentTitle.textContent = tr('renderer.tasks.guardar_lectura_modal.library_save_title');
+  if (includeCommentClose) {
+    includeCommentClose.setAttribute(
+      'aria-label',
+      tr('renderer.tasks.guardar_lectura_modal.close_aria')
+    );
+  }
   if (includeCommentText) includeCommentText.textContent = tr('renderer.tasks.guardar_lectura_modal.library_save_question');
   if (includeCommentYes) includeCommentYes.textContent = tr('renderer.tasks.guardar_lectura_modal.yes');
   if (includeCommentNo) includeCommentNo.textContent = tr('renderer.tasks.guardar_lectura_modal.no');
@@ -1173,6 +1988,67 @@ async function applyTaskEditorTranslations() {
   if (libraryEmpty) libraryEmpty.textContent = tr('renderer.tasks.biblioteca.empty');
 
   renderTable();
+}
+
+async function transitionTaskEditorTranslations(language) {
+  await transitionRendererTranslations(language || DEFAULT_LANG, {
+    applyTranslations: ({ language: appliedLanguage }) => {
+      idiomaActual = appliedLanguage;
+      return applyTaskEditorTranslations();
+    },
+  });
+}
+
+function reportTaskEditorI18nFailure(err, { startup = false } = {}) {
+  const transition = err && err.rendererI18nTransition;
+  if (!transition) {
+    return;
+  }
+  if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+    log.error('Task Editor language transition failed; previous translation state remains authoritative:', err);
+    return;
+  }
+  log.error('Task Editor i18n failure requires terminal unavailability:', err);
+  closeTaskEditorAfterI18nFailure({ startup });
+}
+
+function getTaskEditorTerminalStatePayload(kind) {
+  const hasInitializedDraft = taskEditorHasInitializedDraft === true
+    && Number.isInteger(taskEditorCurrentInitId);
+  const hasCurrentInitializedDraft = hasInitializedDraft
+    && taskEditorCurrentInitId === taskEditorLatestInitId;
+  const hasCurrentNoDraftAttempt = !hasInitializedDraft
+    && Number.isInteger(taskEditorLatestInitId);
+
+  return {
+    kind,
+    phase: hasInitializedDraft ? 'initialized' : 'no-draft',
+    initId: hasCurrentInitializedDraft
+      ? taskEditorCurrentInitId
+      : hasCurrentNoDraftAttempt
+        ? taskEditorLatestInitId
+        : null,
+    dirty: hasCurrentInitializedDraft ? dirty : null,
+  };
+}
+
+function closeTaskEditorAfterI18nFailure({ startup = false, kind } = {}) {
+  if (taskEditorI18nTerminal) return;
+  taskEditorI18nTerminal = true;
+  setTaskEditorNormalInteractionAvailable(false);
+  const api = window.taskEditorAPI;
+  if (api && typeof api.reportTerminalState === 'function') {
+    try {
+      api.reportTerminalState(getTaskEditorTerminalStatePayload(
+        kind || (startup ? 'startup' : 'transition-restoration')
+      ));
+      return;
+    } catch (err) {
+      log.warn('taskEditorAPI.reportTerminalState failed (ignored); Task Editor remains unavailable:', err);
+    }
+  } else {
+    log.warn('taskEditorAPI.reportTerminalState unavailable (ignored); Task Editor remains unavailable.');
+  }
 }
 
 // =============================================================================
@@ -1191,9 +2067,11 @@ function wirePrimaryTaskEditorEvents() {
 
   if (taskNameInput) {
     taskNameInput.maxLength = TASK_NAME_MAX_CHARS;
+    taskNameInput.setAttribute('aria-invalid', 'false');
     taskNameInput.addEventListener('input', () => {
       const next = clampTaskName(taskNameInput.value);
       if (taskNameInput.value !== next) taskNameInput.value = next;
+      if (next.trim()) setTaskFieldInvalidState(taskNameInput, false);
       if (next !== meta.name) {
         meta.name = next;
         markDirty();
@@ -1217,12 +2095,13 @@ function wirePrimaryTaskEditorEvents() {
     btnTaskLoadLibrary.addEventListener('click', () => {
       if (librarySearchInput) librarySearchInput.value = '';
       refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
-      openModal(libraryModal);
+      openModal(libraryModal, librarySearchInput);
     });
   }
 }
 
 function wireCommentModalEvents() {
+  if (commentInput) commentInput.maxLength = TASK_ROW_COMMENT_MAX_CHARS;
   if (commentClose) commentClose.addEventListener('click', () => dismissCommentModal());
   if (commentBackdrop) commentBackdrop.addEventListener('click', () => dismissCommentModal());
   if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
@@ -1238,8 +2117,44 @@ function wireCommentModalEvents() {
   }
   if (commentSave) {
     commentSave.addEventListener('click', () => {
-      applyCommentChangesAndDismiss();
+      applyCommentChangesAndDismiss().catch((err) => log.error('applyCommentChangesAndDismiss failed:', err));
     });
+  }
+}
+
+function wireSnapshotDetailsConfirmModalEvents() {
+  if (snapshotDetailsConfirmClose) {
+    snapshotDetailsConfirmClose.addEventListener('click', () => resolveSnapshotDetailsConfirmation(false));
+  }
+  if (snapshotDetailsConfirmBackdrop) {
+    snapshotDetailsConfirmBackdrop.addEventListener('click', () => resolveSnapshotDetailsConfirmation(false));
+  }
+  if (snapshotDetailsConfirmApply) {
+    snapshotDetailsConfirmApply.addEventListener('click', () => resolveSnapshotDetailsConfirmation(true));
+  }
+  if (snapshotDetailsConfirmApplyText) {
+    snapshotDetailsConfirmApplyText.addEventListener('change', updateSnapshotDetailsConfirmationApplyState);
+  }
+  if (snapshotDetailsConfirmApplyTime) {
+    snapshotDetailsConfirmApplyTime.addEventListener('change', updateSnapshotDetailsConfirmationApplyState);
+  }
+  if (snapshotDetailsConfirmKeep) {
+    snapshotDetailsConfirmKeep.addEventListener('click', () => resolveSnapshotDetailsConfirmation(false));
+  }
+}
+
+function wireSnapshotSourceReminderModalEvents() {
+  if (snapshotSourceReminderClose) {
+    snapshotSourceReminderClose.addEventListener('click', () => resolveSnapshotSourceReminder(false));
+  }
+  if (snapshotSourceReminderBackdrop) {
+    snapshotSourceReminderBackdrop.addEventListener('click', () => resolveSnapshotSourceReminder(false));
+  }
+  if (snapshotSourceReminderCancel) {
+    snapshotSourceReminderCancel.addEventListener('click', () => resolveSnapshotSourceReminder(false));
+  }
+  if (snapshotSourceReminderSelectFile) {
+    snapshotSourceReminderSelectFile.addEventListener('click', () => resolveSnapshotSourceReminder(true));
   }
 }
 
@@ -1257,79 +2172,168 @@ function wireLibraryModalEvents() {
 function wireTaskEditorEvents() {
   wirePrimaryTaskEditorEvents();
   wireCommentModalEvents();
+  wireSnapshotDetailsConfirmModalEvents();
+  wireSnapshotSourceReminderModalEvents();
   wireLibraryModalEvents();
+  window.addEventListener('keydown', handleTaskEditorModalEscape);
+}
+
+function validateTaskEditorBootstrapContracts() {
+  const api = window.taskEditorAPI;
+  const requiredMethods = [
+    'onInit',
+    'onRequestClose',
+    'onSettingsChanged',
+    'setDirtyState',
+    'respondToClose',
+  ];
+  const missingMethod = !api
+    ? 'taskEditorAPI'
+    : requiredMethods.find((methodName) => typeof api[methodName] !== 'function');
+  if (missingMethod) {
+    throw new Error(`[task-editor] required bootstrap bridge unavailable: ${missingMethod}`);
+  }
+  if (!taskEditorRoot || !taskNameInput || !taskTable || !taskTableWrap || !tableBody) {
+    throw new Error('[task-editor] required task structure unavailable');
+  }
 }
 
 function registerTaskEditorInit() {
-  if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
-    window.taskEditorAPI.onInit((payload) => {
-      applyTaskPayload(payload);
-    });
-    return;
+  window.taskEditorAPI.onInit((payload) => {
+    if (taskEditorI18nTerminal) return;
+    if (payload && Number.isInteger(payload.initId) && payload.initId > 0) {
+      taskEditorLatestInitId = payload.initId;
+    }
+    if (!taskEditorTranslationsReady) {
+      pendingTaskInitPayloads.push(payload);
+      return;
+    }
+    enqueueTaskEditorSemanticWork(() => applyIncomingTaskPayload(payload));
+  });
+}
+
+function getTaskEditorTerminalClosePayload() {
+  return getTaskEditorTerminalStatePayload('terminal');
+}
+
+function sendTaskEditorCloseResponse(payload) {
+  try {
+    window.taskEditorAPI.respondToClose(payload);
+  } catch (err) {
+    log.warn('taskEditorAPI.respondToClose failed (ignored):', err);
   }
-  log.warnOnce('BOOTSTRAP:task_editor.onInit.missing', 'taskEditorAPI.onInit unavailable; editor init disabled.');
 }
 
 function registerTaskEditorCloseGuard() {
-  if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
-    window.taskEditorAPI.onRequestClose(() => {
-      if (typeof window.taskEditorAPI.confirmClose !== 'function') {
-        log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
-        return;
-      }
-      if (!dirty) {
-        window.taskEditorAPI.confirmClose();
-        return;
-      }
-      if (window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved')) {
-        window.taskEditorAPI.confirmClose();
-      }
-    });
-    return;
-  }
-  log.warnOnce('BOOTSTRAP:task_editor.onRequestClose.missing', 'taskEditorAPI.onRequestClose unavailable; close confirmation disabled.');
+  window.taskEditorAPI.onRequestClose(() => {
+    if (taskEditorI18nTerminal) {
+      sendTaskEditorCloseResponse(getTaskEditorTerminalClosePayload());
+      return;
+    }
+    columnLayoutController.cancelActiveResize();
+    if (!dirty) {
+      sendTaskEditorCloseResponse({ kind: 'normal', allow: true });
+      return;
+    }
+    const allow = window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved') === true;
+    sendTaskEditorCloseResponse({ kind: 'normal', allow });
+  });
 }
 
 async function bootstrapTaskEditor() {
-  try {
+  await enqueueTaskEditorSemanticWork(async () => {
+    let bootstrapLanguage = idiomaActual;
     if (window.taskEditorAPI && typeof window.taskEditorAPI.getSettings === 'function') {
-      const settings = await window.taskEditorAPI.getSettings();
-      if (settings && settings.language) {
-        idiomaActual = settings.language || DEFAULT_LANG;
+      try {
+        const settings = await window.taskEditorAPI.getSettings();
+        if (settings && settings.language) {
+          bootstrapLanguage = settings.language || DEFAULT_LANG;
+        }
+      } catch (err) {
+        log.warn('Task Editor settings acquisition failed; using default language:', err);
       }
     } else {
       log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
     }
-    await applyTaskEditorTranslations();
-    await loadColumnWidths();
-    setupColumnResizers();
-  } catch (err) {
-    log.warn('BOOTSTRAP: failed to apply initial translations:', err);
-  }
+    try {
+      await transitionTaskEditorTranslations(bootstrapLanguage);
+    } catch (err) {
+      reportTaskEditorI18nFailure(err, { startup: true });
+      return;
+    }
+
+    try {
+      await columnLayoutController.initialize();
+    } catch (err) {
+      log.error('Task Editor column layout initialization failed:', err);
+      closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout' });
+      return;
+    }
+    taskEditorTranslationsReady = true;
+    while (pendingTaskInitPayloads.length) {
+      const applied = await applyIncomingTaskPayload(pendingTaskInitPayloads.shift());
+      if (!applied || taskEditorI18nTerminal) break;
+    }
+  });
 }
 
 function registerTaskEditorSettingsChanged() {
-  if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'function') {
-    window.taskEditorAPI.onSettingsChanged(async (settings) => {
-      try {
-        const nextLang = settings && settings.language ? settings.language : '';
-        if (!nextLang || nextLang === idiomaActual) return;
-        idiomaActual = nextLang;
-        await applyTaskEditorTranslations();
-      } catch (err) {
-        log.warn('task-editor: settings update failed (ignored):', err);
-      }
-    });
-    return;
-  }
-  log.warnOnce('BOOTSTRAP:task_editor.onSettingsChanged.missing', 'taskEditorAPI.onSettingsChanged unavailable; language updates disabled.');
+  window.taskEditorAPI.onSettingsChanged((settings) => enqueueTaskEditorSettingsApplication(settings));
 }
 
-wireTaskEditorEvents();
-registerTaskEditorInit();
-registerTaskEditorCloseGuard();
-bootstrapTaskEditor();
-registerTaskEditorSettingsChanged();
+function enqueueTaskEditorSettingsApplication(settings) {
+  const run = async () => {
+    try {
+      const nextLang = settings && settings.language ? settings.language : '';
+      if (!nextLang || nextLang === idiomaActual) return;
+      await transitionTaskEditorTranslations(nextLang);
+    } catch (err) {
+      reportTaskEditorI18nFailure(err);
+    }
+  };
+  return enqueueTaskEditorSemanticWork(run);
+}
+
+function enqueueTaskEditorSemanticWork(work) {
+  const run = async () => {
+    // Window closure is coordinated asynchronously through the main process.
+    // Do not admit queued Task Editor semantic work after terminal i18n failure.
+    if (taskEditorI18nTerminal) return;
+    return work();
+  };
+  taskEditorSemanticQueue = taskEditorSemanticQueue.then(run, run);
+  return taskEditorSemanticQueue;
+}
+
+async function applyIncomingTaskPayload(payload) {
+  try {
+    applyTaskPayload(payload);
+    return true;
+  } catch (err) {
+    log.error('Task Editor init payload application failed:', err);
+    closeTaskEditorAfterI18nFailure({
+      startup: !taskEditorHasInitializedDraft,
+      kind: 'task-payload-application',
+    });
+    return false;
+  }
+}
+
+setTaskEditorNormalInteractionAvailable(false);
+try {
+  validateTaskEditorBootstrapContracts();
+  wireTaskEditorEvents();
+  registerTaskEditorInit();
+  registerTaskEditorCloseGuard();
+  registerTaskEditorSettingsChanged();
+  bootstrapTaskEditor().catch((err) => {
+    log.error('Task Editor required initialization failed:', err);
+    closeTaskEditorAfterI18nFailure({ startup: true, kind: 'bootstrap' });
+  });
+} catch (err) {
+  log.error('Task Editor required bootstrap contract failed:', err);
+  closeTaskEditorAfterI18nFailure({ startup: true, kind: 'bootstrap-contract' });
+}
 
 // =============================================================================
 // End of public/task_editor.js

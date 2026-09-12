@@ -43,6 +43,7 @@
   const btnProceed = document.getElementById('textExtractionOcrActivationDisclosureProceed');
   const btnCancel = document.getElementById('textExtractionOcrActivationDisclosureCancel');
   const btnClose = document.getElementById('textExtractionOcrActivationDisclosureClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -113,6 +114,10 @@
     );
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public entrypoints
   // =============================================================================
@@ -129,6 +134,7 @@
       let settled = false;
 
       const cleanup = () => {
+        activePromptTranslations = null;
         btnProceed.removeEventListener('click', onProceed);
         btnCancel.removeEventListener('click', onCancel);
         btnClose.removeEventListener('click', onCancel);
@@ -136,6 +142,7 @@
         privacyLink.removeEventListener('click', onPrivacyClick);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = (accepted) => {
@@ -165,9 +172,16 @@
       backdrop.addEventListener('click', onCancel);
       privacyLink.addEventListener('click', onPrivacyClick);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = () => {
+        applyModalDirection();
+        applyModalCopy();
+      };
 
       modal.setAttribute('aria-hidden', 'false');
-      btnProceed.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnProceed,
+        fallbackFocus: btnClose,
+      });
     });
   }
 
@@ -176,6 +190,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionOcrActivationDisclosure', promptDisclosure);
+  window.TextExtractionOcrActivationDisclosureModal = { applyTranslations };
 })();
 
 // =============================================================================

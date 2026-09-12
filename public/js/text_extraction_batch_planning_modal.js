@@ -12,7 +12,6 @@
 // =============================================================================
 
 (() => {
-  const UNIT_NAME_MAX_LENGTH = 60;
 
   // =============================================================================
   // Imports / logger
@@ -23,14 +22,25 @@
   }
   const log = window.getLogger('text-extraction-batch-planning-modal');
   log.debug('Text extraction batch planning modal starting...');
+  const { AppConstants } = window;
+  if (!AppConstants) {
+    throw new Error('[text-extraction-batch-planning-modal] AppConstants unavailable; verify constants.js load order');
+  }
+  const { BATCH_UNIT_NAME_MAX } = AppConstants;
   const rendererIcons = window.RendererIcons || null;
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[text-extraction-batch-planning-modal] RendererIcons unavailable; cannot continue');
   }
-  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
-    throw new Error('[text-extraction-batch-planning-modal] RendererI18n.tRenderer unavailable; cannot continue');
+  if (!window.RendererI18n
+    || typeof window.RendererI18n.tRenderer !== 'function'
+    || typeof window.RendererI18n.msgRenderer !== 'function') {
+    throw new Error('[text-extraction-batch-planning-modal] RendererI18n unavailable; cannot continue');
   }
-  const { tRenderer } = window.RendererI18n;
+  const { tRenderer, msgRenderer } = window.RendererI18n;
+  const rendererCombobox = window.RendererCombobox || null;
+  if (!rendererCombobox || typeof rendererCombobox.create !== 'function') {
+    throw new Error('[text-extraction-batch-planning-modal] RendererCombobox unavailable; cannot continue');
+  }
   const pdfPageSelectionHelper = window.TextExtractionPdfPageSelection || null;
   if (!pdfPageSelectionHelper
     || typeof pdfPageSelectionHelper.buildAllPagesSelection !== 'function'
@@ -58,6 +68,7 @@
   const btnStart = document.getElementById('textExtractionBatchPlanStart');
   const btnCancel = document.getElementById('textExtractionBatchPlanCancel');
   const btnClose = document.getElementById('textExtractionBatchPlanClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -181,7 +192,7 @@
     const action = element.getAttribute('data-action') || '';
     const inputId = element.getAttribute('data-input-id') || '';
     const unitKey = element.getAttribute('data-unit-key') || '';
-    const id = typeof element.id === 'string' ? element.id : '';
+    const id = action ? '' : (typeof element.id === 'string' ? element.id : '');
     if (!id && !action) {
       return null;
     }
@@ -219,17 +230,6 @@
     }
   }
 
-  function focusElementWithoutScroll(element) {
-    if (!element || typeof element.focus !== 'function') {
-      return;
-    }
-    try {
-      element.focus({ preventScroll: true });
-    } catch (_err) {
-      element.focus();
-    }
-  }
-
   function createActionButton({
     labelKey,
     action,
@@ -238,15 +238,12 @@
     disabled = false,
     iconName = '',
     className = 'btn-standard',
-    size = 'sm',
   }) {
     const accessibleLabel = tRenderer(labelKey);
     const button = iconName
       ? rendererIcons.createIconButton({
         iconName,
         className,
-        size,
-        title: accessibleLabel,
         ariaLabel: accessibleLabel,
         type: 'button',
       })
@@ -255,8 +252,8 @@
         textContent: accessibleLabel,
         type: 'button',
       });
+    if (iconName) button.setAttribute('data-tot-tooltip', accessibleLabel);
     button.disabled = disabled === true;
-    button.title = accessibleLabel;
     button.setAttribute('data-action', action);
     if (inputId) {
       button.setAttribute('data-input-id', inputId);
@@ -282,8 +279,10 @@
     root._fromInput.max = String(root._totalPages || 1);
     root._toInput.max = String(root._totalPages || 1);
     if (!preserveTypedValues) {
-      root._fromInput.value = String(safeDraft.fromPage || 1);
-      root._toInput.value = String(safeDraft.toPage || root._totalPages || 1);
+      root._fromInput.value = safeDraft.fromPage == null ? '1' : String(safeDraft.fromPage);
+      root._toInput.value = safeDraft.toPage == null
+        ? String(root._totalPages || 1)
+        : String(safeDraft.toPage);
     }
     setElementVisibility(root._rangeGrid, uiState.showRange === true);
     root._countEl.textContent = uiState.selectedCountText;
@@ -401,7 +400,14 @@
     return root;
   }
 
-  function createRouteControl(input) {
+  function markComboboxTrigger(host, action, inputId) {
+    const trigger = host && host.firstElementChild;
+    if (!trigger) return;
+    trigger.setAttribute('data-action', action);
+    trigger.setAttribute('data-input-id', inputId);
+  }
+
+  function createRouteControl(input, comboboxContext) {
     const routeOptions = Array.isArray(input.routeOptions) ? input.routeOptions : [];
     if (routeOptions.length <= 1) {
       return createDomElement('span', {
@@ -410,59 +416,53 @@
       });
     }
 
-    const select = createDomElement('select', {
-      className: 'text-extraction-batch-plan-route-select',
+    const host = createDomElement('div', {
+      className: 'text-extraction-batch-plan-route-combobox',
     });
-    select.setAttribute('data-action', 'set-input-route');
-    select.setAttribute('data-input-id', input.inputId);
-    routeOptions.forEach((route) => {
-      const option = createDomElement('option', {
-        textContent: route.toUpperCase(),
-        value: route,
-      });
-      option.value = route;
-      option.selected = route === input.activeRoute;
-      select.appendChild(option);
+    const combobox = rendererCombobox.create({
+      host,
+      mode: 'select',
+      options: routeOptions.map((route) => ({ value: route, label: route.toUpperCase() })),
+      value: input.activeRoute,
+      ariaLabel: msgRenderer('renderer.text_extraction.batch_plan.aria.route', {
+        file: `\u2068${input.fileName}\u2069`,
+      }),
+      onChange: (route) => comboboxContext.onRouteChange(input.inputId, route),
     });
-    return select;
+    comboboxContext.instances.push(combobox);
+    markComboboxTrigger(host, 'set-input-route', input.inputId);
+    return host;
   }
 
-  function populateUnitSelectOptions(select, input) {
-    if (!select) return;
-    if (typeof select.replaceChildren === 'function') {
-      select.replaceChildren();
-    } else {
-      select.innerHTML = '';
-    }
-    (Array.isArray(input.groupOptions) ? input.groupOptions : []).forEach((option) => {
-      const optionEl = createDomElement('option', {
-        textContent: option.label,
-        value: option.unitKey,
-      });
-      optionEl.value = option.unitKey;
-      optionEl.selected = option.unitKey === input.groupKey;
-      select.appendChild(optionEl);
-    });
-    const newUnitOption = createDomElement('option', {
-      textContent: tRenderer('renderer.text_extraction.batch_plan.new_unit_option'),
+  function buildUnitOptions(input) {
+    const options = (Array.isArray(input.groupOptions) ? input.groupOptions : []).map((option) => ({
+      value: option.unitKey,
+      label: option.label,
+    }));
+    options.push({
       value: '__new__',
+      label: tRenderer('renderer.text_extraction.batch_plan.new_unit_option'),
     });
-    newUnitOption.value = '__new__';
-    select.appendChild(newUnitOption);
+    return options;
   }
 
-  function createUnitSelect(unit, input) {
-    if (unit.exclusiveHeavy) {
-      return null;
-    }
-
-    const select = createDomElement('select', {
-      className: 'text-extraction-batch-plan-unit-select',
+  function createUnitCombobox(input, comboboxContext) {
+    const host = createDomElement('div', {
+      className: 'text-extraction-batch-plan-unit-combobox',
     });
-    select.setAttribute('data-action', 'assign-input-group');
-    select.setAttribute('data-input-id', input.inputId);
-    populateUnitSelectOptions(select, input);
-    return select;
+    const combobox = rendererCombobox.create({
+      host,
+      mode: 'select',
+      options: buildUnitOptions(input),
+      value: input.groupKey,
+      ariaLabel: msgRenderer('renderer.text_extraction.batch_plan.aria.unit_assignment', {
+        file: `\u2068${input.fileName}\u2069`,
+      }),
+      onChange: (groupKey) => comboboxContext.onUnitChange(input.inputId, groupKey),
+    });
+    comboboxContext.instances.push(combobox);
+    markComboboxTrigger(host, 'assign-input-group', input.inputId);
+    return { host, combobox };
   }
 
   function createKeepControl(input) {
@@ -471,7 +471,7 @@
     }
 
     const label = createDomElement('label', {
-      className: 'text-extraction-batch-plan-keep-toggle',
+      className: 'text-extraction-batch-plan-keep-toggle native-checkbox-option',
     });
     const checkbox = createDomElement('input', {
       type: 'checkbox',
@@ -486,9 +486,36 @@
     return label;
   }
 
-  function renderInputRow(unit, input, pageSelectionDraft = null, pageSelectionRoots, keepControlRoots, unitSelectRoots) {
+  function createHeavySplitPreview(input) {
+    if (!input.heavySplitActive
+      || !Array.isArray(input.generatedInputsPreview)
+      || !input.generatedInputsPreview.length) {
+      return null;
+    }
+
+    const previewWrap = createDomElement('div', {
+      className: 'text-extraction-batch-plan-heavy-preview',
+    });
+    previewWrap.appendChild(createDomElement('p', {
+      className: 'text-extraction-batch-plan-heavy-preview-label',
+      textContent: tRenderer('renderer.text_extraction.batch_plan.generated_inputs_preview'),
+    }));
+    const previewList = createDomElement('ul', {
+      className: 'text-extraction-batch-plan-heavy-preview-list',
+    });
+    input.generatedInputsPreview.forEach((generatedInput) => {
+      previewList.appendChild(createDomElement('li', {
+        textContent: generatedInput.processingInputFileName,
+      }));
+    });
+    previewWrap.appendChild(previewList);
+    return previewWrap;
+  }
+
+  function renderInputRow(input, pageSelectionDraft = null, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
     const row = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-row',
+      attributes: { 'data-input-id': input.inputId },
     });
     const middleRow = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-row-middle',
@@ -520,7 +547,7 @@
     const routeWrap = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-route',
     });
-    routeWrap.appendChild(createRouteControl(input));
+    routeWrap.appendChild(createRouteControl(input, comboboxContext));
 
     const pagesWrap = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-pages',
@@ -546,10 +573,10 @@
     const unitWrap = createDomElement('div', {
       className: 'text-extraction-batch-plan-input-unit',
     });
-    const unitSelect = createUnitSelect(unit, input);
-    if (unitSelect) {
-      unitSelectRoots.set(input.inputId, unitSelect);
-      unitWrap.appendChild(unitSelect);
+    const unitControl = createUnitCombobox(input, comboboxContext);
+    if (unitControl) {
+      unitSelectRoots.set(input.inputId, unitControl.combobox);
+      unitWrap.appendChild(unitControl.host);
     }
 
     const actionsWrap = createDomElement('div', {
@@ -562,8 +589,7 @@
         inputId: input.inputId,
         disabled: input.canMoveUp !== true,
         iconName: 'arrow-up-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.move_down',
@@ -571,27 +597,25 @@
         inputId: input.inputId,
         disabled: input.canMoveDown !== true,
         iconName: 'arrow-down-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.remove_input',
         action: 'remove-input',
         inputId: input.inputId,
         iconName: 'trash',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
     ]);
 
     appendChildren(middleRow, [routeWrap, pagesWrap]);
     appendChildren(bottomControls, [unitWrap, actionsWrap]);
     appendChildren(bottomRow, [keepWrap, bottomControls]);
-    appendChildren(row, [main, middleRow, bottomRow]);
+    appendChildren(row, [main, middleRow, bottomRow, createHeavySplitPreview(input)]);
     return row;
   }
 
-  function renderUnit(unit, unitIndex, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots) {
+  function renderUnit(unit, unitIndex, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
     const section = createDomElement('section', {
       className: 'text-extraction-batch-plan-unit',
     });
@@ -615,9 +639,12 @@
     });
     unitNameInput.setAttribute('data-action', 'rename-unit');
     unitNameInput.setAttribute('data-unit-key', unit.unitKey);
-    unitNameInput.maxLength = UNIT_NAME_MAX_LENGTH;
+    unitNameInput.maxLength = BATCH_UNIT_NAME_MAX;
     unitNameInput.setAttribute('placeholder', tRenderer('renderer.text_extraction.batch_plan.unit_name_placeholder'));
-    unitNameInput.setAttribute('aria-label', `${unitHeading.textContent} ${tRenderer('renderer.text_extraction.batch_plan.unit_name_placeholder')}`);
+    unitNameInput.setAttribute('aria-label', msgRenderer(
+      'renderer.text_extraction.batch_plan.aria.unit_name',
+      { index: unitIndex + 1, count: unitCount }
+    ));
     appendChildren(headingWrap, [unitHeading, unitNameInput]);
     const headerActions = createDomElement('div', {
       className: 'text-extraction-batch-plan-unit-actions',
@@ -629,8 +656,7 @@
         unitKey: unit.unitKey,
         disabled: unit.canMoveUp !== true,
         iconName: 'arrow-up-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
       createActionButton({
         labelKey: 'renderer.text_extraction.batch_plan.move_down',
@@ -638,8 +664,7 @@
         unitKey: unit.unitKey,
         disabled: unit.canMoveDown !== true,
         iconName: 'arrow-down-strong',
-        className: 'btn-standard btn-standard--square text-extraction-batch-plan-icon-button',
-        size: 'sm',
+        className: 'btn-standard btn-standard--square',
       }),
     ]);
     appendChildren(header, [headingWrap, headerActions]);
@@ -649,37 +674,17 @@
     });
     (Array.isArray(unit.inputs) ? unit.inputs : []).forEach((input) => {
       inputsWrap.appendChild(renderInputRow(
-        unit,
         input,
         pageSelectionDrafts.get(input.inputId) || null,
         pageSelectionRoots,
         keepControlRoots,
-        unitSelectRoots
+        unitSelectRoots,
+        comboboxContext
       ));
     });
 
     section.appendChild(header);
     section.appendChild(inputsWrap);
-
-    if (unit.exclusiveHeavy && Array.isArray(unit.generatedInputsPreview) && unit.generatedInputsPreview.length) {
-      const previewWrap = createDomElement('div', {
-        className: 'text-extraction-batch-plan-heavy-preview',
-      });
-      previewWrap.appendChild(createDomElement('p', {
-        className: 'text-extraction-batch-plan-heavy-preview-label',
-        textContent: tRenderer('renderer.text_extraction.batch_plan.generated_inputs_preview'),
-      }));
-      const previewList = createDomElement('ul', {
-        className: 'text-extraction-batch-plan-heavy-preview-list',
-      });
-      unit.generatedInputsPreview.forEach((generatedInput) => {
-        previewList.appendChild(createDomElement('li', {
-          textContent: generatedInput.processingInputFileName,
-        }));
-      });
-      previewWrap.appendChild(previewList);
-      section.appendChild(previewWrap);
-    }
 
     if (unit.canConfigureTags) {
       const tagsRow = createDomElement('div', {
@@ -705,7 +710,7 @@
     return section;
   }
 
-  function replaceBodyUnits(units, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots) {
+  function replaceBodyUnits(units, unitCount, pageSelectionDrafts, pageSelectionRoots, keepControlRoots, unitSelectRoots, comboboxContext) {
     const unitNodes = (Array.isArray(units) ? units : []).map((unit, unitIndex) => renderUnit(
       unit,
       unitIndex,
@@ -713,7 +718,8 @@
       pageSelectionDrafts,
       pageSelectionRoots,
       keepControlRoots,
-      unitSelectRoots
+      unitSelectRoots,
+      comboboxContext
     ));
     if (typeof body.replaceChildren === 'function') {
       body.replaceChildren(...unitNodes);
@@ -737,6 +743,10 @@
     btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.batch_plan.close_aria'));
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Public prompt
   // =============================================================================
@@ -753,7 +763,6 @@
 
     return new Promise((resolve) => {
       let settled = false;
-      const previousActiveElement = document.activeElement || null;
       let currentModel = controller.getViewModel();
       let rootListenerBound = false;
       let startValidationInFlight = false;
@@ -761,6 +770,7 @@
       const pageSelectionRoots = new Map();
       const keepControlRoots = new Map();
       const unitSelectRoots = new Map();
+      const comboboxInstances = [];
 
       const findInputById = (inputId) => {
         for (const unit of Array.isArray(currentModel.units) ? currentModel.units : []) {
@@ -819,10 +829,13 @@
       };
 
       const refreshAllUnitSelectControls = () => {
-        for (const [inputId, select] of unitSelectRoots.entries()) {
+        for (const [inputId, combobox] of unitSelectRoots.entries()) {
           const input = findInputById(inputId);
-          if (!input || !select) continue;
-          populateUnitSelectOptions(select, input);
+          if (!input || !combobox) continue;
+          combobox.update({
+            options: buildUnitOptions(input),
+            value: input.groupKey,
+          });
         }
       };
 
@@ -878,15 +891,32 @@
         }
       };
 
-      const restoreRerenderUiState = (uiState) => {
+      const restoreRerenderUiState = (uiState, { restoreFocusedElement = true } = {}) => {
         if (!uiState) return;
-        setScrollTop(uiState.scrollTop);
-        restoreFocusFromDescriptor(uiState.focusedElement);
+        if (restoreFocusedElement) {
+          setScrollTop(uiState.scrollTop);
+          restoreFocusFromDescriptor(uiState.focusedElement);
+        }
         setScrollTop(uiState.scrollTop);
       };
 
-      const rerender = () => {
+      const comboboxContext = {
+        instances: comboboxInstances,
+        onRouteChange(inputId, route) {
+          controller.applyAction({ type: 'set_input_route', inputId, route });
+          rerender();
+        },
+        onUnitChange(inputId, groupKey) {
+          controller.applyAction({ type: 'assign_input_group', inputId, groupKey });
+          rerender();
+        },
+      };
+
+      const rerender = ({ restoreFocusedElement = true } = {}) => {
         const uiState = captureRerenderUiState();
+        const focusedNodeWillBeReplaced = !restoreFocusedElement
+          && !!(document.activeElement && body.contains(document.activeElement));
+        comboboxInstances.splice(0).forEach((combobox) => combobox.destroy());
         currentModel = controller.getViewModel();
         syncPageSelectionDrafts();
         renderCopy(currentModel);
@@ -899,12 +929,16 @@
           pageSelectionDrafts,
           pageSelectionRoots,
           keepControlRoots,
-          unitSelectRoots
+          unitSelectRoots,
+          comboboxContext
         );
         failurePolicyDefault.checked = currentModel.failurePolicy !== 'omit_failed_and_continue';
         failurePolicyContinue.checked = currentModel.failurePolicy === 'omit_failed_and_continue';
         syncStartButtonState();
-        restoreRerenderUiState(uiState);
+        restoreRerenderUiState(uiState, { restoreFocusedElement });
+        if (focusedNodeWillBeReplaced) {
+          btnClose.focus({ preventScroll: true });
+        }
       };
 
       const applyResolvedPageSelection = (inputId, pdfPageSelection) => {
@@ -933,6 +967,8 @@
       };
 
       const cleanup = () => {
+        activePromptTranslations = null;
+        comboboxInstances.splice(0).forEach((combobox) => combobox.destroy());
         if (rootListenerBound) {
           body.removeEventListener('click', onBodyClick);
           body.removeEventListener('change', onBodyChange);
@@ -949,9 +985,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
-        if (previousActiveElement && previousActiveElement !== document.activeElement) {
-          focusElementWithoutScroll(previousActiveElement);
-        }
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const onPresetAll = () => {
@@ -1061,24 +1095,6 @@
         if (!target || !target.getAttribute) return;
         const action = target.getAttribute('data-action') || '';
         const inputId = target.getAttribute('data-input-id') || '';
-        if (action === 'set-input-route') {
-          controller.applyAction({
-            type: 'set_input_route',
-            inputId,
-            route: target.value,
-          });
-          rerender();
-          return;
-        }
-        if (action === 'assign-input-group') {
-          controller.applyAction({
-            type: 'assign_input_group',
-            inputId,
-            groupKey: target.value,
-          });
-          rerender();
-          return;
-        }
         if (action === 'toggle-keep') {
           controller.applyAction({
             type: 'set_generated_pdf_policy',
@@ -1154,9 +1170,13 @@
       rootListenerBound = true;
 
       rerender();
+      activePromptTranslations = () => rerender({ restoreFocusedElement: false });
       modal.setAttribute('aria-hidden', 'false');
-      focusElementWithoutScroll(btnClose || btnPresetAll || btnStart);
       setScrollTop(0);
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnClose,
+        fallbackFocus: btnClose,
+      });
     });
   }
 
@@ -1165,6 +1185,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionBatchPlan', promptBatchPlan);
+  window.TextExtractionBatchPlanningModal = { applyTranslations };
 })();
 
 // =============================================================================

@@ -1,22 +1,23 @@
-<!-- public/info/acerca_de.html -->
+<!-- public/info/acerca_de.es.html -->
 <!doctype html>
 <html lang="es">
 
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title data-i18n="title">Acerca de — toT</title>
+  <title>Acerca de — toT</title>
 </head>
 
 <body>
-  <h3>toT</h3>
-  <h1 data-i18n="title">Acerca de</h1>
+  <header class="info-document-header">
+    <div class="info-brand">toT</div>
+    <h1>Acerca de</h1>
+  </header>
   <main>
 
     <section aria-label="Versión">
-      <h3>Versión</h3>
+      <h2>Versión</h2>
       <ul>
         <li><strong>Versión:</strong> <span id="appVersion"></span></li>
         <li><strong>Plataforma:</strong> Escritorio (Electron)</li>
@@ -28,65 +29,49 @@
     <hr />
 
     <section aria-label="Soporte y contacto">
-      <h3>Soporte y contacto</h3>
+      <h2>Soporte y contacto</h2>
       <ul>
-        <li><strong>Sitio web:</strong>
+        <li>
+          <strong>Sitio web:</strong>
           <code><a href="https://totapp.org/">totapp.org</a></code>
         </li>
-        <li><strong>Repositorio:</strong>
+        <li>
+          <strong>Repositorio:</strong>
           <code><a href="https://github.com/Cibersino/tot">github.com/Cibersino/tot</a></code>
         </li>
-        <li><strong>Reportar errores o sugerencias:</strong>
+        <li>
+          <strong>Reportar errores o sugerencias:</strong>
           <code><a href="https://github.com/Cibersino/tot/issues">github.com/Cibersino/tot/issues</a></code>
         </li>
-        <li><strong>Contacto privado:</strong>
+        <li>
+          <strong>Contacto privado:</strong>
           <code><a href="mailto:cibersino@gmail.com">cibersino@gmail.com</a></code>
         </li>
       </ul>
-      <p>
-        Incluye la versión y los pasos para reproducir el problema en GitHub Issues. Para consultas privadas, usa el correo.
-      </p>
+      <p>Incluye la versión y los pasos para reproducir el problema en GitHub Issues. Para consultas privadas, usa el correo.</p>
     </section>
 
     <hr />
 
     <section aria-label="Privacidad y datos">
-      <h3>Privacidad y datos</h3>
+      <h2>Privacidad y datos</h2>
       <ul>
         <li><strong>Telemetría:</strong> no se recopilan métricas ni se envían datos de uso.</li>
-        <li><strong>Texto del usuario:</strong> el contenido que ingresas o pegas en la app no se envía a Internet ni se
-          comparte con servidores del desarrollador (se procesa localmente).</li>
-        <li><strong>Almacenamiento:</strong> la configuración y el estado se guardan localmente en el equipo del
-          usuario.</li>
-        <li><strong>Actualizaciones:</strong> la app solo consulta información pública de versiones y puede abrir el navegador externo
-          hacia la página de descarga; no descarga ni instala actualizaciones automáticamente.</li>
-        <li><strong>Enlaces externos:</strong> la app también puede abrir enlaces externos por acción explícita del
-          usuario (por ejemplo, desde páginas informativas o desde el Editor de Tareas).</li>
-        <li><strong>OCR:</strong> si decides usar la función OCR para extraer texto de archivos, su activación
-          abre el navegador del sistema para autorizar Google y los archivos elegidos para OCR se envían a Google solo
-          para esa operación; no se envían al desarrollador. Puedes revocar la autorización mediante
-          <strong>Menú &gt; Preferencias &gt; Desconectar Google OCR</strong>.</li>
+        <li><strong>Texto del usuario:</strong> el contenido que ingresas o pegas en la app no se envía a Internet ni se comparte con servidores del desarrollador (se procesa localmente).</li>
+        <li><strong>Almacenamiento:</strong> la configuración y el estado se guardan localmente en el equipo del usuario.</li>
+        <li><strong>Actualizaciones:</strong> la app solo consulta información pública de versiones y puede abrir el navegador externo hacia la página de descarga; no descarga ni instala actualizaciones automáticamente.</li>
+        <li><strong>Enlaces externos:</strong> la app también puede abrir enlaces externos por acción explícita del usuario (por ejemplo, desde páginas informativas o desde el Editor de Tareas).</li>
+        <li><strong>OCR:</strong> si decides usar la función OCR para extraer texto de archivos, su activación abre el navegador del sistema para autorizar Google y los archivos elegidos para OCR se envían a Google solo para esa operación; no se envían al desarrollador. Puedes revocar la autorización mediante <strong>Menú &gt; Preferencias &gt; Desconectar Google OCR</strong>.</li>
       </ul>
-      <p>
-        <strong>Conectividad:</strong> la app sigue siendo principalmente local para escribir/pegar/editar texto y
-        calcular conteos/estimaciones. La conectividad normal incluye verificación de actualizaciones y apertura de
-        enlaces externos por acción del usuario. Si decides activar o usar la función OCR, también
-        existe conectividad con Google para autorización y procesamiento OCR de los archivos que selecciones.
-      </p>
-      <p>
-        Para más detalles, consulta el documento de
-        <code><a href="appdoc:privacy-policy">PRIVACY.md</a></code>.
-      </p>
+      <p><strong>Conectividad:</strong> la app sigue siendo principalmente local para escribir/pegar/editar texto y calcular conteos/estimaciones. La conectividad normal incluye verificación de actualizaciones y apertura de enlaces externos por acción del usuario. Si decides activar o usar la función OCR, también existe conectividad con Google para autorización y procesamiento OCR de los archivos que selecciones.</p>
+      <p>Para más detalles, consulta el documento de <code><a href="appdoc:privacy-policy">PRIVACY.md</a></code>.</p>
     </section>
 
     <hr />
 
     <section aria-label="Licencias y avisos">
-      <h3>Licencias y avisos</h3>
-      <p>
-        La app se distribuye bajo licencia MIT. Además, esta distribución incluye componentes y recursos de terceros
-        con sus propias licencias. Sus textos se entregan junto al build:
-      </p>
+      <h2>Licencias y avisos</h2>
+      <p>La app se distribuye bajo licencia MIT. Además, esta distribución incluye componentes y recursos de terceros con sus propias licencias. Sus textos se entregan junto al build:</p>
       <ul>
         <li>
           <strong>toT</strong> — MIT:
@@ -145,11 +130,11 @@
           ver <code><a href="appdoc:license-reading-test-zip-import">LICENSE_adm-zip_0.5.16.txt</a></code>.
         </li>
         <li id="sharpRuntimeLicenseRow">
-          <strong><span id="sharpRuntimePackageName">@img/sharp-<plataforma>-<arquitectura>@0.34.4</span></strong> — licencia del runtime nativo empaquetado para esta plataforma:
+          <strong><span id="sharpRuntimePackageName">@img/sharp-&lt;plataforma&gt;-&lt;arquitectura&gt;@0.34.4</span></strong> — licencia del runtime nativo empaquetado para esta plataforma:
           ver <code><a href="appdoc:license-text-extraction-image-processing-runtime">licencia del runtime nativo de sharp</a></code>.
         </li>
         <li id="sharpRuntimeNoticeRow">
-          <strong><span id="sharpRuntimeNoticePackageName">@img/sharp-<plataforma>-<arquitectura>@0.34.4</span></strong> — aviso de componentes incorporados del runtime nativo:
+          <strong><span id="sharpRuntimeNoticePackageName">@img/sharp-&lt;plataforma&gt;-&lt;arquitectura&gt;@0.34.4</span></strong> — aviso de componentes incorporados del runtime nativo:
           ver <code><a href="appdoc:notice-text-extraction-image-processing-runtime">aviso del runtime nativo de sharp</a></code>.
         </li>
       </ul>
@@ -158,16 +143,14 @@
     <hr />
 
     <section aria-label="Garantías y responsabilidad">
-      <h3>Garantías y responsabilidad</h3>
-      <p>
-        Este software se entrega “tal cual”, sin garantías. El uso es bajo responsabilidad del usuario.
-      </p>
+      <h2>Garantías y responsabilidad</h2>
+      <p>Este software se entrega “tal cual”, sin garantías. El uso es bajo responsabilidad del usuario.</p>
     </section>
 
     <hr />
 
     <section aria-label="Créditos">
-      <h3>Créditos</h3>
+      <h2>Créditos</h2>
       <ul>
         <li><strong>Autor y desarrollador:</strong> <a href="https://github.com/Cibersino">Cibersino</a></li>
         <li><strong>Runtime:</strong> Electron (Chromium + Node.js).</li>
@@ -175,5 +158,4 @@
     </section>
   </main>
 </body>
-
 </html>

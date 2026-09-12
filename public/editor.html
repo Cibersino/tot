@@ -4,49 +4,137 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
-
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
   <title>toT — Texto completo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="tooltips.css" />
+  <link rel="stylesheet" href="toasts.css" />
   <link rel="stylesheet" href="editor.css" />
 </head>
 
 <body>
   <!-- The textarea takes up all the available space -->
-  <div id="editorWrap" class="editor-wrap">
-    <div id="editorLayout" class="editor-layout">
-      <div id="editorLeftGutter" class="editor-gutter editor-gutter-left"></div>
-      <div id="editorTextColumn" class="editor-text-column">
-        <textarea id="editorArea" placeholder="Escribe o pega aquí..."></textarea>
+  <div
+    id="editorWrap"
+    class="editor-wrap"
+    inert
+    aria-busy="true"
+  >
+    <div
+      id="editorLayout"
+      class="editor-layout"
+    >
+      <div
+        id="editorLeftGutter"
+        class="editor-gutter editor-gutter-left"
+      ></div>
+      <div
+        id="editorTextColumn"
+        class="editor-text-column"
+      >
+        <textarea
+          id="editorArea"
+          placeholder="Escribe o pega aquí..."
+          disabled
+        ></textarea>
       </div>
-      <div id="editorRightGutter" class="editor-gutter editor-gutter-right"></div>
+      <div
+        id="editorRightGutter"
+        class="editor-gutter editor-gutter-right"
+      ></div>
     </div>
   </div>
 
   <!-- Bottom bar: Apply | checkboxes | TRASH (right aligned) -->
-  <div id="bottomBar" class="bottom-bar" role="region" aria-label="Controles del Editor de Texto">
+  <div
+    id="bottomBar"
+    class="bottom-bar"
+    role="region"
+    aria-label="Controles del Editor de Texto"
+    inert
+    aria-busy="true"
+  >
     <div class="left-controls">
-      <button id="btnCalc" class="btn-calc" disabled data-label="Aplicar" aria-label="Aplicar"></button>
-      <label class="calc-label editor-toggle-label" data-label="Auto-aplicar"><input
-          id="calcWhileTyping" type="checkbox" checked
-          aria-label="Auto-aplicar" /></label>
-      <label class="spellcheck-label editor-toggle-label" data-label="Ortografía"><input
-          id="spellcheckToggle" type="checkbox" checked
-          aria-label="Ortografía" /></label>
+      <button
+        id="btnCalc"
+        class="btn-standard"
+        disabled
+        data-label="Aplicar"
+        aria-label="Aplicar"
+        aria-describedby="editorApplyDescription"
+      ></button>
+      <span
+        id="editorApplyDescription"
+        class="editor-accessible-description"
+      ></span>
+      <label
+        class="calc-label editor-toggle-label"
+        data-label="Auto-aplicar"
+      ><input
+          id="calcWhileTyping"
+          type="checkbox"
+          checked
+          aria-label="Auto-aplicar"
+          aria-describedby="editorAutoApplyDescription"
+        /></label>
+      <span
+        id="editorAutoApplyDescription"
+        class="editor-accessible-description"
+      ></span>
+      <label
+        class="spellcheck-label editor-toggle-label"
+        data-label="Ortografía"
+      ><input
+          id="spellcheckToggle"
+          type="checkbox"
+          checked
+          aria-label="Ortografía"
+          aria-describedby="editorSpellcheckDescription"
+        /></label>
+      <span
+        id="editorSpellcheckDescription"
+        class="editor-accessible-description"
+      ></span>
       <div
         id="editorTextSizeControls"
         class="editor-text-size-controls"
         role="group"
         aria-label="Tamaño del texto"
       >
-        <span id="editorTextSizeLabel" class="editor-text-size-label" data-label="Tamaño"></span>
-        <button id="btnTextSizeDecrease" class="btn-text-size" type="button" data-label="-" aria-label="Reducir tamaño del texto" title="Reducir tamaño del texto"></button>
-        <output id="editorTextSizeValue" class="editor-text-size-value" data-label="20" aria-live="polite" aria-atomic="true" aria-label="20"></output>
-        <button id="btnTextSizeIncrease" class="btn-text-size" type="button" data-label="+" aria-label="Aumentar tamaño del texto" title="Aumentar tamaño del texto"></button>
-        <button id="btnTextSizeReset" class="btn-text-size btn-text-size-reset" type="button"
-          aria-label="Restablecer tamaño del texto" title="Restablecer tamaño del texto" data-tot-icon="reset"
-          data-tot-icon-size="xs"></button>
+        <span
+          id="editorTextSizeLabel"
+          class="editor-text-size-label"
+          data-label="Tamaño"
+        ></span>
+        <button
+          id="btnTextSizeDecrease"
+          class="btn-standard btn-standard--half-width"
+          type="button"
+          data-label="-"
+          aria-label="Reducir tamaño del texto"
+        ></button>
+        <output
+          id="editorTextSizeValue"
+          class="editor-text-size-value"
+          data-label="20"
+          aria-live="polite"
+          aria-atomic="true"
+          aria-label="20"
+        ></output>
+        <button
+          id="btnTextSizeIncrease"
+          class="btn-standard btn-standard--half-width"
+          type="button"
+          data-label="+"
+          aria-label="Aumentar tamaño del texto"
+        ></button>
+        <button
+          id="btnTextSizeReset"
+          class="btn-standard btn-standard--square-half"
+          type="button"
+          aria-label="Restablecer tamaño del texto"
+          data-tot-icon="reset"
+        ></button>
       </div>
       <div
         id="editorReadProgress"
@@ -56,14 +144,27 @@
         aria-atomic="true"
         aria-label="Leído"
       >
-        <span id="editorReadProgressLabel" class="editor-read-progress-label" data-label="Leído"></span>
-        <output id="editorReadProgressValue" class="editor-read-progress-value" data-label="0%" aria-label="Leído: 0%"></output>
+        <span
+          id="editorReadProgressLabel"
+          class="editor-read-progress-label"
+          data-label="Leído"
+        ></span>
+        <output
+          id="editorReadProgressValue"
+          class="editor-read-progress-value"
+          data-label="0%"
+          aria-label="Leído: 0%"
+        ></output>
       </div>
     </div>
 
     <div class="right-controls">
-      <button id="btnTrash" class="btn-trash" aria-label="Vaciar" title="Vaciar"
-        data-tot-icon="trash" data-tot-icon-size="md"></button>
+      <button
+        id="btnTrash"
+        class="btn-standard btn-standard--square"
+        aria-label="Vaciar"
+        data-tot-icon="trash"
+      ></button>
     </div>
   </div>
 
@@ -74,7 +175,10 @@
     tabindex="-1"
   >
     <div class="reading-test-prestart-panel">
-      <p id="readingTestPrestartMessage" class="reading-test-prestart-message"></p>
+      <p
+        id="readingTestPrestartMessage"
+        class="reading-test-prestart-message"
+      ></p>
     </div>
   </div>
 
@@ -90,6 +194,6 @@
   <script src="js/editor_ui.js"></script>
   <script src="js/editor_engine.js"></script>
   <script src="editor.js"></script>
+  <script src="js/tooltips.js"></script>
 </body>
-
 </html>

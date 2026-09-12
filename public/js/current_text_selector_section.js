@@ -56,6 +56,7 @@
   const previewSpoilerToggle = document.getElementById('previewSpoilerToggle');
   const previewSpoilerToggleLabel = document.getElementById('previewSpoilerToggleLabel');
   const previewSpoilerText = document.getElementById('previewSpoilerText');
+  const previewSpoilerDescription = document.getElementById('previewSpoilerDescription');
   const btnTextExtractionAbort = document.getElementById('btnTextExtractionAbort');
 
   const selectorControls = [
@@ -81,6 +82,7 @@
   let editorLaunchPending = false;
   let lastPreviewText = '';
   let lastPreviewEmptyText = '';
+  let previewSpoilerSavePending = false;
 
   // =============================================================================
   // Helpers
@@ -100,13 +102,25 @@
     setControlInteractionLocked(btnEdit, locked);
   }
 
+  function applyPreviewSpoilerToggleControlState() {
+    setControlInteractionLocked(
+      previewSpoilerToggle,
+      selectorInteractionLocked || previewSpoilerSavePending
+    );
+  }
+
   // Clipboard repeat helpers
 
   function updateClipboardRepeatVisualState(rawValue = '') {
     if (!clipboardRepeatInput) return;
     const numericValue = Number(rawValue);
     const isRepeatActive = Number.isFinite(numericValue) && numericValue > 1;
+    const isInvalid = !Number.isInteger(numericValue)
+      || numericValue < 1
+      || numericValue > MAX_CLIPBOARD_REPEAT;
     clipboardRepeatInput.classList.toggle('is-repeat-active', isRepeatActive);
+    clipboardRepeatInput.classList.toggle('is-invalid', isInvalid);
+    clipboardRepeatInput.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
   }
 
   function normalizeClipboardRepeat(rawValue) {
@@ -120,6 +134,14 @@
     const numericValue = Number(rawValue);
     if (!Number.isInteger(numericValue) || numericValue < 1) return 1;
     return Math.min(numericValue, MAX_CLIPBOARD_REPEAT);
+  }
+
+  function commitClipboardRepeatInput() {
+    if (!clipboardRepeatInput) return 1;
+    const normalized = normalizeClipboardRepeat(clipboardRepeatInput.value);
+    clipboardRepeatInput.value = String(normalized);
+    updateClipboardRepeatVisualState(normalized);
+    return normalized;
   }
 
   // Preview rendering helpers
@@ -146,6 +168,7 @@
       return {
         direction: getUiLanguageDirection(),
         kind: 'plain',
+        isEmpty: true,
         text: emptyText,
       };
     }
@@ -183,9 +206,9 @@
     };
   }
 
-  function createPreviewTextFragment(text) {
+  function createPreviewTextFragment(text, { isEmpty = false } = {}) {
     const fragment = document.createElement('bdi');
-    fragment.className = 'preview-fragment';
+    fragment.className = isEmpty ? 'preview-fragment preview-fragment--empty' : 'preview-fragment';
     fragment.setAttribute('dir', 'auto');
     fragment.textContent = text;
     return fragment;
@@ -223,7 +246,7 @@
     textPreview.textContent = '';
 
     if (previewModel.kind === 'plain') {
-      textPreview.appendChild(createPreviewTextFragment(previewModel.text));
+      textPreview.appendChild(createPreviewTextFragment(previewModel.text, { isEmpty: previewModel.isEmpty }));
       return;
     }
 
@@ -260,6 +283,14 @@
     element.addEventListener('click', handler);
   }
 
+  function bindRequiredChangeAction(element, actionName, handler) {
+    if (!element) return;
+    if (typeof handler !== 'function') {
+      throw new Error(`[current-text-selector-section] Invalid handler for ${actionName}`);
+    }
+    element.addEventListener('change', handler);
+  }
+
   // Initialization helpers
 
   function initializeClipboardRepeatInput() {
@@ -270,14 +301,20 @@
     clipboardRepeatInput.addEventListener('input', () => {
       updateClipboardRepeatVisualState(clipboardRepeatInput.value);
     });
+    clipboardRepeatInput.addEventListener('blur', () => {
+      commitClipboardRepeatInput();
+    });
+    clipboardRepeatInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      clipboardRepeatInput.blur();
+    });
   }
 
-  function initializePreviewSpoilerToggle() {
-    if (!previewSpoilerToggle) return;
-    previewSpoilerToggle.checked = true;
-    previewSpoilerToggle.addEventListener('change', () => {
-      renderPreviewFromState();
-    });
+  function setPreviewSpoilerEnabled(enabled) {
+    if (!previewSpoilerToggle || typeof enabled !== 'boolean') return;
+    previewSpoilerToggle.checked = enabled;
+    renderPreviewFromState();
   }
 
   // =============================================================================
@@ -291,52 +328,47 @@
 
     if (selectorTitle) selectorTitle.textContent = tRenderer('renderer.main.selector_title');
     [
-      [btnTextExtraction, 'renderer.main.tooltips.text_extraction'],
-      [btnOverwriteClipboard, 'renderer.main.tooltips.overwrite_clipboard'],
-      [btnAppendClipboard, 'renderer.main.tooltips.append_clipboard'],
-      [btnEdit, 'renderer.main.tooltips.edit'],
-      [btnEmptyMain, 'renderer.main.tooltips.clear'],
-      [btnLoadSnapshot, 'renderer.main.tooltips.snapshot_load'],
-      [btnSaveSnapshot, 'renderer.main.tooltips.snapshot_save'],
-      [btnNewTask, 'renderer.main.tooltips.task_new'],
-      [btnLoadTask, 'renderer.main.tooltips.task_load'],
+      [btnOverwriteClipboard, 'renderer.main.names.overwrite_clipboard'],
+      [btnAppendClipboard, 'renderer.main.names.append_clipboard'],
+      [btnEdit, 'renderer.main.names.edit'],
+      [btnEmptyMain, 'renderer.main.names.clear'],
+      [btnLoadSnapshot, 'renderer.main.names.snapshot_load'],
+      [btnSaveSnapshot, 'renderer.main.names.snapshot_save'],
+      [btnNewTask, 'renderer.main.names.task_new'],
+      [btnLoadTask, 'renderer.main.names.task_load'],
     ].forEach(([element, key]) => {
-      if (element) element.title = tRenderer(key);
+      if (!element) return;
+      const name = tRenderer(key);
+      element.setAttribute('aria-label', name);
+      element.setAttribute('data-tot-tooltip', name);
     });
 
-    [
-      [btnTextExtraction, 'renderer.main.aria.text_extraction'],
-      [btnOverwriteClipboard, 'renderer.main.tooltips.overwrite_clipboard'],
-      [btnAppendClipboard, 'renderer.main.tooltips.append_clipboard'],
-      [btnEdit, 'renderer.main.tooltips.edit'],
-      [btnEmptyMain, 'renderer.main.tooltips.clear'],
-      [btnLoadSnapshot, 'renderer.main.tooltips.snapshot_load'],
-      [btnSaveSnapshot, 'renderer.main.tooltips.snapshot_save'],
-      [btnNewTask, 'renderer.main.tooltips.task_new'],
-      [btnLoadTask, 'renderer.main.tooltips.task_load'],
-    ].forEach(([element, key]) => {
-      if (element) element.setAttribute('aria-label', tRenderer(key));
-    });
+    if (btnTextExtraction) {
+      btnTextExtraction.setAttribute('aria-label', tRenderer('renderer.main.aria.text_extraction'));
+      btnTextExtraction.setAttribute(
+        'data-tot-tooltip',
+        tRenderer('renderer.main.tooltips.text_extraction')
+      );
+    }
 
     if (clipboardRepeatInput) {
-      clipboardRepeatInput.title = tRenderer('renderer.main.tooltips.clipboard_repeat_count');
-      clipboardRepeatInput.setAttribute('aria-label', tRenderer('renderer.main.aria.clipboard_repeat_count'));
+      const name = tRenderer('renderer.main.names.clipboard_repeat_count');
+      clipboardRepeatInput.setAttribute('aria-label', name);
+      clipboardRepeatInput.setAttribute('data-tot-tooltip', name);
     }
     if (btnReadingSpeedTest) {
       const label = tRenderer('renderer.main.reading_tools.reading_speed_test');
       if (label) {
-        btnReadingSpeedTest.title = label;
         btnReadingSpeedTest.setAttribute('aria-label', label);
+        btnReadingSpeedTest.setAttribute('data-tot-tooltip', label);
       }
     }
     if (previewSpoilerText) {
       const label = tRenderer('renderer.main.reading_tools.preview_spoiler');
       previewSpoilerText.textContent = label;
-      if (previewSpoilerToggleLabel) previewSpoilerToggleLabel.title = label;
-      if (previewSpoilerToggle) {
-        previewSpoilerToggle.title = label;
-        previewSpoilerToggle.setAttribute('aria-label', label);
-      }
+      const help = tRenderer('renderer.main.help.preview_spoiler');
+      if (previewSpoilerToggleLabel) previewSpoilerToggleLabel.setAttribute('data-tot-tooltip', help);
+      if (previewSpoilerDescription) previewSpoilerDescription.textContent = help;
     }
   }
 
@@ -352,6 +384,7 @@
     onNewTask,
     onLoadTask,
     onReadingSpeedTest,
+    onPreviewSpoilerEnabledChange,
   } = {}) {
     if (actionsBound) return;
 
@@ -371,16 +404,39 @@
       bindRequiredAction(element, actionName, handler);
     });
 
+    bindRequiredChangeAction(
+      previewSpoilerToggle,
+      'preview-spoiler',
+      async () => {
+        const nextEnabled = previewSpoilerToggle.checked;
+        const previousEnabled = !nextEnabled;
+        renderPreviewFromState();
+        previewSpoilerSavePending = true;
+        applyPreviewSpoilerToggleControlState();
+        try {
+          await onPreviewSpoilerEnabledChange(nextEnabled);
+        } catch (err) {
+          log.error('Preview spoiler setting persistence failed; restoring previous value:', err);
+          previewSpoilerToggle.checked = previousEnabled;
+          renderPreviewFromState();
+        } finally {
+          previewSpoilerSavePending = false;
+          applyPreviewSpoilerToggleControlState();
+        }
+      }
+    );
+
     actionsBound = true;
   }
 
   function setInteractionLocked(locked) {
     selectorInteractionLocked = !!locked;
     selectorControls.forEach((control) => {
-      if (control === btnEdit) return;
+      if (control === btnEdit || control === previewSpoilerToggle) return;
       setControlInteractionLocked(control, selectorInteractionLocked);
     });
     applyEditControlState();
+    applyPreviewSpoilerToggleControlState();
   }
 
   function setEditorLaunchPending(pending) {
@@ -396,14 +452,10 @@
 
   function getClipboardRepeatCount() {
     if (!clipboardRepeatInput) return 1;
-    const normalized = normalizeClipboardRepeat(clipboardRepeatInput.value);
-    clipboardRepeatInput.value = String(normalized);
-    updateClipboardRepeatVisualState(normalized);
-    return normalized;
+    return commitClipboardRepeatInput();
   }
 
   initializeClipboardRepeatInput();
-  initializePreviewSpoilerToggle();
 
   window.CurrentTextSelectorSection = {
     applyTranslations,
@@ -412,6 +464,7 @@
     renderPreview,
     setEditorLaunchPending,
     setInteractionLocked,
+    setPreviewSpoilerEnabled,
   };
 })();
 

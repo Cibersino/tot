@@ -5,6 +5,7 @@
 // Overview
 // =============================================================================
 // Responsibilities:
+// - Enhance current info-modal screenshots with keyboard/lightbox semantics.
 // - Bind a single click handler for info modal link containers.
 // - Route hash links to in-modal scroll with a manual fallback.
 // - Route appdoc: links via electronAPI.openAppDoc.
@@ -24,6 +25,10 @@
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[info-modal-links] RendererIcons unavailable; cannot continue');
   }
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
+    throw new Error('[info-modal-links] RendererI18n.tRenderer unavailable; cannot continue');
+  }
+  const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
   // Helpers
@@ -51,6 +56,7 @@
 
   let lightboxEl = null;
   let lightboxImageEl = null;
+  let lightboxCloseButtonEl = null;
   let modalStateObserver = null;
 
   function ensureLightbox() {
@@ -67,14 +73,12 @@
     panel.className = 'info-media-lightbox-panel';
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
-    panel.setAttribute('aria-label', 'Expanded screenshot preview');
+    panel.setAttribute('aria-label', tRenderer('renderer.info.media_lightbox.title'));
 
     const closeButton = rendererIcons.createIconButton({
       iconName: 'close',
-      className: 'btn-standard info-media-lightbox-close',
-      size: 'sm',
-      title: 'Close preview',
-      ariaLabel: 'Close preview',
+      className: 'btn-standard btn-standard--square info-media-lightbox-close',
+      ariaLabel: tRenderer('renderer.info.media_lightbox.close_aria'),
       type: 'button',
     });
     closeButton.setAttribute('data-info-lightbox-close', '1');
@@ -83,8 +87,11 @@
     image.className = 'info-media-lightbox-image';
     image.alt = '';
 
-    panel.appendChild(closeButton);
-    panel.appendChild(image);
+    const media = document.createElement('div');
+    media.className = 'info-media-lightbox-media';
+    media.appendChild(image);
+    media.appendChild(closeButton);
+    panel.appendChild(media);
     overlay.appendChild(backdrop);
     overlay.appendChild(panel);
 
@@ -98,15 +105,29 @@
     document.body.appendChild(overlay);
     lightboxEl = overlay;
     lightboxImageEl = overlay.querySelector('.info-media-lightbox-image');
+    lightboxCloseButtonEl = closeButton;
     return overlay;
   }
 
   function closeLightbox() {
     if (!lightboxEl) return;
     lightboxEl.setAttribute('aria-hidden', 'true');
+    window.Notify.deactivateModalFocus(lightboxEl);
     if (lightboxImageEl) {
       lightboxImageEl.removeAttribute('src');
       lightboxImageEl.alt = '';
+    }
+  }
+
+  function applyTranslations() {
+    if (!lightboxEl) return;
+    const panel = lightboxEl.querySelector('.info-media-lightbox-panel');
+    if (panel) panel.setAttribute('aria-label', tRenderer('renderer.info.media_lightbox.title'));
+    if (lightboxCloseButtonEl) {
+      lightboxCloseButtonEl.setAttribute(
+        'aria-label',
+        tRenderer('renderer.info.media_lightbox.close_aria')
+      );
     }
   }
 
@@ -119,6 +140,10 @@
     lightboxImageEl.src = source;
     lightboxImageEl.alt = sourceEl.alt || '';
     overlay.setAttribute('aria-hidden', 'false');
+    window.Notify.activateModalFocus(overlay, {
+      initialFocus: lightboxCloseButtonEl,
+      fallbackFocus: lightboxCloseButtonEl,
+    });
   }
 
   function ensureModalObserver() {
@@ -146,12 +171,29 @@
   // =============================================================================
   // Main handler
   // =============================================================================
+  function enhanceInfoModalScreenshots(container) {
+    if (!container) return;
+
+    const screenshots = container.querySelectorAll('.instrucciones-media img');
+    screenshots.forEach((screenshot) => {
+      screenshot.setAttribute('tabindex', '0');
+      screenshot.setAttribute('role', 'button');
+      screenshot.setAttribute('aria-haspopup', 'dialog');
+    });
+  }
+
   function bindInfoModalLinks(container, { electronAPI } = {}) {
     if (!container || container.dataset.externalLinksBound === '1') return;
     container.dataset.externalLinksBound = '1';
     ensureModalObserver();
 
     const api = electronAPI || window.electronAPI;
+
+    const openScreenshot = (screenshot, event) => {
+      event.preventDefault();
+      screenshot.focus({ preventScroll: true });
+      openLightbox(screenshot);
+    };
 
     container.addEventListener('click', (ev) => {
       try {
@@ -160,8 +202,7 @@
 
         const screenshot = target.closest('.instrucciones-media img');
         if (screenshot && container.contains(screenshot)) {
-          ev.preventDefault();
-          openLightbox(screenshot);
+          openScreenshot(screenshot, ev);
           return;
         }
 
@@ -259,6 +300,15 @@
         log.error('Error handling info modal link click:', err);
       }
     });
+
+    container.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      const target = ev.target;
+      if (!target || typeof target.closest !== 'function') return;
+      const screenshot = target.closest('.instrucciones-media img');
+      if (!screenshot || !container.contains(screenshot)) return;
+      openScreenshot(screenshot, ev);
+    });
   }
 
   window.addEventListener('keydown', (ev) => {
@@ -269,7 +319,9 @@
   }, true);
 
   window.InfoModalLinks = {
-    bindInfoModalLinks
+    applyTranslations,
+    bindInfoModalLinks,
+    enhanceInfoModalScreenshots,
   };
 })();
 

@@ -41,6 +41,7 @@
   const btnReveal = document.getElementById('textExtractionSingleFileHeavyPdfModalReveal');
   const btnCancel = document.getElementById('textExtractionSingleFileHeavyPdfModalCancel');
   const btnClose = document.getElementById('textExtractionSingleFileHeavyPdfModalClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Rendering Helpers
@@ -188,6 +189,10 @@
     });
   }
 
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
+  }
+
   // =============================================================================
   // Modal Flow
   // =============================================================================
@@ -225,36 +230,39 @@
       && revealableGeneratedPdfFileName
       && retainedGeneratedPdfArtifactPath
     );
-    title.textContent = isCaseB
-      ? tRenderer('renderer.text_extraction.single_file_heavy.case_b_title')
-      : tRenderer('renderer.text_extraction.single_file_heavy.case_a_title');
-    renderTranslationWithIsolatedValue(message, {
-      key: isCaseB
-        ? 'renderer.text_extraction.single_file_heavy.case_b_message'
-        : 'renderer.text_extraction.single_file_heavy.case_a_message',
-      placeholderName: 'providerLimitMb',
-      tokenSuffix: ' MB',
-      valueText: `${formatMegabytes(providerLimitBytes)} MB`,
-      valueDirection: 'ltr',
-    });
-    renderDetails({
-      isCaseB,
-      sourceFileName,
-      sourceFileSizeBytes,
-      totalPages,
-      selectedRangeFromPage,
-      selectedRangeToPage,
-      revealableGeneratedPdfFileName,
-      hasRevealableGeneratedPdf,
-      generatedPdfSizeBytes,
-    });
+    const renderModalCopy = () => {
+      title.textContent = isCaseB
+        ? tRenderer('renderer.text_extraction.single_file_heavy.case_b_title')
+        : tRenderer('renderer.text_extraction.single_file_heavy.case_a_title');
+      renderTranslationWithIsolatedValue(message, {
+        key: isCaseB
+          ? 'renderer.text_extraction.single_file_heavy.case_b_message'
+          : 'renderer.text_extraction.single_file_heavy.case_a_message',
+        placeholderName: 'providerLimitMb',
+        tokenSuffix: ' MB',
+        valueText: `${formatMegabytes(providerLimitBytes)} MB`,
+        valueDirection: 'ltr',
+      });
+      renderDetails({
+        isCaseB,
+        sourceFileName,
+        sourceFileSizeBytes,
+        totalPages,
+        selectedRangeFromPage,
+        selectedRangeToPage,
+        revealableGeneratedPdfFileName,
+        hasRevealableGeneratedPdf,
+        generatedPdfSizeBytes,
+      });
+      btnSplit.textContent = tRenderer('renderer.text_extraction.single_file_heavy.split_button');
+      btnReturnToPages.textContent = tRenderer('renderer.text_extraction.single_file_heavy.return_to_pages_button');
+      btnUseNative.textContent = tRenderer('renderer.text_extraction.single_file_heavy.use_native_button');
+      btnReveal.textContent = tRenderer('renderer.text_extraction.single_file_heavy.reveal_generated_pdf_button');
+      btnCancel.textContent = tRenderer('renderer.text_extraction.single_file_heavy.cancel_button');
+      btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.single_file_heavy.close_aria'));
+    };
 
-    btnSplit.textContent = tRenderer('renderer.text_extraction.single_file_heavy.split_button');
-    btnReturnToPages.textContent = tRenderer('renderer.text_extraction.single_file_heavy.return_to_pages_button');
-    btnUseNative.textContent = tRenderer('renderer.text_extraction.single_file_heavy.use_native_button');
-    btnReveal.textContent = tRenderer('renderer.text_extraction.single_file_heavy.reveal_generated_pdf_button');
-    btnCancel.textContent = tRenderer('renderer.text_extraction.single_file_heavy.cancel_button');
-    btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.single_file_heavy.close_aria'));
+    renderModalCopy();
 
     btnReturnToPages.hidden = false;
     btnReturnToPages.setAttribute('aria-hidden', btnReturnToPages.hidden ? 'true' : 'false');
@@ -270,6 +278,7 @@
       let settled = false;
 
       const cleanup = () => {
+        activePromptTranslations = null;
         btnSplit.removeEventListener('click', onSplit);
         btnReturnToPages.removeEventListener('click', onReturnToPages);
         btnUseNative.removeEventListener('click', onUseNative);
@@ -279,6 +288,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = (action) => {
@@ -317,9 +327,13 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = renderModalCopy;
 
       modal.setAttribute('aria-hidden', 'false');
-      btnSplit.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnSplit,
+        fallbackFocus: btnClose,
+      });
     });
   }
 
@@ -327,6 +341,7 @@
   // Module Surface
   // =============================================================================
   window.Notify.registerCustomPrompt('promptTextExtractionSingleFileHeavyPdf', promptSingleFileHeavyPdf);
+  window.TextExtractionSingleFileHeavyPdfModal = { applyTranslations };
 })();
 
 // =============================================================================

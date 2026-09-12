@@ -65,6 +65,7 @@
   const btnContinue = document.getElementById('textExtractionPdfOptionsModalContinue');
   const btnCancel = document.getElementById('textExtractionPdfOptionsModalCancel');
   const btnClose = document.getElementById('textExtractionPdfOptionsModalClose');
+  let activePromptTranslations = null;
 
   // =============================================================================
   // Helpers
@@ -172,7 +173,7 @@
     message.textContent = tRenderer('renderer.text_extraction.pdf_options.message');
     fileLabel.textContent = tRenderer('renderer.text_extraction.pdf_options.file_label');
     fileName.textContent = inspectedFileName;
-    fileName.title = inspectedFileName;
+    fileName.setAttribute('data-tot-tooltip', inspectedFileName);
     renderSummaryValue(
       totalPagesSummary,
       'renderer.text_extraction.pdf_options.total_pages_label',
@@ -190,6 +191,10 @@
       'aria-label',
       tRenderer('renderer.text_extraction.pdf_options.close_aria')
     );
+  }
+
+  function applyTranslations() {
+    if (activePromptTranslations) activePromptTranslations();
   }
 
   function resetModalState(totalPages) {
@@ -253,8 +258,13 @@
 
     return await new Promise((resolve) => {
       let settled = false;
+      const refreshModalTranslations = () => {
+        renderModalText(totalPages, inspectedFileName);
+        syncDynamicState({ preserveTypedValues: true });
+      };
 
       const cleanup = () => {
+        activePromptTranslations = null;
         allPagesRadio.removeEventListener('change', onModeChange);
         rangeRadio.removeEventListener('change', onModeChange);
         fromInput.removeEventListener('input', onRangeInput);
@@ -265,6 +275,7 @@
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         modal.setAttribute('aria-hidden', 'true');
+        window.Notify.deactivateModalFocus(modal);
       };
 
       const finish = (value) => {
@@ -312,9 +323,13 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslations = refreshModalTranslations;
 
       modal.setAttribute('aria-hidden', 'false');
-      allPagesRadio.focus();
+      window.Notify.activateModalFocus(modal, {
+        initialFocus: btnContinue,
+        fallbackFocus: btnClose,
+      });
     });
   }
 
@@ -323,6 +338,7 @@
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionPdfOptions', promptPdfOptions);
+  window.TextExtractionPdfOptionsModal = { applyTranslations };
 })();
 
 // =============================================================================

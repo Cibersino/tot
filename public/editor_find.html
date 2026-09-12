@@ -1,18 +1,32 @@
 <!-- public/editor_find.html -->
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
   <title>toT — Buscar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="toasts.css" />
   <link rel="stylesheet" href="editor_find.css" />
 </head>
+
 <body data-expanded="false">
-  <div id="findWrap" class="find-wrap" role="search" aria-label="Buscar en el texto">
+  <div
+    id="findWrap"
+    class="find-wrap"
+    role="search"
+    aria-label="Buscar en el texto"
+  >
     <div class="find-row">
-      <button id="findToggle" class="find-btn find-toggle" type="button" title="Mostrar reemplazo"
-        aria-label="Mostrar reemplazo" data-tot-icon="expand" data-tot-icon-size="sm"></button>
+      <button
+        id="findToggle"
+        class="btn-standard btn-standard--square"
+        type="button"
+        aria-label="Mostrar reemplazo"
+        data-tot-icon="expand"
+        disabled
+      ></button>
       <input
         id="findQuery"
         class="find-input"
@@ -21,16 +35,40 @@
         spellcheck="false"
         placeholder="Buscar..."
         aria-label="Buscar en el texto"
+        disabled
       />
-      <button id="findPrev" class="find-btn" type="button" title="Coincidencia anterior"
-        data-tot-icon="arrow-up-strong" data-tot-icon-size="sm"></button>
-      <button id="findNext" class="find-btn" type="button" title="Coincidencia siguiente"
-        data-tot-icon="arrow-down-strong" data-tot-icon-size="sm"></button>
-      <span id="findStatus" class="find-status" role="status" aria-live="polite">Escribe para buscar</span>
-      <button id="findClose" class="find-btn find-close" type="button" title="Cerrar barra de busqueda"
-        data-tot-icon="close" data-tot-icon-size="sm"></button>
+      <button
+        id="findPrev"
+        class="btn-standard btn-standard--half-width"
+        type="button"
+        data-tot-icon="arrow-up"
+        disabled
+      ></button>
+      <button
+        id="findNext"
+        class="btn-standard btn-standard--half-width"
+        type="button"
+        data-tot-icon="arrow-down"
+        disabled
+      ></button>
+      <span
+        id="findStatus"
+        class="find-status"
+        role="status"
+        aria-live="polite"
+      >Escribe para buscar</span>
+      <button
+        id="findClose"
+        class="btn-standard btn-standard--square"
+        type="button"
+        data-tot-icon="close"
+      ></button>
     </div>
-    <div id="replaceRow" class="replace-row" hidden>
+    <div
+      id="replaceRow"
+      class="replace-row"
+      hidden
+    >
       <input
         id="findReplace"
         class="find-input"
@@ -39,9 +77,30 @@
         spellcheck="false"
         placeholder="Reemplazar..."
         aria-label="Texto de reemplazo"
+        disabled
       />
-      <button id="findReplaceOne" class="find-btn" type="button" title="Reemplazar coincidencia actual" disabled>Reemplazar</button>
-      <button id="findReplaceAll" class="find-btn" type="button" title="Reemplazar todas las coincidencias" disabled>Reemplazar todo</button>
+      <button
+        id="findReplaceOne"
+        class="btn-standard"
+        type="button"
+        aria-describedby="findReplaceOneDescription"
+        disabled
+      >Reemplazar</button>
+      <span
+        id="findReplaceOneDescription"
+        class="editor-find-accessible-description"
+      ></span>
+      <button
+        id="findReplaceAll"
+        class="btn-standard"
+        type="button"
+        aria-describedby="findReplaceAllDescription"
+        disabled
+      >Reemplazar todo</button>
+      <span
+        id="findReplaceAllDescription"
+        class="editor-find-accessible-description"
+      ></span>
     </div>
   </div>
 

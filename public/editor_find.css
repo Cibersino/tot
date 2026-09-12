@@ -3,6 +3,15 @@
    Owner boundary: dedicated find window shell and controls only. */
 
 /* Window shell */
+:root {
+  --field-radius: 4px;
+  --button-radius: 5px;
+  --font-ui: Arial, sans-serif;
+  --control-height-md: 30px;
+  --tot-icon-size-sm: 14px;
+  --tot-icon-size-md: 28px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -15,6 +24,19 @@ body {
   padding: 0;
 }
 
+.editor-find-accessible-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 body {
   font-family: Arial, sans-serif;
   color: #1d1d1d;
@@ -24,31 +46,28 @@ body {
   overflow: hidden;
 }
 
-.tot-icon-host {
-  line-height: 1;
-}
-
 .tot-icon-slot {
-  --tot-icon-size: 16px;
+  --tot-icon-size: var(--tot-icon-size-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
   height: var(--tot-icon-size);
-  line-height: 0;
   pointer-events: none;
 }
 
 .tot-icon-slot--sm {
-  --tot-icon-size: 16px;
+  --tot-icon-size: var(--tot-icon-size-sm);
+}
+
+.tot-icon-slot--md {
+  --tot-icon-size: var(--tot-icon-size-md);
 }
 
 .tot-icon-svg {
   display: block;
   width: auto;
   height: 100%;
-  max-width: none;
-  color: currentColor;
   overflow: visible;
 }
 
@@ -91,44 +110,70 @@ body[data-expanded="false"] .replace-row {
   height: 30px;
   padding: 0 8px;
   border: 1px solid rgba(184, 184, 184, 0.62);
-  border-radius: 5px;
+  border-radius: var(--field-radius);
   font-size: 13px;
   color: #1d1d1d;
   background: rgba(255, 255, 255, 0.48);
 }
 
-.find-btn {
+/* Shared controls */
+.btn-standard {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 30px;
-  padding: 0 10px;
-  border: 1px solid rgba(184, 184, 184, 0.58);
-  border-radius: 5px;
-  font-size: 12px;
-  color: #1d1d1d;
-  background: rgba(255, 255, 255, 0.36);
+  box-sizing: border-box;
+  padding: 0 8px;
+  height: var(--control-height-md);
+  line-height: 1;
+  font-size: 0.9375rem;
+  font-family: var(--font-ui);
+  border-radius: var(--button-radius);
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: inherit;
   cursor: pointer;
-  white-space: nowrap;
+  transition: background 100ms ease, transform 60ms ease, box-shadow 100ms ease;
+  box-shadow: none;
+  user-select: none;
 }
 
-.find-btn[data-tot-icon] {
+.btn-standard[hidden] {
+  display: none;
+}
+
+.btn-standard--square {
+  width: var(--control-height-md);
+  flex: 0 0 auto;
+}
+
+.btn-standard--half-width {
+  width: calc(var(--control-height-md) / 2);
   padding: 0;
+  flex: 0 0 auto;
 }
 
-.find-input:focus-visible,
-.find-btn:focus-visible {
+.find-input:focus-visible {
   outline: 2px solid #2b78ff;
   outline-offset: 1px;
 }
 
-.find-btn:hover:enabled {
-  background: #f6f6f6;
+.btn-standard:focus {
+  outline: 3px solid rgb(30 130 230 / 0.12);
+  outline-offset: 2px;
+}
+
+.btn-standard:hover {
+  background: #f4f4f4;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
+}
+
+.btn-standard:active {
+  transform: translateY(1px);
 }
 
 .find-input:disabled,
-.find-btn:disabled {
-  opacity: 0.55;
+.btn-standard:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -140,13 +185,7 @@ body[data-expanded="false"] .replace-row {
   text-overflow: ellipsis;
   text-align: center;
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
   color: #444;
   white-space: nowrap;
-}
-
-.find-close,
-.find-toggle {
-  width: 30px;
-  min-width: 30px;
-  padding: 0;
 }

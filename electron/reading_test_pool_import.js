@@ -21,7 +21,10 @@ const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip');
 const Log = require('./log');
+const menuBuilder = require('./menu_builder');
 const readingTestPool = require('./reading_test_pool');
+const settingsState = require('./settings');
+const { DEFAULT_LANG } = require('./constants_main');
 const {
   getReadingTestPoolImportStateFile,
   loadJson,
@@ -303,26 +306,31 @@ async function importSelectedFiles({
 }
 
 // =============================================================================
-// Helpers: dialog copy and picker state
+// Helpers: main-owned dialog copy and picker state
 // =============================================================================
 
-function normalizeDialogCopy(rawDialogCopy) {
-  const copy = rawDialogCopy && typeof rawDialogCopy === 'object' ? rawDialogCopy : {};
-  const normalize = (value, fallback) => {
-    const text = typeof value === 'string' ? value.trim() : '';
-    return text || fallback;
-  };
+function getDialogTexts() {
+  let language = DEFAULT_LANG;
+  try {
+    const settings = settingsState.getSettings();
+    if (settings && typeof settings.language === 'string' && settings.language.trim()) {
+      language = settings.language;
+    }
+  } catch (err) {
+    log.warnOnce(
+      'reading_test_pool_import.dialogTexts',
+      'Reading-test import dialog settings unavailable; using DEFAULT_LANG dialog texts:',
+      err
+    );
+  }
+  return menuBuilder.getDialogTexts(language);
+}
 
-  return {
-    conflictTitle: normalize(copy.conflictTitle, 'renderer.reading_test.entry.import.import_conflict.title'),
-    conflictMessage: normalize(copy.conflictMessage, 'renderer.reading_test.entry.import.import_conflict.message'),
-    conflictDetail: normalize(copy.conflictDetail, 'renderer.reading_test.entry.import.import_conflict.detail'),
-    buttons: {
-      skip: normalize(copy.buttons && copy.buttons.skip, 'renderer.reading_test.entry.import.import_conflict.skip_button'),
-      replace: normalize(copy.buttons && copy.buttons.replace, 'renderer.reading_test.entry.import.import_conflict.replace_button'),
-      cancel: normalize(copy.buttons && copy.buttons.cancel, 'renderer.reading_test.entry.import.import_conflict.cancel_button'),
-    },
-  };
+function resolveDialogText(dialogTexts, key) {
+  return menuBuilder.resolveDialogText(dialogTexts, key, undefined, {
+    log,
+    warnPrefix: 'reading_test_pool_import.dialog.missing',
+  });
 }
 
 function normalizePickerState(rawState) {
@@ -413,7 +421,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
     }
   }
 
-  ipcMain.handle('reading-test-import-pool-files', async (event, payload = {}) => {
+  ipcMain.handle('reading-test-import-pool-files', async (event) => {
     try {
       const mainWin = resolveMainWin();
       if (!isAuthorizedSender(event, mainWin)) {
@@ -429,13 +437,14 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
 
       const stateInfo = readPickerState();
       const defaultPath = resolvePickerDefaultPath(platformAdapter, app, stateInfo.state);
+      const dialogTexts = getDialogTexts();
       const dialogResult = await dialog.showOpenDialog(mainWin, {
         defaultPath,
         filters: [
-          { name: 'Reading test files', extensions: ['json', 'zip'] },
+          { name: resolveDialogText(dialogTexts, 'reading_test_import_picker_files'), extensions: ['json', 'zip'] },
           { name: 'JSON', extensions: ['json'] },
           { name: 'ZIP', extensions: ['zip'] },
-          { name: 'All files', extensions: ['*'] },
+          { name: resolveDialogText(dialogTexts, 'all_files'), extensions: ['*'] },
         ],
         properties: ['openFile', 'multiSelections'],
       });
@@ -484,20 +493,19 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         persistPickerState(stateInfo.statePath, { lastDirectory: selectedDirectory });
       }
 
-      const dialogCopy = normalizeDialogCopy(payload.conflictDialog);
       const result = await importSelectedFiles({
         selectedPaths: normalizedSelectedPaths,
         poolDir: readingTestPool.ensurePoolDir(),
         resolveConflictStrategy: async ({ duplicateCount }) => {
           const conflictResult = await dialog.showMessageBox(mainWin, {
             type: 'question',
-            title: dialogCopy.conflictTitle,
-            message: dialogCopy.conflictMessage,
-            detail: dialogCopy.conflictDetail.replace('{count}', String(duplicateCount)),
+            title: resolveDialogText(dialogTexts, 'reading_test_import_conflict_title'),
+            message: resolveDialogText(dialogTexts, 'reading_test_import_conflict_message'),
+            detail: resolveDialogText(dialogTexts, 'reading_test_import_conflict_detail').replace('{count}', String(duplicateCount)),
             buttons: [
-              dialogCopy.buttons.skip,
-              dialogCopy.buttons.replace,
-              dialogCopy.buttons.cancel,
+              resolveDialogText(dialogTexts, 'reading_test_import_conflict_skip'),
+              resolveDialogText(dialogTexts, 'reading_test_import_conflict_replace'),
+              resolveDialogText(dialogTexts, 'reading_test_import_conflict_cancel'),
             ],
             defaultId: 0,
             cancelId: 2,

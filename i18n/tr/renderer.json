@@ -19,8 +19,7 @@
         "chars": "Karakterler: {n}",
         "value_pending": "beklemede...",
         "value_unavailable": "kullanılamıyor",
-        "precise_mode": "Hassas mod",
-        "precise_tooltip": "Intl.Segmenter tabanlı"
+        "precise_mode": "Hassas mod"
       },
       "crono": {
         "title": "KRONOMETRE",
@@ -32,6 +31,7 @@
         "current_text_recount_waiting": "Geçerli metin sonuçları yeniden hesaplanıyor...",
         "current_text_waiting_startup": "Geçerli metin sabitleniyor...",
         "current_text_waiting_editor": "Text Editor değişiklikleri eşitleniyor...",
+        "editor_loading": "Text Editor yükleniyor...",
         "text_extraction_placeholder": "Metin çıkarılıyor...",
         "text_extraction_preparing": "Çıkarma yolu hazırlanıyor...",
         "text_extraction_cancellation_pending": "İptal istendi. Lütfen bekleyin...",
@@ -47,17 +47,19 @@
       },
       "tooltips": {
         "text_extraction": "Dosyadan metin çıkar",
+        "browser_extension": "Tarayıcı uzantısı"
+      },
+      "names": {
         "text_extraction_abort": "Çıkarmayı durdur",
         "overwrite_clipboard": "Geçerli metni panoyla değiştir",
         "append_clipboard": "Pano metnini geçerli metnin sonuna ekle (yeni satır)",
-        "clipboard_repeat_count": "Pano yinelemeleri",
+        "clipboard_repeat_count": "Yapıştırma yinelemeleri",
         "edit": "Geçerli metnin tam penceresini aç",
         "clear": "Geçerli metni temizle",
         "snapshot_load": "Metin snapshot'ı yükle",
         "snapshot_save": "Geçerli metni snapshot olarak kaydet",
         "task_new": "Yeni görev",
         "task_load": "Görev yükle",
-        "browser_extension": "Tarayıcı uzantısı",
         "cibersino_website": "Cibersino web sitesi",
         "cibersino_kofi": "Ko-fi'de destekle",
         "new_preset": "Yeni ön ayar oluştur",
@@ -66,23 +68,22 @@
         "reset_presets": "Varsayılan ön ayarları geri yükle",
         "text_time_calculator": "Hızlı hesaplayıcıyı aç",
         "help_button": "Yararlı bir ipucu göster",
-        "flotante_window": "Yüzen pencere"
+        "crono_toggle": "Kronometreyi başlat veya duraklat",
+        "crono_reset": "Kronometreyi sıfırla",
+        "floating_window": "Yüzen pencere"
+      },
+      "help": {
+        "preview_spoiler": "Önizlemenin sonunu göster veya gizle",
+        "precise_mode": "Intl.Segmenter tabanlı"
       },
       "aria": {
         "text_extraction": "Dosyadan metin çıkar",
-        "text_extraction_abort": "Çıkarmayı durdur",
         "browser_extension": "Tarayıcı uzantısı iletişim kutusunu aç",
-        "clipboard_repeat_count": "Yapıştırma yinelemeleri",
-        "text_time_calculator": "Hızlı hesaplayıcıyı aç",
         "wpm_input": "Dakikadaki kelime",
         "wpm_slider": "Dakikadaki kelime kaydırıcısı",
         "speed_presets": "Hız ön ayarları",
-        "precise_mode_toggle": "Hassas mod",
         "crono_controls": "Kronometre kontrolleri",
         "crono_display": "Kronometre göstergesi",
-        "crono_toggle": "Kronometreyi başlat veya duraklat",
-        "crono_reset": "Kronometreyi sıfırla",
-        "floating_window_toggle": "Yüzen pencere",
         "floating_window_group": "Yüzen pencere kontrolleri"
       },
       "alerts": {
@@ -183,6 +184,11 @@
         "unit_label": "Birim {index}",
         "unit_counter": "Birim {index}/{count}",
         "unit_name_placeholder": "İsteğe bağlı birim adı",
+        "aria": {
+          "route": "{file} için çıkarma rotası",
+          "unit_assignment": "{file} için hedef birim",
+          "unit_name": "{count} içinden {index}. birim için isteğe bağlı ad"
+        },
         "new_unit_option": "Yeni birim oluştur",
         "move_up": "Yukarı taşı",
         "move_down": "Aşağı taşı",
@@ -218,7 +224,6 @@
         "open_snapshots_folder": "Snapshot klasörünü aç",
         "ok_button": "Tamam",
         "close_aria": "Toplu çıkarım son raporunu kapat",
-        "split_result_label": "Bölme sonucu:",
         "failed_fallback": "başarısız",
         "failed_with_code": "başarısız: {code}",
         "applied_truncated": "kırpılarak uygulandı",
@@ -301,28 +306,35 @@
       "increase_text_size": "Metin boyutunu büyüt",
       "reset_text_size": "Metin boyutunu sıfırla",
       "read_progress_label": "Okundu",
-      "clear_title": "Temizle",
+      "clear": "Temizle",
+      "help": {
+        "apply": "Düzenleyici metnini geçerli metin olarak uygula",
+        "auto_apply": "Yazarken düzenleyici değişikliklerini geçerli metne otomatik olarak uygula",
+        "spellcheck": "Düzenleyici metni için yazım denetimini aç veya kapat"
+      },
       "editor_find": {
         "input_placeholder": "Bul...",
         "input_aria": "Metinde bul",
-        "expand_title": "Değiştirme kontrollerini göster",
-        "collapse_title": "Değiştirme kontrollerini gizle",
         "replace_placeholder": "Değiştir...",
         "replace_aria": "Değiştirme metni",
         "replace": "Değiştir",
         "replace_all": "Tümünü değiştir",
-        "prev_title": "Önceki eşleşme",
-        "next_title": "Sonraki eşleşme",
-        "close_title": "Arama çubuğunu kapat",
-        "replace_title": "Geçerli eşleşmeyi değiştir",
-        "replace_all_title": "Tüm eşleşmeleri değiştir",
+        "names": {
+          "show_replace": "Değiştirme kontrollerini göster",
+          "hide_replace": "Değiştirme kontrollerini gizle",
+          "previous_match": "Önceki eşleşme",
+          "next_match": "Sonraki eşleşme",
+          "close": "Arama çubuğunu kapat"
+        },
+        "help": {
+          "replace_current": "Geçerli eşleşmeyi değiştir",
+          "replace_all": "Tüm eşleşmeleri değiştir"
+        },
         "replace_timeout": "Değiştirme zaman aşımına uğradı. Yeniden deneyin.",
         "status_no_matches": "Eşleşme yok",
         "status_empty_query": "Aramak için yazın"
       },
       "alerts": {
-        "start_failed": "Text Editor başlatılamadı.",
-        "start_timeout": "Text Editor başlamak için çok uzun sürdü ve kapatıldı.",
         "paste_too_big": "Metin doğrudan yapıştırılamayacak kadar büyük. Ana pencere düğmelerini kullanın.",
         "drop_too_big": "Bırakılan metin çok büyük. Büyük metin eklemek için ana pencere düğmelerini kullanın.",
         "paste_no_text": "Pano düz metin içermiyor.",
@@ -338,16 +350,26 @@
     },
     "snapshots": {
       "title": "Metin snapshot'ını kaydet",
-      "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ını isteğe bağlı olarak etiketleyin.",
+      "message": "Kaydedilecek konumu seçmeden önce bu metin snapshot'ına isteğe bağlı olarak ad verebilir, kökenini açıklayabilir ve etiket ekleyebilirsiniz.",
       "search": {
         "placeholder": "Seçenekleri filtrelemek için yazın",
         "no_results": "Eşleşen seçenek yok",
         "create": "\"{label}\" oluştur"
       },
       "labels": {
+        "name": "Ad (isteğe bağlı)",
+        "source_comment": "Köken (isteğe bağlı)",
         "language": "Dil",
         "type": "Tür",
         "difficulty": "Zorluk"
+      },
+      "placeholders": {
+        "name": "Okuma",
+        "source_comment": "chapter-1.pdf, Ünite 1 veya içe aktarılan metin"
+      },
+      "metrics": {
+        "include_count": "Kelime sayısını dahil et",
+        "include_reading": "Tahmini okuma süresini ve WPM'yi dahil et"
       },
       "manager": {
         "title": "Metin snapshot etiketlerini yönet",
@@ -356,10 +378,11 @@
         "close_aria": "Metin snapshot etiketi yöneticisini kapat",
         "new_tag": "Yeni etiket",
         "new_tag_placeholder": "Etiket adı",
+        "new_tag_input_aria": "Yeni etiket adı",
         "add_tag": "Etiket ekle",
         "cancel_draft": "İptal",
         "sort_alphabetically": "A-Z sırala",
-        "restore_hidden_defaults": "Varsayılan etiketleri geri yükle ({count})",
+        "restore_hidden_defaults": "Varsayılan etiketleri geri yükle",
         "empty_category": "Bu kategoride görünür etiket yok.",
         "move_up": "\"{label}\" etiketini yukarı taşı",
         "move_down": "\"{label}\" etiketini aşağı taşı",
@@ -411,6 +434,7 @@
           "qu": "Keçuva dili",
           "ru": "Rusça",
           "sv": "İsveççe",
+          "sw": "Svahili",
           "tr": "Türkçe",
           "ur": "Urduca",
           "vi": "Vietnamca",
@@ -442,6 +466,7 @@
     "tasks": {
       "title": "toT — Görevler",
       "name": "Ad",
+      "name_placeholder": "ör.: Okuma planı",
       "save_button": "Kaydet",
       "delete_button": "Sil",
       "summary_total": "Toplam",
@@ -455,27 +480,66 @@
         "percent": "%",
         "falta": "Kalan",
         "enlace": "Bağlantı",
-        "comentario": "",
+        "comentario": "Y+S",
         "acciones": "Eylemler",
-        "tooltips": {
+        "header_names": {
+          "tiempo": "Tahmini okuma süresi",
+          "percent": "Tamamlanan yüzde",
+          "falta": "Tahmini kalan süre",
+          "comentario": "Yorum ve metin snapshotı"
+        },
+        "names": {
           "file_select": "Yerel dosya seç",
           "link_open": "Bağlantıyı aç",
           "snapshot_load": "Bu satır için metin snapshot'ı yükle",
-          "comment": "Yorum ekle/düzenle",
+          "comment": "Yorum veya metin snapshotı ekle",
           "move_up": "Yukarı taşı",
           "move_down": "Aşağı taşı",
           "library_row_save": "Kütüphaneye kaydet",
           "delete_row": "Satırı sil"
+        },
+        "descriptions": {
+          "snapshot_path": "İlişkili metin snapshot yolu: {path}"
+        },
+        "tooltips": {
+          "snapshot_load_with_path": "Metin snapshotını geçerli metin olarak yükle · İlişkili yol: {path}"
         }
       },
       "comentario_modal": {
         "comment_title": "Yorum",
+        "comment_placeholder": "Yorum...",
         "snapshot_select": "Snapshot seç",
-        "snapshot_select_tooltip": "Bu satır için metin snapshot'ı seç",
-        "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır"
+        "snapshot_clear": "Seçili snapshot'ı bu satırdan kaldır",
+        "close_aria": "Yorumu kapat",
+        "snapshot_source_reminder": {
+          "title": "Snapshot kaynağı hatırlatıcısı",
+          "message": "Bu satır bir metin snapshot’ıyla ilişkilidir. Yerel bir dosya seçmeden önce kaynak yorumunu kontrol edin.",
+          "source_comment": "Snapshot kaynak yorumu:",
+          "select_file": "Yerel dosya seç",
+          "cancel": "İptal",
+          "close_aria": "Snapshot kaynağı hatırlatıcısını kapat"
+        },
+        "snapshot_details_confirm": {
+          "title": "Seçili metin snapshot’ındaki veriler kullanılsın mı?",
+          "message": "Bu okumaya uygulamadan önce seçili metin snapshot’ındaki kullanılabilir verileri gözden geçirin.",
+          "replace_reading_name": "Okuma adını değiştir",
+          "set_reading_name": "Okuma adını ayarla",
+          "current_name": "Geçerli ad",
+          "snapshot_name": "Snapshot adı",
+          "empty": "(boş)",
+          "replace_time": "Tahmini süreyi değiştir",
+          "current_time": "Mevcut süre",
+          "snapshot_estimate": "Snapshot tahmini",
+          "reading_speed": "Okuma hızı",
+          "apply": "Uygula",
+          "apply_selected": "Seçileni uygula",
+          "keep": "Geçerli değerleri koru",
+          "close_aria": "Snapshot verileri onayını kapat"
+        }
       },
       "biblioteca": {
         "library_title": "Kütüphane",
+        "close_aria": "Okuma kitaplığını kapat",
         "search": "Ara",
         "search_placeholder": "Kütüphanede ara...",
         "empty": "(boş)",
@@ -484,7 +548,8 @@
       },
       "guardar_lectura_modal": {
         "library_save_title": "Kütüphaneye kaydet",
-        "library_save_question": "Yorum dahil edilsin mi?",
+        "close_aria": "Kitaplığa kaydetme iletişim kutusunu kapat",
+        "library_save_question": "Yorum dahil edilsin mi? Bu okuma için bir metin snapshot'ı seçilmişse, bağlantısı her durumda kaydedilir.",
         "yes": "Evet",
         "no": "Hayır",
         "cancel": "İptal"
@@ -499,6 +564,7 @@
         "task_delete_unavailable": "Silinecek kayıtlı görev yok.",
         "task_invalid_file": "Geçersiz görev dosyası.",
         "task_invalid_rows": "Görevde geçersiz satırlar var.",
+        "task_duration_too_large": "Görevin toplam tahmini süresi çok büyük.",
         "task_path_outside": "Dosya görevler klasörünün içinde olmalıdır.",
         "name_required": "Görev adı zorunludur.",
         "row_text_required": "Satır metni boş olamaz.",
@@ -507,6 +573,10 @@
         "library_save_error": "Kütüphaneye kaydedilemedi.",
         "library_save_success": "Satır kütüphaneye kaydedildi.",
         "library_delete_error": "Kütüphaneden silinemedi.",
+        "column_layout_save_error": "Sütun düzeni kaydedilemedi ve bir sonraki sefer korunmayabilir.",
+        "snapshot_missing": "Seçili metin snapshot'ı artık mevcut değil.",
+        "snapshot_invalid": "Seçili metin snapshot'ı geçersiz.",
+        "snapshot_read_error": "Seçili metin snapshot'ı okunamadı.",
         "link_blocked": "Bağlantı engellendi.",
         "link_missing": "Dosya bulunamadı.",
         "link_error": "Bağlantı açılırken hata oluştu.",
@@ -538,7 +608,7 @@
         "title": "Okuma hızı testi",
         "show_instructions": "Yönergeleri göster",
         "hide_instructions": "Yönergeleri gizle",
-        "intro": "Bu test, yönlendirmeli bir oturum aracılığıyla gerçek okuma hızınızı tahmin etmek için tasarlanmıştır. Uygulama metni açacak ve başlamaya hazır olduğunuzda Yüzen Pencere'de Play (▶) düğmesine basmanızı bekleyecektir. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; zamanlayıcıyı duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) kullanın. Sonrasında, metin içeriyorsa anlama sorularını inceleyebilir ve en sonunda sonuçtan bir ön ayar oluşturabilirsiniz.\nBaşlamadan önce, bu test metinlerinin genellikle 5 ila 15 dakika kesintisiz dikkat gerektirdiğini unutmayın.\nBu havuz kısa metinler kullanır; bu yüzden sonucu dikkatle değerlendirin. Akış ve bağlamsal birikim gibi olumlu etkenlerin, zihinsel tekrar ve yorgunluk gibi olumsuz etkenlerin genellikle devreye girdiği uzun metinlere doğrudan genellenmemelidir.",
+        "intro": "Bu test, yönlendirmeli bir oturum aracılığıyla gerçek okuma hızınızı tahmin etmek için tasarlanmıştır. Uygulama metni açacak ve başlamaya hazır olduğunuzda Yüzen Kronometre'de Play (▶) düğmesine basmanızı bekleyecektir. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; kronometreyi duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) kullanın. Sonrasında, metin içeriyorsa anlama sorularını inceleyebilir ve en sonunda sonuçtan bir ön ayar oluşturabilirsiniz.\nBaşlamadan önce, bu test metinlerinin genellikle 5 ila 15 dakika kesintisiz dikkat gerektirdiğini unutmayın.\nBu havuz kısa metinler kullanır; bu yüzden sonucu dikkatle değerlendirin. Akış ve bağlamsal birikim gibi olumlu etkenlerin, zihinsel tekrar ve yorgunluk gibi olumsuz etkenlerin genellikle devreye girdiği uzun metinlere doğrudan genellenmemelidir.",
         "eligible_count": "Uygun dosyalar:",
         "show_bundled_entries": "Temel testler",
         "get_more_files": "Daha fazla dosya al",
@@ -550,28 +620,22 @@
         "close_aria": "Okuma hızı testi iletişim kutusunu kapat",
         "start_random_confirm": "Bu işlem geçerli metni havuzdan rastgele seçilen uygun bir metinle değiştirecek. Devam etmek istiyor musunuz?",
         "reset_confirm": "Bu işlem tüm test havuzunu sıfırlayacak ve bütün dosyalarını yeniden kullanılmamış olarak işaretleyecek. Devam etmek istiyor musunuz?",
-        "tooltips": {
+        "help": {
           "show_bundled_entries": "Uygulamayla birlikte gelen başlangıç test dosyalarını havuza dahil et",
           "get_more_files": "Google Drive klasöründen daha fazla test dosyası al",
           "import_files": "Cihazınızdan test dosyaları içe aktar",
-          "reset_pool": "Test havuzunu sıfırla",
           "start_random_text": "Testi havuzdan rastgele seçilen uygun bir metinle başlat",
-          "start_current_text": "Testi geçerli metinle başlat"
+          "start_current_text": "Geçerli metni değiştirmeden veya havuzdan dosya tüketmeden kullan"
+        },
+        "names": {
+          "reset_pool": "Test havuzunu sıfırla"
         },
         "import": {
-          "import_summary": "İçe aktarma tamamlandı. İçe aktarılan: {imported}. Atlanan yinelenenler: {skippedDuplicates}. Doğrulama başarısız: {failedValidation}. Arşiv girdisi hataları: {failedArchiveEntries}. Yazma hataları: {failedWrites}.",
-          "import_conflict": {
-            "title": "Dosyaları içe aktar",
-            "message": "İçe aktarılan bazı dosyalar havuzda zaten var. Yinelenenler nasıl ele alınsın?",
-            "detail": "{count} hedef dosya adı havuzda zaten var.",
-            "skip_button": "Yinelenenleri atla",
-            "replace_button": "Yinelenenleri değiştir",
-            "cancel_button": "İçe aktarmayı iptal et"
-          }
+          "import_summary": "İçe aktarma tamamlandı. İçe aktarılan: {imported}. Atlanan yinelenenler: {skippedDuplicates}. Doğrulama başarısız: {failedValidation}. Arşiv girdisi hataları: {failedArchiveEntries}. Yazma hataları: {failedWrites}."
         }
       },
       "prestart": {
-        "reminder": "Başlamaya hazır olduğunuzda Yüzen Pencere'de Play (▶) düğmesine basın. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; zamanlayıcıyı duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) düğmesine basın."
+        "reminder": "Başlamaya hazır olduğunuzda Yüzen Kronometre'de Play (▶) düğmesine basın. Test başladıktan sonra okumayı bitirene kadar Pause (⏸) düğmesine basmayın: Pause testi bitirir; kronometreyi duraklatmaz. Testi iptal etmek istiyorsanız yalnızca Stop/Reset (⏹) düğmesine basın."
       },
       "questions": {
         "title": "Okuduğunu Anlama Soruları",
@@ -580,6 +644,7 @@
         "random_value": "Rastgele tahmin altında beklenen puan: {percentage}",
         "feedback_title": "Geri bildirim",
         "feedback_prefix": "İtirazlar için:",
+        "summary_aria": "Test özeti",
         "question_heading": "{number}. {prompt}",
         "incomplete_warning": "Değerlendirmeden önce tüm sorular yanıtlanmalıdır.",
         "result_summary": "{total} sorudan {correct} doğru ({percentage})",
@@ -593,6 +658,7 @@
         "measured_wpm": "Ölçülen WPM",
         "elapsed_time": "Süre",
         "word_count": "Kelimeler",
+        "summary_aria": "Test özeti",
         "continue_button": "Devam et"
       },
       "alerts": {
@@ -646,8 +712,8 @@
       }
     },
     "browser_extension": {
-      "title": "Tarayıcı uzantısı",
-      "subtitle": "Tiempo de lectura",
+      "title": "Okuma süresi",
+      "subtitle": "Tarayıcı uzantısı",
       "availability": "Şu anda Chrome'da kullanılabilir. Yakında daha fazla tarayıcıya gelecek.",
       "chrome_store_aria": "Uzantının Chrome Web Store sayfasını aç",
       "close_aria": "Tarayıcı uzantısı iletişim kutusunu kapat",
@@ -658,6 +724,11 @@
     "info": {
       "loading": "Yükleniyor...",
       "missing_content": "'{name}' için içerik mevcut değil.",
+      "close_aria": "Bilgileri kapat",
+      "media_lightbox": {
+        "title": "Genişletilmiş ekran görüntüsü önizlemesi",
+        "close_aria": "Önizlemeyi kapat"
+      },
       "external": {
         "blocked": "Bağlantı engellendi",
         "error": "Bağlantı açılırken hata oluştu"

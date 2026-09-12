@@ -8,13 +8,16 @@ const vm = require('node:vm');
 
 function loadTaskEditorPreload() {
   const invoked = [];
+  const sent = [];
   let exposedApi = null;
 
   const ipcRenderer = {
     invoke(channel, payload) {
       invoked.push({ channel, payload });
     },
-    send() {},
+    send(channel, payload) {
+      sent.push({ channel, payload });
+    },
     on() {},
     removeListener() {},
   };
@@ -50,6 +53,7 @@ function loadTaskEditorPreload() {
   return {
     exposedApi,
     invoked,
+    sent,
   };
 }
 
@@ -77,4 +81,92 @@ test('task editor preload exposes selectTaskFile through taskEditorAPI', () => {
       payload: undefined,
     },
   ]);
+});
+
+test('task editor preload sends the selected task-row snapshot path for inspection', () => {
+  const { exposedApi, invoked } = loadTaskEditorPreload();
+
+  exposedApi.api.inspectTaskRowSnapshot('/reading.json');
+
+  assert.deepEqual(JSON.parse(JSON.stringify(invoked)), [
+    {
+      channel: 'current-text-snapshot-inspect',
+      payload: { snapshotRelPath: '/reading.json' },
+    },
+  ]);
+});
+
+test('task editor preload sends an exact library-entry payload', () => {
+  const { exposedApi, invoked } = loadTaskEditorPreload();
+  const entry = {
+    texto: 'Read chapter 1',
+    tiempoSeconds: 120,
+    enlace: 'https://example.com/read',
+  };
+
+  exposedApi.api.saveLibraryEntry(entry);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(invoked)), [
+    {
+      channel: 'task-library-save',
+      payload: { entry },
+    },
+  ]);
+  assert.equal('saveLibraryRow' in exposedApi.api, false);
+});
+
+test('task editor preload forwards the complete column layout record', () => {
+  const { exposedApi, invoked } = loadTaskEditorPreload();
+  const record = {
+    version: 1,
+    widths: {
+      comentario: 82,
+      tiempo: 88,
+      percent: 63,
+      falta: 65,
+      enlace: 250,
+      acciones: 124,
+    },
+  };
+
+  exposedApi.api.getColumnLayout();
+  exposedApi.api.saveColumnLayout(record);
+
+  assert.equal(invoked[0].channel, 'task-columns-load');
+  assert.equal(invoked[0].payload, undefined);
+  assert.equal(invoked[1].channel, 'task-columns-save');
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(invoked[1].payload)),
+    { record }
+  );
+  assert.equal('getColumnWidths' in exposedApi.api, false);
+  assert.equal('saveColumnWidths' in exposedApi.api, false);
+});
+
+test('task editor preload forwards correlated dirty state and typed terminal/close responses', () => {
+  const { exposedApi, sent } = loadTaskEditorPreload();
+
+  exposedApi.api.setDirtyState({ dirty: true, initId: 4 });
+  exposedApi.api.reportTerminalState({ kind: 'startup', phase: 'no-draft', initId: null, dirty: null });
+  exposedApi.api.respondToClose({ kind: 'normal', allow: true });
+  assert.deepEqual(JSON.parse(JSON.stringify(sent)), [
+    {
+      channel: 'task-editor-dirty-state',
+      payload: { dirty: true, initId: 4 },
+    },
+    {
+      channel: 'task-editor-terminal',
+      payload: { kind: 'startup', phase: 'no-draft', initId: null, dirty: null },
+    },
+    {
+      channel: 'task-editor-close-response',
+      payload: { kind: 'normal', allow: true },
+    },
+  ]);
+
+  assert.throws(
+    () => exposedApi.api.setDirtyState({ dirty: true }),
+    /setDirtyState requires dirty and initId/
+  );
+  assert.equal(sent.length, 3);
 });

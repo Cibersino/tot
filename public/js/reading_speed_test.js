@@ -21,12 +21,10 @@
   const log = window.getLogger('reading-speed-test');
   log.debug('Reading speed test main-renderer module starting...');
 
-  if (!window.RendererI18n
-    || typeof window.RendererI18n.tRenderer !== 'function'
-    || typeof window.RendererI18n.msgRenderer !== 'function') {
+  if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[reading-speed-test] RendererI18n unavailable; cannot continue');
   }
-  const { tRenderer, msgRenderer } = window.RendererI18n;
+  const { tRenderer } = window.RendererI18n;
 
   const filtersCore = window.ReadingTestFiltersCore || null;
   if (!filtersCore
@@ -59,11 +57,18 @@
   const showBundledLabel = document.getElementById('readingTestEntryModalShowBundledLabel');
   const showBundledCheckbox = document.getElementById('readingTestEntryModalShowBundled');
   const showBundledText = document.getElementById('readingTestEntryModalShowBundledText');
+  const showBundledDescription = document.getElementById('readingTestEntryModalShowBundledDescription');
   const getMoreFilesLink = document.getElementById('readingTestEntryModalGetMoreFiles');
+  const getMoreFilesDescription = document.getElementById('readingTestEntryModalGetMoreFilesDescription');
   const importButton = document.getElementById('readingTestEntryModalImport');
+  const importDescription = document.getElementById('readingTestEntryModalImportDescription');
   const resetButton = document.getElementById('readingTestEntryModalReset');
   const btnStart = document.getElementById('readingTestEntryModalStart');
+  const btnStartDescription = document.getElementById('readingTestEntryModalStartDescription');
   const btnStartCurrentText = document.getElementById('readingTestEntryModalStartCurrentText');
+  const btnStartCurrentTextDescription = document.getElementById(
+    'readingTestEntryModalStartCurrentTextDescription'
+  );
   const btnClose = document.getElementById('readingTestEntryModalClose');
   const languageSection = document.getElementById('readingTestEntryLanguageSection');
   const languageHeading = document.getElementById('readingTestEntryLanguageHeading');
@@ -88,11 +93,16 @@
       && showBundledLabel
       && showBundledCheckbox
       && showBundledText
+      && showBundledDescription
       && getMoreFilesLink
+      && getMoreFilesDescription
       && importButton
+      && importDescription
       && resetButton
       && btnStart
+      && btnStartDescription
       && btnStartCurrentText
+      && btnStartCurrentTextDescription
       && btnClose
       && languageSection
       && languageHeading
@@ -115,7 +125,6 @@
   let onInteractionStateChanged = () => { };
   let onApplyWpm = () => { };
   let getSettingsCache = () => ({});
-  let previousFocus = null;
   let sessionState = { active: false, stage: 'idle', blocked: false };
   let poolEntries = [];
   let selection = filtersCore.normalizeSelection({});
@@ -127,6 +136,7 @@
   let stabilizing = false;
   let introExpanded = false;
   let initialized = false;
+  let translationsEstablished = false;
   const DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/1uvNX53NPITaO-jyzqQvr_uZffp28eP4F?usp=sharing';
 
   // =============================================================================
@@ -170,22 +180,6 @@
     }
   }
 
-  function rememberPreviousFocus() {
-    const activeElement = document.activeElement;
-    previousFocus = activeElement && typeof activeElement.focus === 'function'
-      ? activeElement
-      : null;
-  }
-
-  function restorePreviousFocus() {
-    if (!previousFocus || !document.contains(previousFocus)) return;
-    try {
-      previousFocus.focus();
-    } catch (err) {
-      log.warn('Reading-test focus restore failed (ignored):', err);
-    }
-  }
-
   function setModalVisible(visible) {
     modal.setAttribute('aria-hidden', visible ? 'false' : 'true');
     if (visible) {
@@ -195,14 +189,12 @@
       renderIntroVisibility();
     }
     syncLockState();
-    if (!visible) {
-      restorePreviousFocus();
-    }
   }
 
   function closeModal() {
     if (!isModalOpen()) return;
     setModalVisible(false);
+    window.Notify.deactivateModalFocus(modal);
   }
 
   function getCategoryDisplayLabel(category) {
@@ -274,7 +266,7 @@
 
   function createCheckboxOption(category, optionState) {
     const row = document.createElement('label');
-    row.className = 'reading-test-entry-modal-option';
+    row.className = 'reading-test-entry-modal-option native-checkbox-option';
     row.dataset.category = category;
     row.dataset.value = optionState.value;
 
@@ -282,7 +274,6 @@
     checkbox.type = 'checkbox';
     checkbox.checked = !!optionState.checked;
     checkbox.disabled = stabilizing || !optionState.enabled || isSessionActive();
-    checkbox.setAttribute('aria-label', getOptionLabel(category, optionState.value));
     checkbox.addEventListener('change', () => {
       if (stabilizing || isSessionActive()) return;
       const nextSelection = collectNextSelection(category, optionState.value, checkbox.checked);
@@ -356,19 +347,29 @@
       tRenderer('renderer.reading_test.entry.close_aria')
     );
     showBundledText.textContent = tRenderer('renderer.reading_test.entry.show_bundled_entries');
-    showBundledLabel.title = tRenderer('renderer.reading_test.entry.tooltips.show_bundled_entries');
+    const showBundledHelp = tRenderer('renderer.reading_test.entry.help.show_bundled_entries');
+    showBundledDescription.textContent = showBundledHelp;
+    showBundledLabel.setAttribute('data-tot-tooltip', showBundledHelp);
     showBundledCheckbox.checked = showBundledEntries;
-    showBundledCheckbox.setAttribute('aria-label', showBundledText.textContent);
     getMoreFilesLink.textContent = tRenderer('renderer.reading_test.entry.get_more_files');
-    getMoreFilesLink.title = tRenderer('renderer.reading_test.entry.tooltips.get_more_files');
+    const getMoreFilesHelp = tRenderer('renderer.reading_test.entry.help.get_more_files');
+    getMoreFilesDescription.textContent = getMoreFilesHelp;
+    getMoreFilesLink.setAttribute('data-tot-tooltip', getMoreFilesHelp);
     importButton.textContent = tRenderer('renderer.reading_test.entry.import_files_button');
-    importButton.title = tRenderer('renderer.reading_test.entry.tooltips.import_files');
-    resetButton.title = tRenderer('renderer.reading_test.entry.tooltips.reset_pool');
-    resetButton.setAttribute('aria-label', resetButton.title);
+    const importHelp = tRenderer('renderer.reading_test.entry.help.import_files');
+    importDescription.textContent = importHelp;
+    importButton.setAttribute('data-tot-tooltip', importHelp);
+    const resetName = tRenderer('renderer.reading_test.entry.names.reset_pool');
+    resetButton.setAttribute('aria-label', resetName);
+    resetButton.setAttribute('data-tot-tooltip', resetName);
     btnStart.textContent = tRenderer('renderer.reading_test.entry.start_random_text_button');
-    btnStart.title = tRenderer('renderer.reading_test.entry.tooltips.start_random_text');
+    const startHelp = tRenderer('renderer.reading_test.entry.help.start_random_text');
+    btnStartDescription.textContent = startHelp;
+    btnStart.setAttribute('data-tot-tooltip', startHelp);
     btnStartCurrentText.textContent = tRenderer('renderer.reading_test.entry.start_current_text_button');
-    btnStartCurrentText.title = tRenderer('renderer.reading_test.entry.tooltips.start_current_text');
+    const startCurrentTextHelp = tRenderer('renderer.reading_test.entry.help.start_current_text');
+    btnStartCurrentTextDescription.textContent = startCurrentTextHelp;
+    btnStartCurrentText.setAttribute('data-tot-tooltip', startCurrentTextHelp);
 
     renderEligibleCount();
     renderWarningBox();
@@ -501,9 +502,12 @@
 
     selection = filtersCore.normalizeSelection({});
     rebuildFilterState();
-    rememberPreviousFocus();
     render();
     setModalVisible(true);
+    window.Notify.activateModalFocus(modal, {
+      initialFocus: introToggle,
+      fallbackFocus: btnClose,
+    });
   }
 
   async function handleResetPool() {
@@ -563,24 +567,6 @@
     });
   }
 
-  function buildImportDialogPayload() {
-    return {
-      conflictDialog: {
-        conflictTitle: tRenderer('renderer.reading_test.entry.import.import_conflict.title'),
-        conflictMessage: tRenderer('renderer.reading_test.entry.import.import_conflict.message'),
-        conflictDetail: msgRenderer(
-          'renderer.reading_test.entry.import.import_conflict.detail',
-          { count: '{count}' }
-        ),
-        buttons: {
-          skip: tRenderer('renderer.reading_test.entry.import.import_conflict.skip_button'),
-          replace: tRenderer('renderer.reading_test.entry.import.import_conflict.replace_button'),
-          cancel: tRenderer('renderer.reading_test.entry.import.import_conflict.cancel_button'),
-        },
-      },
-    };
-  }
-
   async function handleImportFiles() {
     if (stabilizing || isSessionActive()) return;
 
@@ -597,7 +583,7 @@
     setStabilizing(true);
 
     try {
-      const result = await importReadingTestPoolFiles(buildImportDialogPayload());
+      const result = await importReadingTestPoolFiles();
       if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
         setStabilizing(false);
         log.error('Reading-test pool import result invalid:', result);
@@ -846,10 +832,12 @@
           sessionState = normalizeSessionState(nextState);
           if (sessionState.active && isModalOpen()) {
             closeModal();
-          } else {
-            render();
-            syncLockState();
+            return;
           }
+          if (translationsEstablished) {
+            render();
+          }
+          syncLockState();
         });
       } catch (err) {
         log.warn(
@@ -937,12 +925,15 @@
       void syncInitialSessionState();
     }
 
-    render();
+    // Main owns first translated presentation through its initial renderer-i18n
+    // transition. Configure may run before that state exists, so it only wires
+    // callbacks and accepts nonlocalized session state.
     syncLockState();
   }
 
   function applyTranslations() {
     render();
+    translationsEstablished = true;
   }
 
   window.ReadingSpeedTestUi = {

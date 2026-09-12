@@ -28,6 +28,20 @@
     throw new Error('[snapshot-save-tags-modal] RendererI18n unavailable; cannot continue');
   }
   const { tRenderer, msgRenderer } = window.RendererI18n;
+  const { AppConstants } = window;
+  if (!AppConstants || !Number.isInteger(AppConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS)
+    || AppConstants.SNAPSHOT_TAG_LABEL_MAX_CHARS < 1
+    || !Number.isInteger(AppConstants.SNAPSHOT_NAME_MAX_CHARS)
+    || AppConstants.SNAPSHOT_NAME_MAX_CHARS < 1
+    || !Number.isInteger(AppConstants.SNAPSHOT_SOURCE_COMMENT_MAX_CHARS)
+    || AppConstants.SNAPSHOT_SOURCE_COMMENT_MAX_CHARS < 1) {
+    throw new Error('[snapshot-save-tags-modal] Snapshot field limits unavailable; verify constants.js load order');
+  }
+  const {
+    SNAPSHOT_TAG_LABEL_MAX_CHARS,
+    SNAPSHOT_NAME_MAX_CHARS,
+    SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
+  } = AppConstants;
 
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
   if (!snapshotTagCatalog
@@ -52,6 +66,10 @@
   const rendererIcons = window.RendererIcons || null;
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[snapshot-save-tags-modal] RendererIcons unavailable; cannot continue');
+  }
+  const rendererCombobox = window.RendererCombobox || null;
+  if (!rendererCombobox || typeof rendererCombobox.create !== 'function') {
+    throw new Error('[snapshot-save-tags-modal] RendererCombobox unavailable; cannot continue');
   }
 
   const electronAPI = window.electronAPI || null;
@@ -79,11 +97,15 @@
   const SEARCH_NO_RESULTS_KEY = 'renderer.snapshots.search.no_results';
   const SEARCH_CREATE_KEY = 'renderer.snapshots.search.create';
   const MANAGE_BUTTON_LABEL_KEY = 'renderer.snapshots.buttons.manage';
-  const MANAGE_BUTTON_ARIA_KEY = 'renderer.snapshots.manager.title';
+  const INCLUDE_COUNT_LABEL_KEY = 'renderer.snapshots.metrics.include_count';
+  const INCLUDE_READING_LABEL_KEY = 'renderer.snapshots.metrics.include_reading';
+  const SNAPSHOT_NAME_LABEL_KEY = 'renderer.snapshots.labels.name';
+  const SNAPSHOT_SOURCE_COMMENT_LABEL_KEY = 'renderer.snapshots.labels.source_comment';
+  const SNAPSHOT_NAME_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.name';
+  const SNAPSHOT_SOURCE_COMMENT_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.source_comment';
   const MANAGER_UNAVAILABLE_ALERT_KEY = 'renderer.snapshots.alerts.catalog_update_error';
   const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
   const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
-  const CUSTOM_LABEL_MAX_LENGTH_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.snapshotTagCatalog.maxCustomLabelLength.unavailable';
   const FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY = 'snapshot-save-tags-modal.focus.preventScroll.fallback';
 
   const FIELD_DEFS = [
@@ -93,8 +115,6 @@
       emptyKey: 'renderer.snapshots.empty.language',
       labelEl: document.getElementById('snapshotSaveTagsLanguageLabel'),
       controlEl: document.getElementById('snapshotSaveTagsLanguageControl'),
-      inputEl: document.getElementById('snapshotSaveTagsLanguageInput'),
-      listboxEl: document.getElementById('snapshotSaveTagsLanguageListbox'),
     },
     {
       key: 'type',
@@ -102,8 +122,6 @@
       emptyKey: 'renderer.snapshots.empty.type',
       labelEl: document.getElementById('snapshotSaveTagsTypeLabel'),
       controlEl: document.getElementById('snapshotSaveTagsTypeControl'),
-      inputEl: document.getElementById('snapshotSaveTagsTypeInput'),
-      listboxEl: document.getElementById('snapshotSaveTagsTypeListbox'),
     },
     {
       key: 'difficulty',
@@ -111,8 +129,6 @@
       emptyKey: 'renderer.snapshots.empty.difficulty',
       labelEl: document.getElementById('snapshotSaveTagsDifficultyLabel'),
       controlEl: document.getElementById('snapshotSaveTagsDifficultyControl'),
-      inputEl: document.getElementById('snapshotSaveTagsDifficultyInput'),
-      listboxEl: document.getElementById('snapshotSaveTagsDifficultyListbox'),
     },
   ];
 
@@ -127,6 +143,16 @@
   const btnConfirm = document.getElementById('snapshotSaveTagsModalConfirm');
   const btnCancel = document.getElementById('snapshotSaveTagsModalCancel');
   const btnClose = document.getElementById('snapshotSaveTagsModalClose');
+  const snapshotMetadataFields = document.getElementById('snapshotSaveMetadataFields');
+  const snapshotNameInput = document.getElementById('snapshotSaveName');
+  const snapshotNameLabel = document.getElementById('snapshotSaveNameLabel');
+  const snapshotSourceCommentInput = document.getElementById('snapshotSaveSourceComment');
+  const snapshotSourceCommentLabel = document.getElementById('snapshotSaveSourceCommentLabel');
+  const metricsOptions = document.getElementById('snapshotSaveMetricsOptions');
+  const includeCountInput = document.getElementById('snapshotSaveIncludeCount');
+  const includeCountLabel = document.getElementById('snapshotSaveIncludeCountLabel');
+  const includeReadingInput = document.getElementById('snapshotSaveIncludeReading');
+  const includeReadingLabel = document.getElementById('snapshotSaveIncludeReadingLabel');
 
   const managerModal = document.getElementById('snapshotTagManagerModal');
   const managerBackdrop = document.getElementById('snapshotTagManagerModalBackdrop');
@@ -145,6 +171,16 @@
     btnConfirm,
     btnCancel,
     btnClose,
+    snapshotMetadataFields,
+    snapshotNameInput,
+    snapshotNameLabel,
+    snapshotSourceCommentInput,
+    snapshotSourceCommentLabel,
+    metricsOptions,
+    includeCountInput,
+    includeCountLabel,
+    includeReadingInput,
+    includeReadingLabel,
     managerModal,
     managerBackdrop,
     managerTitle,
@@ -155,8 +191,6 @@
     ...FIELD_DEFS.flatMap((field) => [
       field.labelEl,
       field.controlEl,
-      field.inputEl,
-      field.listboxEl,
     ]),
   ];
 
@@ -164,8 +198,10 @@
   // Shared state
   // =============================================================================
   const fieldStateByKey = new Map();
-  let fieldEventsBound = false;
+  let fieldComboboxesCreated = false;
+  let metricChoiceEventsBound = false;
   let currentSnapshotTagPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  const activePromptTranslationRefreshers = new Set();
 
   // =============================================================================
   // Generic helpers
@@ -197,11 +233,9 @@
     if (!fieldStateByKey.has(fieldKey)) {
       fieldStateByKey.set(fieldKey, {
         committedValue: '',
-        queryText: '',
-        isOpen: false,
-        activeIndex: -1,
         allOptions: [],
-        filteredOptions: [],
+        pendingCreateLabel: '',
+        combobox: null,
       });
     }
     return fieldStateByKey.get(fieldKey);
@@ -211,16 +245,12 @@
     return managerModal.getAttribute('aria-hidden') === 'false';
   }
 
-  function getCustomLabelMaxLength() {
-    const maxLength = snapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH;
-    if (Number.isInteger(maxLength) && maxLength > 0) {
-      return maxLength;
+  function getDraftValidationText(errorKey) {
+    if (!errorKey) return '';
+    if (errorKey === 'renderer.snapshots.manager.validation.too_long') {
+      return msgRenderer(errorKey, { max: SNAPSHOT_TAG_LABEL_MAX_CHARS });
     }
-    log.warnOnce(
-      CUSTOM_LABEL_MAX_LENGTH_UNAVAILABLE_LOG_KEY,
-      'SnapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH unavailable; draft input maxLength hint disabled.'
-    );
-    return null;
+    return tRenderer(errorKey);
   }
 
   async function loadSnapshotTagPreferences(initialPreferences = null) {
@@ -296,26 +326,6 @@
     return [clearOption, ...visibleOptions];
   }
 
-  function findOptionByValue(options, rawValue) {
-    const normalizedValue = normalizeOptionalString(rawValue);
-    if (!normalizedValue) return null;
-    return options.find((option) => option.value === normalizedValue) || null;
-  }
-
-  function getCommittedOption(fieldState) {
-    return fieldState.allOptions.find((option) => option.value === fieldState.committedValue)
-      || fieldState.allOptions[0]
-      || null;
-  }
-
-  function syncFieldInputFromCommittedValue(fieldKey) {
-    const field = getFieldDef(fieldKey);
-    const fieldState = ensureFieldState(fieldKey);
-    const committedOption = getCommittedOption(fieldState);
-    fieldState.queryText = '';
-    field.inputEl.value = committedOption && committedOption.value ? committedOption.label : '';
-  }
-
   function buildCreateOption(fieldKey, queryText) {
     const labelInfo = snapshotTagCatalog.validateCustomLabel(queryText);
     if (!labelInfo.ok) return null;
@@ -337,140 +347,39 @@
     };
   }
 
-  function updateFilteredOptions(fieldKey) {
+  function resolveFieldOptions(fieldKey, queryText) {
     const fieldState = ensureFieldState(fieldKey);
-    const normalizedQuery = snapshotTagCatalog.normalizeLabelForComparison(fieldState.queryText);
-    fieldState.filteredOptions = normalizedQuery
+    const normalizedQuery = snapshotTagCatalog.normalizeLabelForComparison(queryText);
+    const filteredOptions = normalizedQuery
       ? fieldState.allOptions.filter((option) => option.normalizedSearch.includes(normalizedQuery))
       : fieldState.allOptions.slice();
-
-    const createOption = buildCreateOption(fieldKey, fieldState.queryText);
+    const createOption = buildCreateOption(fieldKey, queryText);
+    fieldState.pendingCreateLabel = createOption ? createOption.createLabel : '';
     if (createOption) {
-      fieldState.filteredOptions.unshift(createOption);
+      filteredOptions.unshift(createOption);
     }
-
-    if (!fieldState.filteredOptions.length) {
-      fieldState.activeIndex = -1;
-      return;
-    }
-
-    const committedIndex = fieldState.filteredOptions.findIndex(
-      (option) => option.value === fieldState.committedValue && option.kind === 'value'
-    );
-    fieldState.activeIndex = committedIndex >= 0 ? committedIndex : 0;
-  }
-
-  function renderField(fieldKey) {
-    const field = getFieldDef(fieldKey);
-    const fieldState = ensureFieldState(fieldKey);
-    if (!field) return;
-
-    field.labelEl.textContent = tRenderer(field.labelKey);
-    field.inputEl.placeholder = tRenderer(SEARCH_PLACEHOLDER_KEY);
-    field.inputEl.setAttribute('aria-expanded', fieldState.isOpen ? 'true' : 'false');
-    field.listboxEl.hidden = !fieldState.isOpen;
-    field.listboxEl.setAttribute('aria-hidden', fieldState.isOpen ? 'false' : 'true');
-    field.listboxEl.innerHTML = '';
-
-    if (!fieldState.isOpen) {
-      field.inputEl.removeAttribute('aria-activedescendant');
-      return;
-    }
-
-    if (!fieldState.filteredOptions.length) {
-      const emptyEl = document.createElement('div');
-      emptyEl.className = 'snapshot-save-tags-option is-empty is-disabled';
-      emptyEl.setAttribute('role', 'option');
-      emptyEl.setAttribute('aria-disabled', 'true');
-      emptyEl.textContent = tRenderer(SEARCH_NO_RESULTS_KEY);
-      field.listboxEl.appendChild(emptyEl);
-      field.inputEl.removeAttribute('aria-activedescendant');
-      return;
-    }
-
-    fieldState.filteredOptions.forEach((option, index) => {
-      const optionEl = document.createElement('div');
-      optionEl.id = `snapshotSaveTags-${fieldKey}-option-${index}`;
-      optionEl.className = `snapshot-save-tags-option${option.kind === 'clear' ? ' is-clear' : ''}${option.kind === 'create' ? ' is-create' : ''}${index === fieldState.activeIndex ? ' is-active' : ''}`;
-      optionEl.setAttribute('role', 'option');
-      optionEl.setAttribute(
-        'aria-selected',
-        option.kind !== 'create' && option.value === fieldState.committedValue ? 'true' : 'false'
-      );
-      optionEl.dataset.index = String(index);
-      optionEl.textContent = option.label;
-      optionEl.addEventListener('mousedown', (event) => {
-        event.preventDefault();
-      });
-      optionEl.addEventListener('click', () => {
-        void commitFieldOption(fieldKey, index);
-      });
-      field.listboxEl.appendChild(optionEl);
-    });
-
-    if (fieldState.activeIndex >= 0) {
-      field.inputEl.setAttribute(
-        'aria-activedescendant',
-        `snapshotSaveTags-${fieldKey}-option-${fieldState.activeIndex}`
-      );
-    } else {
-      field.inputEl.removeAttribute('aria-activedescendant');
-    }
-  }
-
-  function renderAllFields() {
-    FIELD_DEFS.forEach((field) => renderField(field.key));
-  }
-
-  function closeField(fieldKey, { restoreCommittedValue = true } = {}) {
-    const field = getFieldDef(fieldKey);
-    const fieldState = ensureFieldState(fieldKey);
-    if (!field) return;
-
-    fieldState.isOpen = false;
-    if (restoreCommittedValue) {
-      syncFieldInputFromCommittedValue(fieldKey);
-      updateFilteredOptions(fieldKey);
-    }
-    renderField(fieldKey);
+    return filteredOptions.map((option) => (
+      option.kind === 'create'
+        ? { action: 'create', label: option.label, variant: 'create' }
+        : {
+          value: option.value,
+          label: option.label,
+          variant: option.kind === 'clear' ? 'clear' : '',
+        }
+    ));
   }
 
   function closeAllFields() {
-    FIELD_DEFS.forEach((field) => closeField(field.key, { restoreCommittedValue: true }));
-  }
-
-  function closeOtherFields(activeFieldKey) {
     FIELD_DEFS.forEach((field) => {
-      if (field.key !== activeFieldKey) {
-        closeField(field.key, { restoreCommittedValue: true });
-      }
+      const combobox = ensureFieldState(field.key).combobox;
+      if (combobox) combobox.close();
     });
   }
 
-  function openField(fieldKey, { preserveQuery = false } = {}) {
-    const fieldState = ensureFieldState(fieldKey);
-    if (!preserveQuery) {
-      fieldState.queryText = '';
-      syncFieldInputFromCommittedValue(fieldKey);
-    }
-    closeOtherFields(fieldKey);
-    updateFilteredOptions(fieldKey);
-    fieldState.isOpen = true;
-    renderField(fieldKey);
-  }
-
-  function moveActiveIndex(fieldKey, delta) {
-    const fieldState = ensureFieldState(fieldKey);
-    if (!fieldState.filteredOptions.length) {
-      fieldState.activeIndex = -1;
-      return;
-    }
-    if (fieldState.activeIndex < 0) {
-      fieldState.activeIndex = 0;
-      return;
-    }
-    const lastIndex = fieldState.filteredOptions.length - 1;
-    fieldState.activeIndex = Math.max(0, Math.min(fieldState.activeIndex + delta, lastIndex));
+  function isFieldOpen(fieldKey) {
+    const field = getFieldDef(fieldKey);
+    const trigger = field && field.controlEl ? field.controlEl.firstElementChild : null;
+    return !!trigger && trigger.getAttribute('aria-expanded') === 'true';
   }
 
   async function createCustomTagAndCommit(fieldKey, rawLabel) {
@@ -494,32 +403,15 @@
     resetFields(nextTags);
   }
 
-  async function commitFieldOption(fieldKey, explicitIndex = null) {
+  function onFieldValueChanged(fieldKey, value) {
     const fieldState = ensureFieldState(fieldKey);
-    const optionIndex = explicitIndex == null ? fieldState.activeIndex : explicitIndex;
-    if (optionIndex < 0 || optionIndex >= fieldState.filteredOptions.length) return;
-
-    const option = fieldState.filteredOptions[optionIndex];
-    if (option.kind === 'create') {
-      await createCustomTagAndCommit(fieldKey, option.createLabel);
-      return;
-    }
-
-    fieldState.committedValue = option.value;
-    closeField(fieldKey, { restoreCommittedValue: true });
+    fieldState.committedValue = value;
   }
 
-  function isNodeWithin(root, node) {
-    let current = node || null;
-    while (current) {
-      if (current === root) return true;
-      current = current.parentNode || null;
-    }
-    return false;
-  }
-
-  function isPrintableKey(event) {
-    return typeof event.key === 'string' && event.key.length === 1 && !event.ctrlKey && !event.metaKey;
+  function onFieldAction(fieldKey, option) {
+    if (!option || option.action !== 'create') return;
+    const createLabel = ensureFieldState(fieldKey).pendingCreateLabel;
+    if (createLabel) void createCustomTagAndCommit(fieldKey, createLabel);
   }
 
   function resetFields(initialTags) {
@@ -532,17 +424,24 @@
     FIELD_DEFS.forEach((field) => {
       const fieldState = ensureFieldState(field.key);
       fieldState.allOptions = buildFieldOptions(field);
-      const normalizedInitialOption = normalizedInitialTags
-        ? findOptionByValue(fieldState.allOptions, normalizedInitialTags[field.key])
-        : null;
-      fieldState.committedValue = normalizedInitialOption ? normalizedInitialOption.value : '';
-      fieldState.queryText = '';
-      fieldState.isOpen = false;
-      updateFilteredOptions(field.key);
-      syncFieldInputFromCommittedValue(field.key);
+      const normalizedValue = normalizedInitialTags
+        ? normalizeOptionalString(normalizedInitialTags[field.key])
+        : '';
+      fieldState.committedValue = normalizedValue;
+      fieldState.pendingCreateLabel = '';
+      field.labelEl.textContent = tRenderer(field.labelKey);
+      fieldState.combobox.update({
+        options: fieldState.allOptions.map((option) => ({
+          value: option.value,
+          label: option.label,
+          variant: option.kind === 'clear' ? 'clear' : '',
+        })),
+        value: normalizedValue,
+        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
+        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
+      });
+      fieldState.combobox.close();
     });
-
-    renderAllFields();
   }
 
   function collectTags() {
@@ -557,16 +456,6 @@
     });
 
     return Object.keys(tags).length ? tags : null;
-  }
-
-  function restorePreviousFocus(previousFocus) {
-    if (!previousFocus || !document.contains(previousFocus)) return;
-
-    try {
-      previousFocus.focus();
-    } catch (err) {
-      log.warn('Snapshot tags focus restore failed (ignored):', err);
-    }
   }
 
   function focusElementWithoutScroll(element) {
@@ -608,82 +497,99 @@
     btnCancel.textContent = tRenderer(resolvedCopy.cancelKey);
     btnClose.setAttribute('aria-label', tRenderer(resolvedCopy.closeAriaKey));
     btnManage.textContent = tRenderer(MANAGE_BUTTON_LABEL_KEY);
-    btnManage.setAttribute('aria-label', tRenderer(MANAGE_BUTTON_ARIA_KEY));
-    btnManage.title = tRenderer(MANAGE_BUTTON_LABEL_KEY);
+    btnManage.removeAttribute('aria-label');
+    includeCountLabel.textContent = tRenderer(INCLUDE_COUNT_LABEL_KEY);
+    includeReadingLabel.textContent = tRenderer(INCLUDE_READING_LABEL_KEY);
+    snapshotNameLabel.textContent = tRenderer(SNAPSHOT_NAME_LABEL_KEY);
+    snapshotNameInput.placeholder = tRenderer(SNAPSHOT_NAME_PLACEHOLDER_KEY);
+    snapshotNameInput.maxLength = SNAPSHOT_NAME_MAX_CHARS;
+    snapshotSourceCommentLabel.textContent = tRenderer(SNAPSHOT_SOURCE_COMMENT_LABEL_KEY);
+    snapshotSourceCommentInput.placeholder = tRenderer(SNAPSHOT_SOURCE_COMMENT_PLACEHOLDER_KEY);
+    snapshotSourceCommentInput.maxLength = SNAPSHOT_SOURCE_COMMENT_MAX_CHARS;
+  }
+
+  function refreshFieldTranslations() {
+    FIELD_DEFS.forEach((field) => {
+      const fieldState = ensureFieldState(field.key);
+      const preservedValue = fieldState.combobox && typeof fieldState.combobox.getValue === 'function'
+        ? fieldState.combobox.getValue()
+        : fieldState.committedValue;
+      fieldState.allOptions = buildFieldOptions(field);
+      field.labelEl.textContent = tRenderer(field.labelKey);
+      fieldState.combobox.update({
+        options: fieldState.allOptions.map((option) => ({
+          value: option.value,
+          label: option.label,
+          variant: option.kind === 'clear' ? 'clear' : '',
+        })),
+        value: preservedValue,
+        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
+        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
+      });
+    });
+  }
+
+  function applyTranslations() {
+    Array.from(activePromptTranslationRefreshers).forEach((refresh) => refresh());
+  }
+
+  function setSnapshotSaveFieldVisibility(showSaveFields) {
+    snapshotMetadataFields.hidden = !showSaveFields;
+    snapshotMetadataFields.setAttribute('aria-hidden', showSaveFields ? 'false' : 'true');
+    metricsOptions.hidden = !showSaveFields;
+    metricsOptions.setAttribute('aria-hidden', showSaveFields ? 'false' : 'true');
+  }
+
+  function resetSnapshotSaveFields() {
+    snapshotNameInput.value = '';
+    snapshotSourceCommentInput.value = '';
+  }
+
+  function collectOptionalInputValue(input) {
+    return input && typeof input.value === 'string' && input.value.trim()
+      ? input.value
+      : '';
+  }
+
+  function syncMetricChoiceState() {
+    if (!includeCountInput.checked) {
+      includeReadingInput.checked = false;
+    }
+    includeReadingInput.disabled = !includeCountInput.checked;
+  }
+
+  function resetMetricChoices() {
+    includeCountInput.checked = true;
+    includeReadingInput.checked = true;
+    syncMetricChoiceState();
+  }
+
+  function ensureMetricChoiceEventsBound() {
+    if (metricChoiceEventsBound) return;
+    includeCountInput.addEventListener('change', syncMetricChoiceState);
+    metricChoiceEventsBound = true;
   }
 
   function ensureFieldEventsBound() {
-    if (fieldEventsBound) return;
+    if (fieldComboboxesCreated) return;
 
     FIELD_DEFS.forEach((field) => {
-      field.inputEl.addEventListener('click', () => {
-        if (isManagerModalOpen()) return;
-        if (!ensureFieldState(field.key).isOpen) {
-          openField(field.key);
-        }
-        const fieldState = ensureFieldState(field.key);
-        if (fieldState.committedValue && typeof field.inputEl.select === 'function') {
-          field.inputEl.select();
-        }
-      });
-
-      field.inputEl.addEventListener('input', () => {
-        if (isManagerModalOpen()) return;
-        const fieldState = ensureFieldState(field.key);
-        fieldState.queryText = field.inputEl.value;
-        openField(field.key, { preserveQuery: true });
-      });
-
-      field.inputEl.addEventListener('keydown', (event) => {
-        if (isManagerModalOpen()) return;
-        const fieldState = ensureFieldState(field.key);
-
-        if (event.key === 'ArrowDown') {
-          event.preventDefault();
-          if (!fieldState.isOpen) {
-            openField(field.key);
-            return;
-          }
-          moveActiveIndex(field.key, 1);
-          renderField(field.key);
-          return;
-        }
-
-        if (event.key === 'ArrowUp' && fieldState.isOpen) {
-          event.preventDefault();
-          moveActiveIndex(field.key, -1);
-          renderField(field.key);
-          return;
-        }
-
-        if (event.key === 'Enter' && fieldState.isOpen) {
-          event.preventDefault();
-          void commitFieldOption(field.key);
-          return;
-        }
-
-        if (event.key === 'Escape' && fieldState.isOpen) {
-          event.preventDefault();
-          if (typeof event.stopPropagation === 'function') {
-            event.stopPropagation();
-          }
-          closeField(field.key, { restoreCommittedValue: true });
-          return;
-        }
-
-        if (event.key === 'Tab' && fieldState.isOpen) {
-          closeField(field.key, { restoreCommittedValue: true });
-          return;
-        }
-
-        if (!fieldState.isOpen && isPrintableKey(event) && fieldState.committedValue) {
-          field.inputEl.value = '';
-          fieldState.queryText = '';
-        }
+      const fieldState = ensureFieldState(field.key);
+      fieldState.combobox = rendererCombobox.create({
+        host: field.controlEl,
+        mode: 'editable',
+        options: [],
+        value: '',
+        ariaLabelledBy: field.labelEl.id,
+        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
+        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
+        resolveOptions: (query) => resolveFieldOptions(field.key, query),
+        onChange: (value) => onFieldValueChanged(field.key, value),
+        onAction: (option) => onFieldAction(field.key, option),
       });
     });
 
-    fieldEventsBound = true;
+    fieldComboboxesCreated = true;
   }
 
   // =============================================================================
@@ -707,10 +613,18 @@
 
     return await new Promise((resolve) => {
       let settled = false;
-      const previousFocus = document.activeElement && typeof document.activeElement.focus === 'function'
-        ? document.activeElement
-        : null;
-
+      const refreshManagerTranslations = () => {
+        const focusedNode = document.activeElement;
+        const focusedNodeWillBeReplaced = !!(
+          focusedNode
+          && typeof managerContent.contains === 'function'
+          && managerContent.contains(focusedNode)
+        );
+        renderManagerContent({ focusNewDraft: false });
+        if (focusedNodeWillBeReplaced) {
+          focusElementWithoutScroll(managerCloseButton);
+        }
+      };
       function getDraftState(category) {
         return draftStateByCategory.get(category);
       }
@@ -733,17 +647,26 @@
         labelKey,
         labelParams = {},
         iconName,
+        className = 'btn-standard btn-standard--square',
+        count = null,
         disabled = false,
         onClick,
       }) {
         const text = msgRenderer(labelKey, labelParams);
+        const countText = Number.isInteger(count) ? `(${count})` : '';
         const button = rendererIcons.createIconButton({
           iconName,
-          size: 'sm',
-          className: 'btn-standard btn-standard--square snapshot-tag-manager-icon-button',
-          title: text,
-          ariaLabel: text,
+          className,
+          ariaLabel: countText && !text.includes(countText) ? `${text} ${countText}` : text,
         });
+        button.setAttribute('data-tot-tooltip', text);
+        if (countText) {
+          const countLabel = document.createElement('span');
+          countLabel.className = 'snapshot-tag-manager-action-count';
+          countLabel.setAttribute('aria-hidden', 'true');
+          countLabel.textContent = countText;
+          button.appendChild(countLabel);
+        }
         button.disabled = disabled;
         button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
         button.addEventListener('click', onClick);
@@ -775,7 +698,7 @@
         draftState.errorKey = '';
       }
 
-      function renderManagerContent() {
+      function renderManagerContent({ focusNewDraft = true } = {}) {
         managerTitle.textContent = tRenderer('renderer.snapshots.manager.title');
         managerMessage.textContent = tRenderer('renderer.snapshots.manager.message');
         managerDoneButton.textContent = tRenderer('renderer.snapshots.manager.done');
@@ -819,9 +742,13 @@
             },
             { disabled: categoryInfo.visibleOptions.length < 2 }
           ));
-          categoryActions.appendChild(createManagerActionButton(
-            'renderer.snapshots.manager.restore_hidden_defaults',
-            async () => {
+          categoryActions.appendChild(createManagerIconButton({
+            labelKey: 'renderer.snapshots.manager.restore_hidden_defaults',
+            iconName: 'reset-small',
+            className: 'btn-standard snapshot-tag-manager-restore-button',
+            labelParams: { count: categoryInfo.hiddenDefaultValues.length },
+            count: categoryInfo.hiddenDefaultValues.length,
+            onClick: async () => {
               const restoreInfo = snapshotTagCatalog.restoreHiddenDefaultTags(
                 managerPreferences,
                 category,
@@ -829,11 +756,8 @@
               );
               await applyManagerPreferencesChange('restore_hidden_defaults', restoreInfo);
             },
-            {
-              disabled: categoryInfo.hiddenDefaultValues.length < 1,
-              textParams: { count: categoryInfo.hiddenDefaultValues.length },
-            }
-          ));
+            disabled: categoryInfo.hiddenDefaultValues.length < 1,
+          }));
           headingRow.appendChild(categoryActions);
           section.appendChild(headingRow);
 
@@ -844,12 +768,12 @@
             draftInput.className = 'snapshot-tag-manager-draft-input';
             draftInput.type = 'text';
             draftInput.value = draftState.value;
-            const customLabelMaxLength = getCustomLabelMaxLength();
-            if (customLabelMaxLength !== null) {
-              draftInput.maxLength = customLabelMaxLength;
-            }
+            draftInput.maxLength = SNAPSHOT_TAG_LABEL_MAX_CHARS;
             draftInput.placeholder = tRenderer('renderer.snapshots.manager.new_tag_placeholder');
-            draftInput.setAttribute('aria-label', `${heading.textContent} ${tRenderer('renderer.snapshots.manager.new_tag_placeholder')}`);
+            draftInput.setAttribute(
+              'aria-label',
+              tRenderer('renderer.snapshots.manager.new_tag_input_aria')
+            );
             draftInput.addEventListener('input', () => {
               draftState.value = draftInput.value;
               draftState.errorKey = '';
@@ -891,15 +815,17 @@
             const validation = document.createElement('div');
             validation.className = 'snapshot-tag-manager-validation';
             validation.setAttribute('aria-live', 'polite');
-            validation.textContent = draftState.errorKey ? tRenderer(draftState.errorKey) : '';
+            validation.textContent = getDraftValidationText(draftState.errorKey);
             if (!draftState.errorKey) {
               validation.hidden = true;
             }
             section.appendChild(validation);
 
-            setTimeout(() => {
-              focusElementWithoutScroll(draftInput);
-            }, 0);
+            if (focusNewDraft) {
+              setTimeout(() => {
+                focusElementWithoutScroll(draftInput);
+              }, 0);
+            }
           }
 
           if (!categoryInfo.visibleOptions.length) {
@@ -924,7 +850,8 @@
               actions.appendChild(createManagerIconButton({
                 labelKey: 'renderer.snapshots.manager.move_up',
                 labelParams: { label: option.label },
-                iconName: 'arrow-up-strong',
+                iconName: 'arrow-up',
+                className: 'btn-standard btn-standard--half-width',
                 disabled: index < 1,
                 onClick: async () => {
                   const moveInfo = snapshotTagCatalog.moveVisibleTagValue(
@@ -940,7 +867,8 @@
               actions.appendChild(createManagerIconButton({
                 labelKey: 'renderer.snapshots.manager.move_down',
                 labelParams: { label: option.label },
-                iconName: 'arrow-down-strong',
+                iconName: 'arrow-down',
+                className: 'btn-standard btn-standard--half-width',
                 disabled: index >= categoryInfo.visibleOptions.length - 1,
                 onClick: async () => {
                   const moveInfo = snapshotTagCatalog.moveVisibleTagValue(
@@ -1031,12 +959,13 @@
       }
 
       function cleanup() {
+        activePromptTranslationRefreshers.delete(refreshManagerTranslations);
         managerDoneButton.removeEventListener('click', onDone);
         managerCloseButton.removeEventListener('click', onCancel);
         managerBackdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
         managerModal.setAttribute('aria-hidden', 'true');
-        restorePreviousFocus(previousFocus);
+        window.Notify.deactivateModalFocus(managerModal);
       }
 
       function finish(result) {
@@ -1067,42 +996,50 @@
       window.addEventListener('keydown', onWindowKeyDown);
 
       renderManagerContent();
+      activePromptTranslationRefreshers.add(refreshManagerTranslations);
       managerModal.setAttribute('aria-hidden', 'false');
-      focusElementWithoutScroll(managerCloseButton || managerDoneButton);
+      window.Notify.activateModalFocus(managerModal, {
+        initialFocus: managerCloseButton,
+        fallbackFocus: managerCloseButton,
+      });
     });
   }
 
   // =============================================================================
-  // Snapshot-save prompt
+  // Snapshot prompts
   // =============================================================================
-  async function promptSnapshotSaveTags(options = {}) {
+  async function promptSnapshot(options = {}, { includeSaveFields } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Snapshot save tags modal DOM elements missing.');
+      log.error('Snapshot prompt DOM elements missing.');
       return null;
     }
 
     ensureFieldEventsBound();
+    ensureMetricChoiceEventsBound();
     populateCopy(options.copy);
+    setSnapshotSaveFieldVisibility(includeSaveFields);
     currentSnapshotTagPreferences = await loadSnapshotTagPreferences();
     resetFields(options.initialTags);
+    resetMetricChoices();
+    resetSnapshotSaveFields();
 
     return await new Promise((resolve) => {
       let settled = false;
-      const previousFocus = document.activeElement && typeof document.activeElement.focus === 'function'
-        ? document.activeElement
-        : null;
-
+      const refreshSnapshotTranslations = () => {
+        populateCopy(options.copy);
+        refreshFieldTranslations();
+      };
       function cleanup() {
+        activePromptTranslationRefreshers.delete(refreshSnapshotTranslations);
         btnManage.removeEventListener('click', onManageClick);
         btnConfirm.removeEventListener('click', onConfirm);
         btnCancel.removeEventListener('click', onCancel);
         btnClose.removeEventListener('click', onCancel);
         backdrop.removeEventListener('click', onCancel);
-        document.removeEventListener('mousedown', onDocumentMouseDown);
         window.removeEventListener('keydown', onWindowKeyDown);
         closeAllFields();
         modal.setAttribute('aria-hidden', 'true');
-        restorePreviousFocus(previousFocus);
+        window.Notify.deactivateModalFocus(modal);
       }
 
       function finish(result) {
@@ -1113,7 +1050,18 @@
       }
 
       function onConfirm() {
-        finish({ tags: collectTags() });
+        const result = {
+          tags: collectTags(),
+        };
+        if (includeSaveFields) {
+          result.includeCount = includeCountInput.checked;
+          result.includeReading = includeReadingInput.checked;
+          const name = collectOptionalInputValue(snapshotNameInput);
+          const sourceComment = collectOptionalInputValue(snapshotSourceCommentInput);
+          if (name) result.name = name;
+          if (sourceComment) result.sourceComment = sourceComment;
+        }
+        finish(result);
       }
 
       function onCancel() {
@@ -1135,23 +1083,14 @@
         void onManage();
       }
 
-      function onDocumentMouseDown(event) {
-        if (isManagerModalOpen()) return;
-        FIELD_DEFS.forEach((field) => {
-          if (!isNodeWithin(field.controlEl, event.target)) {
-            closeField(field.key, { restoreCommittedValue: true });
-          }
-        });
-      }
-
       function onWindowKeyDown(ev) {
         if (modal.getAttribute('aria-hidden') !== 'false' || isManagerModalOpen()) return;
         if (ev.key !== 'Escape') return;
 
-        const openFieldDef = FIELD_DEFS.find((field) => ensureFieldState(field.key).isOpen);
+        const openFieldDef = FIELD_DEFS.find((field) => isFieldOpen(field.key));
         if (openFieldDef) {
           ev.preventDefault();
-          closeField(openFieldDef.key, { restoreCommittedValue: true });
+          ensureFieldState(openFieldDef.key).combobox.close();
           return;
         }
 
@@ -1164,19 +1103,35 @@
       btnCancel.addEventListener('click', onCancel);
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
-      document.addEventListener('mousedown', onDocumentMouseDown);
       window.addEventListener('keydown', onWindowKeyDown);
+      activePromptTranslationRefreshers.add(refreshSnapshotTranslations);
 
       modal.setAttribute('aria-hidden', 'false');
-      FIELD_DEFS[0].inputEl.focus();
+      const initialFocus = includeSaveFields
+        ? snapshotNameInput
+        : FIELD_DEFS[0].controlEl.querySelector('.renderer-combobox__input');
+      window.Notify.activateModalFocus(modal, {
+        initialFocus,
+        fallbackFocus: btnClose,
+      });
     });
+  }
+
+  function promptSnapshotSave(options = {}) {
+    return promptSnapshot(options, { includeSaveFields: true });
+  }
+
+  function promptSnapshotTags(options = {}) {
+    return promptSnapshot(options, { includeSaveFields: false });
   }
 
   // =============================================================================
   // Exports / module surface
   // =============================================================================
   window.Notify.registerCustomPrompt('promptSnapshotTagManager', promptSnapshotTagManager);
-  window.Notify.registerCustomPrompt('promptSnapshotSaveTags', promptSnapshotSaveTags);
+  window.Notify.registerCustomPrompt('promptSnapshotSave', promptSnapshotSave);
+  window.Notify.registerCustomPrompt('promptSnapshotTags', promptSnapshotTags);
+  window.SnapshotSaveTagsModal = { applyTranslations };
 })();
 
 // =============================================================================

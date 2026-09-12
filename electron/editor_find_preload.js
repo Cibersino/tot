@@ -88,6 +88,7 @@ function onState(cb) {
 
 const api = {
   setQuery: (query) => ipcRenderer.invoke('editor-find-set-query', query),
+  reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
   next: () => ipcRenderer.invoke('editor-find-next'),
   prev: () => ipcRenderer.invoke('editor-find-prev'),
   replaceCurrent: (replacement) => ipcRenderer.invoke('editor-find-replace-current', replacement),

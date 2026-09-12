@@ -19,6 +19,28 @@ ipcRenderer.on('reading-test-questions-init', (_event, payload) => {
 
 contextBridge.exposeInMainWorld('readingTestQuestionsAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
+  onSettingsChanged: (cb) => {
+    if (typeof cb !== 'function') {
+      console.error('readingTestQuestionsAPI.onSettingsChanged called with non-function callback:', cb);
+      return () => {};
+    }
+    const listener = (_event, settings) => {
+      try {
+        cb(settings);
+      } catch (err) {
+        console.error('reading-test-questions settings callback error:', err);
+      }
+    };
+    ipcRenderer.on('settings-updated', listener);
+    return () => {
+      try {
+        ipcRenderer.removeListener('settings-updated', listener);
+      } catch (err) {
+        console.error('removeListener error (reading-test-questions settings-updated):', err);
+      }
+    };
+  },
   onInitData: (cb) => {
     if (typeof cb !== 'function') {
       console.error('readingTestQuestionsAPI.onInitData called with non-function callback:', cb);
