@@ -34,9 +34,13 @@ function isPlainObject(value) {
   return Object.getPrototypeOf(value) === Object.prototype;
 }
 
-function buildWaiterError(code) {
-  const err = new Error(code);
-  err.code = code;
+function buildWaiterError(cause, disclosure) {
+  const err = new Error(cause);
+  err.code = cause;
+  err.editorStartupLifecycle = {
+    cause,
+    disclosure,
+  };
   return err;
 }
 
@@ -50,7 +54,7 @@ function requireCreateEditorWindow(createEditorWindow, logContext) {
 // =============================================================================
 // Controller factory / lifecycle coordination
 // =============================================================================
-function createController({ log, editorState }) {
+function createController({ log, editorState, showStartupFailureDisclosure = null }) {
   if (!log || typeof log.warn !== 'function' || typeof log.error !== 'function') {
     throw new Error('[editor_window_lifecycle] createController requires log');
   }
@@ -62,6 +66,20 @@ function createController({ log, editorState }) {
   let hiddenStartupCycle = null;
   let pendingLifecycleOwnedCloseWindow = null;
   const startupCycleWaiters = new Map();
+
+  function discloseStartupFailure(details) {
+    if (!details || details.disclosure !== 'main-native') return;
+    if (typeof showStartupFailureDisclosure !== 'function') {
+      log.error('Text Editor startup failure disclosure unavailable:', details);
+      return;
+    }
+
+    try {
+      showStartupFailureDisclosure(details);
+    } catch (err) {
+      log.error('Text Editor startup failure disclosure failed:', details, err);
+    }
+  }
 
   // Hidden startup uses generation-scoped waiters so late or stale reports can be rejected safely.
   function createStartupCycleWaiter(generation) {
@@ -88,6 +106,18 @@ function createController({ log, editorState }) {
       },
     };
 
+    // Keep the original rejecting waiter for Reading Test while observing every
+    // rejection from lifecycle ownership as soon as the waiter exists.
+    waiter.promise.catch((err) => {
+      const details = err && err.editorStartupLifecycle;
+      if (!details) {
+        log.error('Text Editor startup waiter rejected without lifecycle details:', err);
+        return;
+      }
+      log.error('Text Editor startup waiter rejected:', details);
+      discloseStartupFailure(details);
+    });
+
     startupCycleWaiters.set(generation, waiter);
     return waiter;
   }
@@ -102,10 +132,12 @@ function createController({ log, editorState }) {
     waiter.resolve({ generation });
   }
 
-  function rejectStartupCycle(generation, errorCode) {
+  function rejectStartupCycle(generation, cause, disclosure = 'main-native') {
     const waiter = getStartupCycleWaiter(generation);
-    if (!waiter) return;
-    waiter.reject(buildWaiterError(errorCode));
+    const lifecycleError = buildWaiterError(cause, disclosure);
+    if (!waiter) return lifecycleError;
+    waiter.reject(lifecycleError);
+    return lifecycleError;
   }
 
   function notifyMainEditorFirstShowState(mainWin, payload, logContext) {
@@ -193,21 +225,6 @@ function createController({ log, editorState }) {
     return editorWin;
   }
 
-  // Ordinary startup can fall back to a direct show path if first-show finalization fails late.
-  function applyHiddenStartupMaximize(editorWin, logContext) {
-    if (!isAliveWindow(editorWin)) {
-      throw new Error('EDITOR_WINDOW_UNAVAILABLE');
-    }
-    if (typeof editorWin.maximize === 'function' && !editorWin.isMaximized()) {
-      try {
-        editorWin.maximize();
-      } catch (err) {
-        log.error(`Hidden editor maximize failed from ${logContext}:`, err);
-        throw err;
-      }
-    }
-  }
-
   function attemptLateOrdinaryFallback(editorWin, logContext) {
     if (!isAliveWindow(editorWin)) return false;
 
@@ -268,6 +285,10 @@ function createController({ log, editorState }) {
       resolveHiddenStartupCycle(cycle);
 
       if (!fallbackSucceeded) {
+        discloseStartupFailure({
+          cause: 'EDITOR_FIRST_SHOW_FINALIZATION_FAILED',
+          disclosure: 'main-native',
+        });
         emitOrdinaryFirstShowState(mainWin, cycle, {
           state: 'failed',
           reason: 'late-finalization-failed',
@@ -344,10 +365,6 @@ function createController({ log, editorState }) {
         firstShowGeneration: cycle.generation,
       });
 
-      if (initialPresentationMode === 'maximized') {
-        applyHiddenStartupMaximize(freshEditorWin, `${logContext}.hiddenMaximize`);
-      }
-
       armHiddenStartupTimeout(cycle, freshEditorWin, mainWin, logContext);
 
       return {
@@ -356,10 +373,11 @@ function createController({ log, editorState }) {
         baseReadyPromise: waiter.promise,
       };
     } catch (err) {
-      rejectStartupCycle(cycle.generation, 'EDITOR_STARTUP_CREATE_FAILED');
+      const lifecycleError = rejectStartupCycle(cycle.generation, 'EDITOR_STARTUP_CREATE_FAILED');
       resolveHiddenStartupCycle(cycle);
       disposeHiddenStartupWindow(freshEditorWin, `${logContext}.createFailure`);
-      throw err;
+      log.error('Text Editor hidden startup creation failed:', err);
+      throw lifecycleError;
     }
   }
 
@@ -427,7 +445,7 @@ function createController({ log, editorState }) {
 
     if (hiddenStartupCycle && !hiddenStartupCycle.resolved && !isAliveWindow(editorWin)) {
       log.warn('Hidden editor startup cycle found without a live editor window; resolving stale cycle.');
-      rejectStartupCycle(hiddenStartupCycle.generation, 'EDITOR_WINDOW_UNAVAILABLE');
+      rejectStartupCycle(hiddenStartupCycle.generation, 'EDITOR_WINDOW_UNAVAILABLE', 'silent');
       resolveHiddenStartupCycle(hiddenStartupCycle);
     }
 
@@ -580,7 +598,11 @@ function createController({ log, editorState }) {
     }
 
     if (cycle.waitingForBaseReady) {
-      rejectStartupCycle(cycle.generation, 'EDITOR_WINDOW_CLOSED_BEFORE_BASE_READY');
+      rejectStartupCycle(
+        cycle.generation,
+        'EDITOR_WINDOW_CLOSED_BEFORE_BASE_READY',
+        'silent'
+      );
       resolveHiddenStartupCycle(cycle);
 
       if (cycle.owner === 'ordinary') {

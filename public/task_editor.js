@@ -1,6 +1,27 @@
 // public/task_editor.js
 'use strict';
 
+// A required dependency can fail before the Task Editor's normal coordinator
+// exists. Report the no-draft terminal state through the already-exposed
+// lifecycle bridge when it is available; no renderer draft has been admitted
+// at this point.
+function reportNoDraftTaskBootstrapFailure(kind) {
+  const api = typeof window !== 'undefined' ? window.taskEditorAPI : null;
+  if (!api || typeof api.reportTerminalState !== 'function') return false;
+  try {
+    api.reportTerminalState({
+      kind,
+      phase: 'no-draft',
+      initId: null,
+      dirty: null,
+    });
+    return true;
+  } catch (err) {
+    console.error('Task Editor startup terminal report failed:', err);
+    return false;
+  }
+}
+
 // =============================================================================
 // Overview
 // =============================================================================
@@ -15,18 +36,32 @@
 // Logger / constants
 // =============================================================================
 if (typeof window.getLogger !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw new Error('[task-editor] window.getLogger unavailable; cannot continue');
 }
-const log = window.getLogger('task-editor');
+let log = null;
+try {
+  log = window.getLogger('task-editor');
+} catch (err) {
+  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
+  throw err;
+}
+if (!log || typeof log.debug !== 'function' || typeof log.warn !== 'function'
+  || typeof log.warnOnce !== 'function' || typeof log.error !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
+  throw new Error('[task-editor] task editor logger unavailable; cannot continue');
+}
 log.debug('Task Editor starting...');
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons
   || typeof rendererIcons.applyIconToElement !== 'function'
   || typeof rendererIcons.createIconButton !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-renderer-icons');
   throw new Error('[task-editor] RendererIcons unavailable; cannot continue');
 }
 const { AppConstants } = window;
 if (!AppConstants) {
+  reportNoDraftTaskBootstrapFailure('bootstrap-constants');
   throw new Error('[task-editor] AppConstants unavailable; verify constants.js load order');
 }
 const {
@@ -42,6 +77,7 @@ const {
 } = AppConstants;
 const stopwatchTimeCore = window.StopwatchTimeCore || null;
 if (!stopwatchTimeCore || typeof stopwatchTimeCore.createStopwatchTimeUtils !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-stopwatch-time');
   throw new Error('[task-editor] StopwatchTimeCore.createStopwatchTimeUtils unavailable; cannot continue');
 }
 const stopwatchTimeUtils = stopwatchTimeCore.createStopwatchTimeUtils();
@@ -51,6 +87,7 @@ const {
 } = stopwatchTimeUtils;
 const taskDurationCore = window.TaskDurationCore || null;
 if (!taskDurationCore || typeof taskDurationCore.createTaskDurationUtils !== 'function') {
+  reportNoDraftTaskBootstrapFailure('bootstrap-task-duration');
   throw new Error('[task-editor] TaskDurationCore.createTaskDurationUtils unavailable; cannot continue');
 }
 const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
@@ -62,36 +99,37 @@ const EMPTY_TASK_ROW = Object.freeze({
   comentario: '',
   snapshotRelPath: '',
 });
+const taskEditorRoot = document.querySelector('.task-editor');
 
 // =============================================================================
 // i18n
 // =============================================================================
 let idiomaActual = DEFAULT_LANG;
-let translationsLoadedFor = null;
+let taskEditorSemanticQueue = Promise.resolve();
+let taskEditorTranslationsReady = false;
+let taskEditorI18nTerminal = false;
+let taskEditorNormalInteractionAvailable = false;
+let taskEditorHasInitializedDraft = false;
+let taskEditorCurrentInitId = null;
+let taskEditorLatestInitId = null;
+const pendingTaskInitPayloads = [];
 
 const {
-  loadRendererTranslations,
+  transitionRendererTranslations,
   tRenderer,
   msgRenderer,
-  applyWindowLanguageAttributes,
 } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !msgRenderer || !applyWindowLanguageAttributes) {
+if (!transitionRendererTranslations || !tRenderer || !msgRenderer) {
+  closeTaskEditorAfterI18nFailure({ startup: true });
   throw new Error('[task-editor] RendererI18n unavailable; cannot continue');
 }
 const taskEditorColumnLayout = window.TaskEditorColumnLayout || null;
 if (!taskEditorColumnLayout || typeof taskEditorColumnLayout.createController !== 'function') {
+  closeTaskEditorAfterI18nFailure({ startup: true });
   throw new Error('[task-editor] TaskEditorColumnLayout unavailable; cannot continue');
 }
 
 const tr = (path) => tRenderer(path);
-
-async function ensureTaskEditorTranslations(lang) {
-  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-  if (translationsLoadedFor === target) return;
-  applyWindowLanguageAttributes(target);
-  await loadRendererTranslations(target);
-  translationsLoadedFor = target;
-}
 
 // =============================================================================
 // DOM references (task_editor.html ids)
@@ -211,29 +249,45 @@ let pendingLibraryRowId = null;
 let libraryItemsCache = [];
 let renderedRowFields = new Map();
 
-const columnLayoutController = taskEditorColumnLayout.createController({
-  wrapper: taskTableWrap,
-  table: taskTable,
-  colGroup: taskColGroup,
-  utilityHeaders: {
-    comentario: thComentario,
-    tiempo: thTiempo,
-    percent: thPercent,
-    falta: thFalta,
-    enlace: thEnlace,
-    acciones: thAcciones,
-  },
-});
+let columnLayoutController = null;
+try {
+  columnLayoutController = taskEditorColumnLayout.createController({
+    wrapper: taskTableWrap,
+    table: taskTable,
+    colGroup: taskColGroup,
+    utilityHeaders: {
+      comentario: thComentario,
+      tiempo: thTiempo,
+      percent: thPercent,
+      falta: thFalta,
+      enlace: thEnlace,
+      acciones: thAcciones,
+    },
+  });
+} catch (err) {
+  closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout-controller' });
+  throw err;
+}
 if (!columnLayoutController
   || typeof columnLayoutController.initialize !== 'function'
   || typeof columnLayoutController.cancelActiveResize !== 'function') {
+  closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout-controller' });
   throw new Error('[task-editor] TaskEditorColumnLayout controller unavailable; cannot continue');
 }
 
 // =============================================================================
 // Helpers
 // =============================================================================
+function setTaskEditorNormalInteractionAvailable(available) {
+  const nextAvailable = available === true && !taskEditorI18nTerminal;
+  taskEditorNormalInteractionAvailable = nextAvailable;
+  if (!taskEditorRoot) return;
+  taskEditorRoot.toggleAttribute('inert', !nextAvailable);
+  taskEditorRoot.setAttribute('aria-busy', nextAvailable ? 'false' : 'true');
+}
+
 function markDirty() {
+  if (!taskEditorNormalInteractionAvailable) return;
   if (dirty) return;
   dirty = true;
   syncDirtyState();
@@ -246,19 +300,21 @@ function resetDirty() {
 }
 
 function syncDirtyState() {
+  if (!taskEditorHasInitializedDraft || !Number.isInteger(taskEditorCurrentInitId)) return;
   const api = window.taskEditorAPI;
   if (!api || typeof api.setDirtyState !== 'function') {
     log.warnOnce('task_editor.setDirtyState.missing', 'taskEditorAPI.setDirtyState unavailable; dirty state sync disabled.');
     return;
   }
   try {
-    api.setDirtyState(dirty);
+    api.setDirtyState({
+      dirty,
+      initId: taskEditorCurrentInitId,
+    });
   } catch (err) {
     log.warnOnce('task_editor.setDirtyState.failed', 'taskEditorAPI.setDirtyState failed (ignored):', err);
   }
 }
-
-syncDirtyState();
 
 function setTaskFieldInvalidState(input, isInvalid) {
   if (!input) return;
@@ -1018,7 +1074,8 @@ function copyTaskInitPayload(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)
     || !payload.task || typeof payload.task !== 'object' || Array.isArray(payload.task)
     || !Array.isArray(payload.task.rows)
-    || !hasOwn(payload, 'sourcePath')) {
+    || !hasOwn(payload, 'sourcePath')
+    || !Number.isInteger(payload.initId) || payload.initId <= 0) {
     throw new Error('[task-editor] task-editor-init payload missing operational task state');
   }
 
@@ -1028,6 +1085,7 @@ function copyTaskInitPayload(payload) {
   }
 
   return {
+    initId: payload.initId,
     meta: copyTaskMeta(payload.task.meta),
     rows: payload.task.rows.map((row) => copyTaskRowData(row)),
     sourcePath,
@@ -1511,10 +1569,15 @@ function applyTaskPayload(payload) {
   sourcePath = nextTask.sourcePath;
   rows = nextRows.rows;
   rowIdCounter = nextRows.nextRowIdCounter;
-  resetDirty();
+  dirty = false;
   taskNameInput.value = nextTask.meta.name;
   renderTable();
   resetTaskEditorValidationState();
+  taskEditorCurrentInitId = nextTask.initId;
+  taskEditorLatestInitId = nextTask.initId;
+  taskEditorHasInitializedDraft = true;
+  syncDirtyState();
+  setTaskEditorNormalInteractionAvailable(true);
 }
 
 function normalizeRowTexto(row) {
@@ -1783,7 +1846,6 @@ async function saveRowToLibrary(includeComment) {
 // Translations apply
 // =============================================================================
 async function applyTaskEditorTranslations() {
-  await ensureTaskEditorTranslations(idiomaActual);
   document.title = tr('renderer.tasks.title');
   if (taskNameLabel) taskNameLabel.textContent = tr('renderer.tasks.name');
   if (taskNameInput) taskNameInput.setAttribute('placeholder', tr('renderer.tasks.name_placeholder'));
@@ -1928,6 +1990,67 @@ async function applyTaskEditorTranslations() {
   renderTable();
 }
 
+async function transitionTaskEditorTranslations(language) {
+  await transitionRendererTranslations(language || DEFAULT_LANG, {
+    applyTranslations: ({ language: appliedLanguage }) => {
+      idiomaActual = appliedLanguage;
+      return applyTaskEditorTranslations();
+    },
+  });
+}
+
+function reportTaskEditorI18nFailure(err, { startup = false } = {}) {
+  const transition = err && err.rendererI18nTransition;
+  if (!transition) {
+    return;
+  }
+  if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+    log.error('Task Editor language transition failed; previous translation state remains authoritative:', err);
+    return;
+  }
+  log.error('Task Editor i18n failure requires terminal unavailability:', err);
+  closeTaskEditorAfterI18nFailure({ startup });
+}
+
+function getTaskEditorTerminalStatePayload(kind) {
+  const hasInitializedDraft = taskEditorHasInitializedDraft === true
+    && Number.isInteger(taskEditorCurrentInitId);
+  const hasCurrentInitializedDraft = hasInitializedDraft
+    && taskEditorCurrentInitId === taskEditorLatestInitId;
+  const hasCurrentNoDraftAttempt = !hasInitializedDraft
+    && Number.isInteger(taskEditorLatestInitId);
+
+  return {
+    kind,
+    phase: hasInitializedDraft ? 'initialized' : 'no-draft',
+    initId: hasCurrentInitializedDraft
+      ? taskEditorCurrentInitId
+      : hasCurrentNoDraftAttempt
+        ? taskEditorLatestInitId
+        : null,
+    dirty: hasCurrentInitializedDraft ? dirty : null,
+  };
+}
+
+function closeTaskEditorAfterI18nFailure({ startup = false, kind } = {}) {
+  if (taskEditorI18nTerminal) return;
+  taskEditorI18nTerminal = true;
+  setTaskEditorNormalInteractionAvailable(false);
+  const api = window.taskEditorAPI;
+  if (api && typeof api.reportTerminalState === 'function') {
+    try {
+      api.reportTerminalState(getTaskEditorTerminalStatePayload(
+        kind || (startup ? 'startup' : 'transition-restoration')
+      ));
+      return;
+    } catch (err) {
+      log.warn('taskEditorAPI.reportTerminalState failed (ignored); Task Editor remains unavailable:', err);
+    }
+  } else {
+    log.warn('taskEditorAPI.reportTerminalState unavailable (ignored); Task Editor remains unavailable.');
+  }
+}
+
 // =============================================================================
 // Bootstrap / event wiring
 // =============================================================================
@@ -2055,80 +2178,162 @@ function wireTaskEditorEvents() {
   window.addEventListener('keydown', handleTaskEditorModalEscape);
 }
 
-function registerTaskEditorInit() {
-  if (window.taskEditorAPI && typeof window.taskEditorAPI.onInit === 'function') {
-    window.taskEditorAPI.onInit((payload) => {
-      applyTaskPayload(payload);
-    });
-    return;
+function validateTaskEditorBootstrapContracts() {
+  const api = window.taskEditorAPI;
+  const requiredMethods = [
+    'onInit',
+    'onRequestClose',
+    'onSettingsChanged',
+    'setDirtyState',
+    'respondToClose',
+  ];
+  const missingMethod = !api
+    ? 'taskEditorAPI'
+    : requiredMethods.find((methodName) => typeof api[methodName] !== 'function');
+  if (missingMethod) {
+    throw new Error(`[task-editor] required bootstrap bridge unavailable: ${missingMethod}`);
   }
-  log.warnOnce('BOOTSTRAP:task_editor.onInit.missing', 'taskEditorAPI.onInit unavailable; editor init disabled.');
+  if (!taskEditorRoot || !taskNameInput || !taskTable || !taskTableWrap || !tableBody) {
+    throw new Error('[task-editor] required task structure unavailable');
+  }
+}
+
+function registerTaskEditorInit() {
+  window.taskEditorAPI.onInit((payload) => {
+    if (taskEditorI18nTerminal) return;
+    if (payload && Number.isInteger(payload.initId) && payload.initId > 0) {
+      taskEditorLatestInitId = payload.initId;
+    }
+    if (!taskEditorTranslationsReady) {
+      pendingTaskInitPayloads.push(payload);
+      return;
+    }
+    enqueueTaskEditorSemanticWork(() => applyIncomingTaskPayload(payload));
+  });
+}
+
+function getTaskEditorTerminalClosePayload() {
+  return getTaskEditorTerminalStatePayload('terminal');
+}
+
+function sendTaskEditorCloseResponse(payload) {
+  try {
+    window.taskEditorAPI.respondToClose(payload);
+  } catch (err) {
+    log.warn('taskEditorAPI.respondToClose failed (ignored):', err);
+  }
 }
 
 function registerTaskEditorCloseGuard() {
-  if (window.taskEditorAPI && typeof window.taskEditorAPI.onRequestClose === 'function') {
-    window.taskEditorAPI.onRequestClose(() => {
-      columnLayoutController.cancelActiveResize();
-      if (typeof window.taskEditorAPI.confirmClose !== 'function') {
-        log.warnOnce('task_editor.confirmClose.missing', 'taskEditorAPI.confirmClose unavailable; close request ignored.');
-        return;
-      }
-      if (!dirty) {
-        window.taskEditorAPI.confirmClose();
-        return;
-      }
-      if (window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved')) {
-        window.taskEditorAPI.confirmClose();
-      }
-    });
-    return;
-  }
-  log.warnOnce('BOOTSTRAP:task_editor.onRequestClose.missing', 'taskEditorAPI.onRequestClose unavailable; close confirmation disabled.');
+  window.taskEditorAPI.onRequestClose(() => {
+    if (taskEditorI18nTerminal) {
+      sendTaskEditorCloseResponse(getTaskEditorTerminalClosePayload());
+      return;
+    }
+    columnLayoutController.cancelActiveResize();
+    if (!dirty) {
+      sendTaskEditorCloseResponse({ kind: 'normal', allow: true });
+      return;
+    }
+    const allow = window.Notify.confirmMain('renderer.tasks.alerts.close_unsaved') === true;
+    sendTaskEditorCloseResponse({ kind: 'normal', allow });
+  });
 }
 
 async function bootstrapTaskEditor() {
-  try {
+  await enqueueTaskEditorSemanticWork(async () => {
+    let bootstrapLanguage = idiomaActual;
     if (window.taskEditorAPI && typeof window.taskEditorAPI.getSettings === 'function') {
-      const settings = await window.taskEditorAPI.getSettings();
-      if (settings && settings.language) {
-        idiomaActual = settings.language || DEFAULT_LANG;
+      try {
+        const settings = await window.taskEditorAPI.getSettings();
+        if (settings && settings.language) {
+          bootstrapLanguage = settings.language || DEFAULT_LANG;
+        }
+      } catch (err) {
+        log.warn('Task Editor settings acquisition failed; using default language:', err);
       }
     } else {
       log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
     }
-    await applyTaskEditorTranslations();
-  } catch (err) {
-    log.error('BOOTSTRAP: Task Editor settings or translations initialization failed; continuing:', err);
-  }
+    try {
+      await transitionTaskEditorTranslations(bootstrapLanguage);
+    } catch (err) {
+      reportTaskEditorI18nFailure(err, { startup: true });
+      return;
+    }
 
-  await columnLayoutController.initialize();
+    try {
+      await columnLayoutController.initialize();
+    } catch (err) {
+      log.error('Task Editor column layout initialization failed:', err);
+      closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout' });
+      return;
+    }
+    taskEditorTranslationsReady = true;
+    while (pendingTaskInitPayloads.length) {
+      const applied = await applyIncomingTaskPayload(pendingTaskInitPayloads.shift());
+      if (!applied || taskEditorI18nTerminal) break;
+    }
+  });
 }
 
 function registerTaskEditorSettingsChanged() {
-  if (window.taskEditorAPI && typeof window.taskEditorAPI.onSettingsChanged === 'function') {
-    window.taskEditorAPI.onSettingsChanged(async (settings) => {
-      try {
-        const nextLang = settings && settings.language ? settings.language : '';
-        if (!nextLang || nextLang === idiomaActual) return;
-        idiomaActual = nextLang;
-        await applyTaskEditorTranslations();
-      } catch (err) {
-        log.warn('task-editor: settings update failed (ignored):', err);
-      }
-    });
-    return;
-  }
-  log.warnOnce('BOOTSTRAP:task_editor.onSettingsChanged.missing', 'taskEditorAPI.onSettingsChanged unavailable; language updates disabled.');
+  window.taskEditorAPI.onSettingsChanged((settings) => enqueueTaskEditorSettingsApplication(settings));
 }
 
-wireTaskEditorEvents();
-registerTaskEditorInit();
-registerTaskEditorCloseGuard();
-registerTaskEditorSettingsChanged();
-bootstrapTaskEditor().catch((err) => {
-  log.error('Task Editor required initialization failed:', err);
-  throw err;
-});
+function enqueueTaskEditorSettingsApplication(settings) {
+  const run = async () => {
+    try {
+      const nextLang = settings && settings.language ? settings.language : '';
+      if (!nextLang || nextLang === idiomaActual) return;
+      await transitionTaskEditorTranslations(nextLang);
+    } catch (err) {
+      reportTaskEditorI18nFailure(err);
+    }
+  };
+  return enqueueTaskEditorSemanticWork(run);
+}
+
+function enqueueTaskEditorSemanticWork(work) {
+  const run = async () => {
+    // Window closure is coordinated asynchronously through the main process.
+    // Do not admit queued Task Editor semantic work after terminal i18n failure.
+    if (taskEditorI18nTerminal) return;
+    return work();
+  };
+  taskEditorSemanticQueue = taskEditorSemanticQueue.then(run, run);
+  return taskEditorSemanticQueue;
+}
+
+async function applyIncomingTaskPayload(payload) {
+  try {
+    applyTaskPayload(payload);
+    return true;
+  } catch (err) {
+    log.error('Task Editor init payload application failed:', err);
+    closeTaskEditorAfterI18nFailure({
+      startup: !taskEditorHasInitializedDraft,
+      kind: 'task-payload-application',
+    });
+    return false;
+  }
+}
+
+setTaskEditorNormalInteractionAvailable(false);
+try {
+  validateTaskEditorBootstrapContracts();
+  wireTaskEditorEvents();
+  registerTaskEditorInit();
+  registerTaskEditorCloseGuard();
+  registerTaskEditorSettingsChanged();
+  bootstrapTaskEditor().catch((err) => {
+    log.error('Task Editor required initialization failed:', err);
+    closeTaskEditorAfterI18nFailure({ startup: true, kind: 'bootstrap' });
+  });
+} catch (err) {
+  log.error('Task Editor required bootstrap contract failed:', err);
+  closeTaskEditorAfterI18nFailure({ startup: true, kind: 'bootstrap-contract' });
+}
 
 // =============================================================================
 // End of public/task_editor.js

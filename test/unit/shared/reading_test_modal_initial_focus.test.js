@@ -80,6 +80,17 @@ function createDomHarness(requiredIds, queryElements = {}) {
         }
         return null;
       },
+      querySelectorAll(selector) {
+        if (selector !== 'input[type="radio"]') return [];
+        const radios = [];
+        const pending = children.slice();
+        while (pending.length) {
+          const candidate = pending.shift();
+          if (candidate.tagName === 'input' && candidate.type === 'radio') radios.push(candidate);
+          pending.push(...candidate._children);
+        }
+        return radios;
+      },
       focus() {
         activeElement = this;
       },
@@ -100,6 +111,7 @@ function createDomHarness(requiredIds, queryElements = {}) {
 
   const document = {
     title: '',
+    documentElement: { dataset: { languageDirection: 'ltr' } },
     get activeElement() {
       return activeElement;
     },
@@ -153,16 +165,17 @@ function createBaseWindow() {
     },
     AppConstants: { DEFAULT_LANG: 'en' },
     RendererI18n: {
-      async loadRendererTranslations() {},
+      async transitionRendererTranslations(language, { applyTranslations } = {}) {
+        if (typeof applyTranslations === 'function') {
+          await applyTranslations({ language, restoring: false });
+        }
+      },
       tRenderer(key) { return translations[key] || key; },
       msgRenderer(key) {
         if (key === 'renderer.reading_test.questions.random_value') {
           return 'Random probability: {percentage}';
         }
         return key;
-      },
-      applyWindowLanguageAttributes() {
-        return { languageDirection: 'ltr' };
       },
       renderLocalizedLabelWithInvariantValue(element, { labelText, valueText }) {
         element.textContent = `${labelText}${valueText}`;
@@ -239,6 +252,7 @@ test('reading-test questions focuses the first answer and uses Continue when no 
       onSettingsChanged() {
         return () => {};
       },
+      reportRendererI18nFailure() {},
     },
   };
 
@@ -297,6 +311,7 @@ test('reading-test result focuses Continue after result data renders', async () 
         onSettingsChanged = handler;
         return () => {};
       },
+      reportRendererI18nFailure() {},
     },
   };
 
@@ -318,4 +333,204 @@ test('reading-test result focuses Continue after result data renders', async () 
 
   assert.equal(dom.elements.readingTestResultSummary._children[0], originalSummaryRow);
   assert.equal(dom.getActiveElement(), dom.elements.readingTestResultContinue);
+});
+
+test('reading-test result treats an initial-settings failure after replay establishment as recoverable', async () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultWpmValue',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  let transitionCount = 0;
+  let reporterCalls = 0;
+  let closeCalls = 0;
+  const baseWindow = createBaseWindow();
+  const window = {
+    ...baseWindow,
+    RendererI18n: {
+      ...baseWindow.RendererI18n,
+      async transitionRendererTranslations(language, { applyTranslations } = {}) {
+        transitionCount += 1;
+        if (transitionCount === 2) {
+          const err = new Error('Cannot prepare replayed initial settings');
+          err.rendererI18nTransition = {
+            hadEstablishedState: true,
+            restorationFailed: false,
+          };
+          throw err;
+        }
+        if (typeof applyTranslations === 'function') {
+          await applyTranslations({ language, restoring: false });
+        }
+      },
+    },
+    readingTestResultAPI: {
+      async getSettings() {
+        return { language: 'en' };
+      },
+      onInitData(handler) {
+        handler({ measuredWpm: 240, elapsedMs: 60000, wordCount: 240 });
+      },
+      onSettingsChanged() {
+        return () => {};
+      },
+      reportRendererI18nFailure() {
+        reporterCalls += 1;
+      },
+    },
+    close() {
+      closeCalls += 1;
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+  await flushAsyncWork();
+
+  assert.equal(transitionCount, 2);
+  assert.equal(reporterCalls, 0);
+  assert.equal(closeCalls, 0);
+});
+
+test('reading-test result stops queued init and settings work after terminal i18n failure', async () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultWpmValue',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  let transitionCount = 0;
+  let reporterCalls = 0;
+  let onInitData = null;
+  let onSettingsChanged = null;
+  const baseWindow = createBaseWindow();
+  const window = {
+    ...baseWindow,
+    RendererI18n: {
+      ...baseWindow.RendererI18n,
+      async transitionRendererTranslations() {
+        transitionCount += 1;
+        const err = new Error('Cannot establish renderer translation state');
+        err.rendererI18nTransition = {
+          hadEstablishedState: false,
+          restorationFailed: false,
+        };
+        throw err;
+      },
+    },
+    readingTestResultAPI: {
+      async getSettings() {
+        return { language: 'en' };
+      },
+      onInitData(handler) {
+        onInitData = handler;
+      },
+      onSettingsChanged(handler) {
+        onSettingsChanged = handler;
+        return () => {};
+      },
+      reportRendererI18nFailure() {
+        reporterCalls += 1;
+      },
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+  await flushAsyncWork();
+
+  onInitData({ measuredWpm: 240, elapsedMs: 60000, wordCount: 240 });
+  onSettingsChanged({ language: 'es' });
+  await flushAsyncWork();
+
+  assert.equal(transitionCount, 1);
+  assert.equal(reporterCalls, 1);
+  assert.equal(dom.elements.readingTestResultWpmValue.textContent, '');
+});
+
+test('reading-test result preserves its established language and formatting after preparation fails', async () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultWpmValue',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  let onInitData = null;
+  let onSettingsChanged = null;
+  let rejectSpanishPreparation = true;
+  const baseWindow = createBaseWindow();
+  const window = {
+    ...baseWindow,
+    FormatUtils: {
+      async obtenerSeparadoresDeNumeros(language, settings) {
+        return settings.numberFormatting[language] || settings.numberFormatting.en;
+      },
+      formatearNumero(value, thousands, decimal) {
+        return `${value}[${thousands}${decimal}]`;
+      },
+    },
+    RendererI18n: {
+      ...baseWindow.RendererI18n,
+      async transitionRendererTranslations(language, options) {
+        if (language === 'es' && rejectSpanishPreparation) {
+          rejectSpanishPreparation = false;
+          const err = new Error('Cannot prepare Spanish translations');
+          err.rendererI18nTransition = {
+            hadEstablishedState: true,
+            restorationFailed: false,
+          };
+          throw err;
+        }
+        return baseWindow.RendererI18n.transitionRendererTranslations(language, options);
+      },
+    },
+    readingTestResultAPI: {
+      async getSettings() {
+        return {
+          language: 'en',
+          numberFormatting: {
+            en: { separadorMiles: ',', separadorDecimal: '.' },
+          },
+        };
+      },
+      onInitData(handler) {
+        onInitData = handler;
+      },
+      onSettingsChanged(handler) {
+        onSettingsChanged = handler;
+        return () => {};
+      },
+      reportRendererI18nFailure() {},
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+  await flushAsyncWork();
+
+  onSettingsChanged({
+    language: 'es',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+    },
+  });
+  await flushAsyncWork();
+
+  onInitData({ measuredWpm: 240, elapsedMs: 60000, wordCount: 240 });
+  await flushAsyncWork();
+
+  assert.equal(dom.elements.readingTestResultWpmValue.textContent, '240[,.]');
 });

@@ -19,6 +19,7 @@ ipcRenderer.on('reading-test-questions-init', (_event, payload) => {
 
 contextBridge.exposeInMainWorld('readingTestQuestionsAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
   onSettingsChanged: (cb) => {
     if (typeof cb !== 'function') {
       console.error('readingTestQuestionsAPI.onSettingsChanged called with non-function callback:', cb);

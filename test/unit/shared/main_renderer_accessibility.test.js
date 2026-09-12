@@ -88,11 +88,16 @@ function createNoopSurface(overrides = {}) {
 }
 
 async function createRendererHarness({
-  beforeStartupReady = null,
   currentTextRuntimeOverrides = {},
+  deferStartupReady = false,
   electronMethodOverrides = {},
   expectStartupError = false,
   loadLocalizedDocument = null,
+  browserExtensionModalOverrides = {},
+  mainLogoLinksAvailable = true,
+  mainLogoLinksOverride = null,
+  transitionFailureLanguage = '',
+  transitionFailure = null,
 } = {}) {
   let activeLanguage = 'en';
   const errors = [];
@@ -102,8 +107,14 @@ async function createRendererHarness({
   const currentTextRuntimeCalls = {
     bootstrapStates: [],
     copiedProcessingStates: [],
-    copiedUpdates: [],
-    installedTexts: [],
+    currentTextSubscriptionArmedAtBootstrapSync: null,
+    processingStates: [],
+    terminalPresentationUnavailableCount: 0,
+    textUpdates: [],
+  };
+  const statusUiCalls = {
+    currentTextProcessingStates: [],
+    processingModeStates: [],
   };
   const textApplyCalls = [];
   let selectorActions = null;
@@ -178,6 +189,12 @@ async function createRendererHarness({
     warnOnce() {},
   };
   const statusUi = createNoopSurface({
+    applyCurrentTextProcessingState(state) {
+      statusUiCalls.currentTextProcessingStates.push(state);
+    },
+    applyProcessingModeState(state) {
+      statusUiCalls.processingModeStates.push(state);
+    },
     getAbortButton() { return null; },
     isAbortFinalizationActive() { return false; },
     isCurrentTextAreaPendingActive() { return false; },
@@ -195,6 +212,7 @@ async function createRendererHarness({
     isSessionActive() { return false; },
   });
   const presetComboboxUpdates = [];
+  let presetCreatedCalls = 0;
   const presetsCombobox = createNoopSurface({
     getValue() { return ''; },
     update(options) {
@@ -207,31 +225,41 @@ async function createRendererHarness({
   const wpmControls = createNoopSurface({
     getAllPresets() { return []; },
     getWpm() { return 200; },
+    async handlePresetCreated() {
+      presetCreatedCalls += 1;
+      return { selectionOutcome: null };
+    },
     async loadPresets() { return { selectionOutcome: null }; },
   });
   const currentTextRuntime = createNoopSurface({
+    applyCurrentTextProcessingState(state, options) {
+      currentTextRuntimeCalls.processingStates.push({
+        state: { ...state },
+        options: { ...options },
+      });
+    },
     copyCurrentTextProcessingState(state) {
       currentTextRuntimeCalls.copiedProcessingStates.push(state);
       return { ...state };
     },
-    copyCurrentTextUpdatedPayload(payload) {
-      currentTextRuntimeCalls.copiedUpdates.push(payload);
-      return {
-        text: payload.text,
-        requestId: payload.requestId === null || typeof payload.requestId === 'undefined'
-          ? 0
-          : payload.requestId,
-      };
-    },
     getCurrentText() { return ''; },
-    installCurrentTextState(text) {
-      currentTextRuntimeCalls.installedTexts.push(text);
+    handleCurrentTextUpdated(payload, options) {
+      currentTextRuntimeCalls.textUpdates.push({
+        payload: { ...payload },
+        options: { ...options },
+      });
+    },
+    setTerminalPresentationUnavailable() {
+      currentTextRuntimeCalls.terminalPresentationUnavailableCount += 1;
     },
     syncBootstrapState(state) {
       currentTextRuntimeCalls.bootstrapStates.push({
         initialText: state.initialText,
         processingState: { ...state.processingState },
       });
+      currentTextRuntimeCalls.currentTextSubscriptionArmedAtBootstrapSync = (
+        typeof subscriptions.currentTextUpdated === 'function'
+      );
     },
     ...currentTextRuntimeOverrides,
   });
@@ -249,6 +277,10 @@ async function createRendererHarness({
       infoModalLinkCalls.enhancedContents.push(container.innerHTML);
     },
   });
+  const browserExtensionModal = createNoopSurface({
+    hasBlockingModalOpen() { return false; },
+    ...browserExtensionModalOverrides,
+  });
 
   const electronMethods = {
     async getAppConfig() { return {}; },
@@ -260,17 +292,25 @@ async function createRendererHarness({
       };
     },
     async getSettings() { return { language: 'en', modeConteo: 'preciso' }; },
-    async getTextExtractionProcessingMode() { return { ok: true, state: { active: false } }; },
     onEditorFirstShowState(callback) { subscriptions.editorFirstShowState = callback; },
     onCurrentTextProcessingStateChanged(callback) {
       subscriptions.currentTextProcessingStateChanged = callback;
     },
+    onTextExtractionProcessingModeChanged(callback) {
+      subscriptions.textExtractionProcessingModeChanged = callback;
+    },
     onCurrentTextUpdated(callback) { subscriptions.currentTextUpdated = callback; },
+    onPresetCreated(callback) { subscriptions.presetCreated = callback; },
     onSettingsChanged(callback) { subscriptions.settingsChanged = callback; },
     onStartupReady(callback) { subscriptions.startupReady = callback; },
     async openEditor() { return { ok: true, launchDisposition: 'first-show-pending' }; },
     resolveCurrentTextProcessing() {},
-    sendStartupRendererCoreReady() {},
+    reportRendererI18nFailure() {},
+    sendStartupRendererCoreReady() {
+      currentTextRuntimeCalls.currentTextSubscriptionArmedAtRendererCoreReady = (
+        typeof subscriptions.currentTextUpdated === 'function'
+      );
+    },
     sendStartupSplashRemoved() {},
     ...electronMethodOverrides,
   };
@@ -282,7 +322,6 @@ async function createRendererHarness({
   });
 
   const rendererI18n = {
-    applyWindowLanguageAttributes() {},
     getLanguageDirection(language) { return String(language || '').startsWith('ar') ? 'rtl' : 'ltr'; },
     getRendererValue(key) { return readRendererValue(activeLanguage, key); },
     async loadLocalizedDocument(documentId, language) {
@@ -291,7 +330,13 @@ async function createRendererHarness({
       }
       return { html: null, language: '' };
     },
-    async loadRendererTranslations(language) { activeLanguage = language; },
+    async transitionRendererTranslations(language, { applyTranslations } = {}) {
+      if (language === transitionFailureLanguage) {
+        throw transitionFailure || new Error(`Cannot prepare ${language} translations`);
+      }
+      activeLanguage = language;
+      if (typeof applyTranslations === 'function') await applyTranslations({ language, restoring: false });
+    },
     msgRenderer(key, params = {}) {
       return Object.entries(params).reduce(
         (text, [name, value]) => text.replace(`{${name}}`, String(value)),
@@ -308,7 +353,7 @@ async function createRendererHarness({
       MAX_TEXT_CHARS: 100000,
       applyConfig() { return 100000; },
     },
-    BrowserExtensionModal: createNoopSurface({ hasBlockingModalOpen() { return false; } }),
+    BrowserExtensionModal: browserExtensionModal,
     CountUtils: { contarTexto() { return { palabras: 0, caracteres: 0, caracteresSinEspacios: 0 }; } },
     CurrentTextRefreshPolicy: {
       createController() { return createNoopSurface(); },
@@ -321,7 +366,9 @@ async function createRendererHarness({
       obtenerSeparadoresDeNumeros() { return { decimal: '.', group: ',' }; },
     },
     InfoModalLinks: infoModalLinks,
-    MainLogoLinks: createNoopSurface(),
+    MainLogoLinks: mainLogoLinksAvailable
+      ? (mainLogoLinksOverride || createNoopSurface())
+      : null,
     Notify: createNoopSurface({
       activateModalFocus(_modal, { initialFocus }) {
         initialFocus.focus({ preventScroll: true });
@@ -383,6 +430,14 @@ async function createRendererHarness({
   const sandbox = {
     clearTimeout,
     console,
+    DOMParser: class DOMParser {
+      parseFromString(html) {
+        return {
+          body: { innerHTML: String(html || '') },
+          querySelectorAll() { return []; },
+        };
+      }
+    },
     document,
     fetch: async () => ({ ok: true, text: async () => '' }),
     requestAnimationFrame(callback) { callback(); },
@@ -402,14 +457,14 @@ async function createRendererHarness({
   vm.runInContext(source, sandbox, { filename: 'public/renderer.js' });
 
   assert.equal(typeof subscriptions.startupReady, 'function');
-  if (typeof beforeStartupReady === 'function') {
-    await beforeStartupReady({
-      currentTextRuntimeCalls,
-      subscriptions,
-    });
+  const completeStartupReady = async () => {
+    subscriptions.startupReady();
+    for (let index = 0; index < 4; index += 1) await flushAsyncWork();
+  };
+
+  if (!deferStartupReady) {
+    await completeStartupReady();
   }
-  subscriptions.startupReady();
-  for (let index = 0; index < 4; index += 1) await flushAsyncWork();
 
   if (!expectStartupError) {
     assert.ok(selectorActions, 'main renderer did not register selector actions');
@@ -418,6 +473,7 @@ async function createRendererHarness({
 
   return {
     currentTextRuntimeCalls,
+    statusUiCalls,
     elements,
     errors,
     getActiveCustomPromptTranslationRefreshCounts() {
@@ -437,6 +493,10 @@ async function createRendererHarness({
     },
     pendingStates,
     presetComboboxUpdates,
+    getPresetCreatedCalls() {
+      return presetCreatedCalls;
+    },
+    completeStartupReady,
     preciseLabel,
     preciseWrapper,
     selectorActions,
@@ -468,6 +528,142 @@ test('main renderer settings lifecycle updates precise-mode description and visu
   assert.equal(harness.errors.length, 0);
 });
 
+test('main renderer applies independent settings after a recoverable language transition failure', async () => {
+  const transitionFailure = new Error('Cannot prepare Spanish translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: false,
+  };
+  const harness = await createRendererHarness({
+    transitionFailureLanguage: 'es',
+    transitionFailure,
+  });
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'simple' });
+
+  assert.equal(harness.preciseLabel.textContent, 'Precise mode');
+  assert.equal(harness.getElement('toggleModoPreciso').checked, false);
+  assert.equal(harness.errors.length, 1);
+});
+
+test('main renderer does not admit later settings semantics after a terminal language failure', async () => {
+  const transitionFailure = new Error('Cannot restore renderer translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: true,
+  };
+  const harness = await createRendererHarness({
+    transitionFailureLanguage: 'es',
+    transitionFailure,
+  });
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'simple' });
+  await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'simple' });
+  await harness.subscriptions.presetCreated({ name: 'Ignored after terminal failure' });
+
+  assert.equal(harness.getElement('toggleModoPreciso').checked, true);
+  assert.equal(harness.getPresetCreatedCalls(), 0);
+});
+
+test('main renderer withdraws brand-logo action admission after terminal i18n failure', async () => {
+  let canAcceptBrandLinkAction = null;
+  const transitionFailure = new Error('Cannot restore renderer translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: true,
+  };
+  const harness = await createRendererHarness({
+    mainLogoLinksOverride: {
+      applyTranslations() {},
+      bindBrandLinks(options) {
+        canAcceptBrandLinkAction = options.canAcceptBrandLinkAction;
+      },
+    },
+    transitionFailureLanguage: 'es',
+    transitionFailure,
+  });
+
+  assert.equal(typeof canAcceptBrandLinkAction, 'function');
+  assert.equal(canAcceptBrandLinkAction(), true);
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'preciso' });
+
+  assert.equal(canAcceptBrandLinkAction(), false);
+});
+
+test('main renderer locks brand-logo controls when their optional owner is unavailable', async () => {
+  const harness = await createRendererHarness({ mainLogoLinksAvailable: false });
+
+  assert.equal(harness.getElement('devLogoLink').disabled, true);
+  assert.equal(harness.getElement('devLogoLink').getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.getElement('kofiLogoLink').disabled, true);
+  assert.equal(harness.getElement('kofiLogoLink').getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.errors.length, 0);
+});
+
+test('main renderer retains Runtime state and matching-text ingestion after terminal i18n failure', async () => {
+  const transitionFailure = new Error('Cannot restore renderer translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: true,
+  };
+  const harness = await createRendererHarness({
+    transitionFailureLanguage: 'es',
+    transitionFailure,
+  });
+  const processingStateCount = harness.statusUiCalls.processingModeStates.length;
+  const currentTextStateCount = harness.statusUiCalls.currentTextProcessingStates.length;
+  const runtimeStateCount = harness.currentTextRuntimeCalls.processingStates.length;
+  const runtimeTextUpdateCount = harness.currentTextRuntimeCalls.textUpdates.length;
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'preciso' });
+  harness.subscriptions.textExtractionProcessingModeChanged({
+    active: true,
+    lockId: 42,
+    sinceEpochMs: 4200,
+  });
+  harness.subscriptions.currentTextProcessingStateChanged({
+    active: true,
+    requestId: 42,
+    sinceEpochMs: 4200,
+  });
+  harness.subscriptions.currentTextUpdated({
+    text: 'authoritative terminal text',
+    requestId: 42,
+  });
+
+  assert.equal(harness.currentTextRuntimeCalls.terminalPresentationUnavailableCount, 1);
+  assert.equal(harness.statusUiCalls.processingModeStates.length, processingStateCount + 1);
+  assert.equal(harness.statusUiCalls.currentTextProcessingStates.length, currentTextStateCount + 1);
+  assert.equal(harness.currentTextRuntimeCalls.processingStates.length, runtimeStateCount + 1);
+  assert.equal(harness.currentTextRuntimeCalls.textUpdates.length, runtimeTextUpdateCount + 1);
+  assert.equal(harness.statusUiCalls.processingModeStates.at(-1).lockId, 42);
+  assert.equal(harness.statusUiCalls.currentTextProcessingStates.at(-1).requestId, 42);
+  assert.equal(harness.currentTextRuntimeCalls.processingStates.at(-1).state.requestId, 42);
+  assert.equal(harness.currentTextRuntimeCalls.textUpdates.at(-1).payload.requestId, 42);
+  assert.equal(harness.currentTextRuntimeCalls.textUpdates.at(-1).payload.text, 'authoritative terminal text');
+});
+
+test('main renderer admits brand-logo actions only after READY', async () => {
+  let canAcceptBrandLinkAction = null;
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    mainLogoLinksOverride: {
+      applyTranslations() {},
+      bindBrandLinks(options) {
+        canAcceptBrandLinkAction = options.canAcceptBrandLinkAction;
+      },
+    },
+  });
+
+  assert.equal(typeof canAcceptBrandLinkAction, 'function');
+  assert.equal(canAcceptBrandLinkAction(), false);
+
+  await harness.completeStartupReady();
+
+  assert.equal(canAcceptBrandLinkAction(), true);
+});
+
 test('speed presets become visible with their localized accessible name after startup translation', async () => {
   const harness = await createRendererHarness();
   const ariaUpdate = harness.presetComboboxUpdates.find(
@@ -493,6 +689,24 @@ test('main renderer delegates language refresh to each feature-owned active cust
     Object.fromEntries(Object.keys(before).map((owner) => [owner, after[owner] - before[owner]])),
     Object.fromEntries(Object.keys(before).map((owner) => [owner, 1]))
   );
+  assert.equal(harness.errors.length, 0);
+});
+
+test('main renderer keeps the optional Browser Extension capability unavailable after translation failure', async () => {
+  const interactionLocks = [];
+  const harness = await createRendererHarness({
+    browserExtensionModalOverrides: {
+      applyTranslations() {
+        throw new Error('extension translation failure');
+      },
+      setInteractionLocked(value) {
+        interactionLocks.push(value);
+      },
+    },
+  });
+
+  assert.equal(interactionLocks.at(-1), true);
+  assert.equal(harness.getElement('browserExtensionLogoLink').disabled, false);
   assert.equal(harness.errors.length, 0);
 });
 
@@ -609,7 +823,7 @@ test('main renderer delegates every supported Info menu action to the Info modal
   });
   for (let index = 0; index < 4; index += 1) await flushAsyncWork();
 
-  assert.deepEqual(manualRequests, ['en', 'en', 'en']);
+  assert.deepEqual(manualRequests, ['en', 'en', 'en', 'en']);
   assert.equal(harness.getElement('infoModal').getAttribute('aria-hidden'), 'false');
   assert.equal(harness.errors.length, 0);
 });
@@ -670,23 +884,16 @@ test('Editor launch lifecycle exposes, retranslates, and clears real live-region
   assert.match(markup, /id="editorLoaderStatus"\s+class="main-accessible-description"/);
 });
 
-test('main renderer materializes a pre-READY current-text update before retaining it for bootstrap arbitration', async () => {
-  const harness = await createRendererHarness({
-    beforeStartupReady({ subscriptions }) {
-      assert.equal(typeof subscriptions.currentTextUpdated, 'function');
-      subscriptions.currentTextUpdated({ text: 'pre-ready text', requestId: 7 });
-    },
-  });
+test('main renderer installs live current-text updates after the authoritative snapshot and before core readiness', async () => {
+  const harness = await createRendererHarness();
 
-  assert.deepEqual(harness.currentTextRuntimeCalls.copiedUpdates, [
-    { text: 'pre-ready text', requestId: 7 },
-  ]);
-  assert.deepEqual(harness.currentTextRuntimeCalls.installedTexts, ['pre-ready text']);
   assert.deepEqual(harness.currentTextRuntimeCalls.bootstrapStates, [{
-    initialText: 'pre-ready text',
+    initialText: '',
     processingState: { active: false, requestId: 0, sinceEpochMs: null, source: '', action: '' },
   }]);
-  assert.equal(harness.errors.length, 0);
+  assert.equal(harness.currentTextRuntimeCalls.currentTextSubscriptionArmedAtBootstrapSync, false);
+  assert.equal(harness.currentTextRuntimeCalls.currentTextSubscriptionArmedAtRendererCoreReady, true);
+  assert.equal(typeof harness.subscriptions.currentTextUpdated, 'function');
 });
 
 test('main renderer aborts bootstrap instead of synthesizing current-text or processing state after required-query failures', async (t) => {

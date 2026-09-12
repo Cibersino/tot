@@ -58,11 +58,7 @@
   // =============================================================================
   function applyTranslations({ tRenderer } = {}) {
     if (typeof tRenderer !== 'function') {
-      log.warnOnce(
-        'main_logo_links.tRenderer.missing',
-        'tRenderer unavailable; keeping current main logo link labels.'
-      );
-      return;
+      throw new Error('[main-logo-links] tRenderer unavailable; cannot apply main logo link semantics');
     }
 
     Object.entries(LOGO_LINK_CONFIG).forEach(([id, config]) => {
@@ -73,7 +69,7 @@
     });
   }
 
-  function bindBrandLinks({ electronAPI } = {}) {
+  function bindBrandLinks({ electronAPI, canAcceptBrandLinkAction } = {}) {
     if (linksBound) return;
 
     const api = electronAPI || window.electronAPI;
@@ -91,6 +87,14 @@
       if (!element) return;
 
       element.addEventListener('click', () => {
+        if (typeof canAcceptBrandLinkAction === 'function' && !canAcceptBrandLinkAction()) {
+          log.warnOnce(
+            `main_logo_links.action_not_admitted.${id}`,
+            'Main logo external URL action ignored: main renderer is not ready or terminal after i18n failure.',
+            id
+          );
+          return;
+        }
         api.openExternalUrl(config.url)
           .then((result) => {
             if (!result || result.ok !== true) {

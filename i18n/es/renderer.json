@@ -335,8 +335,6 @@
         "status_empty_query": "Escribe para buscar"
       },
       "alerts": {
-        "start_failed": "No se pudo iniciar el Editor de Texto.",
-        "start_timeout": "El Editor de Texto tardó demasiado en iniciar y fue cerrado.",
         "paste_too_big": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
         "drop_too_big": "Texto arrastrado demasiado grande. Usa los botones de la ventana principal.",
         "paste_no_text": "El portapapeles no contiene texto plano.",

@@ -489,6 +489,43 @@ Estados de revisión recomendados:
         "en": "There is an open task with unsaved changes. Discard changes?"
         // [CONCEPTO_APP] tarea
       },
+      "task_discard_changes_title": {
+        "es": "Descartar cambios de la tarea",
+        "en": "Discard task changes"
+        // [CONCEPTO_APP] tarea
+      },
+      "task_terminal_title": {
+        "es": "El Editor de Tareas no está disponible",
+        "en": "The Task Editor is unavailable"
+        // [CONCEPTO_APP] Editor de Tareas; tarea
+      },
+      "task_terminal_startup_message": {
+        "es": "El Editor de Tareas no pudo iniciarse y se cerrará.",
+        "en": "The Task Editor could not start and will close."
+        // [CONCEPTO_APP] Editor de Tareas; tarea
+      },
+      "task_terminal_clean_message": {
+        "es": "El Editor de Tareas no está disponible. No se detectaron cambios sin guardar, así que se cerrará.",
+        "en": "The Task Editor is unavailable. No unsaved changes were detected, so it will close."
+        // [CONCEPTO_APP] Editor de Tareas; tarea; cambios sin guardar
+      },
+      "task_terminal_dirty_message": {
+        "es": "El Editor de Tareas no está disponible y podría tener cambios sin guardar. ¿Descartar esos cambios y cerrarlo?",
+        "en": "The Task Editor is unavailable and may have unsaved changes. Discard those changes and close it?"
+        // [CONCEPTO_APP] Editor de Tareas; tarea; cambios sin guardar
+      },
+      "task_discard_and_close": {
+        "es": "Descartar y cerrar",
+        "en": "Discard and close"
+        // [PROPÓSITO] Acción explícita que autoriza cerrar una tarea terminal potencialmente sucia.
+        // [CONCEPTO_APP] tarea; cambios sin guardar
+      },
+      "task_keep_open": {
+        "es": "Mantener abierta",
+        "en": "Keep open"
+        // [PROPÓSITO] Acción predeterminada/cancelar que conserva abierta una tarea terminal potencialmente sucia.
+        // [CONCEPTO_APP] tarea; cambios sin guardar
+      },
       "task_library_row_save_overwrite": {
         "es": "Ya existe \"{name}\" en la biblioteca. ¿Sobrescribir?",
         "en": "\"{name}\" already exists in the library. Overwrite?"
@@ -583,6 +620,38 @@ Estados de revisión recomendados:
       "update_failed_message": {
         "es": "Revisa tu conexión y vuelve a intentar.",
         "en": "Check your connection and try again."
+      },
+      "renderer_i18n_failure_title": {
+        "es": "No se pudo iniciar la interfaz",
+        "en": "The interface could not start"
+        // [PROPÓSITO] Título del diálogo nativo cuando un renderer no puede establecer los recursos de idioma requeridos.
+      },
+      "renderer_i18n_failure_message": {
+        "es": "La interfaz no pudo cargar sus recursos de idioma necesarios. La ventana se cerrará.",
+        "en": "The interface could not load its required language resources. The window will close."
+        // [PROPÓSITO] Mensaje nativo de cierre para un fallo terminal de recursos de idioma del renderer.
+      },
+      "editor_startup_failed_title": {
+        "es": "No se pudo iniciar el Editor de Texto",
+        "en": "The Text Editor could not start"
+        // [PROPÓSITO] Título del diálogo nativo para el fallo reportable de inicio del Editor de Texto.
+        // [CONCEPTO_APP] Editor de Texto
+      },
+      "editor_startup_failed_message": {
+        "es": "El Editor de Texto no pudo completar su inicio y se cerrará.",
+        "en": "The Text Editor could not complete startup and will close."
+        // [PROPÓSITO] Mensaje nativo del fallo reportable de inicio; no sustituye la copia de errores recurrentes del renderer.
+        // [CONCEPTO_APP] Editor de Texto
+      },
+      "editor_startup_timeout_title": {
+        "es": "El Editor de Texto tardó demasiado en iniciar",
+        "en": "The Text Editor took too long to start"
+        // [CONCEPTO_APP] Editor de Texto
+      },
+      "editor_startup_timeout_message": {
+        "es": "El Editor de Texto no completó su inicio a tiempo y se cerrará.",
+        "en": "The Text Editor did not complete startup in time and will close."
+        // [CONCEPTO_APP] Editor de Texto
       }
     }
   }
@@ -919,13 +988,13 @@ Estados de revisión recomendados:
         "crono_toggle": {
           "es": "Iniciar o pausar cronómetro",
           "en": "Start or pause stopwatch"
-          // [PROPÓSITO] Nombre accesible y tooltip visual compartido por el control iconográfico.
+          // [PROPÓSITO] Nombre accesible del control iconográfico.
           // [CONCEPTO_APP] Cronómetro
         },
         "crono_reset": {
           "es": "Detener y restablecer cronómetro",
           "en": "Stop and reset stopwatch"
-          // [PROPÓSITO] Nombre accesible y tooltip visual compartido por el control iconográfico; la acción detiene y vuelve a 0.
+          // [PROPÓSITO] Nombre accesible del control iconográfico; la acción detiene y vuelve a 0.
           // [CONCEPTO_APP] Cronómetro
         },
         "floating_window": {
@@ -2191,16 +2260,6 @@ Estados de revisión recomendados:
         }
       },
       "alerts": {
-        "start_failed": {
-          "es": "No se pudo iniciar el Editor de Texto.",
-          "en": "The Text Editor could not be started."
-          // [CONCEPTO_APP] Editor de Texto
-        },
-        "start_timeout": {
-          "es": "El Editor de Texto tardó demasiado en iniciar y fue cerrado.",
-          "en": "The Text Editor took too long to start and was closed."
-          // [CONCEPTO_APP] Editor de Texto
-        },
         "paste_too_big": {
           "es": "Texto demasiado grande para pegar directamente. Usa los botones de la ventana principal.",
           "en": "Text too large to paste directly. Use the main window buttons."

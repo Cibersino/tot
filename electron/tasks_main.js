@@ -69,8 +69,6 @@ const TASK_FILE_PICKER_STATE_FALLBACK = Object.freeze({
 });
 const platformAdapter = getTextExtractionPlatformAdapter(process.platform);
 const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
-// Tracks unsaved Task Editor changes across IPC requests.
-let taskEditorDirty = false;
 
 // =============================================================================
 // Helpers (paths, dialogs, file IO)
@@ -166,19 +164,6 @@ function getDefaultTaskFileName(rootDir, taskName) {
     idx += 1;
   }
   return `${base}_${idx}${TASK_EXT}`;
-}
-
-async function confirmTaskEditorDiscardIfDirty({ mainWin, taskEditorWin }) {
-  if (!taskEditorDirty) return true;
-  if (!taskEditorWin || taskEditorWin.isDestroyed()) {
-    taskEditorDirty = false;
-    return true;
-  }
-
-  const dialogRes = await showContinueCancelDialog(mainWin || taskEditorWin || null, {
-    messageKey: 'task_discard_changes_confirm',
-  });
-  return dialogRes.response !== 1;
 }
 
 function normalizeSavePath(filePath) {
@@ -580,13 +565,26 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
   }
 }
 
-function sendTaskEditorInit(taskEditorWin, payload) {
+function sendTaskEditorInit(taskEditorWin, payload, taskEditorLifecycle) {
   if (!taskEditorWin || taskEditorWin.isDestroyed()) {
     log.warn("taskEditorWin send('task-editor-init') unavailable.");
     return false;
   }
-  taskEditorWin.webContents.send('task-editor-init', payload);
-  return true;
+  if (!taskEditorLifecycle
+    || typeof taskEditorLifecycle.prepareInitialization !== 'function'
+    || typeof taskEditorLifecycle.acceptInitializationIssued !== 'function') {
+    log.error('Task Editor initialization lifecycle unavailable.');
+    return false;
+  }
+  const correlatedPayload = taskEditorLifecycle.prepareInitialization(taskEditorWin, payload);
+  if (!correlatedPayload) return false;
+  try {
+    taskEditorWin.webContents.send('task-editor-init', correlatedPayload);
+  } catch (err) {
+    log.warn("taskEditorWin send('task-editor-init') failed (ignored):", err);
+    return false;
+  }
+  return taskEditorLifecycle.acceptInitializationIssued(taskEditorWin, correlatedPayload.initId);
 }
 
 function normalizeTaskFilePickerState(rawState) {
@@ -661,7 +659,7 @@ async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
 // =============================================================================
 // IPC registration
 // =============================================================================
-function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
+function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLifecycle } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function' || typeof ipcMain.on !== 'function') {
     throw new Error('[tasks_main] registerIpc requires ipcMain');
   }
@@ -670,21 +668,21 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
   const resolveMainWin = () => resolveWins().mainWin || null;
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
 
+  const hasTaskEditorLifecycle = !!(taskEditorLifecycle
+    && typeof taskEditorLifecycle.acceptDirtyState === 'function'
+    && typeof taskEditorLifecycle.confirmReplacement === 'function'
+    && typeof taskEditorLifecycle.prepareInitialization === 'function'
+    && typeof taskEditorLifecycle.acceptInitializationIssued === 'function');
+  if (!hasTaskEditorLifecycle) {
+    log.error('Task Editor lifecycle unavailable; New and Load are disabled.');
+  }
+
   ipcMain.on('task-editor-dirty-state', (event, payload) => {
-    const taskEditorWin = resolveTaskEditorWin();
-    if (!isAuthorizedSender(
-      event,
-      taskEditorWin,
-      'tasks_main.dirty_state.unauthorized',
-      'task-editor-dirty-state unauthorized (ignored).'
-    )) {
+    if (!hasTaskEditorLifecycle) {
+      log.warn('task-editor-dirty-state ignored because Task Editor lifecycle is unavailable.');
       return;
     }
-    if (!isPlainObject(payload) || typeof payload.dirty !== 'boolean') {
-      log.warn('task-editor-dirty-state received invalid payload (ignored):', payload);
-      return;
-    }
-    taskEditorDirty = payload.dirty;
+    taskEditorLifecycle.acceptDirtyState(event, payload);
   });
 
   // =============================================================================
@@ -714,10 +712,10 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
       const { mode } = payload;
 
       if (mode === 'new') {
-        const allowDiscard = await confirmTaskEditorDiscardIfDirty({
-          mainWin,
-          taskEditorWin: resolveTaskEditorWin(),
-        });
+        if (!hasTaskEditorLifecycle) {
+          return { ok: false, code: 'UNAVAILABLE' };
+        }
+        const allowDiscard = await taskEditorLifecycle.confirmReplacement(mainWin);
         if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
         ensureTaskEditorWindow();
         const taskEditorWin = resolveTaskEditorWin();
@@ -735,11 +733,10 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
             rows: [],
           },
           sourcePath: null,
-        });
+        }, taskEditorLifecycle);
         if (!didSendInit) {
           return { ok: false, code: 'UNAVAILABLE' };
         }
-        taskEditorDirty = false;
         return { ok: true };
       }
 
@@ -786,10 +783,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         return { ok: false, code: normalized.code || 'INVALID_SCHEMA', message: normalized.message };
       }
 
-      const allowDiscard = await confirmTaskEditorDiscardIfDirty({
-        mainWin,
-        taskEditorWin: resolveTaskEditorWin(),
-      });
+      if (!hasTaskEditorLifecycle) {
+        return { ok: false, code: 'UNAVAILABLE' };
+      }
+
+      const allowDiscard = await taskEditorLifecycle.confirmReplacement(mainWin);
       if (!allowDiscard) return { ok: false, code: 'CONFIRM_DENIED' };
 
       ensureTaskEditorWindow();
@@ -798,11 +796,10 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow } = {}) {
         mode: 'load',
         task: normalized.task,
         sourcePath: selectedReal,
-      });
+      }, taskEditorLifecycle);
       if (!didSendInit) {
         return { ok: false, code: 'UNAVAILABLE' };
       }
-      taskEditorDirty = false;
       return { ok: true };
     } catch (err) {
       log.error('Error processing open-task-editor:', err);

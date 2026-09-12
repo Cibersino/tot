@@ -54,6 +54,10 @@
   let getCurrentLanguage = null;
   let openInfoModalKey = '';
   let infoModalRenderVersion = 0;
+  let openInfoModalInstance = 0;
+  let documentUnavailableForOpenInstance = false;
+  let aboutVersionOutcomePromise = null;
+  let aboutEnvironmentOutcomePromise = null;
   let uiBound = false;
 
   // =============================================================================
@@ -65,13 +69,14 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
     } catch (err) {
-      log.warn('fetchText failed; info modal will fallback:', path, err);
+      log.warn('fetchText failed; info modal will show unavailable content:', path, err);
       return null;
     }
   }
 
   function translateInfoHtml(htmlString, key) {
     try {
+      if (typeof htmlString !== 'string' || !htmlString.trim()) return null;
       const doc = new DOMParser().parseFromString(htmlString, 'text/html');
       doc.querySelectorAll('[data-i18n]').forEach((el) => {
         const dataKey = el.getAttribute('data-i18n');
@@ -82,21 +87,25 @@
       return doc.body.innerHTML;
     } catch (err) {
       log.warn('translateInfoHtml failed:', err);
-      return htmlString;
+      return null;
     }
   }
 
   function extractInfoBodyHtml(htmlString) {
     try {
-      return new DOMParser().parseFromString(htmlString, 'text/html').body.innerHTML;
+      if (typeof htmlString !== 'string' || !htmlString.trim()) return null;
+      const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+      return doc && doc.body ? doc.body.innerHTML : null;
     } catch (err) {
       log.warn('extractInfoBodyHtml failed:', err);
-      return htmlString;
+      return null;
     }
   }
 
   function getDescriptor(key) {
-    if (key === 'acerca_de') return { fileToLoad: './info/acerca_de.html', isManual: false, sectionId: '' };
+    if (key === 'acerca_de') {
+      return { documentId: 'renderer.info.acerca_de', isManual: true, sectionId: '' };
+    }
     if (key === 'links_interes') return { fileToLoad: './info/links_interes.html', isManual: false, sectionId: '' };
     const sectionByKey = { guia_basica: 'guia-basica', instrucciones: 'instrucciones', faq: 'faq' };
     if (!Object.prototype.hasOwnProperty.call(sectionByKey, key)) return null;
@@ -145,31 +154,109 @@
   // =============================================================================
   // About hydration
   // =============================================================================
-  async function hydrateAboutVersion(container) {
-    const versionEl = container ? container.querySelector('#appVersion') : null;
-    if (!versionEl) return;
-    const unavailableText = tRenderer('renderer.info.acerca_de.version.unavailable');
-    if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
-      log.warn('getAppVersion not available for About modal.');
-      versionEl.textContent = unavailableText;
-      return;
-    }
-    try {
-      const version = await window.electronAPI.getAppVersion();
-      const cleaned = typeof version === 'string' ? version.trim() : '';
-      if (!cleaned) {
-        log.warn('getAppVersion returned empty; About modal shows N/A.');
-        versionEl.textContent = unavailableText;
-        return;
+  function getAboutVersionOutcome() {
+    if (aboutVersionOutcomePromise) return aboutVersionOutcomePromise;
+    aboutVersionOutcomePromise = (async () => {
+      if (!window.electronAPI || typeof window.electronAPI.getAppVersion !== 'function') {
+        log.warn('getAppVersion not available for About modal.');
+        return { value: '' };
       }
-      versionEl.textContent = cleaned;
-    } catch (err) {
-      log.warn('getAppVersion failed; About modal shows N/A:', err);
-      versionEl.textContent = unavailableText;
-    }
+      try {
+        const version = await window.electronAPI.getAppVersion();
+        const value = typeof version === 'string' ? version.trim() : '';
+        if (!value) log.warn('getAppVersion returned empty; About modal shows unavailable.');
+        return { value };
+      } catch (err) {
+        log.warn('getAppVersion failed; About modal shows unavailable:', err);
+        return { value: '' };
+      }
+    })();
+    return aboutVersionOutcomePromise;
   }
 
-  async function hydrateAboutEnvironment(container) {
+  async function hydrateAboutVersion(container, isCurrentRender) {
+    const outcome = await getAboutVersionOutcome();
+    if (typeof isCurrentRender === 'function' && !isCurrentRender()) return;
+    const versionEl = container ? container.querySelector('#appVersion') : null;
+    if (!versionEl) return;
+    versionEl.textContent = outcome.value || tRenderer('renderer.info.acerca_de.version.unavailable');
+  }
+
+  function getAboutEnvironmentOutcome() {
+    if (aboutEnvironmentOutcomePromise) return aboutEnvironmentOutcomePromise;
+    aboutEnvironmentOutcomePromise = (async () => {
+      const defaultSharpRuntimePackage = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
+      if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
+        log.warn('getAppRuntimeInfo not available for About modal.');
+        return { unavailable: true, includeSharpRuntimeNames: false, sharpRuntimePackage: '' };
+      }
+      try {
+        const info = await window.electronAPI.getAppRuntimeInfo();
+        const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
+        const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
+        const electronVersion = info && typeof info.electronVersion === 'string' ? info.electronVersion.trim() : '';
+        const chromeVersion = info && typeof info.chromeVersion === 'string' ? info.chromeVersion.trim() : '';
+        const nodeVersion = info && typeof info.nodeVersion === 'string' ? info.nodeVersion.trim() : '';
+        const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
+        const osLabel = platformMap[platform] || platform;
+        const sharpRuntimePackageMap = {
+          'win32:x64': '@img/sharp-win32-x64@0.34.4',
+          'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
+          'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
+          'linux:x64': '@img/sharp-linux-x64@0.34.4',
+        };
+        const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
+          || defaultSharpRuntimePackage;
+        if (!osLabel || !arch) {
+          log.warn('getAppRuntimeInfo missing platform/arch; About modal shows unavailable.');
+          return {
+            unavailable: true,
+            includeSharpRuntimeNames: true,
+            sharpRuntimePackage,
+          };
+        }
+        let licenseAvailable = false;
+        let noticeAvailable = false;
+        if (typeof window.electronAPI.getAppDocAvailability === 'function') {
+          try {
+            const [license, notice] = await Promise.all([
+              window.electronAPI.getAppDocAvailability('license-text-extraction-image-processing-runtime'),
+              window.electronAPI.getAppDocAvailability('notice-text-extraction-image-processing-runtime'),
+            ]);
+            licenseAvailable = !!(license && license.available);
+            noticeAvailable = !!(notice && notice.available);
+          } catch (err) {
+            log.warn('getAppDocAvailability failed; About modal document availability defaults to hidden:', err);
+          }
+        } else {
+          log.warn('getAppDocAvailability unavailable; About modal document availability defaults to hidden.');
+        }
+        return {
+          unavailable: false,
+          osLabel,
+          arch,
+          electronVersion,
+          chromeVersion,
+          nodeVersion,
+          sharpRuntimePackage,
+          licenseAvailable,
+          noticeAvailable,
+        };
+      } catch (err) {
+        log.warn('getAppRuntimeInfo failed; About modal shows unavailable:', err);
+        return {
+          unavailable: true,
+          includeSharpRuntimeNames: true,
+          sharpRuntimePackage: defaultSharpRuntimePackage,
+        };
+      }
+    })();
+    return aboutEnvironmentOutcomePromise;
+  }
+
+  async function hydrateAboutEnvironment(container, isCurrentRender) {
+    const outcome = await getAboutEnvironmentOutcome();
+    if (typeof isCurrentRender === 'function' && !isCurrentRender()) return;
     const envEl = container ? container.querySelector('#appEnv') : null;
     const runtimeEl = container ? container.querySelector('#appRuntimeVersions') : null;
     const sharpRuntimeLicenseRow = container ? container.querySelector('#sharpRuntimeLicenseRow') : null;
@@ -178,86 +265,64 @@
     const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
     if (!envEl) return;
     const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
-    const defaultSharpRuntimePackage = '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-    const applyUnavailableEnvironmentState = ({ includeSharpRuntimeNames = false } = {}) => {
+    if (outcome.unavailable) {
       envEl.textContent = unavailableText;
       if (runtimeEl) runtimeEl.textContent = unavailableText;
-      if (includeSharpRuntimeNames) {
-        if (sharpRuntimeEl) sharpRuntimeEl.textContent = defaultSharpRuntimePackage;
-        if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = defaultSharpRuntimePackage;
+      if (outcome.includeSharpRuntimeNames) {
+        if (sharpRuntimeEl) sharpRuntimeEl.textContent = outcome.sharpRuntimePackage;
+        if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = outcome.sharpRuntimePackage;
       }
       if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
       if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-    };
-    if (!window.electronAPI || typeof window.electronAPI.getAppRuntimeInfo !== 'function') {
-      log.warn('getAppRuntimeInfo not available for About modal.');
-      applyUnavailableEnvironmentState();
       return;
     }
-    try {
-      const info = await window.electronAPI.getAppRuntimeInfo();
-      const platform = info && typeof info.platform === 'string' ? info.platform.trim() : '';
-      const arch = info && typeof info.arch === 'string' ? info.arch.trim() : '';
-      const electronVersion = info && typeof info.electronVersion === 'string' ? info.electronVersion.trim() : '';
-      const chromeVersion = info && typeof info.chromeVersion === 'string' ? info.chromeVersion.trim() : '';
-      const nodeVersion = info && typeof info.nodeVersion === 'string' ? info.nodeVersion.trim() : '';
-      const platformMap = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
-      const osLabel = platformMap[platform] || platform;
-      const sharpRuntimePackageMap = {
-        'win32:x64': '@img/sharp-win32-x64@0.34.4',
-        'darwin:x64': '@img/sharp-darwin-x64@0.34.4',
-        'darwin:arm64': '@img/sharp-darwin-arm64@0.34.4',
-        'linux:x64': '@img/sharp-linux-x64@0.34.4',
-      };
-      const sharpRuntimePackage = sharpRuntimePackageMap[`${platform}:${arch}`]
-        || '@img/sharp-<plataforma>-<arquitectura>@0.34.4';
-      if (!osLabel || !arch) {
-        log.warn('getAppRuntimeInfo missing platform/arch; About modal shows N/A.');
-        applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
-        return;
-      }
-      envEl.textContent = `${osLabel} (${arch})`;
-      if (sharpRuntimeEl) sharpRuntimeEl.textContent = sharpRuntimePackage;
-      if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = sharpRuntimePackage;
-      if (runtimeEl) {
-        runtimeEl.textContent = [
-          electronVersion ? `Electron ${electronVersion}` : `Electron ${unavailableText}`,
-          chromeVersion ? `Chromium ${chromeVersion}` : `Chromium ${unavailableText}`,
-          nodeVersion ? `Node.js ${nodeVersion}` : `Node.js ${unavailableText}`,
-        ].join(' | ');
-      }
-      if (window.electronAPI && typeof window.electronAPI.getAppDocAvailability === 'function') {
-        try {
-          const [licenseAvailability, noticeAvailability] = await Promise.all([
-            window.electronAPI.getAppDocAvailability('license-text-extraction-image-processing-runtime'),
-            window.electronAPI.getAppDocAvailability('notice-text-extraction-image-processing-runtime'),
-          ]);
-          if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !(licenseAvailability && licenseAvailability.available);
-          if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !(noticeAvailability && noticeAvailability.available);
-        } catch (err) {
-          log.warn('getAppDocAvailability failed; About modal document availability defaults to hidden:', err);
-          if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-          if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-        }
-      } else {
-        log.warn('getAppDocAvailability unavailable; About modal document availability defaults to hidden.');
-        if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = true;
-        if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = true;
-      }
-    } catch (err) {
-      log.warn('getAppRuntimeInfo failed; About modal shows N/A:', err);
-      applyUnavailableEnvironmentState({ includeSharpRuntimeNames: true });
+    envEl.textContent = `${outcome.osLabel} (${outcome.arch})`;
+    if (sharpRuntimeEl) sharpRuntimeEl.textContent = outcome.sharpRuntimePackage;
+    if (sharpRuntimeNoticeEl) sharpRuntimeNoticeEl.textContent = outcome.sharpRuntimePackage;
+    if (runtimeEl) {
+      runtimeEl.textContent = [
+        outcome.electronVersion ? `Electron ${outcome.electronVersion}` : `Electron ${unavailableText}`,
+        outcome.chromeVersion ? `Chromium ${outcome.chromeVersion}` : `Chromium ${unavailableText}`,
+        outcome.nodeVersion ? `Node.js ${outcome.nodeVersion}` : `Node.js ${unavailableText}`,
+      ].join(' | ');
     }
+    if (sharpRuntimeLicenseRow) sharpRuntimeLicenseRow.hidden = !outcome.licenseAvailable;
+    if (sharpRuntimeNoticeRow) sharpRuntimeNoticeRow.hidden = !outcome.noticeAvailable;
   }
 
   // =============================================================================
   // Modal lifecycle
   // =============================================================================
+  function resetOpenInstanceOutcomes() {
+    documentUnavailableForOpenInstance = false;
+    aboutVersionOutcomePromise = null;
+    aboutEnvironmentOutcomePromise = null;
+  }
+
+  function isCurrentRender(key, renderVersion, openInstance, container) {
+    return openInfoModalKey === key
+      && renderVersion === infoModalRenderVersion
+      && openInstance === openInfoModalInstance
+      && container === infoModalContent
+      && infoModal
+      && infoModal.getAttribute('aria-hidden') === 'false';
+  }
+
+  function renderUnavailableDocument(infoDialogLabel) {
+    infoModalContent.innerHTML = `<p class="info-modal-message">${msgRenderer(
+      'renderer.info.missing_content',
+      { name: infoDialogLabel }
+    )}</p>`;
+    focusClose();
+  }
+
   function close() {
     try {
       if (!infoModal || !infoModalContent) return;
       openInfoModalKey = '';
       infoModalRenderVersion += 1;
+      openInfoModalInstance += 1;
+      resetOpenInstanceOutcomes();
       infoModal.setAttribute('aria-hidden', 'true');
       window.Notify.deactivateModalFocus(infoModal);
       infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${tRenderer('renderer.info.loading')}</div>`;
@@ -273,6 +338,8 @@
     }
     const descriptor = getDescriptor(key);
     const renderVersion = ++infoModalRenderVersion;
+    const openInstance = openInfoModalInstance;
+    const contentContainer = infoModalContent;
     const translationKey = (key === 'guia_basica' || key === 'faq') ? 'instrucciones' : key;
     const infoDialogLabel = tRenderer(`renderer.info.${translationKey}.title`);
     infoModalContent.removeAttribute('lang');
@@ -290,19 +357,31 @@
       return;
     }
     panel.scrollTop = preservedUiState ? preservedUiState.scrollTop : 0;
+    if (documentUnavailableForOpenInstance) {
+      renderUnavailableDocument(infoDialogLabel);
+      return;
+    }
     const documentResult = descriptor.isManual
       ? await loadLocalizedDocument(descriptor.documentId, getCurrentLanguage() || DEFAULT_LANG)
       : { html: await fetchText(descriptor.fileToLoad) };
-    if (renderVersion !== infoModalRenderVersion || openInfoModalKey !== key) return;
+    const currentRender = () => isCurrentRender(key, renderVersion, openInstance, contentContainer);
+    if (!currentRender()) return;
     if (!documentResult || documentResult.html === null) {
       log.warn('Info modal content unavailable; showing missing-content state:', key);
-      infoModalContent.innerHTML = `<p class="info-modal-message">${msgRenderer('renderer.info.missing_content', { name: infoDialogLabel })}</p>`;
-      focusClose();
+      documentUnavailableForOpenInstance = true;
+      renderUnavailableDocument(infoDialogLabel);
       return;
     }
-    infoModalContent.innerHTML = descriptor.isManual
+    const documentHtml = descriptor.isManual
       ? extractInfoBodyHtml(documentResult.html)
       : translateInfoHtml(documentResult.html, translationKey);
+    if (typeof documentHtml !== 'string' || !documentHtml.trim()) {
+      log.warn('Info modal content parsing or substitution failed; showing unavailable state:', key);
+      documentUnavailableForOpenInstance = true;
+      renderUnavailableDocument(infoDialogLabel);
+      return;
+    }
+    infoModalContent.innerHTML = documentHtml;
     if (descriptor.isManual && typeof documentResult.language === 'string' && documentResult.language.trim()) {
       const effectiveDocumentLanguage = documentResult.language.trim();
       infoModalContent.setAttribute('lang', effectiveDocumentLanguage);
@@ -315,9 +394,9 @@
       log.warn('InfoModalLinks lifecycle helpers unavailable; modal links and screenshot keyboard support will use default behavior.');
     }
     if (key === 'acerca_de') {
-      await hydrateAboutVersion(infoModalContent);
-      await hydrateAboutEnvironment(infoModalContent);
-      if (renderVersion !== infoModalRenderVersion || openInfoModalKey !== key) return;
+      await hydrateAboutVersion(infoModalContent, currentRender);
+      await hydrateAboutEnvironment(infoModalContent, currentRender);
+      if (!currentRender()) return;
     }
     if (preservedUiState) {
       panel.scrollTop = preservedUiState.scrollTop;
@@ -345,6 +424,10 @@
     if (!getDescriptor(key)) {
       log.warn('InfoModal.open received unsupported key:', key);
       return Promise.resolve();
+    }
+    if (!isOpen() || openInfoModalKey !== key) {
+      openInfoModalInstance += 1;
+      resetOpenInstanceOutcomes();
     }
     openInfoModalKey = key;
     return render(key, { open: true });

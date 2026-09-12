@@ -39,6 +39,7 @@ function createElement(id, tagName = 'div') {
     id,
     tagName,
     value: '',
+    disabled: false,
     textContent: '',
     hidden: false,
     options: [],
@@ -135,11 +136,25 @@ async function flushAsyncWork() {
 
 async function createHarness({
   initialLanguage = 'es',
+  failTranslationApplicationLanguage = '',
+  terminalTransitionLanguage = '',
+  liveSettingsDuringInitialLoad = null,
+  initialSettingsGate = null,
+  includeRendererI18n = true,
+  expectStartupThrow = false,
+  waitForBootstrap = true,
 } = {}) {
   const translations = getTranslationMap();
   let activeLanguage = initialLanguage;
+  let failingTranslationApplicationLanguage = failTranslationApplicationLanguage;
+  const terminalLanguage = String(terminalTransitionLanguage || '').trim().toLowerCase();
+  let rendererTransitionQueue = Promise.resolve();
+  const transitionLanguages = [];
+  let initialLiveSettingsDelivered = false;
+  let reporterCalls = 0;
   const subscriptions = {};
   const comboboxCreateConfigs = [];
+  const comboboxUpdateCalls = [];
   const elements = {
     textTimeCalculatorTargetLabel: createElement('textTimeCalculatorTargetLabel', 'label'),
     textTimeCalculatorTarget: createElement('textTimeCalculatorTarget'),
@@ -174,7 +189,18 @@ async function createHarness({
         };
       },
       textTimeCalculatorAPI: {
+        reportRendererI18nFailure() {
+          reporterCalls += 1;
+        },
         async getSettings() {
+          if (liveSettingsDuringInitialLoad) {
+            assert.equal(typeof subscriptions.onSettingsChanged, 'function');
+            initialLiveSettingsDelivered = true;
+            subscriptions.onSettingsChanged(liveSettingsDuringInitialLoad);
+          }
+          if (initialSettingsGate) {
+            await initialSettingsGate;
+          }
           return {
             language: initialLanguage,
             numberFormatting: {
@@ -190,31 +216,53 @@ async function createHarness({
           };
         },
       },
-      RendererI18n: {
+      RendererI18n: includeRendererI18n ? {
         normalizeLangTag(lang) {
           return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
         },
         getLangBase(lang) {
           return String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || 'es';
         },
-        async loadRendererTranslations(lang) {
-          activeLanguage = String(lang || '').trim().toLowerCase() || 'es';
+        transitionRendererTranslations(lang, { applyTranslations } = {}) {
+          const run = async () => {
+            const previousLanguage = activeLanguage;
+            activeLanguage = String(lang || '').trim().toLowerCase() || 'es';
+            transitionLanguages.push(activeLanguage);
+            if (activeLanguage === terminalLanguage) {
+              const err = new Error(`Cannot restore ${activeLanguage} translations`);
+              err.rendererI18nTransition = {
+                hadEstablishedState: true,
+                restorationFailed: true,
+              };
+              throw err;
+            }
+            try {
+              if (typeof applyTranslations === 'function') {
+                await applyTranslations({ language: activeLanguage, restoring: false });
+              }
+            } catch (err) {
+              activeLanguage = previousLanguage;
+              if (typeof applyTranslations === 'function') {
+                await applyTranslations({ language: previousLanguage, restoring: true });
+              }
+              err.rendererI18nTransition = {
+                hadEstablishedState: true,
+                restorationFailed: false,
+              };
+              throw err;
+            }
+          };
+          const scheduled = rendererTransitionQueue.then(run, run);
+          rendererTransitionQueue = scheduled.catch(() => {});
+          return scheduled;
         },
         tRenderer(pathName) {
+          if (activeLanguage === failingTranslationApplicationLanguage) {
+            throw new Error(`Cannot apply ${activeLanguage} translations`);
+          }
           return getPath(translations[activeLanguage], pathName) || pathName;
         },
-        applyWindowLanguageAttributes(lang) {
-          const normalized = String(lang || '').trim().toLowerCase() || 'es';
-          sandbox.document.documentElement.lang = normalized;
-          sandbox.document.documentElement.dir = 'ltr';
-          sandbox.document.documentElement.dataset.languageDirection = normalized === 'ar' ? 'rtl' : 'ltr';
-          return {
-            lang: normalized,
-            dir: 'ltr',
-            languageDirection: sandbox.document.documentElement.dataset.languageDirection,
-          };
-        },
-      },
+      } : undefined,
       FormatCore: require('../../../public/js/lib/format_core'),
       ReadingDurationUtils: require('../../../public/js/lib/reading_duration_core')
         .createReadingDurationUtils(),
@@ -233,6 +281,7 @@ async function createHarness({
           let onChange = typeof config.onChange === 'function' ? config.onChange : null;
           const controller = {
             update(nextConfig = {}) {
+              comboboxUpdateCalls.push({ ...nextConfig });
               if (Object.prototype.hasOwnProperty.call(nextConfig, 'options')) {
                 host.options = nextConfig.options.map((option) => ({ ...option, textContent: option.label }));
               }
@@ -280,16 +329,46 @@ async function createHarness({
     path.resolve(__dirname, '../../../public/text_time_calculator.js'),
     'utf8'
   );
-  vm.runInContext(source, sandbox, { filename: 'public/text_time_calculator.js' });
-  await flushAsyncWork();
+  let startupError = null;
+  try {
+    vm.runInContext(source, sandbox, { filename: 'public/text_time_calculator.js' });
+  } catch (err) {
+    startupError = err;
+    if (!expectStartupThrow) throw err;
+  }
+  if (waitForBootstrap && !startupError) {
+    await flushAsyncWork();
+  }
 
   return {
     elements,
     document: sandbox.document,
     subscriptions,
     comboboxCreateConfigs,
+    comboboxUpdateCalls,
+    getInitialLiveSettingsDelivered() {
+      return initialLiveSettingsDelivered;
+    },
+    transitionLanguages,
+    getReporterCalls() {
+      return reporterCalls;
+    },
+    startupError,
+    setFailTranslationApplicationLanguage(language) {
+      failingTranslationApplicationLanguage = String(language || '').trim().toLowerCase();
+    },
   };
 }
+
+test('text_time_calculator reports earliest required i18n failure before DOM control setup', async () => {
+  const harness = await createHarness({
+    includeRendererI18n: false,
+    expectStartupThrow: true,
+  });
+
+  assert.match(harness.startupError && harness.startupError.message, /RendererI18n unavailable/);
+  assert.equal(harness.getReporterCalls(), 1);
+});
 
 test('text_time_calculator creates target options from the active translations', async () => {
   const { comboboxCreateConfigs } = await createHarness({ initialLanguage: 'en' });
@@ -302,6 +381,39 @@ test('text_time_calculator creates target options from the active translations',
     ],
     value: 'wpm',
   }]);
+});
+
+test('text_time_calculator keeps native fields unavailable until initial presentation succeeds', async () => {
+  let resolveInitialSettings;
+  const initialSettingsGate = new Promise((resolve) => {
+    resolveInitialSettings = resolve;
+  });
+  const harness = await createHarness({
+    initialSettingsGate,
+    waitForBootstrap: false,
+  });
+  const { elements } = harness;
+
+  [
+    elements.textTimeCalculatorWordsInput,
+    elements.textTimeCalculatorTimeInput,
+    elements.textTimeCalculatorWpmInput,
+  ].forEach((input) => {
+    assert.equal(input.disabled, true);
+  });
+  assert.deepEqual(harness.comboboxCreateConfigs, []);
+
+  resolveInitialSettings();
+  await flushAsyncWork();
+
+  [
+    elements.textTimeCalculatorWordsInput,
+    elements.textTimeCalculatorTimeInput,
+    elements.textTimeCalculatorWpmInput,
+  ].forEach((input) => {
+    assert.equal(input.disabled, false);
+  });
+  assert.equal(harness.comboboxCreateConfigs.length, 1);
 });
 
 test('text_time_calculator defaults to WPM and keeps two editable rows plus one derived row', async () => {
@@ -415,4 +527,133 @@ test('text_time_calculator updates translations and localized integer formatting
   assert.equal(elements.textTimeCalculatorTarget.options[1].textContent, 'Time');
   assert.equal(elements.textTimeCalculatorTarget.options[2].textContent, 'WPM');
   assert.equal(elements.textTimeCalculatorWordsOutput.textContent, '25,000');
+});
+
+test('text_time_calculator admits a live settings delivery while its initial settings load is pending', async () => {
+  const harness = await createHarness({
+    initialLanguage: 'es',
+    liveSettingsDuringInitialLoad: {
+      language: 'en',
+      numberFormatting: {
+        es: { separadorMiles: '.', separadorDecimal: ',' },
+        en: { separadorMiles: ',', separadorDecimal: '.' },
+      },
+    },
+  });
+
+  assert.equal(harness.getInitialLiveSettingsDelivered(), true);
+  assert.deepEqual(harness.transitionLanguages, ['es', 'en']);
+  assert.equal(harness.document.title, 'toT — Quick calculator');
+});
+
+test('text_time_calculator restores prior settings after a translation application failure', async () => {
+  const harness = await createHarness({
+    initialLanguage: 'en',
+    failTranslationApplicationLanguage: 'es',
+  });
+  const { document, elements, subscriptions } = harness;
+
+  elements.textTimeCalculatorTarget.value = 'words';
+  elements.textTimeCalculatorTarget.dispatch('change');
+  elements.textTimeCalculatorTimeInput.value = '00:10:00';
+  elements.textTimeCalculatorTimeInput.dispatch('input');
+  elements.textTimeCalculatorWpmInput.value = '2500';
+  elements.textTimeCalculatorWpmInput.dispatch('input');
+  assert.equal(elements.textTimeCalculatorWordsOutput.textContent, '25,000');
+
+  await subscriptions.onSettingsChanged({
+    language: 'es',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+    },
+  });
+  await flushAsyncWork();
+
+  assert.equal(document.title, 'toT — Quick calculator');
+  assert.equal(elements.textTimeCalculatorWordsOutput.textContent, '25,000');
+});
+
+test('text_time_calculator restores the settings state current when an overlapping transition begins', async () => {
+  const harness = await createHarness({ initialLanguage: 'en' });
+  const { document, elements, subscriptions } = harness;
+
+  elements.textTimeCalculatorTarget.value = 'words';
+  elements.textTimeCalculatorTarget.dispatch('change');
+  elements.textTimeCalculatorTimeInput.value = '00:10:00';
+  elements.textTimeCalculatorTimeInput.dispatch('input');
+  elements.textTimeCalculatorWpmInput.value = '2500';
+  elements.textTimeCalculatorWpmInput.dispatch('input');
+
+  const spanishUpdate = subscriptions.onSettingsChanged({
+    language: 'es',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+      en: { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+  harness.setFailTranslationApplicationLanguage('en');
+  const failingEnglishUpdate = subscriptions.onSettingsChanged({
+    language: 'en',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+      en: { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+
+  await Promise.all([spanishUpdate, failingEnglishUpdate]);
+  await flushAsyncWork();
+
+  assert.equal(document.title, 'toT — Calculadora rápida');
+  assert.equal(elements.textTimeCalculatorWordsOutput.textContent, '25.000');
+});
+
+test('text_time_calculator stops later settings work after terminal i18n failure', async () => {
+  const harness = await createHarness({
+    initialLanguage: 'en',
+    terminalTransitionLanguage: 'es',
+  });
+
+  await harness.subscriptions.onSettingsChanged({
+    language: 'es',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+      en: { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+  await flushAsyncWork();
+
+  await harness.subscriptions.onSettingsChanged({
+    language: 'en',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+      en: { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+  await flushAsyncWork();
+
+  assert.deepEqual(harness.transitionLanguages, ['en', 'es']);
+  assert.equal(harness.getReporterCalls(), 1);
+});
+
+test('text_time_calculator terminal failure disables fields and the target action without later re-enabling them', async () => {
+  const harness = await createHarness({
+    initialLanguage: 'en',
+    terminalTransitionLanguage: 'es',
+  });
+
+  await harness.subscriptions.onSettingsChanged({ language: 'es' });
+  await flushAsyncWork();
+  await harness.subscriptions.onSettingsChanged({ language: 'en' });
+  await flushAsyncWork();
+
+  [
+    harness.elements.textTimeCalculatorWordsInput,
+    harness.elements.textTimeCalculatorTimeInput,
+    harness.elements.textTimeCalculatorWpmInput,
+  ].forEach((input) => {
+    assert.equal(input.disabled, true);
+  });
+  assert.equal(harness.comboboxUpdateCalls.at(-1).disabled, true);
+  assert.deepEqual(harness.transitionLanguages, ['en', 'es']);
+  assert.equal(harness.getReporterCalls(), 1);
 });

@@ -31,6 +31,11 @@ function isArmingEntry(state, entry) {
   return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
 }
 
+function isLifecycleOwnedEditorStartupFailure(err) {
+  const lifecycle = err && err.editorStartupLifecycle;
+  return !!(lifecycle && (lifecycle.disclosure === 'main-native' || lifecycle.disclosure === 'silent'));
+}
+
 // =============================================================================
 // Session flow helpers
 // =============================================================================
@@ -78,7 +83,10 @@ async function continueArmingSession(selectedEntry, options = {}) {
     setArmingReady(true);
   } catch (err) {
     log.error('Reading-test session arming failed:', err);
-    failArmingSession(selectedEntry, 'renderer.reading_test.alerts.start_failed');
+    failArmingSession(
+      selectedEntry,
+      isLifecycleOwnedEditorStartupFailure(err) ? null : 'renderer.reading_test.alerts.start_failed'
+    );
   }
 }
 

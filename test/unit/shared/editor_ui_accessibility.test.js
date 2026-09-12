@@ -75,7 +75,6 @@ function createHarness() {
     EDITOR_FONT_SIZE_MIN_PX: 12,
     EDITOR_FONT_SIZE_MAX_PX: 36,
     rendererI18n: {
-      async loadRendererTranslations(language) { activeLanguage = language; },
       tRenderer(key) { return readRendererValue(activeLanguage, key) || key; },
       resolveUserTextDirection() { return 'ltr'; },
     },
@@ -83,7 +82,12 @@ function createHarness() {
     state,
     engine: {},
   });
-  return { dom, state, ui };
+  return {
+    dom,
+    state,
+    ui,
+    setActiveLanguage(language) { activeLanguage = language; },
+  };
 }
 
 test('Editor translation updates keep compact control names separate from shared description/tooltip help', async () => {
@@ -120,6 +124,7 @@ test('Editor translation updates keep compact control names separate from shared
   );
 
   harness.state.idiomaActual = 'es';
+  harness.setActiveLanguage('es');
   await harness.ui.applyEditorTranslations();
   assert.equal(harness.dom.btnCalc.getAttribute('aria-label'), 'Aplicar');
   assert.equal(

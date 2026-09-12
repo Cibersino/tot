@@ -53,6 +53,28 @@ function createWindow(name) {
   return win;
 }
 
+function createTaskEditorLifecycle({ allowReplacement = true } = {}) {
+  let nextInitId = 0;
+  const dirtyPayloads = [];
+  return {
+    dirtyPayloads,
+    acceptDirtyState(_event, payload) {
+      dirtyPayloads.push(payload);
+      return true;
+    },
+    async confirmReplacement() {
+      return allowReplacement;
+    },
+    prepareInitialization(_win, payload) {
+      nextInitId += 1;
+      return { ...payload, initId: nextInitId };
+    },
+    acceptInitializationIssued() {
+      return true;
+    },
+  };
+}
+
 function loadFreshTasksMain({ dialogResponse = 1 } = {}) {
   const menuBuilderModulePath = path.resolve(__dirname, '../../../electron/menu_builder.js');
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
@@ -127,11 +149,12 @@ function loadFreshTasksMain({ dialogResponse = 1 } = {}) {
   return { tasksMain, dialogCalls, restore };
 }
 
-test('open-task-editor returns CONFIRM_DENIED when dirty Task Editor discard is cancelled', async () => {
+test('open-task-editor returns CONFIRM_DENIED when the Task lifecycle denies replacement', async () => {
   const { tasksMain, dialogCalls, restore } = loadFreshTasksMain({ dialogResponse: 1 });
   const ipcMain = createIpcMainMock();
   const mainWin = createWindow('main');
   const taskEditorWin = createWindow('task-editor');
+  const taskEditorLifecycle = createTaskEditorLifecycle({ allowReplacement: false });
   let ensureCalls = 0;
 
   try {
@@ -140,9 +163,8 @@ test('open-task-editor returns CONFIRM_DENIED when dirty Task Editor discard is 
       ensureTaskEditorWindow: () => {
         ensureCalls += 1;
       },
+      taskEditorLifecycle,
     });
-
-    ipcMain.emitChannel('task-editor-dirty-state', { sender: taskEditorWin.webContents }, { dirty: true });
 
     const result = await ipcMain.invoke(
       'open-task-editor',
@@ -153,19 +175,18 @@ test('open-task-editor returns CONFIRM_DENIED when dirty Task Editor discard is 
     assert.deepEqual(result, { ok: false, code: 'CONFIRM_DENIED' });
     assert.equal(ensureCalls, 0);
     assert.equal(taskEditorWin.sentMessages.length, 0);
-    assert.equal(dialogCalls.length, 1);
-    assert.equal(dialogCalls[0].owner, mainWin);
-    assert.equal(dialogCalls[0].options.message, 'There are unsaved changes. Discard them?');
+    assert.equal(dialogCalls.length, 0);
   } finally {
     restore();
   }
 });
 
-test('open-task-editor sends task-editor-init after dirty Task Editor discard is confirmed', async () => {
+test('open-task-editor issues a correlated task-editor-init after replacement is authorized', async () => {
   const { tasksMain, dialogCalls, restore } = loadFreshTasksMain({ dialogResponse: 0 });
   const ipcMain = createIpcMainMock();
   const mainWin = createWindow('main');
   const taskEditorWin = createWindow('task-editor');
+  const taskEditorLifecycle = createTaskEditorLifecycle({ allowReplacement: true });
   let ensureCalls = 0;
 
   try {
@@ -174,9 +195,8 @@ test('open-task-editor sends task-editor-init after dirty Task Editor discard is
       ensureTaskEditorWindow: () => {
         ensureCalls += 1;
       },
+      taskEditorLifecycle,
     });
-
-    ipcMain.emitChannel('task-editor-dirty-state', { sender: taskEditorWin.webContents }, { dirty: true });
 
     const result = await ipcMain.invoke(
       'open-task-editor',
@@ -186,11 +206,12 @@ test('open-task-editor sends task-editor-init after dirty Task Editor discard is
 
     assert.deepEqual(result, { ok: true });
     assert.equal(ensureCalls, 1);
-    assert.equal(dialogCalls.length, 1);
+    assert.equal(dialogCalls.length, 0);
     assert.equal(taskEditorWin.sentMessages.length, 1);
     assert.equal(taskEditorWin.sentMessages[0].channel, 'task-editor-init');
     assert.equal(taskEditorWin.sentMessages[0].payload.mode, 'new');
     assert.equal(taskEditorWin.sentMessages[0].payload.task.type, 'task');
+    assert.equal(taskEditorWin.sentMessages[0].payload.initId, 1);
     assert.equal(taskEditorWin.sentMessages[0].payload.task.meta.savedWith, 'toT (totapp.org)');
     assert.equal(
       taskEditorWin.sentMessages[0].payload.task.meta.createdAt,
@@ -201,29 +222,23 @@ test('open-task-editor sends task-editor-init after dirty Task Editor discard is
   }
 });
 
-test('task-editor-dirty-state ignores malformed values instead of clearing dirty state', async () => {
-  const { tasksMain, dialogCalls, restore } = loadFreshTasksMain({ dialogResponse: 1 });
+test('task-editor-dirty-state delegates its payload to the Task lifecycle owner', async () => {
+  const { tasksMain, restore } = loadFreshTasksMain({ dialogResponse: 1 });
   const ipcMain = createIpcMainMock();
   const mainWin = createWindow('main');
   const taskEditorWin = createWindow('task-editor');
+  const taskEditorLifecycle = createTaskEditorLifecycle();
 
   try {
     tasksMain.registerIpc(ipcMain, {
       getWindows: () => ({ mainWin, taskEditorWin }),
       ensureTaskEditorWindow() {},
+      taskEditorLifecycle,
     });
 
-    ipcMain.emitChannel('task-editor-dirty-state', { sender: taskEditorWin.webContents }, { dirty: true });
-    ipcMain.emitChannel('task-editor-dirty-state', { sender: taskEditorWin.webContents }, { dirty: 0 });
-
-    const result = await ipcMain.invoke(
-      'open-task-editor',
-      { sender: mainWin.webContents },
-      { mode: 'new' }
-    );
-
-    assert.deepEqual(result, { ok: false, code: 'CONFIRM_DENIED' });
-    assert.equal(dialogCalls.length, 1);
+    const payload = { dirty: true, initId: 3 };
+    ipcMain.emitChannel('task-editor-dirty-state', { sender: taskEditorWin.webContents }, payload);
+    assert.deepEqual(taskEditorLifecycle.dirtyPayloads, [payload]);
   } finally {
     restore();
   }
@@ -234,6 +249,7 @@ test('open-task-editor rejects an invalid mode instead of treating it as a new t
   const ipcMain = createIpcMainMock();
   const mainWin = createWindow('main');
   const taskEditorWin = createWindow('task-editor');
+  const taskEditorLifecycle = createTaskEditorLifecycle();
   let ensureCalls = 0;
 
   try {
@@ -242,6 +258,7 @@ test('open-task-editor rejects an invalid mode instead of treating it as a new t
       ensureTaskEditorWindow() {
         ensureCalls += 1;
       },
+      taskEditorLifecycle,
     });
 
     const result = await ipcMain.invoke(

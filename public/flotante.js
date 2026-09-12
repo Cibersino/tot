@@ -80,13 +80,29 @@ let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playIconName = 'play';
 let pauseIconName = 'pause';
 let translationsLoadedFor = null;
+let flotanteI18nTerminal = false;
+let flotanteSemanticQueue = Promise.resolve();
+const { transitionRendererTranslations, tRenderer } = window.RendererI18n || {};
+if (!transitionRendererTranslations || !tRenderer) {
+  reportTerminalFlotanteI18nFailure('startup-api');
+  throw new Error('[flotante] RendererI18n unavailable; cannot continue');
+}
+
+setFlotanteControlsLocked(true);
 
 // =============================================================================
 // Helpers
 // =============================================================================
 
+function setFlotanteControlsLocked(locked) {
+  [btnToggle, btnReset].forEach((element) => {
+    if (element) element.disabled = locked === true;
+  });
+}
+
 // Refresh view (expected to receive { elapsed, running, display })
 function renderState(state) {
+  if (flotanteI18nTerminal) return;
   if (!state) return;
   lastState = Object.assign({}, lastState, state || {});
   // We prefer display if you send it
@@ -121,50 +137,65 @@ function renderState(state) {
 
 // onState now listens to 'crono-state' (main)
 window.flotanteAPI.onState((state) => {
+  if (flotanteI18nTerminal) return;
   try { renderState(state); } catch (err) { log.error(err); }
 });
 
 async function applyFlotanteTranslations(lang) {
-  const { loadRendererTranslations, tRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
-  if (!loadRendererTranslations || !tRenderer || !applyWindowLanguageAttributes) {
-    log.warn('RendererI18n unavailable; skipping translations (ignored).');
+  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
+  await transitionRendererTranslations(target, {
+    applyTranslations: ({ language }) => {
+      playIconName = 'play';
+      pauseIconName = 'pause';
+      document.title = tRenderer('renderer.main.names.floating_window');
+      if (btnToggle) {
+        const toggleLabel = tRenderer('renderer.main.names.crono_toggle');
+        btnToggle.setAttribute('aria-label', toggleLabel);
+        rendererIcons.applyIconToElement(btnToggle, lastState.running ? pauseIconName : playIconName, {
+          preserveContent: false,
+          ariaLabel: toggleLabel,
+        });
+      }
+      if (btnReset) {
+        const resetLabel = tRenderer('renderer.main.names.crono_reset');
+        btnReset.setAttribute('aria-label', resetLabel);
+        rendererIcons.applyIconToElement(btnReset, 'stop', {
+          preserveContent: false,
+          ariaLabel: resetLabel,
+        });
+      }
+      translationsLoadedFor = language;
+    },
+  });
+}
+
+function reportFlotanteI18nFailure(err, { startup = false } = {}) {
+  const transition = err && err.rendererI18nTransition;
+  if (!transition) {
     return;
   }
-
-  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-  applyWindowLanguageAttributes(target);
-  if (translationsLoadedFor !== target) {
-    try {
-      await loadRendererTranslations(target);
-      translationsLoadedFor = target;
-    } catch (err) {
-      log.warn(
-        `loadRendererTranslations(${target}) failed (ignored):`,
-        err
-      );
-      return;
-    }
+  if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+    log.error('Floating Stopwatch language transition failed; previous translation state remains authoritative:', err);
+    return;
   }
+  log.error('Floating Stopwatch i18n failure requires window closure:', err);
+  reportTerminalFlotanteI18nFailure(startup ? 'startup' : 'transition-restoration');
+}
 
-  playIconName = 'play';
-  pauseIconName = 'pause';
-  if (btnToggle) {
-    const toggleLabel = tRenderer('renderer.main.names.crono_toggle');
-    btnToggle.setAttribute('aria-label', toggleLabel);
-    btnToggle.setAttribute('data-tot-tooltip', toggleLabel);
-    rendererIcons.applyIconToElement(btnToggle, lastState.running ? pauseIconName : playIconName, {
-      preserveContent: false,
-      ariaLabel: toggleLabel,
-    });
+function reportTerminalFlotanteI18nFailure(kind) {
+  if (flotanteI18nTerminal) return;
+  flotanteI18nTerminal = true;
+  setFlotanteControlsLocked(true);
+  if (typeof window.flotanteAPI.reportRendererI18nFailure !== 'function') {
+    log.warn('flotanteAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
+    return;
   }
-  if (btnReset) {
-    const resetLabel = tRenderer('renderer.main.names.crono_reset');
-    btnReset.setAttribute('aria-label', resetLabel);
-    btnReset.setAttribute('data-tot-tooltip', resetLabel);
-    rendererIcons.applyIconToElement(btnReset, 'stop', {
-      preserveContent: false,
-      ariaLabel: resetLabel,
-    });
+  try {
+    window.flotanteAPI.reportRendererI18nFailure({ kind });
+  } catch (reportErr) {
+    log.warn('flotanteAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    if (typeof window.close === 'function') window.close();
   }
 }
 
@@ -172,57 +203,85 @@ async function applyFlotanteTranslations(lang) {
 // Bootstrapping
 // =============================================================================
 
-// Try to load translations for play/pause symbols (use renderer.i18n)
-(async () => {
-  try {
-    let lang = DEFAULT_LANG;
-    if (typeof window.flotanteAPI.getSettings === 'function') {
-      try {
-        const settings = await window.flotanteAPI.getSettings();
-        if (settings && settings.language) lang = settings.language;
-      } catch (err) {
-        log.warn('getSettings failed (ignored):', err);
-      }
-    }
+function enqueueFlotanteSemanticWork(work) {
+  const run = async () => {
+    // Main-process closure is asynchronous. Do not admit queued semantic
+    // work after this window has entered terminal i18n failure.
+    if (flotanteI18nTerminal) return;
+    return work();
+  };
+  flotanteSemanticQueue = flotanteSemanticQueue.then(run, run);
+  return flotanteSemanticQueue;
+}
 
-    await applyFlotanteTranslations(lang);
-  } catch (err) {
-    log.error('Error loading translations:', err);
-  }
-})();
-
-if (typeof window.flotanteAPI.onSettingsChanged === 'function') {
-  window.flotanteAPI.onSettingsChanged((settings) => {
+function enqueueFlotanteSettingsApplication(settings) {
+  const run = async () => {
     const nextLang = settings && settings.language ? settings.language : '';
     if (!nextLang || nextLang === translationsLoadedFor) return;
-    applyFlotanteTranslations(nextLang).catch((err) => {
-      log.warn('apply settings update failed (ignored):', err);
-    });
-  });
+    try {
+      await applyFlotanteTranslations(nextLang);
+    } catch (err) {
+      reportFlotanteI18nFailure(err);
+    }
+  };
+  // Preload listeners do not await async callbacks. Admit full settings
+  // snapshots after the preceding root semantic operation has settled.
+  return enqueueFlotanteSemanticWork(run);
 }
+
+if (typeof window.flotanteAPI.onSettingsChanged === 'function') {
+  window.flotanteAPI.onSettingsChanged((settings) => enqueueFlotanteSettingsApplication(settings));
+}
+
+// Start state and settings delivery before the initial transition so the
+// main-owned stopwatch state remains current. Bind commands only after the
+// first required semantic presentation has completed successfully.
+enqueueFlotanteSemanticWork(async () => {
+  let lang = DEFAULT_LANG;
+  if (typeof window.flotanteAPI.getSettings === 'function') {
+    try {
+      const settings = await window.flotanteAPI.getSettings();
+      if (settings && settings.language) lang = settings.language;
+    } catch (err) {
+      log.warn('BOOTSTRAP: flotanteAPI.getSettings failed; using default language:', err);
+    }
+  }
+
+  try {
+    await applyFlotanteTranslations(lang);
+    bindFlotanteControls();
+    setFlotanteControlsLocked(false);
+  } catch (err) {
+    reportFlotanteI18nFailure(err, { startup: true });
+  }
+});
 
 // =============================================================================
 // UI events
 // =============================================================================
 
-// Buttons: send commands to main
-btnToggle.addEventListener('click', () => {
-  window.flotanteAPI.sendCommand({ cmd: 'toggle' });
-});
-btnReset.addEventListener('click', () => {
-  window.flotanteAPI.sendCommand({ cmd: 'reset' });
-});
-
-// Local keyboard: when the window has focus
-window.addEventListener('keydown', (ev) => {
-  if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter') {
-    ev.preventDefault();
+function bindFlotanteControls() {
+  btnToggle.addEventListener('click', () => {
+    if (flotanteI18nTerminal) return;
     window.flotanteAPI.sendCommand({ cmd: 'toggle' });
-  } else if (ev.key === 'r' || ev.key === 'R' || ev.key === 'Escape') {
-    // 'r' or Escape -> reset (Escape can close flotante; choose 'r')
+  });
+  btnReset.addEventListener('click', () => {
+    if (flotanteI18nTerminal) return;
     window.flotanteAPI.sendCommand({ cmd: 'reset' });
-  }
-});
+  });
+
+  // Local keyboard: when the window has focus
+  window.addEventListener('keydown', (ev) => {
+    if (flotanteI18nTerminal) return;
+    if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter') {
+      ev.preventDefault();
+      window.flotanteAPI.sendCommand({ cmd: 'toggle' });
+    } else if (ev.key === 'r' || ev.key === 'R' || ev.key === 'Escape') {
+      // 'r' or Escape -> reset (Escape can close flotante; choose 'r')
+      window.flotanteAPI.sendCommand({ cmd: 'reset' });
+    }
+  });
+}
 
 // =============================================================================
 // End of public/flotante.js

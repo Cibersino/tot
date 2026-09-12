@@ -19,8 +19,12 @@ function createTaskMeta(name = 'Task') {
 
 function createHarness(options = {}) {
   const bootstrapProbe = options.bootstrapProbe || null;
+  const failInitialI18nTransition = options.failInitialI18nTransition === true;
+  const terminalTransitionLanguage = options.terminalTransitionLanguage || '';
+  const terminalReporterThrows = options.terminalReporterThrows === true;
   let activeElement = null;
   let onInit = null;
+  let onSettingsChanged = null;
   let resolveTranslationsLoaded = null;
   const translationsLoaded = new Promise((resolve) => {
     resolveTranslationsLoaded = resolve;
@@ -29,11 +33,15 @@ function createHarness(options = {}) {
   const documentListeners = new Map();
   const windowListeners = new Map();
   const notifications = [];
+  const errorLogs = [];
   const dirtyStateCalls = [];
+  const terminalStateCalls = options.terminalStateCalls || [];
+  const closeResponseCalls = [];
   const savedLibraryEntries = [];
   const openTaskLinkCalls = [];
   const snapshotInspectionCalls = [];
   const taskFileSelectionCalls = [];
+  let nextInitId = 1;
   let openTaskLinkResult = { ok: true };
   let selectedTaskRowSnapshotResult = { ok: false, code: 'CANCELLED' };
   let taskFileSelectionResult = { ok: false, code: 'CANCELLED' };
@@ -126,6 +134,10 @@ function createHarness(options = {}) {
       removeAttribute(name) {
         delete attributes[name];
       },
+      toggleAttribute(name, force) {
+        if (force) attributes[name] = '';
+        else delete attributes[name];
+      },
       querySelector(selector) {
         if (selector === '.modal-header button') return this.fallbackFocus;
         return null;
@@ -207,6 +219,7 @@ function createHarness(options = {}) {
   elements.libraryEmpty.hidden = true;
 
   const body = createElement('body', 'body');
+  const taskEditorRoot = createElement('task-editor-root');
   const taskTableWrap = createElement('taskTableWrap');
   const document = {
     body,
@@ -217,6 +230,7 @@ function createHarness(options = {}) {
       return elements[id] || null;
     },
     querySelector(selector) {
+      if (selector === '.task-editor') return taskEditorRoot;
       return selector === '.task-table-wrap' ? taskTableWrap : null;
     },
     createElement(tagName) {
@@ -231,7 +245,9 @@ function createHarness(options = {}) {
   const window = {
     getLogger() {
       return {
-        debug() {}, info() {}, warn() {}, warnOnce() {}, error() {}, errorOnce() {},
+        debug() {}, info() {}, warn() {}, warnOnce() {},
+        error(...args) { errorLogs.push(args); },
+        errorOnce() {},
       };
     },
     AppConstants: {
@@ -251,7 +267,26 @@ function createHarness(options = {}) {
       createTaskDurationUtils,
     },
     RendererI18n: {
-      async loadRendererTranslations() { resolveTranslationsLoaded(); },
+      async transitionRendererTranslations(language, { applyTranslations } = {}) {
+        resolveTranslationsLoaded();
+        if (failInitialI18nTransition) {
+          const err = new Error('Cannot establish initial renderer translation state');
+          err.rendererI18nTransition = {
+            hadEstablishedState: false,
+            restorationFailed: false,
+          };
+          throw err;
+        }
+        if (language === terminalTransitionLanguage) {
+          const err = new Error('Cannot restore Task Editor translations');
+          err.rendererI18nTransition = {
+            hadEstablishedState: true,
+            restorationFailed: true,
+          };
+          throw err;
+        }
+        if (typeof applyTranslations === 'function') await applyTranslations({ language, restoring: false });
+      },
       tRenderer(key) {
         if (key === 'renderer.tasks.columns.descriptions.snapshot_path') {
           return 'Associated text snapshot path: {path}';
@@ -267,7 +302,6 @@ function createHarness(options = {}) {
           template
         );
       },
-      applyWindowLanguageAttributes() {},
     },
     RendererIcons: {
       createIconButton({ iconName = '', className = '', ariaLabel = '' } = {}) {
@@ -318,13 +352,24 @@ function createHarness(options = {}) {
         if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onInit');
         onInit = handler;
       },
-      onRequestClose() {
+      onRequestClose(handler) {
         if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onRequestClose');
+        void handler;
       },
-      onSettingsChanged() {
+      onSettingsChanged(handler) {
         if (bootstrapProbe) bootstrapProbe.bridgeSubscriptions.push('onSettingsChanged');
+        onSettingsChanged = handler;
       },
       async getSettings() { return { language: 'en' }; },
+      reportTerminalState(payload) {
+        terminalStateCalls.push(payload);
+        if (terminalReporterThrows) {
+          throw new Error('task editor terminal reporter unavailable');
+        }
+      },
+      respondToClose(payload) {
+        closeResponseCalls.push(payload);
+      },
       async saveTaskList() {
         return {
           ok: true,
@@ -392,13 +437,34 @@ function createHarness(options = {}) {
     return null;
   }
 
+  async function settleTaskSemanticWork() {
+    for (let attempt = 0; attempt < 16; attempt += 1) {
+      await Promise.resolve();
+    }
+  }
+
+  async function initializeTask(payload) {
+    await translationsLoaded;
+    await settleTaskSemanticWork();
+    onInit(withInitId(payload));
+    await settleTaskSemanticWork();
+  }
+
+  function withInitId(payload) {
+    if (Number.isInteger(payload && payload.initId) && payload.initId > 0) return payload;
+    return { ...payload, initId: nextInitId++ };
+  }
+
   return {
     elements,
     dirtyStateCalls,
+    terminalStateCalls,
+    closeResponseCalls,
     findByIcon,
     findByIconIn,
     findInputByHeaderId,
     notifications,
+    errorLogs,
     savedLibraryEntries,
     openTaskLinkCalls,
     snapshotInspectionCalls,
@@ -444,11 +510,26 @@ function createHarness(options = {}) {
         await Promise.resolve();
       }
     },
+    async waitForI18nFailure() {
+      await translationsLoaded;
+      for (let attempt = 0; attempt < 10 && terminalStateCalls.length === 0; attempt += 1) {
+        await Promise.resolve();
+      }
+    },
+    async waitForTaskSemanticWork() {
+      await settleTaskSemanticWork();
+    },
+    queueTaskInit(payload) {
+      onInit(withInitId(payload));
+    },
+    queueSettings(settings) {
+      return onSettingsChanged(settings);
+    },
     initializeTask(payload) {
-      onInit(payload);
+      return initializeTask(payload);
     },
     initializeRow(overrides = {}) {
-      onInit({
+      return initializeTask({
         sourcePath: 'task.json',
         task: {
           meta: createTaskMeta(),
@@ -507,9 +588,10 @@ test('Task Editor fails fast before wiring when TaskEditorColumnLayout is unavai
       elementListeners: [],
       windowListeners: [],
     };
+    const terminalStateCalls = [];
 
     assert.throws(
-      () => createHarness({ taskEditorColumnLayout, bootstrapProbe }),
+      () => createHarness({ taskEditorColumnLayout, bootstrapProbe, terminalStateCalls }),
       error,
       name
     );
@@ -517,6 +599,9 @@ test('Task Editor fails fast before wiring when TaskEditorColumnLayout is unavai
     assert.deepEqual(bootstrapProbe.windowListeners, [], `${name} must not wire window listeners`);
     assert.deepEqual(bootstrapProbe.bridgeSubscriptions, [], `${name} must not subscribe to taskEditorAPI`);
     assert.equal(bootstrapProbe.columnLayoutInitializeCalls, 0, `${name} must not initialize a controller`);
+    assert.equal(terminalStateCalls.length, 1, `${name} must report a no-draft terminal outcome`);
+    assert.equal(terminalStateCalls[0].phase, 'no-draft', `${name} must not imply a draft exists`);
+    assert.equal(terminalStateCalls[0].dirty, null, `${name} must not infer dirty state`);
   });
 });
 
@@ -542,78 +627,179 @@ test('Task Editor initializes its validated TaskEditorColumnLayout controller on
   assert.deepEqual(bootstrapProbe.windowListeners, ['keydown']);
 });
 
-test('Task Editor rejects noncanonical initialized row data instead of coercing it', () => {
-  const invalidDurationHarness = createHarness();
+test('Task Editor materializes replayed init data only after translations and column layout are ready', async () => {
+  const harness = createHarness();
+  harness.queueTaskInit({
+    sourcePath: 'task.json',
+    task: {
+      meta: createTaskMeta(),
+      rows: [{
+        texto: 'Queued task',
+        tiempoSeconds: 60,
+        percentComplete: 0,
+        enlace: '',
+        comentario: '',
+        snapshotRelPath: '',
+      }],
+    },
+  });
 
-  assert.throws(
-    () => invalidDurationHarness.initializeRow({ tiempoSeconds: 12.5 }),
-    /copyTaskRowData requires canonical tiempoSeconds/
-  );
-  assert.equal(invalidDurationHarness.elements.taskTableBody._children.length, 0);
-
-  const malformedTextHarness = createHarness();
-  assert.throws(
-    () => malformedTextHarness.initializeRow({ texto: 42 }),
-    /copyTaskRowData requires string task fields/
-  );
-  assert.equal(malformedTextHarness.elements.taskTableBody._children.length, 0);
+  assert.equal(harness.elements.taskTableBody._children.length, 0);
+  await harness.waitForTranslations();
+  await harness.waitForTaskSemanticWork();
+  assert.equal(harness.elements.taskTableBody._children.length, 1);
 });
 
-test('Task Editor does not replace a rendered task when a successful init payload breaks the main-process summary contract', () => {
+test('Task Editor stops its buffered bootstrap FIFO after initial payload failure terminalizes it', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  harness.queueTaskInit({
+    sourcePath: false,
+    task: {
+      meta: createTaskMeta('Invalid first task'),
+      rows: [],
+    },
+  });
+  harness.queueTaskInit({
+    sourcePath: 'later-valid-task.json',
+    task: {
+      meta: createTaskMeta('Later valid task'),
+      rows: [{
+        texto: 'Must not materialize after terminal startup failure',
+        tiempoSeconds: 60,
+        percentComplete: 0,
+        enlace: '',
+        comentario: '',
+        snapshotRelPath: '',
+      }],
+    },
+  });
 
-  assert.throws(
-    () => harness.initializeTask({
-      sourcePath: 'overflow.json',
-      task: {
-        meta: createTaskMeta('Overflow'),
-        rows: [
-          {
-            texto: 'Long reading',
-            tiempoSeconds: Number.MAX_SAFE_INTEGER,
-            percentComplete: 0,
-            enlace: '',
-            comentario: '',
-            snapshotRelPath: '',
-          },
-          {
-            texto: 'One second reading',
-            tiempoSeconds: 1,
-            percentComplete: 0,
-            enlace: '',
-            comentario: '',
-            snapshotRelPath: '',
-          },
-        ],
-      },
-    }),
-    /task-editor-init summary invalid: INVALID_SUMMARY/
+  await harness.waitForTranslations();
+  await harness.waitForTaskSemanticWork();
+
+  assert.equal(harness.elements.taskNameInput.value, '');
+  assert.equal(harness.elements.taskTableBody._children.length, 0);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.dirtyStateCalls)), []);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.terminalStateCalls)), [{
+    kind: 'task-payload-application',
+    phase: 'no-draft',
+    initId: 2,
+    dirty: null,
+  }]);
+});
+
+test('Task Editor reports terminal i18n state even when the terminal reporter throws', async () => {
+  const harness = createHarness({
+    failInitialI18nTransition: true,
+    terminalReporterThrows: true,
+  });
+  await harness.waitForI18nFailure();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.terminalStateCalls)), [{
+    kind: 'startup',
+    phase: 'no-draft',
+    initId: null,
+    dirty: null,
+  }]);
+});
+
+test('Task Editor does not apply an already-queued init payload after terminal i18n failure', async () => {
+  const harness = createHarness({ terminalTransitionLanguage: 'es' });
+  await harness.waitForTranslations();
+  await harness.waitForTaskSemanticWork();
+
+  const terminalSettingsUpdate = harness.queueSettings({ language: 'es' });
+  harness.queueTaskInit({
+    sourcePath: 'task.json',
+    task: {
+      meta: createTaskMeta(),
+      rows: [{
+        texto: 'Must not render after terminal i18n failure',
+        tiempoSeconds: 60,
+        percentComplete: 0,
+        enlace: '',
+        comentario: '',
+        snapshotRelPath: '',
+      }],
+    },
+  });
+
+  await terminalSettingsUpdate;
+  await harness.waitForTaskSemanticWork();
+
+  assert.equal(harness.elements.taskTableBody._children.length, 0);
+});
+
+test('Task Editor rejects noncanonical initialized row data instead of coercing it', async () => {
+  const invalidDurationHarness = createHarness();
+
+  await invalidDurationHarness.initializeRow({ tiempoSeconds: 12.5 });
+  assert.equal(invalidDurationHarness.elements.taskTableBody._children.length, 0);
+  assert.match(
+    String(invalidDurationHarness.errorLogs.at(-1)),
+    /copyTaskRowData requires canonical tiempoSeconds/
   );
+
+  const malformedTextHarness = createHarness();
+  await malformedTextHarness.initializeRow({ texto: 42 });
+  assert.equal(malformedTextHarness.elements.taskTableBody._children.length, 0);
+  assert.match(
+    String(malformedTextHarness.errorLogs.at(-1)),
+    /copyTaskRowData requires string task fields/
+  );
+});
+
+test('Task Editor does not replace a rendered task when a successful init payload breaks the main-process summary contract', async () => {
+  const harness = createHarness();
+  await harness.initializeRow();
+
+  await harness.initializeTask({
+    sourcePath: 'overflow.json',
+    task: {
+      meta: createTaskMeta('Overflow'),
+      rows: [
+        {
+          texto: 'Long reading',
+          tiempoSeconds: Number.MAX_SAFE_INTEGER,
+          percentComplete: 0,
+          enlace: '',
+          comentario: '',
+          snapshotRelPath: '',
+        },
+        {
+          texto: 'One second reading',
+          tiempoSeconds: 1,
+          percentComplete: 0,
+          enlace: '',
+          comentario: '',
+          snapshotRelPath: '',
+        },
+      ],
+    },
+  });
 
   assert.equal(harness.elements.taskNameInput.value, 'Task');
   assert.equal(harness.findInputByHeaderId('thTiempo').value, '00:01:00');
   assert.equal(harness.elements.taskSummaryTotalValue.textContent, '00:01:00');
+  assert.match(String(harness.errorLogs.at(-1)), /task-editor-init summary invalid: INVALID_SUMMARY/);
 });
 
-test('Task Editor rejects a malformed init source path before committing candidate state', () => {
+test('Task Editor rejects a malformed init source path before committing candidate state', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
-  assert.throws(
-    () => harness.initializeTask({
-      sourcePath: false,
-      task: {
-        meta: createTaskMeta('Replacement'),
-        rows: [],
-      },
-    }),
-    /task-editor-init payload has invalid sourcePath/
-  );
+  await harness.initializeTask({
+    sourcePath: false,
+    task: {
+      meta: createTaskMeta('Replacement'),
+      rows: [],
+    },
+  });
 
   assert.equal(harness.elements.taskNameInput.value, 'Task');
   assert.equal(harness.elements.taskTableBody._children.length, 1);
   assert.equal(harness.elements.taskSummaryTotalValue.textContent, '00:01:00');
+  assert.match(String(harness.errorLogs.at(-1)), /task-editor-init payload has invalid sourcePath/);
 });
 
 test('Task Editor reports a malformed successful library response instead of rendering an empty library', async () => {
@@ -684,7 +870,7 @@ test('Task Editor localizes native field prompts and limits the comment field', 
   assert.equal(harness.elements.commentInput.maxLength, 1200);
 });
 
-test('Task Editor places comment and snapshot controls in the second table column', () => {
+test('Task Editor places comment and snapshot controls in the second table column', async () => {
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.html'), 'utf8');
   const styles = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.css'), 'utf8');
   const colGroup = markup.match(/<colgroup id="taskColGroup">([\s\S]*?)<\/colgroup>/);
@@ -702,7 +888,7 @@ test('Task Editor places comment and snapshot controls in the second table colum
   );
 
   const harness = createHarness();
-  harness.initializeRow({ snapshotRelPath: '/chapter.json' });
+  await harness.initializeRow({ snapshotRelPath: '/chapter.json' });
   const cells = harness.elements.taskTableBody._children[0]._children;
 
   assert.equal(cells[1].className, 'task-cell--comment');
@@ -893,9 +1079,9 @@ test('English and Spanish define the Task Editor snapshot-source reminder copy',
   });
 });
 
-test('task-editor modals use their reviewed initial targets and restore each opener', () => {
+test('task-editor modals use their reviewed initial targets and restore each opener', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
   const commentOpener = harness.findByIcon('task-comment');
   assert.ok(commentOpener);
@@ -920,9 +1106,9 @@ test('task-editor modals use their reviewed initial targets and restore each ope
   assert.equal(harness.getActiveElement(), harness.elements.btnTaskLoadLibrary);
 });
 
-test('Task Editor Escape closes the focused visible dialog through its existing close path', () => {
+test('Task Editor Escape closes the focused visible dialog through its existing close path', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
   const commentOpener = harness.findByIcon('task-comment');
   commentOpener.focus();
@@ -950,7 +1136,7 @@ test('Task Editor Escape closes the focused visible dialog through its existing 
 
 test('Task Editor shows a selected snapshot source comment before local-file selection', async () => {
   const harness = createHarness();
-  harness.initializeRow({ snapshotRelPath: '/chapter-1.json' });
+  await harness.initializeRow({ snapshotRelPath: '/chapter-1.json' });
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: null,
@@ -991,7 +1177,7 @@ test('Task Editor shows a selected snapshot source comment before local-file sel
 
 test('Task Editor selects a local file directly when snapshot-source inspection has no usable comment', async () => {
   const noCommentHarness = createHarness();
-  noCommentHarness.initializeRow({ snapshotRelPath: '/no-comment.json' });
+  await noCommentHarness.initializeRow({ snapshotRelPath: '/no-comment.json' });
   noCommentHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: null,
@@ -1010,7 +1196,7 @@ test('Task Editor selects a local file directly when snapshot-source inspection 
   assert.equal(noCommentLinkInput.value, 'C:\\Books\\no-comment.pdf');
 
   const invalidSnapshotHarness = createHarness();
-  invalidSnapshotHarness.initializeRow({ snapshotRelPath: '/invalid.json' });
+  await invalidSnapshotHarness.initializeRow({ snapshotRelPath: '/invalid.json' });
   invalidSnapshotHarness.setTaskRowSnapshotInspectionResult({ ok: false, code: 'INVALID_SCHEMA' });
   invalidSnapshotHarness.setTaskFileSelectionResult({ ok: true, filePath: 'C:\\Books\\replacement.pdf' });
 
@@ -1025,7 +1211,7 @@ test('Task Editor selects a local file directly when snapshot-source inspection 
 
 test('Task Editor applies the changed snapshot estimate only after confirmation', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
   harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.json' });
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1069,7 +1255,7 @@ test('Task Editor applies the changed snapshot estimate only after confirmation'
 
 test('Task Editor applies changed snapshot text and time independently', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
   harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/named-estimated.json' });
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1120,7 +1306,7 @@ test('Task Editor applies changed snapshot text and time independently', async (
 
 test('Task Editor offers a changed snapshot name without a reading estimate', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
   harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/named.json' });
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1153,7 +1339,7 @@ test('Task Editor offers a changed snapshot name without a reading estimate', as
 test('Task Editor presents an empty current name explicitly and in muted style', async () => {
   const harness = createHarness();
   await harness.waitForTranslations();
-  harness.initializeRow({ texto: '' });
+  await harness.initializeRow({ texto: '' });
   harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/named.json' });
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1186,7 +1372,7 @@ test('Task Editor presents an empty current name explicitly and in muted style',
 
 test('Task Editor treats Keep and confirmation dismissal as keeping current values', async () => {
   const noHarness = createHarness();
-  noHarness.initializeRow();
+  await noHarness.initializeRow();
   noHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.json' });
   noHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1207,7 +1393,7 @@ test('Task Editor treats Keep and confirmation dismissal as keeping current valu
   assert.ok(noHarness.findByIcon('task-text-snapshot-load'));
 
   const dismissHarness = createHarness();
-  dismissHarness.initializeRow();
+  await dismissHarness.initializeRow();
   dismissHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.json' });
   dismissHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1232,7 +1418,7 @@ test('Task Editor treats Keep and confirmation dismissal as keeping current valu
 
 test('Task Editor skips confirmation without changed details and retains an invalid snapshot draft', async () => {
   const noDetailsHarness = createHarness();
-  noDetailsHarness.initializeRow();
+  await noDetailsHarness.initializeRow();
   noDetailsHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/without-details.json' });
   noDetailsHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1253,7 +1439,7 @@ test('Task Editor skips confirmation without changed details and retains an inva
   assert.ok(noDetailsHarness.findByIcon('task-text-snapshot-load'));
 
   const noChangeHarness = createHarness();
-  noChangeHarness.initializeRow();
+  await noChangeHarness.initializeRow();
   noChangeHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/unchanged.json' });
   noChangeHarness.setTaskRowSnapshotInspectionResult({
     ok: true,
@@ -1276,7 +1462,7 @@ test('Task Editor skips confirmation without changed details and retains an inva
   assert.ok(noChangeHarness.findByIcon('task-text-snapshot-load'));
 
   const invalidHarness = createHarness();
-  invalidHarness.initializeRow();
+  await invalidHarness.initializeRow();
   invalidHarness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/invalid.json' });
   invalidHarness.setTaskRowSnapshotInspectionResult({ ok: false, code: 'INVALID_SCHEMA' });
 
@@ -1394,7 +1580,7 @@ test('every shipped locale explains that a selected text snapshot association is
 
 test('Task Editor projects a live row into an exact library entry before IPC', async () => {
   const harness = createHarness();
-  harness.initializeTask({
+  await harness.initializeTask({
     sourcePath: 'task.json',
     task: {
       meta: createTaskMeta(),
@@ -1439,7 +1625,7 @@ test('Task Editor projects a live row into an exact library entry before IPC', a
 
 test('Task Editor library save highlights and focuses an empty reading field', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
   const readingInput = harness.findInputByHeaderId('thTexto');
   const librarySaveOpener = harness.findByIcon('task-row-save');
@@ -1460,7 +1646,7 @@ test('Task Editor library save highlights and focuses an empty reading field', a
 
 test('Task Editor Link failures use invalid state only for correctable link values', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
   const linkInput = harness.findInputByHeaderId('thEnlace');
   const linkOpenButton = harness.findByIcon('open-target');
@@ -1519,9 +1705,9 @@ test('Task Editor Link failures use invalid state only for correctable link valu
   ]);
 });
 
-test('Task Editor time and percentage inputs show invalid chrome while editing and restore canonical values', () => {
+test('Task Editor time and percentage inputs show invalid chrome while editing and restore canonical values', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
   const readingInput = harness.findInputByHeaderId('thTexto');
   const timeInput = harness.findInputByHeaderId('thTiempo');
@@ -1564,9 +1750,9 @@ test('Task Editor time and percentage inputs show invalid chrome while editing a
   assert.equal(percentInput.value, '25%');
 });
 
-test('Task Editor displays exact row and aggregate remaining whole seconds', () => {
+test('Task Editor displays exact row and aggregate remaining whole seconds', async () => {
   const harness = createHarness();
-  harness.initializeRow({ tiempoSeconds: 5, percentComplete: 80 });
+  await harness.initializeRow({ tiempoSeconds: 5, percentComplete: 80 });
 
   const cells = harness.elements.taskTableBody._children[0]._children;
   const remainingCell = cells.find((cell) => cell.className === 'task-cell--remaining');
@@ -1576,11 +1762,11 @@ test('Task Editor displays exact row and aggregate remaining whole seconds', () 
   assert.equal(harness.elements.taskSummaryLeftValue.textContent, '00:00:01');
 });
 
-test('Task Editor rejects a manual duration edit that would overflow the aggregate summary atomically', () => {
+test('Task Editor rejects a manual duration edit that would overflow the aggregate summary atomically', async () => {
   const harness = createHarness();
   const stopwatchUtils = createStopwatchTimeUtils();
   const previousSeconds = Number.MAX_SAFE_INTEGER - 1;
-  harness.initializeTask({
+  await harness.initializeTask({
     sourcePath: 'task.json',
     task: {
       meta: createTaskMeta(),
@@ -1625,7 +1811,7 @@ test('Task Editor keeps a snapshot confirmation open when its selected estimate 
   const harness = createHarness();
   const stopwatchUtils = createStopwatchTimeUtils();
   const previousSeconds = Number.MAX_SAFE_INTEGER - 1;
-  harness.initializeTask({
+  await harness.initializeTask({
     sourcePath: 'task.json',
     task: {
       meta: createTaskMeta(),
@@ -1682,7 +1868,7 @@ test('Task Editor keeps a snapshot confirmation open when its selected estimate 
 test('Task Editor keeps the library open when loading its row would overflow the aggregate summary', async () => {
   const harness = createHarness();
   const stopwatchUtils = createStopwatchTimeUtils();
-  harness.initializeTask({
+  await harness.initializeTask({
     sourcePath: 'task.json',
     task: {
       meta: createTaskMeta(),
@@ -1720,9 +1906,9 @@ test('Task Editor keeps the library open when loading its row would overflow the
   assert.deepEqual(harness.notifications, ['renderer.tasks.alerts.task_duration_too_large']);
 });
 
-test('Task Editor save highlights and focuses the first empty reading field', () => {
+test('Task Editor save highlights and focuses the first empty reading field', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
   const readingInput = harness.findInputByHeaderId('thTexto');
   assert.ok(readingInput);
@@ -1738,7 +1924,7 @@ test('Task Editor save highlights and focuses the first empty reading field', ()
 
 test('Task Editor resets persistent task-name validation only at successful session boundaries', async () => {
   const harness = createHarness();
-  harness.initializeRow();
+  await harness.initializeRow();
 
   harness.elements.taskNameInput.value = '   ';
   harness.elements.taskNameInput.dispatch('input');
@@ -1746,7 +1932,7 @@ test('Task Editor resets persistent task-name validation only at successful sess
   assert.equal(harness.elements.taskNameInput.classList.contains('is-invalid'), true);
   assert.equal(harness.elements.taskNameInput.getAttribute('aria-invalid'), 'true');
 
-  harness.initializeTask({
+  await harness.initializeTask({
     sourcePath: 'loaded-task.json',
     task: {
       meta: createTaskMeta('Loaded task'),
@@ -1760,12 +1946,10 @@ test('Task Editor resets persistent task-name validation only at successful sess
   harness.elements.taskNameInput.value = '   ';
   harness.elements.taskNameInput.dispatch('input');
   harness.elements.btnTaskSave.dispatch('click');
-  assert.throws(
-    () => harness.initializeTask({}),
-    /task-editor-init payload missing operational task state/
-  );
+  await harness.initializeTask({});
   assert.equal(harness.elements.taskNameInput.classList.contains('is-invalid'), true);
   assert.equal(harness.elements.taskNameInput.getAttribute('aria-invalid'), 'true');
+  assert.match(String(harness.errorLogs.at(-1)), /task-editor-init payload missing operational task state/);
 
   harness.elements.btnTaskDelete.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));

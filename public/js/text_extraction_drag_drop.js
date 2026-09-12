@@ -58,7 +58,6 @@
     document.body.appendChild(overlay);
 
     overlayMessage = overlay.querySelector('.text-extraction-drop-overlay__message');
-    syncOverlayText();
   }
 
   function syncOverlayText() {

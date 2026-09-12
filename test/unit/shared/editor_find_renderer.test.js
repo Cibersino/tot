@@ -46,13 +46,39 @@ function createElement(id) {
 function createHarness({
   replaceCurrentResult = { ok: true, status: 'replaced' },
   replaceAllResult = { ok: true, status: 'replaced' },
+  replaceCurrentImpl = null,
+  rejectTransitionLanguage = '',
+  transitionFailure = null,
+  holdTransitionLanguage = '',
+  holdInitialSettings = false,
+  includeRendererI18n = true,
+  expectStartupThrow = false,
 } = {}) {
   const notifyCalls = [];
   const replaceCurrentCalls = [];
   const replaceAllCalls = [];
   const closeCalls = [];
+  const queryCalls = [];
   const subscriptions = {};
   const windowListeners = {};
+  const transitionLanguages = [];
+  let reporterCalls = 0;
+  let releaseHeldTransition = null;
+  let resolveHeldTransitionReached = null;
+  const heldTransition = holdTransitionLanguage
+    ? new Promise((resolve) => { releaseHeldTransition = resolve; })
+    : null;
+  const heldTransitionReached = holdTransitionLanguage
+    ? new Promise((resolve) => { resolveHeldTransitionReached = resolve; })
+    : null;
+  let releaseInitialSettings;
+  let markInitialSettingsRequested;
+  const initialSettings = holdInitialSettings
+    ? new Promise((resolve) => { releaseInitialSettings = resolve; })
+    : null;
+  const initialSettingsRequested = holdInitialSettings
+    ? new Promise((resolve) => { markInitialSettingsRequested = resolve; })
+    : null;
 
   const elements = {
     findWrap: createElement('findWrap'),
@@ -98,26 +124,41 @@ function createHarness({
         DEFAULT_LANG: 'en',
         EDITOR_FIND_INPUT_MAX_CHARS: 512,
       },
-      RendererI18n: {
-        async loadRendererTranslations() {},
+      RendererI18n: includeRendererI18n ? {
+        async transitionRendererTranslations(language, { applyTranslations } = {}) {
+          transitionLanguages.push(language);
+          if (language === rejectTransitionLanguage) {
+            throw transitionFailure || new Error(`Cannot apply ${language} translations`);
+          }
+          if (language === holdTransitionLanguage) {
+            resolveHeldTransitionReached();
+            await heldTransition;
+          }
+          if (typeof applyTranslations === 'function') await applyTranslations({ language, restoring: false });
+        },
         tRenderer(key) {
           return key;
         },
-        applyWindowLanguageAttributes(lang) {
-          return lang;
-        },
-      },
+      } : undefined,
       RendererIcons: {
         applyIconToElement(element, iconName) {
           element.setAttribute('data-tot-icon', iconName);
         },
       },
       editorFindAPI: {
-        setQuery: async () => {},
+        reportRendererI18nFailure() {
+          reporterCalls += 1;
+        },
+        setQuery: async (query) => {
+          queryCalls.push(String(query));
+        },
         next: async () => {},
         prev: async () => {},
         replaceCurrent: async (replacement) => {
           replaceCurrentCalls.push(String(replacement));
+          if (typeof replaceCurrentImpl === 'function') {
+            return replaceCurrentImpl(String(replacement));
+          }
           return replaceCurrentResult;
         },
         replaceAll: async (replacement) => {
@@ -140,7 +181,13 @@ function createHarness({
           subscriptions.focusTarget = cb;
           return () => {};
         },
-        getSettings: async () => ({ language: 'en' }),
+        async getSettings() {
+          if (initialSettings) {
+            markInitialSettingsRequested();
+            await initialSettings;
+          }
+          return { language: 'en' };
+        },
         onSettingsChanged(cb) {
           subscriptions.settingsChanged = cb;
           return () => {};
@@ -167,7 +214,13 @@ function createHarness({
     path.resolve(__dirname, '../../../public/editor_find.js'),
     'utf8'
   );
-  vm.runInContext(source, sandbox, { filename: 'public/editor_find.js' });
+  let startupError = null;
+  try {
+    vm.runInContext(source, sandbox, { filename: 'public/editor_find.js' });
+  } catch (err) {
+    startupError = err;
+    if (!expectStartupThrow) throw err;
+  }
 
   return {
     elements,
@@ -175,12 +228,40 @@ function createHarness({
     replaceCurrentCalls,
     replaceAllCalls,
     closeCalls,
+    queryCalls,
     subscriptions,
+    transitionLanguages,
+    startupError,
+    getReporterCalls() {
+      return reporterCalls;
+    },
+    releaseHeldTransition() {
+      if (releaseHeldTransition) releaseHeldTransition();
+    },
+    waitForHeldTransition() {
+      return heldTransitionReached || Promise.resolve();
+    },
+    releaseInitialSettings() {
+      if (releaseInitialSettings) releaseInitialSettings();
+    },
+    waitForInitialSettingsRequest() {
+      return initialSettingsRequested || Promise.resolve();
+    },
     dispatchWindow(type, event) {
       (windowListeners[type] || []).forEach((listener) => listener(event));
     },
   };
 }
+
+test('find reports earliest required i18n failure before dynamic control setup', () => {
+  const harness = createHarness({
+    includeRendererI18n: false,
+    expectStartupThrow: true,
+  });
+
+  assert.match(harness.startupError && harness.startupError.message, /RendererI18n unavailable/);
+  assert.equal(harness.getReporterCalls(), 1);
+});
 
 async function bootstrapReady() {
   await tick();
@@ -233,6 +314,113 @@ test('find controls apply explicit names and replace descriptions without visual
     'renderer.editor.editor_find.names.hide_replace'
   );
   assert.equal(harness.elements.findToggle.getAttribute('data-tot-tooltip'), null);
+});
+
+test('find window serializes overlapping language settings updates', async () => {
+  const harness = createHarness({ holdTransitionLanguage: 'es' });
+  await bootstrapReady();
+  harness.transitionLanguages.length = 0;
+
+  const spanishUpdate = harness.subscriptions.settingsChanged({ language: 'es' });
+  await harness.waitForHeldTransition();
+  const englishUpdate = harness.subscriptions.settingsChanged({ language: 'en' });
+  harness.releaseHeldTransition();
+
+  await Promise.all([spanishUpdate, englishUpdate]);
+
+  assert.deepEqual(harness.transitionLanguages, ['es', 'en']);
+});
+
+test('find window admits live language settings after its initial settings snapshot', async () => {
+  const harness = createHarness({ holdInitialSettings: true });
+  await harness.waitForInitialSettingsRequest();
+  harness.subscriptions.settingsChanged({ language: 'es' });
+  assert.deepEqual(harness.transitionLanguages, []);
+
+  harness.releaseInitialSettings();
+  await tick();
+  await tick();
+
+  assert.deepEqual(harness.transitionLanguages, ['en', 'es']);
+});
+
+test('initial translated presentation preserves a query submitted while bootstrap is pending', async () => {
+  const harness = createHarness({ holdInitialSettings: true });
+  await harness.waitForInitialSettingsRequest();
+
+  harness.elements.findQuery.value = 'needle';
+  harness.elements.findQuery.listeners.input();
+  await tick();
+
+  assert.deepEqual(harness.queryCalls, []);
+
+  harness.releaseInitialSettings();
+  await bootstrapReady();
+
+  assert.equal(harness.elements.findQuery.value, 'needle');
+  assert.equal(harness.elements.findQuery.selectCount, 0);
+});
+
+test('later translation presentation preserves an in-progress query until Main publishes state', async () => {
+  const harness = createHarness({ holdTransitionLanguage: 'es' });
+  await bootstrapReady();
+
+  harness.elements.findQuery.value = 'needle';
+  harness.elements.findQuery.listeners.input();
+  const transition = harness.subscriptions.settingsChanged({ language: 'es' });
+  await harness.waitForHeldTransition();
+  harness.releaseHeldTransition();
+  await transition;
+
+  assert.deepEqual(harness.queryCalls, ['needle']);
+  assert.equal(harness.elements.findQuery.value, 'needle');
+
+  harness.subscriptions.state({
+    query: 'authoritative query',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: false,
+    busy: false,
+  });
+
+  assert.equal(harness.elements.findQuery.value, 'authoritative query');
+});
+
+test('find window does not apply init or state after terminal i18n failure', async () => {
+  const transitionFailure = new Error('Cannot restore Find translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: true,
+  };
+  const harness = createHarness({
+    rejectTransitionLanguage: 'es',
+    transitionFailure,
+  });
+  await bootstrapReady();
+
+  await harness.subscriptions.settingsChanged({ language: 'es' });
+  harness.subscriptions.init({
+    query: 'ignored init',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: true,
+    busy: false,
+  });
+  harness.subscriptions.state({
+    query: 'ignored state',
+    matches: 2,
+    activeMatchOrdinal: 2,
+    finalUpdate: true,
+    expanded: true,
+    busy: false,
+  });
+  harness.subscriptions.focusTarget({ target: 'replace', selectAll: true });
+
+  assert.equal(harness.elements.findQuery.value, '');
+  assert.equal(harness.elements.findWrap.getAttribute('data-expanded'), null);
+  assert.equal(harness.elements.findReplace.focusCount, 0);
 });
 
 test('Escape requests Find-window closure', async () => {
@@ -319,6 +507,43 @@ test('replace-all timeout shows a toast in the find window', async () => {
   assert.equal(harness.notifyCalls[0].key, 'renderer.editor.editor_find.replace_timeout');
   assert.equal(harness.notifyCalls[0].options.type, 'error');
   assert.equal(harness.notifyCalls[0].options.duration, 5000);
+});
+
+test('an admitted replace timeout does not publish after terminal Find failure', async () => {
+  let resolveReplace = null;
+  const transitionFailure = new Error('Cannot restore Find translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: true,
+  };
+  const harness = createHarness({
+    rejectTransitionLanguage: 'es',
+    transitionFailure,
+    replaceCurrentImpl() {
+      return new Promise((resolve) => {
+        resolveReplace = resolve;
+      });
+    },
+  });
+
+  await bootstrapReady();
+  harness.subscriptions.state({
+    query: 'demo',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: true,
+    busy: false,
+  });
+  harness.elements.findReplaceOne.listeners.click();
+  assert.equal(harness.replaceCurrentCalls.length, 1);
+  assert.equal(typeof resolveReplace, 'function');
+
+  await harness.subscriptions.settingsChanged({ language: 'es' });
+  resolveReplace({ ok: false, status: 'timeout', operation: 'replace-current' });
+  await bootstrapReady();
+
+  assert.deepEqual(harness.notifyCalls, []);
 });
 
 test('successful replace does not show a timeout toast', async () => {

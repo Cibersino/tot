@@ -141,7 +141,6 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
     EDITOR_FONT_SIZE_STEP_PX: 2,
     editorMaximizedLayoutCore: require('../../../public/js/lib/editor_maximized_layout_core'),
     rendererI18n: {
-      async loadRendererTranslations() {},
       tRenderer() { return ''; },
       msgRenderer(_path, params = {}) { return String(params.value ?? ''); },
       resolveUserTextDirection: resolveDirection,
@@ -195,21 +194,69 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
   };
 }
 
+function createDefaultAppConstants() {
+  return {
+    DEFAULT_LANG: 'en',
+    PASTE_ALLOW_LIMIT: 100000,
+    SMALL_UPDATE_THRESHOLD: 100,
+    EDITOR_FONT_SIZE_MIN_PX: 12,
+    EDITOR_FONT_SIZE_MAX_PX: 36,
+    EDITOR_FONT_SIZE_DEFAULT_PX: 20,
+    EDITOR_FONT_SIZE_STEP_PX: 2,
+    EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX: 480,
+    EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX: 1600,
+    EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: 960,
+    EDITOR_MAXIMIZED_GUTTER_MIN_PX: 40,
+    MAX_TEXT_CHARS: 100000,
+    applyConfig(cfg = {}) {
+      const max = Number(cfg.maxTextChars);
+      return Number.isFinite(max) && max > 0 ? max : 100000;
+    },
+  };
+}
+
 function createEditorScriptHarness({
   appConfig = {},
   getAppConfigImpl = async () => appConfig,
+  getSettingsImpl = async () => ({
+    language: 'en',
+    spellcheckEnabled: true,
+    spellcheckAvailable: true,
+    editorFontSizePx: 20,
+  }),
   getCurrentTextImpl = async () => '',
   includeGetCurrentText = true,
+  includeAppConstants = true,
+  appConstantsOverrides = {},
+  omittedAppConstants = [],
+  omitStartupPresentation = false,
+  initialTextApplyResult = true,
+  initialTextApplyThrows = false,
+  rejectTransitionLanguage = '',
+  transitionFailure = null,
+  holdTransitionLanguage = '',
 } = {}) {
   const subscriptions = {};
   const updateDirectionCalls = [];
-  const applyWindowLanguageAttributesCalls = [];
+  const transitionLanguages = [];
   const replaceResponses = [];
+  const basePresentationReports = [];
   const bootstrapApplyCalls = [];
   const sendCurrentTextCalls = [];
   const errorLogs = [];
   const warnLogs = [];
+  const spellcheckStateCalls = [];
+  const fontSizeCalls = [];
+  const normalInteractionCalls = [];
   let getCurrentTextCallCount = 0;
+  let releaseHeldTransition = null;
+  let resolveHeldTransitionReached = null;
+  const heldTransition = holdTransitionLanguage
+    ? new Promise((resolve) => { releaseHeldTransition = resolve; })
+    : null;
+  const heldTransitionReached = holdTransitionLanguage
+    ? new Promise((resolve) => { resolveHeldTransitionReached = resolve; })
+    : null;
 
   const elements = {
     editorWrap: createElement('editorWrap'),
@@ -259,10 +306,16 @@ function createEditorScriptHarness({
     },
   };
 
+  const appConstants = createDefaultAppConstants();
+  Object.assign(appConstants, appConstantsOverrides);
+  for (const name of omittedAppConstants) {
+    delete appConstants[name];
+  }
+
   const sandbox = {
     window: {
       location: {
-        search: '',
+        search: '?firstShowGeneration=1',
       },
       getLogger() {
         return {
@@ -281,24 +334,7 @@ function createEditorScriptHarness({
           },
         };
       },
-      AppConstants: {
-        DEFAULT_LANG: 'en',
-        PASTE_ALLOW_LIMIT: 100000,
-        SMALL_UPDATE_THRESHOLD: 100,
-        EDITOR_FONT_SIZE_MIN_PX: 12,
-        EDITOR_FONT_SIZE_MAX_PX: 36,
-        EDITOR_FONT_SIZE_DEFAULT_PX: 20,
-        EDITOR_FONT_SIZE_STEP_PX: 2,
-        EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX: 480,
-        EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX: 1600,
-        EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: 960,
-        EDITOR_MAXIMIZED_GUTTER_MIN_PX: 40,
-        MAX_TEXT_CHARS: 100000,
-        applyConfig(cfg = {}) {
-          const max = Number(cfg.maxTextChars);
-          return Number.isFinite(max) && max > 0 ? max : 100000;
-        },
-      },
+      AppConstants: includeAppConstants ? appConstants : undefined,
       EditorMaximizedLayoutCore: {
         clampPreferredTextWidthPx(value, options = {}) {
           return Number(value) || options.defaultPx || 960;
@@ -327,20 +363,46 @@ function createEditorScriptHarness({
         },
       },
       RendererI18n: {
-        applyWindowLanguageAttributes(lang) {
-          applyWindowLanguageAttributesCalls.push(lang);
-          return { lang, dir: 'ltr', languageDirection: lang === 'ar' ? 'rtl' : 'ltr' };
+        tRenderer(key) {
+          return key;
+        },
+        resolveUserTextDirection() {
+          return 'ltr';
+        },
+        async transitionRendererTranslations(lang, { applyTranslations } = {}) {
+          transitionLanguages.push(lang);
+          if (lang === rejectTransitionLanguage) {
+            throw transitionFailure || new Error(`Cannot apply ${lang} translations`);
+          }
+          if (lang === holdTransitionLanguage) {
+            resolveHeldTransitionReached();
+            await heldTransition;
+          }
+          if (typeof applyTranslations === 'function') {
+            await applyTranslations({ language: lang, restoring: false });
+          }
         },
       },
       EditorUI: {
-        createEditorUI() {
+        createEditorUI(editorCtx) {
           return {
             clampEditorFontSizePx(value) { return Number(value) || 20; },
             clampEditorMaximizedTextWidthPx(value) { return Number(value) || 960; },
-            setLocalSpellcheckState() {},
-            setLocalEditorFontSizePx() {},
+            setLocalSpellcheckState(value) {
+              editorCtx.state.spellcheckEnabled = value.preferenceEnabled !== false;
+              editorCtx.state.spellcheckAvailable = value.available !== false;
+              spellcheckStateCalls.push(value);
+            },
+            setLocalEditorFontSizePx(value) {
+              const normalizedValue = Number(value) || 20;
+              editorCtx.state.editorFontSizePx = normalizedValue;
+              fontSizeCalls.push(normalizedValue);
+            },
             setLocalEditorMaximizedTextWidthPx() {},
             setLocalEditorWindowMaximized() {},
+            setNormalInteractionAvailable(available) {
+              normalInteractionCalls.push(available === true);
+            },
             async applyEditorTranslations() {},
             applyTextareaDefaults() {},
             applyEditorLanguage() {},
@@ -367,6 +429,21 @@ function createEditorScriptHarness({
             getSelectionRange() { return { start: 0, end: 0 }; },
             getInsertionCapacity() { return 100000; },
             getBeforeInputIncomingLength() { return null; },
+            async applyInitialText(payload) {
+              bootstrapApplyCalls.push({
+                payload,
+                maxTextCharsAtApply: engineCtx.state.maxTextChars,
+              });
+              if (payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'text')) {
+                elements.editorArea.value = String(payload.text || '');
+              } else {
+                elements.editorArea.value = String(payload || '');
+              }
+              if (initialTextApplyThrows) {
+                throw new Error('initial text application failed');
+              }
+              return initialTextApplyResult;
+            },
             async applyExternalUpdate(payload) {
               bootstrapApplyCalls.push({
                 payload,
@@ -437,10 +514,13 @@ function createEditorScriptHarness({
     },
     async getAppConfig() { return getAppConfigImpl(); },
     async getSettings() {
-      return { language: 'en', spellcheckEnabled: true, spellcheckAvailable: true, editorFontSizePx: 20 };
+      return getSettingsImpl();
     },
     async getWindowState() { return { maximized: false, maximizedTextWidthPx: 960 }; },
-    reportBasePresentationState() {},
+    reportBasePresentationState(payload) {
+      basePresentationReports.push(payload);
+    },
+    reportRendererI18nFailure() {},
     onSettingsChanged(cb) {
       subscriptions.settingsChanged = cb;
     },
@@ -459,6 +539,15 @@ function createEditorScriptHarness({
     };
   }
 
+  // contextBridge exposes this API as a Window global. Model its non-configurable
+  // global binding so a top-level lexical declaration with the same name fails
+  // exactly as it does in the Electron renderer.
+  Object.defineProperty(sandbox, 'editorAPI', {
+    value: sandbox.window.editorAPI,
+    configurable: false,
+    enumerable: true,
+  });
+
   vm.createContext(sandbox);
   const startupPresentationSource = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/editor_startup_presentation.js'),
@@ -467,6 +556,9 @@ function createEditorScriptHarness({
   vm.runInContext(startupPresentationSource, sandbox, {
     filename: 'public/js/editor_startup_presentation.js'
   });
+  if (omitStartupPresentation) {
+    delete sandbox.window.EditorStartupPresentation;
+  }
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/editor.js'),
     'utf8'
@@ -477,13 +569,23 @@ function createEditorScriptHarness({
     elements,
     subscriptions,
     updateDirectionCalls,
-    applyWindowLanguageAttributesCalls,
+    transitionLanguages,
     replaceResponses,
+    basePresentationReports,
     bootstrapApplyCalls,
     sendCurrentTextCalls,
     errorLogs,
     warnLogs,
+    spellcheckStateCalls,
+    fontSizeCalls,
+    normalInteractionCalls,
     getCurrentTextCallCount: () => getCurrentTextCallCount,
+    releaseHeldTransition() {
+      if (releaseHeldTransition) releaseHeldTransition();
+    },
+    waitForHeldTransition() {
+      return heldTransitionReached || Promise.resolve();
+    },
   };
 }
 
@@ -492,7 +594,9 @@ async function bootstrapEditorScriptHarness(options = {}) {
   await tick();
   await tick();
   harness.updateDirectionCalls.length = 0;
-  harness.applyWindowLanguageAttributesCalls.length = 0;
+  harness.transitionLanguages.length = 0;
+  harness.spellcheckStateCalls.length = 0;
+  harness.fontSizeCalls.length = 0;
   return harness;
 }
 
@@ -527,10 +631,121 @@ test('editor script bootstraps initial text once through getCurrentText with ini
   assert.equal(harness.bootstrapApplyCalls[0].payload.meta.action, 'init');
 });
 
-test('editor script fails fast when getCurrentText is missing', () => {
-  assert.throws(
-    () => createEditorScriptHarness({ includeGetCurrentText: false }),
+test('editor reports a bootstrap failure when getCurrentText is missing', async () => {
+  const harness = await bootstrapEditorScriptHarness({ includeGetCurrentText: false });
+
+  assert.match(
+    String(harness.errorLogs.at(-1)),
     /\[editor\] editorAPI\.getCurrentText unavailable; cannot continue/
+  );
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+  ]);
+});
+
+test('editor reports missing AppConstants through the established base-presentation boundary', async () => {
+  const harness = await bootstrapEditorScriptHarness({ includeAppConstants: false });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+  ]);
+  assert.match(
+    String(harness.errorLogs.at(-1)),
+    /AppConstants unavailable; verify constants\.js load order/
+  );
+});
+
+test('editor rejects each required AppConstants value before startup work is admitted', async () => {
+  const invalidCases = [
+    { label: 'blank default language', overrides: { DEFAULT_LANG: '  ' } },
+    { label: 'non-positive maximum text', overrides: { MAX_TEXT_CHARS: 0 } },
+    { label: 'negative paste allowance', overrides: { PASTE_ALLOW_LIMIT: -1 } },
+    { label: 'non-finite small update threshold', overrides: { SMALL_UPDATE_THRESHOLD: Number.NaN } },
+    { label: 'negative font minimum', overrides: { EDITOR_FONT_SIZE_MIN_PX: -1 } },
+    { label: 'non-finite font maximum', overrides: { EDITOR_FONT_SIZE_MAX_PX: Number.POSITIVE_INFINITY } },
+    { label: 'non-finite font default', overrides: { EDITOR_FONT_SIZE_DEFAULT_PX: Number.NaN } },
+    {
+      label: 'reversed font range',
+      overrides: { EDITOR_FONT_SIZE_MIN_PX: 37, EDITOR_FONT_SIZE_MAX_PX: 36 },
+    },
+    {
+      label: 'font default outside range',
+      overrides: { EDITOR_FONT_SIZE_DEFAULT_PX: 37 },
+    },
+    { label: 'non-positive font step', overrides: { EDITOR_FONT_SIZE_STEP_PX: 0 } },
+    { label: 'negative maximized width minimum', overrides: { EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX: -1 } },
+    {
+      label: 'non-finite maximized width maximum',
+      overrides: { EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX: Number.POSITIVE_INFINITY },
+    },
+    {
+      label: 'non-finite maximized width default',
+      overrides: { EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: Number.NaN },
+    },
+    {
+      label: 'reversed maximized width range',
+      overrides: {
+        EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX: 1601,
+        EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX: 1600,
+      },
+    },
+    {
+      label: 'maximized width default outside range',
+      overrides: { EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: 1601 },
+    },
+    { label: 'negative maximized gutter minimum', overrides: { EDITOR_MAXIMIZED_GUTTER_MIN_PX: -1 } },
+  ];
+  const requiredNames = [
+    'DEFAULT_LANG',
+    'MAX_TEXT_CHARS',
+    'PASTE_ALLOW_LIMIT',
+    'SMALL_UPDATE_THRESHOLD',
+    'EDITOR_FONT_SIZE_MIN_PX',
+    'EDITOR_FONT_SIZE_MAX_PX',
+    'EDITOR_FONT_SIZE_DEFAULT_PX',
+    'EDITOR_FONT_SIZE_STEP_PX',
+    'EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX',
+    'EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX',
+    'EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX',
+    'EDITOR_MAXIMIZED_GUTTER_MIN_PX',
+  ];
+
+  for (const testCase of invalidCases) {
+    const harness = await bootstrapEditorScriptHarness({
+      appConstantsOverrides: testCase.overrides,
+    });
+    assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+      { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+    ], testCase.label);
+    assert.equal(harness.getCurrentTextCallCount(), 0, testCase.label);
+    assert.equal(harness.bootstrapApplyCalls.length, 0, testCase.label);
+    assert.equal(harness.normalInteractionCalls.includes(true), false, testCase.label);
+    assert.match(String(harness.errorLogs.at(-1)), /AppConstants\./, testCase.label);
+  }
+
+  for (const name of requiredNames) {
+    const harness = await bootstrapEditorScriptHarness({ omittedAppConstants: [name] });
+    assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+      { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+    ], `${name} missing`);
+    assert.equal(harness.getCurrentTextCallCount(), 0, `${name} missing`);
+    assert.equal(harness.bootstrapApplyCalls.length, 0, `${name} missing`);
+    assert.equal(harness.normalInteractionCalls.includes(true), false, `${name} missing`);
+    assert.match(String(harness.errorLogs.at(-1)), /AppConstants\./, `${name} missing`);
+  }
+});
+
+test('editor reports a missing startup-presentation core through the base-presentation boundary', async () => {
+  const harness = await bootstrapEditorScriptHarness({ omitStartupPresentation: true });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+  ]);
+  assert.deepEqual(harness.normalInteractionCalls, []);
+  assert.equal(harness.bootstrapApplyCalls.length, 0);
+  assert.match(
+    String(harness.errorLogs.at(-1)),
+    /EditorStartupPresentation\.parseStartupQuery unavailable/
   );
 });
 
@@ -566,6 +781,21 @@ test('editor script resolves config before applying the initial text seed', asyn
   assert.equal(harness.bootstrapApplyCalls[0].maxTextCharsAtApply, 7);
 });
 
+test('editor reports bootstrap failure when startup-specific initial text application returns false or throws', async () => {
+  for (const options of [
+    { initialTextApplyResult: false },
+    { initialTextApplyThrows: true },
+  ]) {
+    const harness = await bootstrapEditorScriptHarness(options);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+      { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+    ]);
+    assert.deepEqual(harness.normalInteractionCalls, [false, false]);
+    assert.match(String(harness.errorLogs.at(-1)), /initial current-text application failed|initial text application failed/);
+  }
+});
+
 test('editor script recomputes textarea direction on local input, external updates, and language changes', async () => {
   const harness = await bootstrapEditorScriptHarness();
 
@@ -585,8 +815,132 @@ test('editor script recomputes textarea direction on local input, external updat
     spellcheckAvailable: true,
     editorFontSizePx: 20,
   });
-  assert.deepEqual(harness.applyWindowLanguageAttributesCalls, ['ar']);
+  assert.deepEqual(harness.transitionLanguages, ['ar']);
   assert.deepEqual(harness.updateDirectionCalls, ['  250  ']);
+});
+
+test('editor applies independent settings from a full settings update after a recoverable language failure', async () => {
+  const transitionFailure = new Error('Cannot prepare Spanish translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: false,
+  };
+  const harness = await bootstrapEditorScriptHarness({
+    rejectTransitionLanguage: 'es',
+    transitionFailure,
+  });
+
+  await harness.subscriptions.settingsChanged({
+    language: 'es',
+    spellcheckEnabled: false,
+    spellcheckAvailable: false,
+    editorFontSizePx: 24,
+  });
+
+  assert.deepEqual(harness.transitionLanguages, ['es']);
+  assert.equal(harness.spellcheckStateCalls.length, 1);
+  assert.equal(harness.spellcheckStateCalls[0].preferenceEnabled, false);
+  assert.equal(harness.spellcheckStateCalls[0].available, false);
+  assert.deepEqual(harness.fontSizeCalls, [24]);
+});
+
+test('editor does not admit later settings semantics after a terminal language failure', async () => {
+  const transitionFailure = new Error('Cannot restore editor translations');
+  transitionFailure.rendererI18nTransition = {
+    hadEstablishedState: true,
+    restorationFailed: true,
+  };
+  const harness = await bootstrapEditorScriptHarness({
+    rejectTransitionLanguage: 'es',
+    transitionFailure,
+  });
+
+  await harness.subscriptions.settingsChanged({
+    language: 'es',
+    spellcheckEnabled: false,
+    spellcheckAvailable: false,
+    editorFontSizePx: 24,
+  });
+  await harness.subscriptions.settingsChanged({
+    language: 'en',
+    spellcheckEnabled: false,
+    spellcheckAvailable: false,
+    editorFontSizePx: 24,
+  });
+  const externalUpdateCallCount = harness.bootstrapApplyCalls.length;
+  await harness.subscriptions.externalUpdate({ text: 'ignored after terminal failure' });
+
+  assert.deepEqual(harness.spellcheckStateCalls, []);
+  assert.deepEqual(harness.fontSizeCalls, []);
+  assert.equal(harness.bootstrapApplyCalls.length, externalUpdateCallCount);
+});
+
+test('editor serializes overlapping full settings updates with their language transitions', async () => {
+  const harness = await bootstrapEditorScriptHarness({ holdTransitionLanguage: 'es' });
+
+  const spanishUpdate = harness.subscriptions.settingsChanged({
+    language: 'es',
+    spellcheckEnabled: false,
+    spellcheckAvailable: false,
+    editorFontSizePx: 24,
+  });
+  await harness.waitForHeldTransition();
+  const englishUpdate = harness.subscriptions.settingsChanged({
+    language: 'en',
+    spellcheckEnabled: true,
+    spellcheckAvailable: true,
+    editorFontSizePx: 30,
+  });
+  harness.releaseHeldTransition();
+
+  await Promise.all([spanishUpdate, englishUpdate]);
+
+  assert.deepEqual(harness.transitionLanguages, ['es', 'en']);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.spellcheckStateCalls)), [
+    { preferenceEnabled: false, available: false },
+    { preferenceEnabled: true, available: true },
+  ]);
+  assert.deepEqual(harness.fontSizeCalls, [24, 30]);
+});
+
+test('editor admits live full settings after the bootstrap settings snapshot applies', async () => {
+  let releaseBootstrapSettings;
+  let markBootstrapSettingsRequested;
+  const bootstrapSettings = new Promise((resolve) => {
+    releaseBootstrapSettings = resolve;
+  });
+  const bootstrapSettingsRequested = new Promise((resolve) => {
+    markBootstrapSettingsRequested = resolve;
+  });
+  const harness = createEditorScriptHarness({
+    getSettingsImpl: async () => {
+      markBootstrapSettingsRequested();
+      return bootstrapSettings;
+    },
+  });
+
+  await bootstrapSettingsRequested;
+  const liveUpdate = harness.subscriptions.settingsChanged({
+    language: 'es',
+    spellcheckEnabled: false,
+    spellcheckAvailable: false,
+    editorFontSizePx: 24,
+  });
+  releaseBootstrapSettings({
+    language: 'en',
+    spellcheckEnabled: true,
+    spellcheckAvailable: true,
+    editorFontSizePx: 20,
+  });
+
+  await liveUpdate;
+
+  assert.deepEqual(harness.transitionLanguages, ['en', 'es']);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.spellcheckStateCalls)), [
+    { preferenceEnabled: true, available: true },
+    { preferenceEnabled: false, available: false },
+  ]);
+  assert.deepEqual(harness.fontSizeCalls, [20, 24]);
 });
 
 test('editor script recomputes direction for paste, drop, replace, append updates, and trash clear', async () => {

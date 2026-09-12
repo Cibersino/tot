@@ -35,14 +35,9 @@ function createMainWindowDouble() {
   return { mainWin, sends };
 }
 
-test('handleStateChanged keeps pre-window startup silent and leaves delivery to the later seed', () => {
+test('handleStateChanged keeps pre-window delivery silent', () => {
   const log = createLogDouble();
   const bridge = currentTextProcessingMainBridge.createBridge({
-    controller: {
-      getState() {
-        return { active: true };
-      },
-    },
     resolveMainWindow() {
       return null;
     },
@@ -62,11 +57,6 @@ test('handleStateChanged warns when a main window exists but is unavailable for 
   const log = createLogDouble();
   const { mainWin, sends } = createMainWindowDouble();
   const bridge = currentTextProcessingMainBridge.createBridge({
-    controller: {
-      getState() {
-        return { active: true };
-      },
-    },
     resolveMainWindow() {
       return mainWin;
     },
@@ -89,11 +79,6 @@ test('handleStateChanged broadcasts live updates once the main window exists', (
   const log = createLogDouble();
   const { mainWin, sends } = createMainWindowDouble();
   const bridge = currentTextProcessingMainBridge.createBridge({
-    controller: {
-      getState() {
-        return { active: false };
-      },
-    },
     resolveMainWindow() {
       return mainWin;
     },
@@ -117,43 +102,6 @@ test('handleStateChanged broadcasts live updates once the main window exists', (
     {
       channel: 'current-text-processing-state-changed',
       payload: state,
-    },
-  ]);
-  assert.deepEqual(log.warnings, []);
-});
-
-test('seedMainWindow sends the authoritative state during renderer load', () => {
-  const log = createLogDouble();
-  const { mainWin, sends } = createMainWindowDouble();
-  const expectedState = {
-    active: true,
-    requestId: 4,
-    sinceEpochMs: 456,
-    source: 'main',
-    action: 'initial_load',
-  };
-  const bridge = currentTextProcessingMainBridge.createBridge({
-    controller: {
-      getState() {
-        return expectedState;
-      },
-    },
-    resolveMainWindow() {
-      return mainWin;
-    },
-    hasLiveWebContents() {
-      return true;
-    },
-    log,
-  });
-
-  const delivered = bridge.seedMainWindow(mainWin);
-
-  assert.equal(delivered, true);
-  assert.deepEqual(sends, [
-    {
-      channel: 'current-text-processing-state-changed',
-      payload: expectedState,
     },
   ]);
   assert.deepEqual(log.warnings, []);

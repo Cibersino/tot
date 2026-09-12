@@ -136,6 +136,7 @@
   let stabilizing = false;
   let introExpanded = false;
   let initialized = false;
+  let translationsEstablished = false;
   const DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/1uvNX53NPITaO-jyzqQvr_uZffp28eP4F?usp=sharing';
 
   // =============================================================================
@@ -831,10 +832,12 @@
           sessionState = normalizeSessionState(nextState);
           if (sessionState.active && isModalOpen()) {
             closeModal();
-          } else {
-            render();
-            syncLockState();
+            return;
           }
+          if (translationsEstablished) {
+            render();
+          }
+          syncLockState();
         });
       } catch (err) {
         log.warn(
@@ -922,12 +925,15 @@
       void syncInitialSessionState();
     }
 
-    render();
+    // Main owns first translated presentation through its initial renderer-i18n
+    // transition. Configure may run before that state exists, so it only wires
+    // callbacks and accepts nonlocalized session state.
     syncLockState();
   }
 
   function applyTranslations() {
     render();
+    translationsEstablished = true;
   }
 
   window.ReadingSpeedTestUi = {

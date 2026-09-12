@@ -143,20 +143,30 @@ test('task editor preload forwards the complete column layout record', () => {
   assert.equal('saveColumnWidths' in exposedApi.api, false);
 });
 
-test('task editor preload forwards only canonical boolean dirty-state values', () => {
+test('task editor preload forwards correlated dirty state and typed terminal/close responses', () => {
   const { exposedApi, sent } = loadTaskEditorPreload();
 
-  exposedApi.api.setDirtyState(true);
+  exposedApi.api.setDirtyState({ dirty: true, initId: 4 });
+  exposedApi.api.reportTerminalState({ kind: 'startup', phase: 'no-draft', initId: null, dirty: null });
+  exposedApi.api.respondToClose({ kind: 'normal', allow: true });
   assert.deepEqual(JSON.parse(JSON.stringify(sent)), [
     {
       channel: 'task-editor-dirty-state',
-      payload: { dirty: true },
+      payload: { dirty: true, initId: 4 },
+    },
+    {
+      channel: 'task-editor-terminal',
+      payload: { kind: 'startup', phase: 'no-draft', initId: null, dirty: null },
+    },
+    {
+      channel: 'task-editor-close-response',
+      payload: { kind: 'normal', allow: true },
     },
   ]);
 
   assert.throws(
-    () => exposedApi.api.setDirtyState(1),
-    /setDirtyState requires a boolean/
+    () => exposedApi.api.setDirtyState({ dirty: true }),
+    /setDirtyState requires dirty and initId/
   );
-  assert.equal(sent.length, 1);
+  assert.equal(sent.length, 3);
 });

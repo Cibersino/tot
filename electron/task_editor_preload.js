@@ -49,6 +49,12 @@ function onInit(cb) {
 
 const api = {
   onInit,
+  reportTerminalState: (payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      throw new Error('taskEditorAPI.reportTerminalState requires an object');
+    }
+    ipcRenderer.send('task-editor-terminal', payload);
+  },
   saveTaskList: (payload) => ipcRenderer.invoke('task-list-save', payload),
   deleteTaskList: (path) => ipcRenderer.invoke('task-list-delete', { path }),
   selectTaskFile: () => ipcRenderer.invoke('task-file-select'),
@@ -65,11 +71,12 @@ const api = {
   openTaskLink: (raw) => ipcRenderer.invoke('task-open-link', { raw }),
   getColumnLayout: () => ipcRenderer.invoke('task-columns-load'),
   saveColumnLayout: (record) => ipcRenderer.invoke('task-columns-save', { record }),
-  setDirtyState: (dirty) => {
-    if (typeof dirty !== 'boolean') {
-      throw new Error('taskEditorAPI.setDirtyState requires a boolean');
+  setDirtyState: (payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)
+      || typeof payload.dirty !== 'boolean' || !Number.isInteger(payload.initId)) {
+      throw new Error('taskEditorAPI.setDirtyState requires dirty and initId');
     }
-    ipcRenderer.send('task-editor-dirty-state', { dirty });
+    ipcRenderer.send('task-editor-dirty-state', payload);
   },
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
@@ -84,7 +91,12 @@ const api = {
     ipcRenderer.on('task-editor-request-close', listener);
     return () => { try { ipcRenderer.removeListener('task-editor-request-close', listener); } catch (err) { console.error('removeListener error (task-editor-request-close):', err); } };
   },
-  confirmClose: () => ipcRenderer.send('task-editor-confirm-close'),
+  respondToClose: (payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      throw new Error('taskEditorAPI.respondToClose requires an object');
+    }
+    ipcRenderer.send('task-editor-close-response', payload);
+  },
 };
 
 contextBridge.exposeInMainWorld('taskEditorAPI', api);

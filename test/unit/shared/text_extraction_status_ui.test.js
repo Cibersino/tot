@@ -38,7 +38,7 @@ function createElement(id) {
   };
 }
 
-function createHarness() {
+function createHarness({ semanticReady = true } = {}) {
   let nowMs = 0;
   let nextIntervalId = 1;
   const intervals = new Map();
@@ -127,6 +127,8 @@ function createHarness() {
     throw new Error('TextExtractionStatusUi unavailable in test harness');
   }
 
+  if (semanticReady) api.applyTranslations();
+
   return {
     api,
     elements,
@@ -155,6 +157,40 @@ test('translation updates apply the abort control name and visual tooltip explic
     'Abort extraction'
   );
   assert.equal(harness.elements.btnTextExtractionAbort.title, '');
+});
+
+test('authoritative processing state is retained before semantics and published after translation establishment', () => {
+  const harness = createHarness({ semanticReady: false });
+
+  harness.api.beginPrepare({ filePath: 'C:\\docs\\queued.pdf' });
+  assert.equal(harness.elements.textExtractionProcessingLabel.textContent, '');
+
+  harness.api.applyTranslations();
+  assert.equal(harness.elements.selectorControlsProcessing.hidden, false);
+  assert.equal(harness.elements.textExtractionProcessingFilename.textContent, 'queued.pdf');
+});
+
+test('terminal unavailability retains later authoritative state while fencing status publication and elapsed work', () => {
+  const harness = createHarness();
+  harness.setNowMs(1000);
+  harness.api.applyProcessingModeState({
+    active: true,
+    lockId: 1,
+    sinceEpochMs: 1000,
+    selectedRoute: 'native',
+  }, { source: 'before_terminal' });
+  const labelBeforeTerminal = harness.elements.textExtractionProcessingLabel.textContent;
+
+  harness.api.setTerminalUnavailable();
+  harness.api.applyProcessingModeState({
+    active: false,
+    lockId: 1,
+    sinceEpochMs: null,
+  }, { source: 'after_terminal' });
+
+  assert.equal(harness.api.isProcessingModeActive(), false);
+  assert.equal(harness.elements.textExtractionProcessingLabel.textContent, labelBeforeTerminal);
+  assert.throws(() => harness.tickElapsedTimer(), /0 !== 1/);
 });
 
 test('prepare state shows row 1 status plus filename and hides elapsed row', () => {

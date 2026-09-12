@@ -270,7 +270,29 @@ test('InfoModal displays the localized missing-content state when RendererI18n c
   assert.equal(harness.errors.length, 0);
 });
 
-test('InfoModal hydrates About runtime details and degrades unavailable values without breaking the modal', async () => {
+test('InfoModal latches an unavailable document for one open instance and retries only after reopen', async () => {
+  let requests = 0;
+  const harness = loadInfoModalHarness({
+    loadLocalizedDocument: async () => {
+      requests += 1;
+      return { html: null, language: '' };
+    },
+    fetchText: async () => '',
+  });
+
+  await harness.api.open('instrucciones');
+  harness.setLanguage('es');
+  harness.api.applyTranslations();
+  await flushAsyncWork();
+  await flushAsyncWork();
+  assert.equal(requests, 1);
+
+  harness.getElement('infoModalClose').dispatch('click');
+  await harness.api.open('instrucciones');
+  assert.equal(requests, 2);
+});
+
+test('InfoModal projects cached About hydration across refresh and reacquires it only after close/reopen', async () => {
   const electronAPI = {
     async getAppVersion() { return ' 1.5.0 '; },
     async getAppRuntimeInfo() {
@@ -286,8 +308,8 @@ test('InfoModal hydrates About runtime details and degrades unavailable values w
   };
   const harness = loadInfoModalHarness({
     electronAPI,
-    loadLocalizedDocument: async () => ({ html: '', language: '' }),
-    fetchText: async () => '<article>About</article>',
+    loadLocalizedDocument: async () => ({ html: '<article>About</article>', language: 'es' }),
+    fetchText: async () => '',
   });
 
   await harness.api.open('acerca_de');
@@ -302,6 +324,12 @@ test('InfoModal hydrates About runtime details and degrades unavailable values w
 
   electronAPI.getAppVersion = async () => { throw new Error('bridge failure'); };
   electronAPI.getAppRuntimeInfo = async () => { throw new Error('bridge failure'); };
+  harness.setLanguage('es');
+  await harness.api.open('acerca_de');
+  assert.equal(harness.aboutElements.get('#appVersion').textContent, '1.5.0');
+  assert.equal(harness.aboutElements.get('#appEnv').textContent, 'Windows (x64)');
+
+  harness.getElement('infoModalClose').dispatch('click');
   await harness.api.open('acerca_de');
   assert.equal(harness.aboutElements.get('#appVersion').textContent, 'N/A');
   assert.equal(harness.aboutElements.get('#appEnv').textContent, 'N/A');

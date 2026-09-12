@@ -196,6 +196,7 @@ const api = {
 
     // Startup handshake
     sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),
+    reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
     onStartupReady: (cb) => {
         const listener = () => { try { cb(); } catch (err) { console.error('startup:ready callback error:', err); } };
         return subscribeWithUnsub('startup:ready', listener, 'removeListener error (startup:ready):');

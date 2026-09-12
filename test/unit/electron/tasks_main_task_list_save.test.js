@@ -57,6 +57,19 @@ function createWindow(name) {
   return win;
 }
 
+function createTaskEditorLifecycle() {
+  let nextInitId = 0;
+  return {
+    acceptDirtyState() { return true; },
+    async confirmReplacement() { return true; },
+    prepareInitialization(_win, payload) {
+      nextInitId += 1;
+      return { ...payload, initId: nextInitId };
+    },
+    acceptInitializationIssued() { return true; },
+  };
+}
+
 function getLibraryFilePath(tasksRoot) {
   return path.resolve(path.join(tasksRoot, '..', 'library.json'));
 }
@@ -570,6 +583,7 @@ test('open-task-editor loads a canonical task file with its validated summary', 
     ensureTaskEditorWindow() {
       taskEditorWin = createWindow('task-editor');
     },
+    taskEditorLifecycle: createTaskEditorLifecycle(),
   });
 
   const result = await ipcMain.invoke(
@@ -583,6 +597,7 @@ test('open-task-editor loads a canonical task file with its validated summary', 
     channel: 'task-editor-init',
     payload: {
       mode: 'load',
+      initId: 1,
       task: {
         type: 'task',
         meta: createTaskMeta('Canonical task'),

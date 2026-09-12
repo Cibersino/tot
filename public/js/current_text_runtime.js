@@ -104,6 +104,7 @@
     action: '',
   };
   let deferredBootstrapSettleRequestId = 0;
+  let terminalPresentationUnavailable = false;
 
   // =============================================================================
   // Helpers
@@ -347,6 +348,7 @@
   // Rendering helpers
 
   function renderPreview() {
+    if (terminalPresentationUnavailable) return;
     const { currentTextSelectorSection } = requireDeps();
     currentTextSelectorSection.renderPreview(currentText, {
       emptyText: tRenderer('renderer.main.selector_empty'),
@@ -354,6 +356,7 @@
   }
 
   function syncStatusClasses() {
+    if (terminalPresentationUnavailable) return;
     const pending = currentTextProcessingState.active === true
       || standaloneFullRefreshPendingState.active === true;
     const degraded = !pending && (degradedRequestId > 0 || standaloneDerivedDegraded);
@@ -366,6 +369,7 @@
   }
 
   function renderTimeValue(valueText) {
+    if (terminalPresentationUnavailable) return;
     if (!resTime) return;
     renderLocalizedLabelWithInvariantValue(resTime, {
       labelText: tRenderer('renderer.main.results.time_label'),
@@ -375,10 +379,11 @@
   }
 
   function renderDerivedValuePlaceholders(valueKey) {
+    currentTextStats = null;
+    if (terminalPresentationUnavailable) return;
     const { resultsTimeMultiplier } = requireDeps();
     const valueText = tRenderer(valueKey);
     renderPreview();
-    currentTextStats = null;
     resultsTimeMultiplier.clearBaseReadingDuration();
     if (resWords) {
       resWords.textContent = msgRenderer('renderer.main.results.words', { n: valueText });
@@ -473,12 +478,13 @@
     previewMode = 'always',
     persistStats = false,
   } = {}) {
-    const { resultsTimeMultiplier } = requireDeps();
     const derived = derivedState && typeof derivedState === 'object' ? derivedState : {};
     const stats = derived.stats || createEmptyStats();
     if (persistStats) {
       currentTextStats = stats;
     }
+    if (terminalPresentationUnavailable) return;
+    const { resultsTimeMultiplier } = requireDeps();
     if (previewMode === 'always' || (previewMode === 'empty-only' && currentText.length === 0)) {
       renderPreview();
     }
@@ -673,6 +679,7 @@
   }
 
   function renderTimeOnlyFromCurrentStats() {
+    if (terminalPresentationUnavailable) return;
     if (!currentTextStats) {
       log.warnOnce(
         'current_text_runtime.timeOnly.noStats',
@@ -815,9 +822,8 @@
     return currentText;
   }
 
-  function installCurrentTextState(text) {
-    setCurrentTextInternal(text);
-    renderPreview();
+  function setTerminalPresentationUnavailable() {
+    terminalPresentationUnavailable = true;
   }
 
   function syncBootstrapState({ initialText, processingState } = {}) {
@@ -951,14 +957,13 @@
   window.CurrentTextRuntime = {
     applyCurrentTextProcessingState,
     copyCurrentTextProcessingState,
-    copyCurrentTextUpdatedPayload,
     configure,
     getCurrentText,
     handleCurrentTextUpdated,
-    installCurrentTextState,
     requestDerivedRefresh,
     requestStatsDisplayRefresh,
     requestTimeOnlyRefresh,
+    setTerminalPresentationUnavailable,
     startDeferredBootstrapSettle,
     syncBootstrapState,
   };

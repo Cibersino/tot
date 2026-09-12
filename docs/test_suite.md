@@ -1516,6 +1516,71 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - The clear button stays visually anchored in the corner instead of collapsing into an orphan row with a large empty gap.
 - No controls overlap, disappear, or become unreachable.
 
+#### REG-EDITOR-11 Text Editor readiness, first presentation, and reopen
+**Goal:** the Editor does not admit editing controls until its required initial text and
+semantics are established, and later opens remain independent live presentations.
+1. Start with a known current text and open the Editor in a normally sized window.
+2. Confirm the text area and bottom-bar controls become available together only after
+   the initial text and translated semantics are visible; then edit once.
+3. Close the Editor, change the current text from the main window, and reopen it.
+4. Save a maximized Editor presentation by maximizing it, closing it, then
+   reopening it; verify the next first presentation uses that saved maximized state.
+5. Open Find while the Editor is ready; use Tab/Shift+Tab, Enter/Space, and Escape.
+
+**Expected:**
+- There is no editable or actionable half-initialized Editor surface.
+- The first ready surface contains the exact current text once; reopening uses the
+  then-current text and does not retain or append a previous opening's seed.
+- Both reduced and maximized first presentations are usable, with no duplicate
+  startup message.
+- Find keeps its Close/Escape route usable and exposes its translated names and
+  descriptions while its semantic controls are available.
+
+#### REG-Q008 — Text Editor readiness and accessibility sign-off matrix
+**Goal:** exercise Q-008's dynamic readiness/unavailability behavior in the supported
+Electron/Chromium runtime before release sign-off. Record the actual Electron and
+Chromium versions from the running app, operating system, and at least one supported
+screen-reader stack (for example, Windows Narrator with the installed Edge/WebView
+accessibility stack) with the run evidence.
+
+1. With keyboard only, open Editor, Find, Task Editor, Reading Test Questions,
+   Quick Calculator, and an Info/About document. For each surface, traverse with
+   Tab/Shift+Tab, invoke its normal actions with Enter/Space, and leave it through
+   its available Escape/Close route.
+2. Where an initializing or unavailable state can be observed safely, confirm native
+   fields and normal actions are truthfully disabled or the owned region is inert;
+   do not use DevTools or production-state mutation to force failures. Confirm the
+   required Close/Continue/Escape route remains usable where that owner provides one.
+3. With a screen reader or accessibility inspector, verify the announced names and
+   descriptions of dynamically admitted controls, Find replacement controls, Task
+   controls, and the Info document's localized unavailable view. Move focus while a
+   region changes from initializing to ready or to unavailable and verify focus is
+   not stranded in an inert region.
+4. Keep each applicable surface open while changing the app language. Confirm Editor,
+   Find, Questions, Calculator, Task Editor, and Info refresh their renderer-owned
+   semantics without losing their permitted close route. For About, request a
+   non-Spanish language and confirm the Spanish document is presented with its actual
+   document language metadata while surrounding modal controls use the active UI
+   language.
+5. In Task Editor, test a clean close, a dirty close with Keep/Cancel, and a dirty
+   close with Discard. Repeat the close request from the main/application close path
+   while another window or active processing is present when practical. Verify the
+   native default/cancel action preserves the Task, and explicit Discard is required
+   before a potentially dirty draft can be disposed.
+
+**Expected:**
+- Keyboard traversal, accessible names/descriptions, and focus restoration remain
+  truthful across readiness changes; no normal action is usable before its owner has
+  admitted it.
+- A real language change updates live renderer semantics without enabling an owner
+  that has become terminally unavailable.
+- Task Keep, cancellation, dialog failure, or missing authorization preserves the
+  Task and prevents destructive parent/application shutdown consequences; only
+  explicit discard authorization permits the relevant close.
+- Record exceptional startup, timeout, terminal, and native-dialog-failure branches
+  that cannot be induced safely as runtime limits rather than simulating them in the
+  product.
+
 ---
 
 ### REG-TASKS — Task editor (lists, library, links)

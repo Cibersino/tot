@@ -59,11 +59,10 @@
     } = dom;
 
     const {
-      loadRendererTranslations,
       tRenderer,
       resolveUserTextDirection,
     } = ctx.rendererI18n || {};
-    if (!loadRendererTranslations || !tRenderer || !resolveUserTextDirection) {
+    if (!tRenderer || !resolveUserTextDirection) {
       throw new Error('[editor] RendererI18n unavailable; cannot continue');
     }
 
@@ -73,8 +72,8 @@
     // Translation And Document Helpers
     // =============================================================================
 
-    function applyEditorLanguage() {
-      const langTag = (state.idiomaActual || DEFAULT_LANG).toLowerCase();
+    function applyEditorLanguage(language = state.idiomaActual) {
+      const langTag = (language || DEFAULT_LANG).toLowerCase();
       if (editor) {
         editor.setAttribute('lang', langTag);
       }
@@ -87,16 +86,8 @@
       return direction;
     }
 
-    async function ensureEditorTranslations(lang) {
-      const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-      if (state.translationsLoadedFor === target) return;
-      await loadRendererTranslations(target);
-      state.translationsLoadedFor = target;
-    }
-
-    async function applyEditorTranslations() {
-      await ensureEditorTranslations(state.idiomaActual);
-      applyEditorLanguage();
+    async function applyEditorTranslations(language) {
+      applyEditorLanguage(language);
       document.title = tr('renderer.editor.title');
       if (editor) editor.setAttribute('placeholder', tr('renderer.editor.placeholder'));
       if (btnCalc) {
@@ -161,6 +152,29 @@
       }
       updateEditorTextSizeUi();
       updateReadProgressUi();
+    }
+
+    function setNormalInteractionAvailable(available) {
+      const isAvailable = available === true;
+      const interactionRegions = [editorWrap, bottomBar];
+
+      interactionRegions.forEach((region) => {
+        if (!region) return;
+        region.inert = !isAvailable;
+        region.setAttribute('aria-busy', isAvailable ? 'false' : 'true');
+      });
+
+      if (editor) {
+        editor.disabled = !isAvailable;
+      }
+
+      if (!isAvailable) return;
+
+      setLocalSpellcheckState({
+        preferenceEnabled: state.spellcheckEnabled,
+        available: state.spellcheckAvailable,
+      });
+      updateEditorTextSizeUi();
     }
 
     // =============================================================================
@@ -612,7 +626,7 @@
       syncEditorMaximizedLayout,
       setLocalEditorWindowMaximized,
       setLocalEditorMaximizedTextWidthPx,
-      ensureEditorTranslations,
+      setNormalInteractionAvailable,
       applyEditorTranslations,
       restoreFocusToEditor,
       applyReadingTestPrestartState,

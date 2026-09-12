@@ -27,16 +27,10 @@
   // =============================================================================
   function resolveText(key, params = {}) {
     const { RendererI18n } = window || {};
-    // If it fails, we return the key itself. No fallback.
     if (!RendererI18n || typeof RendererI18n.msgRenderer !== 'function') {
-      log.warnOnce(
-        'notify.resolveText.i18n.missing',
-        'RendererI18n.msgRenderer missing; using key fallback.'
-      );
-      return key;
+      throw new Error('[notify] RendererI18n.msgRenderer unavailable; cannot resolve renderer dialog text');
     }
-    const txt = RendererI18n.msgRenderer(key, params);
-    return txt || key;
+    return RendererI18n.msgRenderer(key, params);
   }
 
   const TOAST_POSITIONS = new Set([

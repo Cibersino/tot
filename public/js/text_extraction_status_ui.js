@@ -123,6 +123,8 @@
     reason: '',
   };
   let prepareActiveCount = 0;
+  let semanticReady = false;
+  let terminalUnavailable = false;
   let abortFinalizationState = {
     active: false,
     fileName: '',
@@ -537,6 +539,7 @@
   }
 
   function syncProcessingUi() {
+    if (!semanticReady || terminalUnavailable) return;
     syncProcessingShellUi();
     syncPrimaryRowUi();
     syncElapsedUi();
@@ -551,6 +554,7 @@
   // The timer exists only while processing is active so elapsed updates do not
   // keep running after the processing-mode lock has been released.
   function ensureElapsedTimer() {
+    if (!semanticReady || terminalUnavailable) return;
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
       if (!isProcessingModeActive() && !isCurrentTextAreaPendingActive()) {
@@ -576,8 +580,15 @@
   // =============================================================================
 
   function applyTranslations() {
+    semanticReady = true;
+    if (terminalUnavailable) return;
     syncAbortButtonUi();
     syncProcessingUi();
+  }
+
+  function setTerminalUnavailable() {
+    terminalUnavailable = true;
+    stopElapsedTimer();
   }
 
   function applyProcessingModeState(rawState, { source = 'unknown' } = {}) {
@@ -750,6 +761,7 @@
     isProcessingModeActive,
     isStandaloneFullRefreshPendingActive,
     setPendingExecutionContext,
+    setTerminalUnavailable,
   };
 })();
 

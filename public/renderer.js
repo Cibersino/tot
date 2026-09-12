@@ -87,6 +87,7 @@ if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.isCurrentTextProcessingActive !== 'function'
   || typeof textExtractionStatusUi.isProcessingModeActive !== 'function'
   || typeof textExtractionStatusUi.isStandaloneFullRefreshPendingActive !== 'function'
+  || typeof textExtractionStatusUi.setTerminalUnavailable !== 'function'
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
 }
@@ -95,7 +96,9 @@ const textExtractionOcrActivation = window.TextExtractionOcrActivation || null;
 const textExtractionOcrActivationRecovery = window.TextExtractionOcrActivationRecovery || null;
 const textExtractionOcrDisconnect = window.TextExtractionOcrDisconnect || null;
 const browserExtensionModal = window.BrowserExtensionModal || null;
+let browserExtensionCapabilityAvailable = !!browserExtensionModal;
 const mainLogoLinks = window.MainLogoLinks || null;
+let mainLogoLinksCapabilityAvailable = !!mainLogoLinks;
 const activeCustomPromptTranslationOwners = [
   window.SnapshotSaveTagsModal,
   window.TextExtractionPdfOptionsModal,
@@ -127,14 +130,13 @@ const currentTextRuntime = window.CurrentTextRuntime || null;
 if (!currentTextRuntime
   || typeof currentTextRuntime.applyCurrentTextProcessingState !== 'function'
   || typeof currentTextRuntime.copyCurrentTextProcessingState !== 'function'
-  || typeof currentTextRuntime.copyCurrentTextUpdatedPayload !== 'function'
   || typeof currentTextRuntime.configure !== 'function'
   || typeof currentTextRuntime.getCurrentText !== 'function'
   || typeof currentTextRuntime.handleCurrentTextUpdated !== 'function'
-  || typeof currentTextRuntime.installCurrentTextState !== 'function'
   || typeof currentTextRuntime.requestDerivedRefresh !== 'function'
   || typeof currentTextRuntime.requestStatsDisplayRefresh !== 'function'
   || typeof currentTextRuntime.requestTimeOnlyRefresh !== 'function'
+  || typeof currentTextRuntime.setTerminalPresentationUnavailable !== 'function'
   || typeof currentTextRuntime.startDeferredBootstrapSettle !== 'function'
   || typeof currentTextRuntime.syncBootstrapState !== 'function') {
   throw new Error('[renderer] CurrentTextRuntime unavailable; cannot continue');
@@ -223,6 +225,8 @@ let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4;
 let modoConteo = 'preciso';
 let idiomaActual = DEFAULT_LANG;
 let settingsCache = null;
+let settingsApplicationQueue = Promise.resolve();
+let mainRendererI18nTerminal = false;
 let cronoController = null;
 // READY stays blocked until both main signals and renderer listeners are fully armed.
 let rendererReadyState = 'PRE_READY';
@@ -234,7 +238,6 @@ let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
-let bootstrapCurrentTextPayload = null;
 let textExtractionPrepareAttemptId = 0;
 let lastHelpTipIdx = -1;
 let lastProcessingLockNoticeAt = 0;
@@ -313,7 +316,7 @@ if (!currentTextRefreshPolicy
 const PROCESSING_LOCK_NOTICE_THROTTLE_MS = 1000;
 
 function isRendererReady() {
-  return rendererReadyState === 'READY';
+  return !mainRendererI18nTerminal && rendererReadyState === 'READY';
 }
 
 function isProcessingModeActive() {
@@ -363,6 +366,24 @@ function isReadingTestSessionActive() {
   return !!(readingSpeedTestUi && readingSpeedTestUi.isSessionActive());
 }
 
+function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
+  const wasAvailable = mainLogoLinksCapabilityAvailable;
+  mainLogoLinksCapabilityAvailable = false;
+  ['devLogoLink', 'kofiLogoLink'].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) setControlInteractionLocked(element, true);
+  });
+  if (wasAvailable) {
+    log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, err || '');
+    return;
+  }
+  log.warnOnce(
+    'renderer.mainLogoLinks.unavailable',
+    `Main logo links unavailable for this renderer lifetime: ${reason}`,
+    err || ''
+  );
+}
+
 function syncMainInteractionLockUi() {
   const locked = !isRendererReady()
     || isProcessingModeActive()
@@ -386,8 +407,12 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(cronoToggleBtnMain, locked);
   setControlInteractionLocked(cronoResetBtnMain, locked);
   if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
-    browserExtensionModal.setInteractionLocked(locked);
+    browserExtensionModal.setInteractionLocked(locked || !browserExtensionCapabilityAvailable);
   } else {
+    if (!browserExtensionCapabilityAvailable) {
+      const element = document.getElementById('browserExtensionLogoLink');
+      if (element) setControlInteractionLocked(element, true);
+    }
     log.warnOnce(
       'renderer.browserExtensionModal.setInteractionLocked.unavailable',
       'BrowserExtensionModal.setInteractionLocked unavailable; browser extension entry lock state will not sync.'
@@ -570,6 +595,7 @@ function scheduleDeferredBootstrapSettleAfterUnlock() {
 }
 
 function maybeUnblockReady() {
+  if (mainRendererI18nTerminal) return;
   if (!rendererInvariantsReady || !startupReadyReceived) return;
   if (rendererReadyState === 'READY') return;
   rendererReadyState = 'READY';
@@ -589,10 +615,10 @@ function maybeUnblockReady() {
 
 function markRendererInvariantsReady() {
   if (rendererInvariantsReady) return;
-  if (!ipcSubscriptionsArmed || !uiListenersArmed) {
+  if (!ipcSubscriptionsArmed || !uiListenersArmed || !hasCurrentTextSubscription) {
     log.warn(
       'BOOTSTRAP: Renderer invariants marked ready before all listeners/subscriptions were armed.',
-      { ipcSubscriptionsArmed, uiListenersArmed }
+      { ipcSubscriptionsArmed, uiListenersArmed, hasCurrentTextSubscription }
     );
   }
   rendererInvariantsReady = true;
@@ -624,20 +650,18 @@ function getRequiredElectronMethod(methodName) {
 // i18n wiring
 // =============================================================================
 const {
-  loadRendererTranslations,
+  transitionRendererTranslations,
   tRenderer,
   msgRenderer,
   getRendererValue,
-  applyWindowLanguageAttributes,
 } = window.RendererI18n || {};
-if (!loadRendererTranslations
+if (!transitionRendererTranslations
   || !tRenderer
   || !msgRenderer
-  || !getRendererValue
-  || !applyWindowLanguageAttributes) {
+  || !getRendererValue) {
+  reportTerminalRendererI18nFailure('startup-api');
   throw new Error('[renderer] RendererI18n unavailable; cannot continue');
 }
-applyWindowLanguageAttributes(DEFAULT_LANG);
 
 function getHelpTipKeyList() {
   const tips = getRendererValue('renderer.tips');
@@ -659,7 +683,6 @@ const getCronoIcons = () => ({
 });
 
 function applyTranslations() {
-  if (!tRenderer) return;
   const applyAriaLabel = (el, key) => {
     if (!el) return;
     const aria = tRenderer(key);
@@ -670,25 +693,44 @@ function applyTranslations() {
   textExtractionDragDrop.applyTranslations({ tRenderer });
   readingSpeedTestUi.applyTranslations();
   currentTextSelectorSection.applyTranslations({ tRenderer });
-  textTimeCalculatorLauncher.applyTranslations();
-  if (mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
-    mainLogoLinks.applyTranslations({ tRenderer });
+  textTimeCalculatorLauncher.applyTranslations({ tRenderer });
+  if (mainLogoLinksCapabilityAvailable
+    && mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
+    try {
+      mainLogoLinks.applyTranslations({ tRenderer });
+    } catch (err) {
+      setMainLogoLinksCapabilityUnavailable('translation application failed', err);
+    }
   } else {
-    log.warn('MainLogoLinks.applyTranslations unavailable; brand logo labels will use defaults.');
+    setMainLogoLinksCapabilityUnavailable('translation application unavailable');
   }
   if (browserExtensionModal && typeof browserExtensionModal.applyTranslations === 'function') {
-    browserExtensionModal.applyTranslations();
+    try {
+      browserExtensionModal.applyTranslations();
+    } catch (err) {
+      log.warn('BrowserExtensionModal translation application failed; browser extension entry disabled.', err);
+      browserExtensionCapabilityAvailable = false;
+      if (typeof browserExtensionModal.setInteractionLocked === 'function') {
+        browserExtensionModal.setInteractionLocked(true);
+      } else {
+        const element = document.getElementById('browserExtensionLogoLink');
+        if (element) setControlInteractionLocked(element, true);
+      }
+    }
   } else {
-    log.warn('BrowserExtensionModal.applyTranslations unavailable; browser extension labels will use defaults.');
+    log.warn('BrowserExtensionModal.applyTranslations unavailable; browser extension entry disabled.');
+    browserExtensionCapabilityAvailable = false;
+    if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
+      browserExtensionModal.setInteractionLocked(true);
+    } else {
+      const element = document.getElementById('browserExtensionLogoLink');
+      if (element) setControlInteractionLocked(element, true);
+    }
   }
   infoModal.applyTranslations();
   activeCustomPromptTranslationOwners.forEach((owner) => {
     if (owner && typeof owner.applyTranslations === 'function') {
-      try {
-        owner.applyTranslations();
-      } catch (err) {
-        log.warn('Active custom prompt translation refresh failed (ignored):', err);
-      }
+      owner.applyTranslations();
     }
   });
   if (editorLoaderStatus && editorLoader?.classList.contains('visible')) {
@@ -773,6 +815,53 @@ function applyTranslations() {
   }
 }
 
+async function transitionMainRendererLanguage(
+  language,
+  { candidateSettings = settingsCache, previousSettings = settingsCache } = {}
+) {
+  await transitionRendererTranslations(language, {
+    applyTranslations: ({ language: appliedLanguage, restoring }) => {
+      idiomaActual = appliedLanguage;
+      settingsCache = restoring ? previousSettings : candidateSettings;
+      applyTranslations();
+    },
+  });
+}
+
+function reportRendererI18nFailure(err, { startup = false } = {}) {
+  const transition = err && err.rendererI18nTransition;
+  if (!transition) {
+    return;
+  }
+  if (!startup && transition && !transition.restorationFailed && transition.hadEstablishedState) {
+    log.error('Renderer language transition failed; previous translation state remains authoritative:', err);
+    return;
+  }
+
+  log.error('Renderer i18n failure requires window closure:', err);
+  reportTerminalRendererI18nFailure(startup ? 'startup' : 'transition-restoration');
+}
+
+function reportTerminalRendererI18nFailure(kind) {
+  mainRendererI18nTerminal = true;
+  currentTextRuntime.setTerminalPresentationUnavailable();
+  textExtractionStatusUi.setTerminalUnavailable();
+  syncMainInteractionLockUi();
+  if (!window.electronAPI || typeof window.electronAPI.reportRendererI18nFailure !== 'function') {
+    log.warn('electronAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
+    return;
+  }
+  try {
+    window.electronAPI.reportRendererI18nFailure({
+      kind,
+    });
+  } catch (reportErr) {
+    log.warn('electronAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    if (typeof window.close === 'function') window.close();
+  }
+}
+
 // =============================================================================
 // Text counting
 // =============================================================================
@@ -813,11 +902,6 @@ function updateTimeOnlyFromStats() {
   currentTextRuntime.requestTimeOnlyRefresh('wpm change');
 }
 
-function installCurrentTextState(text) {
-  currentTextRuntime.installCurrentTextState(text);
-  return getCurrentTextValue();
-}
-
 function setCurrentTextAndUpdateUI(payload, options = {}) {
   currentTextRuntime.handleCurrentTextUpdated(payload, {
     onAuthoritativeTextChanged: (previousText, nextText) => {
@@ -832,6 +916,7 @@ function setCurrentTextAndUpdateUI(payload, options = {}) {
 // Listen for stopwatch status from main (authoritative state)
 if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function') {
   window.electronAPI.onCronoState((state) => {
+    if (mainRendererI18nTerminal) return;
     try {
       if (cronoController && typeof cronoController.handleState === 'function') {
         cronoController.handleState(state);
@@ -867,38 +952,47 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
 // =============================================================================
 // Bootstrapping and subscriptions
 // =============================================================================
-const settingsChangeHandler = async (newSettings) => {
+async function applySettingsChange(newSettings) {
   try {
     const previousSettings = settingsCache || {};
     const previousCountContext = {
       modoConteo,
       idioma: idiomaActual,
     };
-    settingsCache = newSettings || {};
-    const nuevoIdioma = settingsCache.language || DEFAULT_LANG;
+    const nextSettings = newSettings && typeof newSettings === 'object' ? newSettings : {};
+    const nuevoIdioma = nextSettings.language || DEFAULT_LANG;
     const idiomaCambio = (nuevoIdioma !== idiomaActual);
     let presetOutcome = null;
+    let recoveredLanguageFailure = false;
     if (idiomaCambio) {
-      idiomaActual = nuevoIdioma;
-      applyWindowLanguageAttributes(idiomaActual);
       try {
-        await loadRendererTranslations(idiomaActual);
+        await transitionMainRendererLanguage(nuevoIdioma, {
+          candidateSettings: nextSettings,
+          previousSettings,
+        });
       } catch (err) {
-        log.warn(`loadRendererTranslations(${idiomaActual}) failed (ignored):`, err);
+        reportRendererI18nFailure(err);
+        const transition = err && err.rendererI18nTransition;
+        if (!transition || !transition.hadEstablishedState || transition.restorationFailed) {
+          return;
+        }
+        // The failed language is not part of this renderer's established state,
+        // but independent settings from the same full payload still apply.
+        settingsCache = { ...nextSettings, language: idiomaActual };
+        recoveredLanguageFailure = true;
       }
-      try {
-        applyTranslations();
-      } catch (err) {
-        log.warn('applyTranslations failed after settings change (ignored):', err);
+      if (!recoveredLanguageFailure) {
+        try {
+          const presetLoadResult = await loadPresets({ settingsSnapshot: settingsCache });
+          presetOutcome = presetLoadResult && presetLoadResult.selectionOutcome
+            ? presetLoadResult.selectionOutcome
+            : null;
+        } catch (err) {
+          log.error('Error loading presets after language change:', err);
+        }
       }
-      try {
-        const presetLoadResult = await loadPresets({ settingsSnapshot: settingsCache });
-        presetOutcome = presetLoadResult && presetLoadResult.selectionOutcome
-          ? presetLoadResult.selectionOutcome
-          : null;
-      } catch (err) {
-        log.error('Error loading presets after language change:', err);
-      }
+    } else {
+      settingsCache = nextSettings;
     }
     const modeChanged = !!(settingsCache.modeConteo && settingsCache.modeConteo !== modoConteo);
     if (modeChanged) {
@@ -928,32 +1022,43 @@ const settingsChangeHandler = async (newSettings) => {
   } catch (err) {
     log.error('Error handling settings change:', err);
   }
-};
+}
 
-function armIpcSubscriptions() {
-  // Subscribe to updates from main (current text changes)
-  if (window.electronAPI && typeof window.electronAPI.onCurrentTextUpdated === 'function') {
-    hasCurrentTextSubscription = true;
-    window.electronAPI.onCurrentTextUpdated((payload) => {
-      try {
-        if (!isRendererReady()) {
-          const bootstrapPayload = currentTextRuntime.copyCurrentTextUpdatedPayload(payload);
-          installCurrentTextState(bootstrapPayload.text);
-          bootstrapCurrentTextPayload = bootstrapPayload;
-          log.warnOnce(
-            'BOOTSTRAP:renderer.preReady.currentTextUpdated',
-            'current-text-updated received pre-READY; state updated only.'
-          );
-          return;
-        }
-        setCurrentTextAndUpdateUI(payload, { applyRules: true });
-      } catch (err) {
-        log.error('Error handling current-text-updated:', err);
-      }
-    });
-  } else if (window.electronAPI) {
+function enqueueMainSemanticWork(work) {
+  const run = async () => {
+    // Window closure is coordinated asynchronously through the main process.
+    // Do not admit queued main-renderer semantic work after terminal i18n failure.
+    if (mainRendererI18nTerminal) return;
+    return work();
+  };
+  settingsApplicationQueue = settingsApplicationQueue.then(run, run);
+  return settingsApplicationQueue;
+}
+
+function settingsChangeHandler(newSettings) {
+  const run = () => applySettingsChange(newSettings);
+  // Preload listeners do not await async callbacks. Admit live settings after
+  // the preceding bootstrap or settings semantic operation has settled.
+  return enqueueMainSemanticWork(run);
+}
+
+function armCurrentTextSubscription() {
+  if (hasCurrentTextSubscription) return;
+  if (!window.electronAPI || typeof window.electronAPI.onCurrentTextUpdated !== 'function') {
     throw new Error('[renderer] electronAPI.onCurrentTextUpdated unavailable; cannot maintain current text synchronization');
   }
+
+  window.electronAPI.onCurrentTextUpdated((payload) => {
+    try {
+      setCurrentTextAndUpdateUI(payload, { applyRules: !mainRendererI18nTerminal });
+    } catch (err) {
+      log.error('Error handling current-text-updated:', err);
+    }
+  });
+  hasCurrentTextSubscription = true;
+}
+
+function armIpcSubscriptions() {
 
   // Subscribe to preset create/update notifications from main
   if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
@@ -986,6 +1091,7 @@ function armIpcSubscriptions() {
   if (window.electronAPI) {
     if (typeof window.electronAPI.onStartupReady === 'function') {
       window.electronAPI.onStartupReady(() => {
+        if (mainRendererI18nTerminal) return;
         if (startupReadyReceived) {
           log.warnOnce(
             'renderer.startup.ready.duplicate',
@@ -1138,7 +1244,7 @@ function setupToggleModoPreciso() {
   }
 }
 
-async function runStartupOrchestrator() {
+async function runMainStartup() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
       dedupeKey: 'BOOTSTRAP:renderer.ipc.getAppConfig.unavailable',
@@ -1186,17 +1292,12 @@ async function runStartupOrchestrator() {
     }
     currentTextSelectorSection.setPreviewSpoilerEnabled(settingsCache.previewSpoilerEnabled);
 
-    // Load and apply renderer translations
+    // Translation state and required semantic application establish the renderer UI.
     try {
-      applyWindowLanguageAttributes(idiomaActual);
-      await loadRendererTranslations(idiomaActual);
+      await transitionMainRendererLanguage(idiomaActual);
     } catch (err) {
-      log.warn('BOOTSTRAP: initial translations failed; using defaults:', err);
-    }
-    try {
-      applyTranslations();
-    } catch (err) {
-      log.warn('BOOTSTRAP: applyTranslations failed (ignored):', err);
+      reportRendererI18nFailure(err, { startup: true });
+      return;
     }
 
     const getCurrentText = getRequiredElectronMethod('getCurrentText');
@@ -1226,46 +1327,15 @@ async function runStartupOrchestrator() {
       currentTextProcessingResult.state
     );
 
-    if (bootstrapCurrentTextPayload) {
-      const bootstrapPayload = bootstrapCurrentTextPayload;
-      const bootstrapRequestId = bootstrapPayload.requestId;
-      const startupRequestId = startupCurrentTextProcessingState.requestId;
-      if (bootstrapRequestId > 0) {
-        if (bootstrapRequestId >= startupRequestId) {
-          initialText = bootstrapPayload.text;
-        }
-      } else if (!startupCurrentTextProcessingState.active) {
-        initialText = bootstrapPayload.text;
-      }
-    }
-
     currentTextRuntime.syncBootstrapState({
       initialText,
       processingState: startupCurrentTextProcessingState,
     });
+    armCurrentTextSubscription();
     textExtractionStatusUi.applyCurrentTextProcessingState(startupCurrentTextProcessingState, {
       source: 'startup_query',
     });
 
-    const getTextExtractionProcessingMode = getOptionalElectronMethod('getTextExtractionProcessingMode', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getTextExtractionProcessingMode.unavailable',
-      unavailableMessage: 'getTextExtractionProcessingMode unavailable; processing mode defaults to inactive.'
-    });
-    if (getTextExtractionProcessingMode) {
-      try {
-        const processingMode = await getTextExtractionProcessingMode();
-        if (processingMode && processingMode.ok === true) {
-          textExtractionStatusUi.applyProcessingModeState(processingMode.state, { source: 'startup_query' });
-        } else {
-          log.warn(
-            'BOOTSTRAP: getTextExtractionProcessingMode returned non-ok result; keeping processing mode inactive:',
-            processingMode
-          );
-        }
-      } catch (err) {
-        log.warn('BOOTSTRAP: getTextExtractionProcessingMode failed; keeping processing mode inactive:', err);
-      }
-    }
     syncMainInteractionLockUi();
 
     // Load presets and save them to the cache
@@ -1289,6 +1359,10 @@ async function runStartupOrchestrator() {
   } catch (err) {
     log.error('Error initializing renderer:', err);
   }
+}
+
+async function runStartupOrchestrator() {
+  return enqueueMainSemanticWork(runMainStartup);
 }
 
 // =============================================================================
@@ -1662,12 +1736,18 @@ function initializeDelegatedIntegrations() {
     log.warn('BrowserExtensionModal.configure unavailable; browser extension entry disabled.');
   }
 
-  if (mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
-    mainLogoLinks.bindBrandLinks({ electronAPI: window.electronAPI });
+  if (mainLogoLinksCapabilityAvailable
+    && mainLogoLinks && typeof mainLogoLinks.bindBrandLinks === 'function') {
+    mainLogoLinks.bindBrandLinks({
+      electronAPI: window.electronAPI,
+      canAcceptBrandLinkAction: () => isRendererReady() && mainLogoLinksCapabilityAvailable,
+    });
     return;
   }
 
-  log.warn('MainLogoLinks.bindBrandLinks unavailable; brand logo links disabled.');
+  if (mainLogoLinksCapabilityAvailable) {
+    setMainLogoLinksCapabilityUnavailable('binding unavailable');
+  }
 }
 
 // Text Editor launch state mirrors the pending UI while the Text Editor window opens.
@@ -1711,12 +1791,8 @@ function handleEditorFirstShowState(payload) {
     return;
   }
 
-  if (payload.reason === 'startup-timeout') {
-    window.Notify.notifyMain('renderer.editor.alerts.start_timeout');
-    return;
-  }
-
-  window.Notify.notifyMain('renderer.editor.alerts.start_failed');
+  // Lifecycle-owned Editor startup failures are disclosed once through Main's
+  // native surface. The main renderer only clears its pending launch state.
 }
 
 // =============================================================================
@@ -2238,8 +2314,9 @@ const initCronoController = () => {
 // =============================================================================
 // Renderer bootstrap entrypoint
 // =============================================================================
-// Listener wiring must happen before runStartupOrchestrator() so READY can unblock
-// only after subscriptions and UI guards are in place.
+// Core listener and UI wiring must happen before runStartupOrchestrator().
+// The current-text stream is armed by runMainStartup() after its authoritative
+// bootstrap snapshot is synchronized and before READY can unblock.
 function startRendererBootstrap() {
   infoModal.init({
     getCurrentLanguage: () => (settingsCache && settingsCache.language) || idiomaActual || DEFAULT_LANG,

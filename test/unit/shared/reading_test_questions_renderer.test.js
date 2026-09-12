@@ -207,11 +207,22 @@ function createElement(tagName, ownerDocument) {
   return element;
 }
 
-function createRendererHarness() {
+function createRendererHarness({
+  includeI18nFailureReporter = true,
+  rejectBeforeApplyLanguage = '',
+  rejectTransitionRequestNumber = 0,
+  rejectionHadEstablishedState = true,
+  rejectionRestorationFailed = false,
+  reporterThrows = false,
+  initPayloadOnSubscribe = null,
+  questionsCoreOverride = null,
+} = {}) {
   const dom = createDocumentHarness();
   const callbacks = {};
   const translationRequests = [];
   const deferredLoads = new Map();
+  let closeCalls = 0;
+  let reporterCalls = 0;
   let activeLanguage = 'en';
   const translations = {
     en: {
@@ -261,13 +272,16 @@ function createRendererHarness() {
     FormatUtils: {
       async obtenerSeparadoresDeNumeros(language, settings) {
         const languageBase = String(language || 'en').split(/[-_]/u)[0];
-        return settings.numberFormatting[languageBase] || settings.numberFormatting.en;
+        const numberFormatting = settings && settings.numberFormatting
+          ? settings.numberFormatting
+          : { en: { separadorMiles: ',', separadorDecimal: '.' } };
+        return numberFormatting[languageBase] || numberFormatting.en;
       },
       formatearNumero(value, thousands, decimal, fractionDigits = 0) {
         return `${Number(value).toFixed(fractionDigits)}[${thousands}${decimal}]`;
       },
     },
-    ReadingTestQuestionsCore: {
+    ReadingTestQuestionsCore: questionsCoreOverride || {
       computeRandomGuessPercentage() {
         return 25;
       },
@@ -284,12 +298,25 @@ function createRendererHarness() {
       },
     },
     RendererI18n: {
-      applyWindowLanguageAttributes() {},
-      async loadRendererTranslations(language) {
+      async transitionRendererTranslations(language, { applyTranslations } = {}) {
         translationRequests.push(language);
         const deferred = deferredLoads.get(language);
         if (deferred) await deferred.promise;
+        if (
+          language === rejectBeforeApplyLanguage
+          && (!rejectTransitionRequestNumber || translationRequests.length === rejectTransitionRequestNumber)
+        ) {
+          const err = new Error(`Cannot prepare ${language} translations`);
+          err.rendererI18nTransition = {
+            hadEstablishedState: rejectionHadEstablishedState,
+            restorationFailed: rejectionRestorationFailed,
+          };
+          throw err;
+        }
         activeLanguage = language;
+        if (typeof applyTranslations === 'function') {
+          await applyTranslations({ language, restoring: false });
+        }
       },
       msgRenderer: renderMessage,
       tRenderer(key) {
@@ -314,6 +341,7 @@ function createRendererHarness() {
       },
       onInitData(callback) {
         callbacks.initData = callback;
+        if (initPayloadOnSubscribe) callback(initPayloadOnSubscribe);
       },
       onSettingsChanged(callback) {
         callbacks.settingsChanged = callback;
@@ -323,8 +351,18 @@ function createRendererHarness() {
       callback();
     },
     scrollBy() {},
-    close() {},
+    close() {
+      closeCalls += 1;
+    },
   };
+  if (includeI18nFailureReporter) {
+    window.readingTestQuestionsAPI.reportRendererI18nFailure = () => {
+      reporterCalls += 1;
+      if (reporterThrows) {
+        throw new Error('renderer i18n failure reporter unavailable');
+      }
+    };
+  }
 
   const sandbox = {
     console,
@@ -355,8 +393,68 @@ function createRendererHarness() {
       return deferred;
     },
     translationRequests,
+    getCloseCalls() {
+      return closeCalls;
+    },
+    getReporterCalls() {
+      return reporterCalls;
+    },
   };
 }
+
+test('Reading Test renderer scripts close locally when RendererI18n is unavailable at load time', () => {
+  const rendererScripts = [
+    {
+      file: 'reading_test_questions.js',
+      apiName: 'readingTestQuestionsAPI',
+      errorPattern: /\[reading-test-questions\] RendererI18n unavailable/u,
+    },
+    {
+      file: 'reading_test_result.js',
+      apiName: 'readingTestResultAPI',
+      errorPattern: /\[reading-test-result\] RendererI18n unavailable/u,
+    },
+  ];
+
+  rendererScripts.forEach(({ file, apiName, errorPattern }) => {
+    let closeCalls = 0;
+    const window = {
+      getLogger() {
+        return {
+          debug() {},
+          error() {},
+          warn() {},
+        };
+      },
+      [apiName]: {
+        getSettings() {},
+        onInitData() {},
+        onSettingsChanged() {},
+      },
+      close() {
+        closeCalls += 1;
+      },
+    };
+    const sandbox = {
+      console,
+      document: {
+        addEventListener() {},
+      },
+      window,
+    };
+    vm.createContext(sandbox);
+    const source = fs.readFileSync(
+      path.resolve(__dirname, `../../../public/${file}`),
+      'utf8'
+    );
+
+    assert.throws(
+      () => vm.runInContext(source, sandbox, { filename: `public/${file}` }),
+      errorPattern
+    );
+    assert.equal(closeCalls, 1);
+  });
+});
 
 test('Questions ignores unrelated settings updates and uses current focus at language-driven replacement time', async () => {
   const harness = createRendererHarness();
@@ -442,4 +540,209 @@ test('Questions ignores unrelated settings updates and uses current focus at lan
   assert.equal(harness.getActiveElement(), harness.elements.btnContinue);
   inputs = harness.getInputs();
   assert.equal(inputs[1].checked, true);
+});
+
+test('Questions preserves its established language and formatting after translation preparation fails', async () => {
+  const harness = createRendererHarness({ rejectBeforeApplyLanguage: 'es' });
+  await flushRendererWork();
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Which option is correct?',
+        options: [
+          { id: 'a', text: 'First' },
+          { id: 'b', text: 'Second' },
+        ],
+      },
+    ],
+  });
+  await flushRendererWork();
+
+  harness.callbacks.settingsChanged({
+    language: 'es',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+    },
+  });
+  await flushRendererWork();
+
+  assert.equal(harness.translationRequests.at(-1), 'es');
+  assert.equal(harness.elements.title.textContent, 'Questions');
+
+  const [firstInput] = harness.getInputs();
+  firstInput.checked = true;
+  firstInput.dispatch('change');
+  harness.elements.btnCheck.dispatch('click');
+  await flushRendererWork();
+
+  assert.match(harness.elements.resultMessage.textContent, /100\.00\[,\.\]/u);
+});
+
+test('Questions renders a later valid payload while the language remains unchanged', async () => {
+  const harness = createRendererHarness();
+  await flushRendererWork();
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Initial question?',
+      options: [
+        { id: 'a', text: 'Initial A' },
+        { id: 'b', text: 'Initial B' },
+      ],
+    }],
+  });
+  await flushRendererWork();
+  assert.equal(harness.getInputs().length, 2);
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q2',
+      prompt: 'Replacement question?',
+      options: [{ id: 'a', text: 'Replacement A' }],
+    }],
+  });
+  await flushRendererWork();
+
+  assert.equal(harness.getInputs().length, 1);
+  assert.equal(harness.elements.btnCheck.disabled, false);
+  assert.deepEqual(harness.translationRequests, ['en', 'en', 'en']);
+});
+
+test('Questions treats an initial-settings failure after replay establishment as recoverable', async () => {
+  const harness = createRendererHarness({
+    rejectBeforeApplyLanguage: 'en',
+    rejectTransitionRequestNumber: 2,
+    initPayloadOnSubscribe: {
+      developerEmail: 'support@example.test',
+      questions: [{
+        id: 'q1',
+        prompt: 'Question one?',
+        correctOptionId: 'a',
+        options: [
+          { id: 'a', text: 'Answer A' },
+          { id: 'b', text: 'Answer B' },
+        ],
+      }],
+    },
+  });
+
+  await flushRendererWork();
+
+  assert.deepEqual(harness.translationRequests, ['en', 'en']);
+  assert.equal(harness.getReporterCalls(), 0);
+  assert.equal(harness.getCloseCalls(), 0);
+});
+
+test('Questions closes locally when terminal i18n failure reporting throws', async () => {
+  const harness = createRendererHarness({
+    rejectBeforeApplyLanguage: 'en',
+    rejectionHadEstablishedState: false,
+    reporterThrows: true,
+  });
+  await flushRendererWork();
+
+  assert.equal(harness.getCloseCalls(), 1);
+});
+
+test('Questions stops queued init and settings work after terminal i18n failure', async () => {
+  const harness = createRendererHarness({
+    rejectBeforeApplyLanguage: 'en',
+    rejectionHadEstablishedState: false,
+  });
+  await flushRendererWork();
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Question one?',
+      options: [
+        { id: 'a', text: 'Answer A' },
+        { id: 'b', text: 'Answer B' },
+      ],
+    }],
+  });
+  harness.callbacks.settingsChanged({
+    language: 'es',
+    numberFormatting: {
+      es: { separadorMiles: '.', separadorDecimal: ',' },
+    },
+  });
+  await flushRendererWork();
+
+  assert.deepEqual(harness.translationRequests, ['en']);
+  assert.equal(harness.getReporterCalls(), 1);
+  assert.equal(harness.getInputs().length, 0);
+});
+
+test('Questions keeps Check and native answer controls unavailable after terminal failure while Continue remains usable', async () => {
+  const harness = createRendererHarness({
+    rejectBeforeApplyLanguage: 'es',
+    rejectionRestorationFailed: true,
+  });
+  await flushRendererWork();
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Question one?',
+      options: [
+        { id: 'a', text: 'Answer A' },
+        { id: 'b', text: 'Answer B' },
+      ],
+    }],
+  });
+  await flushRendererWork();
+  assert.equal(harness.elements.btnCheck.disabled, false);
+  assert.ok(harness.getInputs().every((input) => input.disabled === false));
+
+  await harness.callbacks.settingsChanged({ language: 'es' });
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q2',
+      prompt: 'Later question?',
+      options: [{ id: 'a', text: 'Later answer' }],
+    }],
+  });
+  await flushRendererWork();
+
+  assert.equal(harness.getReporterCalls(), 1);
+  assert.equal(harness.elements.btnCheck.disabled, true);
+  assert.ok(harness.getInputs().every((input) => input.disabled === true));
+  assert.equal(harness.elements.btnContinue.disabled, false);
+});
+
+test('Questions renders the invalid-payload state after a non-i18n initialization failure', async () => {
+  const harness = createRendererHarness({
+    questionsCoreOverride: {
+      computeRandomGuessPercentage() { return 0; },
+      scoreQuestions() { return {}; },
+      validateQuestionsPayload() {
+        throw new Error('invalid payload');
+      },
+    },
+  });
+  await flushRendererWork();
+
+  harness.callbacks.initData({ questions: [] });
+  await flushRendererWork();
+
+  assert.equal(harness.elements.fatalMessage.textContent, 'Invalid questions.');
+  assert.equal(harness.elements.btnCheck.disabled, true);
+});
+
+test('Questions can establish translation state when the native i18n diagnostic bridge is unavailable', async () => {
+  const harness = createRendererHarness({ includeI18nFailureReporter: false });
+  await flushRendererWork();
+
+  assert.deepEqual(harness.translationRequests, ['en']);
+  assert.equal(harness.elements.title.textContent, 'Questions');
 });

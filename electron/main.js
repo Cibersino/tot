@@ -17,7 +17,7 @@
 // Imports (external + internal modules)
 // =============================================================================
 
-const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
@@ -50,6 +50,7 @@ const snapshotTagSettings = require('./snapshot_tag_settings');
 const textState = require('./text_state');
 const editorState = require('./editor_state');
 const editorWindowLifecycle = require('./editor_window_lifecycle');
+const taskEditorWindowLifecycle = require('./task_editor_window_lifecycle');
 const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const snapshotsMain = require('./current_text_snapshots_main');
@@ -89,6 +90,11 @@ const spellcheckController = spellcheck.createController({
 const editorWindowLifecycleController = editorWindowLifecycle.createController({
   log,
   editorState,
+  showStartupFailureDisclosure: showEditorStartupFailureDisclosure,
+});
+const taskEditorWindowLifecycleController = taskEditorWindowLifecycle.createController({
+  dialog,
+  getDialogTexts: () => menuBuilder.getDialogTexts(getSelectedLanguage()),
 });
 const editorTextSizeController = editorTextSize.createController({
   settingsState,
@@ -146,13 +152,28 @@ const textExtractionProcessingModeController = textExtractionProcessingModeIpc.c
 });
 
 let currentTextProcessingStateMainBridge = null;
+let pendingMainWindowCloseAfterCurrentTextProcessing = false;
 const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
   onStateChanged: (state) => {
     currentTextProcessingStateMainBridge.handleStateChanged(state);
+    if (state && state.active === false && pendingMainWindowCloseAfterCurrentTextProcessing) {
+      pendingMainWindowCloseAfterCurrentTextProcessing = false;
+      const targetWin = resolveMainWindow();
+      if (targetWin && !targetWin.isDestroyed()) {
+        setTimeout(() => {
+          try {
+            if (targetWin && !targetWin.isDestroyed()) {
+              targetWin.close();
+            }
+          } catch (err) {
+            log.warn('Failed to close main window after current-text processing settled (ignored):', err);
+          }
+        }, 0);
+      }
+    }
   },
 });
 currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBridge({
-  controller: currentTextProcessingStateController,
   resolveMainWindow,
   hasLiveWebContents,
   log,
@@ -384,8 +405,8 @@ let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating Stopwatch (flotante.html)
 let taskEditorWin = null; // Task Editor window (task_editor.html)
 let textTimeCalculatorWin = null; // Quick text/time calculator window
-let taskEditorForceClose = false;
 let pendingMainWindowCloseAfterProcessingAbort = false;
+let pendingMainWindowCloseAfterTaskResolution = false;
 let readingTestSessionController = null;
 
 // =============================================================================
@@ -542,11 +563,6 @@ function createMainWindow() {
         log.warn('Main did-finish-load state seed skipped (ignored): main window unavailable.');
         return;
       }
-      mainWin.webContents.send(
-        'text-extraction-processing-mode-changed',
-        textExtractionProcessingModeController.getState()
-      );
-      currentTextProcessingStateMainBridge.seedMainWindow(mainWin);
       if (readingTestSessionController) {
         mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
       } else {
@@ -555,7 +571,7 @@ function createMainWindow() {
         );
       }
     } catch (err) {
-      log.warn('Failed to seed processing-mode state on renderer load (ignored):', err);
+      log.warn('Failed to seed main-renderer state on renderer load (ignored):', err);
     }
   });
 
@@ -576,6 +592,24 @@ function createMainWindow() {
   // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
   mainWin.on('close', (event) => {
     try {
+      if (isAliveWindow(taskEditorWin) && !taskEditorWindowLifecycleController.isForceCloseAuthorized()) {
+        if (event && typeof event.preventDefault === 'function') {
+          event.preventDefault();
+        }
+        if (pendingMainWindowCloseAfterTaskResolution) return;
+        pendingMainWindowCloseAfterTaskResolution = true;
+        void taskEditorWindowLifecycleController.requestNativeClose(mainWin).then((authorized) => {
+          pendingMainWindowCloseAfterTaskResolution = false;
+          if (authorized && isAliveWindow(mainWin)) {
+            mainWin.close();
+          }
+        }).catch((err) => {
+          pendingMainWindowCloseAfterTaskResolution = false;
+          log.error('Task Editor close resolution failed during main window close:', err);
+        });
+        return;
+      }
+
       if (textExtractionProcessingModeController.isActive()) {
         if (event && typeof event.preventDefault === 'function') {
           event.preventDefault();
@@ -589,6 +623,14 @@ function createMainWindow() {
           pendingMainWindowCloseAfterProcessingAbort = false;
           log.warn('Main window close during processing could not request cancellation:', abortResult);
         }
+        return;
+      }
+
+      if (currentTextProcessingStateController.isActive()) {
+        if (event && typeof event.preventDefault === 'function') {
+          event.preventDefault();
+        }
+        pendingMainWindowCloseAfterCurrentTextProcessing = true;
         return;
       }
 
@@ -614,14 +656,6 @@ function createMainWindow() {
         }
       }
 
-      if (isAliveWindow(taskEditorWin)) {
-        try {
-          taskEditorForceClose = true;
-          taskEditorWin.close();
-        } catch (err) {
-          log.error('Error closing taskEditorWin from mainWin.close:', err);
-        }
-      }
     } catch (err) {
       log.error('Error in mainWin.close handler:', err);
     }
@@ -746,7 +780,6 @@ function createEditorWindow(options = {}) {
  * Restores persisted reduced geometry and maximized state.
  */
 function createTaskEditorWindow() {
-  taskEditorForceClose = false;
   const state = taskEditorState.loadInitialState(loadJson);
   const hasReduced =
     state &&
@@ -774,6 +807,8 @@ function createTaskEditorWindow() {
     },
   });
 
+  taskEditorWindowLifecycleController.attachWindow(taskEditorWin);
+
   taskEditorWin.setMenu(null);
   taskEditorWin.setMenuBarVisibility(false);
   taskEditorWin.loadFile(path.join(__dirname, '../public/task_editor.html'));
@@ -794,24 +829,16 @@ function createTaskEditorWindow() {
 
   // Close guard: delegate to renderer for unsaved-changes confirmation.
   taskEditorWin.on('close', (event) => {
-    if (taskEditorForceClose) return;
+    if (taskEditorWindowLifecycleController.isForceCloseAuthorized()) return;
     event.preventDefault();
-    try {
-      taskEditorWin.webContents.send('task-editor-request-close');
-    } catch (err) {
-      log.warnOnce('taskEditor.close.requestFailed', 'Task Editor close request failed; forcing close.', err);
-      taskEditorForceClose = true;
-      try {
-        taskEditorWin.close();
-      } catch (closeErr) {
-        log.error('Error forcing Task Editor close:', closeErr);
-      }
-    }
+    void taskEditorWindowLifecycleController.requestNativeClose(taskEditorWin).catch((err) => {
+      log.error('Task Editor native close resolution failed:', err);
+    });
   });
 
   taskEditorWin.on('closed', () => {
+    taskEditorWindowLifecycleController.handleWindowClosed(taskEditorWin);
     taskEditorWin = null;
-    taskEditorForceClose = false;
   });
 }
 
@@ -1048,6 +1075,104 @@ function handleSplashRemoved() {
     updater.scheduleInitialCheck();
   } catch (err) {
     log.error('Error scheduling updater initial check post-READY:', err);
+  }
+}
+
+function showEditorStartupFailureDisclosure(details = {}) {
+  const cause = typeof details.cause === 'string' ? details.cause : 'EDITOR_STARTUP_FAILED';
+  const isTimeout = cause === 'EDITOR_STARTUP_TIMEOUT';
+  const selectedLanguage = getSelectedLanguage();
+  let dialogTexts = null;
+
+  try {
+    dialogTexts = menuBuilder.getDialogTexts(selectedLanguage);
+  } catch (err) {
+    log.error('Text Editor startup failure native dialog translations unavailable:', err);
+  }
+
+  const title = dialogTexts && dialogTexts[
+    isTimeout ? 'editor_startup_timeout_title' : 'editor_startup_failed_title'
+  ];
+  const message = dialogTexts && dialogTexts[
+    isTimeout ? 'editor_startup_timeout_message' : 'editor_startup_failed_message'
+  ];
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title !== 'string' || !title.trim()
+    || typeof message !== 'string' || !message.trim()
+    || typeof ok !== 'string' || !ok.trim()) {
+    log.error('Text Editor startup failure native dialog copy unavailable:', { cause });
+    return;
+  }
+
+  try {
+    dialog.showMessageBoxSync(resolveMainWindow(), {
+      type: 'error',
+      title,
+      message,
+      buttons: [ok],
+      defaultId: 0,
+      noLink: true,
+    });
+  } catch (err) {
+    log.error('Text Editor startup failure native dialog failed:', { cause }, err);
+  }
+}
+
+function closeRendererAfterI18nFailure(event, payload) {
+  const sourceContents = event && event.sender;
+  const sourceWindow = sourceContents && typeof BrowserWindow.fromWebContents === 'function'
+    ? BrowserWindow.fromWebContents(sourceContents)
+    : null;
+  const failureKind = payload && typeof payload.kind === 'string' ? payload.kind : 'unknown';
+
+  if (!sourceWindow || sourceWindow.isDestroyed()) {
+    log.error('Renderer i18n failure could not close its source window:', { failureKind });
+    return;
+  }
+
+  if (sourceWindow === taskEditorWin) {
+    log.error('Task Editor must resolve terminal i18n state through its lifecycle owner:', { failureKind });
+    return;
+  }
+
+  const selectedLanguage = getSelectedLanguage();
+  let dialogTexts = null;
+  try {
+    dialogTexts = menuBuilder.getDialogTexts(selectedLanguage);
+  } catch (err) {
+    log.error('Renderer i18n failure native dialog translations unavailable:', err);
+  }
+
+  const title = dialogTexts && dialogTexts.renderer_i18n_failure_title;
+  const message = dialogTexts && dialogTexts.renderer_i18n_failure_message;
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title === 'string' && title.trim()
+    && typeof message === 'string' && message.trim()
+    && typeof ok === 'string' && ok.trim()) {
+    try {
+      dialog.showMessageBoxSync(sourceWindow, {
+        type: 'error',
+        title,
+        message,
+        buttons: [ok],
+        defaultId: 0,
+        noLink: true,
+      });
+    } catch (err) {
+      log.error('Renderer i18n failure native dialog failed:', err);
+    }
+  } else {
+    log.error('Renderer i18n failure native dialog copy unavailable; closing window without dialog.');
+  }
+
+  log.error('Renderer i18n failure closing affected window:', {
+    failureKind,
+    isMainWindow: sourceWindow === mainWin,
+  });
+  try {
+    sourceWindow.close();
+  } catch (err) {
+    log.error('Renderer i18n failure window close failed:', err);
   }
 }
 
@@ -1669,17 +1794,19 @@ ipcMain.on('editor-report-base-presentation-state', (event, payload) => {
   }
 });
 
-ipcMain.on('task-editor-confirm-close', (event) => {
+ipcMain.on('task-editor-close-response', (event, payload) => {
   try {
-    const senderWin = BrowserWindow.fromWebContents(event.sender);
-    if (!taskEditorWin || senderWin !== taskEditorWin) {
-      log.warn('task-editor-confirm-close unauthorized (ignored).');
-      return;
-    }
-    taskEditorForceClose = true;
-    taskEditorWin.close();
+    taskEditorWindowLifecycleController.handleCloseResponse(event, payload);
   } catch (err) {
-    log.error('Error processing task-editor-confirm-close:', err);
+    log.error('Error processing task-editor-close-response:', err);
+  }
+});
+
+ipcMain.on('task-editor-terminal', (event, payload) => {
+  try {
+    taskEditorWindowLifecycleController.acceptTerminalOutcome(event, payload);
+  } catch (err) {
+    log.error('Error processing task-editor-terminal:', err);
   }
 });
 
@@ -1820,6 +1947,8 @@ ipcMain.on('startup:splash-removed', () => {
   handleSplashRemoved();
 });
 
+ipcMain.on('renderer-i18n-failed', closeRendererAfterI18nFailure);
+
 // =============================================================================
 // App lifecycle (startup, activate, quit)
 // =============================================================================
@@ -1939,6 +2068,7 @@ app.whenReady().then(() => {
         taskEditorWin.show();
       }
     },
+    taskEditorLifecycle: taskEditorWindowLifecycleController,
   });
 
   updater.registerIpc(ipcMain, {

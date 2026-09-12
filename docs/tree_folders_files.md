@@ -136,6 +136,7 @@ tot/
 │ ├── spellcheck.js
 │ ├── task_editor_preload.js
 │ ├── task_editor_state.js
+│ ├── task_editor_window_lifecycle.js
 │ ├── tasks_main.js
 │ ├── text_state.js
 │ ├── text_time_calculator_preload.js
@@ -160,7 +161,7 @@ tot/
 │ │ ├── Baskervville-Italic-VariableFont_wght.ttf
 │ │ └── Baskervville-VariableFont_wght.ttf
 │ ├── info/
-│ │ ├── acerca_de.html
+│ │ ├── acerca_de.es.html
 │ │ ├── instrucciones.en.html
 │ │ ├── instrucciones.es.html
 │ │ └── links_interes.html
@@ -333,6 +334,7 @@ tot/
 - `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_state.js` — Persistencia/estado de la ventana del Editor de Tareas (tamaño, posición y maximizado).
+- `electron/task_editor_window_lifecycle.js` — Controlador main-owned del ciclo de vida del Editor de Tareas: conserva la identidad de la ventana, coordina su inicialización y estado dirty, autentica el transporte renderer→Main sin asumir ownership del borrador y serializa la disposición terminal/cierre nativo, incluido el cierre de la ventana principal.
 - `electron/app_temp_paths.js` — Helper main-owned/importable de temporales de runtime: centraliza el root `os.tmpdir()/tot-temp/`, crea subdirectorios/paths temporales app-owned y expone helpers de contención y cleanup best-effort.
 - `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, permite selección múltiple, guarda la última carpeta usada cuando la selección es válida y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
 - `electron/text_extraction_platform/text_extraction_preconditions_ipc.js` — Gate previo al inicio: bloquea extracción si hay ventanas secundarias abiertas o si el cronómetro está corriendo.

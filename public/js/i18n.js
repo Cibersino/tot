@@ -29,6 +29,7 @@
   const RTL_LANGUAGE_BASES = new Set(['ar', 'fa', 'he', 'ur']);
   const FIXED_DOCUMENT_DIRECTION = 'ltr';
   const LOCALIZED_DOCUMENT_RESOURCES = Object.freeze({
+    'renderer.info.acerca_de': './info/acerca_de.{lang}.html',
     'renderer.info.instructions': './info/instrucciones.{lang}.html',
   });
 
@@ -38,6 +39,7 @@
   let rendererTranslations = null;
   let rendererTranslationsLang = null;
   let rendererDefaultTranslations = null;
+  let rendererTransitionQueue = Promise.resolve();
   let userTextDirectionProbeHost = null;
   let userTextDirectionProbe = null;
 
@@ -76,6 +78,32 @@
       dir: FIXED_DOCUMENT_DIRECTION,
       languageDirection,
     };
+  }
+
+  function captureWindowLanguageAttributes() {
+    if (!document || !document.documentElement) return null;
+    const root = document.documentElement;
+    return {
+      lang: root.getAttribute('lang'),
+      dir: root.getAttribute('dir'),
+      languageDirection: root.getAttribute('data-language-direction'),
+    };
+  }
+
+  function restoreWindowLanguageAttributes(snapshot) {
+    if (!snapshot || !document || !document.documentElement) return;
+    const root = document.documentElement;
+    [
+      ['lang', snapshot.lang],
+      ['dir', snapshot.dir],
+      ['data-language-direction', snapshot.languageDirection],
+    ].forEach(([name, value]) => {
+      if (value === null) {
+        root.removeAttribute(name);
+      } else {
+        root.setAttribute(name, value);
+      }
+    });
   }
 
   function ensureUserTextDirectionProbe() {
@@ -176,7 +204,14 @@
       const variant = (idx === 0 && langCode.includes('-')) ? 'full' : 'base';
       try {
         const resp = await fetch(p);
-        if (!resp || !resp.ok) continue;
+        if (!resp || !resp.ok) {
+          log.warnOnce(
+            `i18n.renderer.bundle.unavailable:${langCode || 'unknown'}:${variant}`,
+            'renderer.json unavailable (trying fallback):',
+            { requested, langCode, path: p, status: resp && resp.status }
+          );
+          continue;
+        }
         const raw = await resp.text();
         const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
         if (!cleaned.trim()) {
@@ -188,7 +223,16 @@
           continue;
         }
         try {
-          return JSON.parse(cleaned || '{}');
+          const parsed = JSON.parse(cleaned);
+          if (!isPlainObject(parsed)) {
+            log.warnOnce(
+              `i18n.renderer.bundle.invalidShape:${langCode || 'unknown'}:${variant}`,
+              'renderer.json root must be a JSON object (trying fallback):',
+              { requested, langCode, path: p }
+            );
+            continue;
+          }
+          return parsed;
         } catch (err) {
           log.warnOnce(
             `i18n.renderer.bundle.parse:${langCode || 'unknown'}:${variant}`,
@@ -232,7 +276,7 @@
     return null;
   }
 
-  async function loadRendererTranslations(lang) {
+  async function prepareRendererTranslations(lang) {
     const requested = normalizeLangTag(lang);
     if (!requested) {
       log.warnOnce(
@@ -242,18 +286,18 @@
     }
 
     const selected = requested || DEFAULT_LANG;
-    if (rendererTranslations && rendererTranslationsLang === selected) return rendererTranslations;
 
     if (!rendererDefaultTranslations) {
       const defaults = await loadBundle(DEFAULT_LANG, DEFAULT_LANG, true);
       if (!defaults) {
         log.errorOnce(
           `i18n.loadRendererTranslations.defaultMissing:${DEFAULT_LANG}`,
-          'Default renderer.json missing or invalid (using empty defaults):',
+          'Default renderer.json missing or invalid; renderer translation state cannot be established:',
           DEFAULT_LANG
         );
+        throw new Error(`[i18n] Default renderer.json unavailable or invalid: ${DEFAULT_LANG}`);
       }
-      rendererDefaultTranslations = defaults || {};
+      rendererDefaultTranslations = defaults;
     }
 
     let overlay = null;
@@ -268,9 +312,101 @@
       }
     }
 
-    rendererTranslations = deepMerge(rendererDefaultTranslations || {}, overlay || {});
-    rendererTranslationsLang = selected;
+    return {
+      language: selected,
+      translations: deepMerge(rendererDefaultTranslations, overlay || {}),
+    };
+  }
+
+  function commitRendererTranslations(candidate) {
+    rendererTranslations = candidate.translations;
+    rendererTranslationsLang = candidate.language;
     return rendererTranslations;
+  }
+
+  function captureRendererTranslationState() {
+    return {
+      translations: rendererTranslations,
+      language: rendererTranslationsLang,
+      windowAttributes: captureWindowLanguageAttributes(),
+    };
+  }
+
+  async function restoreRendererTranslationState(snapshot, applyTranslations) {
+    rendererTranslations = snapshot.translations;
+    rendererTranslationsLang = snapshot.language;
+    restoreWindowLanguageAttributes(snapshot.windowAttributes);
+    if (rendererTranslations) {
+      await applyTranslations({ language: snapshot.language, restoring: true });
+    }
+  }
+
+  function markRendererTransitionError(error, { hadEstablishedState, restorationFailed = false } = {}) {
+    const normalized = error instanceof Error ? error : new Error(String(error));
+    normalized.rendererI18nTransition = {
+      hadEstablishedState: !!hadEstablishedState,
+      restorationFailed: !!restorationFailed,
+    };
+    return normalized;
+  }
+
+  function isTerminalRendererTransitionFailure(error) {
+    const transition = error && error.rendererI18nTransition;
+    return !!transition && (!transition.hadEstablishedState || transition.restorationFailed);
+  }
+
+  function transitionRendererTranslations(lang, { applyTranslations } = {}) {
+    if (typeof applyTranslations !== 'function') {
+      return Promise.reject(new Error('[i18n] transitionRendererTranslations requires applyTranslations'));
+    }
+
+    const runTransition = async () => {
+      let candidate;
+      try {
+        candidate = await prepareRendererTranslations(lang);
+      } catch (err) {
+        throw markRendererTransitionError(err, {
+          hadEstablishedState: !!rendererTranslations,
+        });
+      }
+
+      const previousState = captureRendererTranslationState();
+      commitRendererTranslations(candidate);
+      applyWindowLanguageAttributes(candidate.language);
+
+      try {
+        await applyTranslations({ language: candidate.language, restoring: false });
+      } catch (err) {
+        try {
+          await restoreRendererTranslationState(previousState, applyTranslations);
+        } catch (restoreErr) {
+          log.error(
+            'Renderer translation transition restoration failed:',
+            { requestedLanguage: candidate.language, previousLanguage: previousState.language },
+            restoreErr
+          );
+          throw markRendererTransitionError(restoreErr, {
+            hadEstablishedState: !!previousState.translations,
+            restorationFailed: true,
+          });
+        }
+        throw markRendererTransitionError(err, {
+          hadEstablishedState: !!previousState.translations,
+        });
+      }
+
+    };
+
+    const scheduled = rendererTransitionQueue.then(runTransition);
+    rendererTransitionQueue = scheduled.catch((err) => {
+      if (isTerminalRendererTransitionFailure(err)) {
+        throw err;
+      }
+    });
+    // Observe a terminal queue rejection without converting it back into a
+    // resolved queue. Later transitions must not run after fail-closed state.
+    rendererTransitionQueue.catch(() => {});
+    return scheduled;
   }
 
   // =============================================================================
@@ -346,20 +482,21 @@
   // =============================================================================
   // Translation helpers
   // =============================================================================
-  function tRenderer(path, fallback = path) {
-    if (!rendererTranslations) return fallback;
+  function tRenderer(path) {
+    if (!rendererTranslations) {
+      throw new Error('[i18n] tRenderer called before renderer translation state was established');
+    }
     const value = getPath(rendererTranslations, path);
     if (typeof value === 'string') return value;
     log.warn(
-      'Missing translation key (using fallback):',
+      'Missing translation key (using key path):',
       { path, lang: rendererTranslationsLang }
     );
-    return fallback;
+    return path;
   }
 
-  function msgRenderer(path, params = {}, fallback = path) {
-    let str = tRenderer(path, fallback);
-    if (!str) return fallback;
+  function msgRenderer(path, params = {}) {
+    let str = tRenderer(path);
     Object.keys(params || {}).forEach(k => {
       const val = params[k];
       str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(val));
@@ -390,7 +527,9 @@
   }
 
   function getRendererValue(path) {
-    if (!rendererTranslations) return undefined;
+    if (!rendererTranslations) {
+      throw new Error('[i18n] getRendererValue called before renderer translation state was established');
+    }
     return getPath(rendererTranslations, path);
   }
 
@@ -398,7 +537,7 @@
   // Exports / module surface
   // =============================================================================
   window.RendererI18n = {
-    loadRendererTranslations,
+    transitionRendererTranslations,
     loadLocalizedDocument,
     tRenderer,
     msgRenderer,
@@ -408,7 +547,6 @@
     getLanguageDirection,
     getUiLanguageDirection,
     resolveUserTextDirection,
-    applyWindowLanguageAttributes,
     renderLocalizedLabelWithInvariantValue,
   };
 })();

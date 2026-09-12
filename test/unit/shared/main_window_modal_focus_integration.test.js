@@ -6,6 +6,41 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
+const READING_TEST_ENTRY_ELEMENT_IDS = [
+  'readingTestEntryModal',
+  'readingTestEntryModalBackdrop',
+  'readingTestEntryModalTitle',
+  'readingTestEntryModalIntroToggle',
+  'readingTestEntryModalIntro',
+  'readingTestEntryModalWarning',
+  'readingTestEntryModalEligibleCount',
+  'readingTestEntryModalEligibleCountLabel',
+  'readingTestEntryModalEligibleCountNumber',
+  'readingTestEntryModalShowBundledLabel',
+  'readingTestEntryModalShowBundled',
+  'readingTestEntryModalShowBundledText',
+  'readingTestEntryModalShowBundledDescription',
+  'readingTestEntryModalGetMoreFiles',
+  'readingTestEntryModalGetMoreFilesDescription',
+  'readingTestEntryModalImport',
+  'readingTestEntryModalImportDescription',
+  'readingTestEntryModalReset',
+  'readingTestEntryModalStart',
+  'readingTestEntryModalStartDescription',
+  'readingTestEntryModalStartCurrentText',
+  'readingTestEntryModalStartCurrentTextDescription',
+  'readingTestEntryModalClose',
+  'readingTestEntryLanguageSection',
+  'readingTestEntryLanguageHeading',
+  'readingTestEntryLanguageOptions',
+  'readingTestEntryTypeSection',
+  'readingTestEntryTypeHeading',
+  'readingTestEntryTypeOptions',
+  'readingTestEntryDifficultySection',
+  'readingTestEntryDifficultyHeading',
+  'readingTestEntryDifficultyOptions',
+];
+
 function createElement(id = '') {
   const attributes = {};
   const listeners = new Map();
@@ -183,38 +218,7 @@ test('browser-extension modal focuses Close and restores its per-open trigger', 
 
 test('reading-test entry modal focuses Show instructions and restores its opener', async () => {
   const env = createEnvironment([
-    'readingTestEntryModal',
-    'readingTestEntryModalBackdrop',
-    'readingTestEntryModalTitle',
-    'readingTestEntryModalIntroToggle',
-    'readingTestEntryModalIntro',
-    'readingTestEntryModalWarning',
-    'readingTestEntryModalEligibleCount',
-    'readingTestEntryModalEligibleCountLabel',
-    'readingTestEntryModalEligibleCountNumber',
-    'readingTestEntryModalShowBundledLabel',
-    'readingTestEntryModalShowBundled',
-    'readingTestEntryModalShowBundledText',
-    'readingTestEntryModalShowBundledDescription',
-    'readingTestEntryModalGetMoreFiles',
-    'readingTestEntryModalGetMoreFilesDescription',
-    'readingTestEntryModalImport',
-    'readingTestEntryModalImportDescription',
-    'readingTestEntryModalReset',
-    'readingTestEntryModalStart',
-    'readingTestEntryModalStartDescription',
-    'readingTestEntryModalStartCurrentText',
-    'readingTestEntryModalStartCurrentTextDescription',
-    'readingTestEntryModalClose',
-    'readingTestEntryLanguageSection',
-    'readingTestEntryLanguageHeading',
-    'readingTestEntryLanguageOptions',
-    'readingTestEntryTypeSection',
-    'readingTestEntryTypeHeading',
-    'readingTestEntryTypeOptions',
-    'readingTestEntryDifficultySection',
-    'readingTestEntryDifficultyHeading',
-    'readingTestEntryDifficultyOptions',
+    ...READING_TEST_ENTRY_ELEMENT_IDS,
     'readingTestOpener',
   ]);
   env.elements.readingTestEntryModal.setAttribute('aria-hidden', 'true');
@@ -286,6 +290,57 @@ test('reading-test entry modal focuses Show instructions and restores its opener
   env.window.ReadingSpeedTestUi.configure();
   env.elements.readingTestEntryModalClose.dispatch('click');
   assert.equal(env.document.activeElement, env.elements.readingTestOpener);
+});
+
+test('reading-test setup and early session state do not resolve translated copy', () => {
+  const env = createEnvironment(READING_TEST_ENTRY_ELEMENT_IDS);
+  let stateChangedHandler = null;
+  let translationCalls = 0;
+  env.elements.readingTestEntryModal.setAttribute('aria-hidden', 'true');
+  env.window.ReadingTestFiltersCore = {
+    normalizeSelection(selection) {
+      return {
+        language: Array.isArray(selection && selection.language) ? selection.language : [],
+        type: Array.isArray(selection && selection.type) ? selection.type : [],
+        difficulty: Array.isArray(selection && selection.difficulty) ? selection.difficulty : [],
+      };
+    },
+    computeFilterState(entries) {
+      return {
+        eligibleCount: entries.length,
+        options: { language: [], type: [], difficulty: [] },
+      };
+    },
+  };
+  env.window.SnapshotTagCatalog = {
+    LANGUAGE_OPTIONS: [],
+    TYPE_OPTIONS: [],
+    DIFFICULTY_OPTIONS: [],
+    resolveTagLabel() { return ''; },
+  };
+  env.window.electronAPI = {
+    onReadingTestStateChanged(handler) {
+      stateChangedHandler = handler;
+    },
+  };
+  env.window.RendererI18n.tRenderer = () => {
+    translationCalls += 1;
+    throw new Error('renderer translation state is not established');
+  };
+  env.run('../../../public/js/reading_speed_test.js');
+
+  assert.doesNotThrow(() => env.window.ReadingSpeedTestUi.configure());
+  assert.equal(translationCalls, 0);
+  assert.equal(typeof stateChangedHandler, 'function');
+
+  assert.doesNotThrow(() => stateChangedHandler({ active: false, stage: 'idle', blocked: false }));
+  assert.equal(translationCalls, 0);
+
+  assert.throws(
+    () => env.window.ReadingSpeedTestUi.applyTranslations(),
+    /renderer translation state is not established/
+  );
+  assert.equal(translationCalls, 1);
 });
 
 test('reading-test entry markup relates material help to each actual control', () => {

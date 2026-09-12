@@ -33,9 +33,11 @@ const {
   DEFAULT_LANG,
   EDITOR_FIND_INPUT_MAX_CHARS,
 } = AppConstants;
+let findI18nTerminal = false;
 
-const { loadRendererTranslations, tRenderer, applyWindowLanguageAttributes } = window.RendererI18n || {};
-if (!loadRendererTranslations || !tRenderer || !applyWindowLanguageAttributes) {
+const { transitionRendererTranslations, tRenderer } = window.RendererI18n || {};
+if (!transitionRendererTranslations || !tRenderer) {
+  reportEarlyTerminalFindI18nFailure('startup-api');
   throw new Error('[editor-find] RendererI18n unavailable; cannot continue.');
 }
 
@@ -95,6 +97,8 @@ if (
 
 let idiomaActual = DEFAULT_LANG;
 let translationsLoadedFor = null;
+let findSemanticQueue = Promise.resolve();
+let findSemanticReady = false;
 
 const findInputMaxChars = Number.isFinite(Number(EDITOR_FIND_INPUT_MAX_CHARS))
   ? Math.max(1, Math.floor(Number(EDITOR_FIND_INPUT_MAX_CHARS)))
@@ -109,11 +113,33 @@ const findState = {
   busy: false,
 };
 
+function reportEarlyTerminalFindI18nFailure(kind) {
+  // The static shell already disables normal Find controls while the required
+  // translation surface is being established. At this boundary, the dynamic
+  // DOM references below do not exist yet, so report directly through the
+  // stable preload surface rather than entering the regular terminal helper.
+  const api = window.editorFindAPI;
+  if (!api || typeof api.reportRendererI18nFailure !== 'function') {
+    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
+    return;
+  }
+  try {
+    api.reportRendererI18nFailure({ kind });
+  } catch (err) {
+    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', err);
+    if (typeof window.close === 'function') window.close();
+  }
+}
+
 // =============================================================================
 // State and UI helpers
 // =============================================================================
 function applyIncomingState(payload) {
+  if (findI18nTerminal) return;
   normalizeState(payload);
+  if (!translationsLoadedFor) return;
+  synchronizeQueryInputFromMainState();
   applyUiState();
 }
 
@@ -132,14 +158,6 @@ function normalizeState(payload) {
   findState.busy = !!payload.busy;
 }
 
-async function ensureTranslations(lang) {
-  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-  if (translationsLoadedFor === target) return;
-  applyWindowLanguageAttributes(target);
-  await loadRendererTranslations(target);
-  translationsLoadedFor = target;
-}
-
 function resolveStatusText() {
   if (!findState.query) {
     return tr('renderer.editor.editor_find.status_empty_query');
@@ -151,24 +169,29 @@ function resolveStatusText() {
   return `${current}/${findState.matches}`;
 }
 
+function synchronizeQueryInputFromMainState() {
+  // The editable query is Main-owned state. Translation presentation must not
+  // overwrite input that has been submitted but whose state echo is still pending.
+  if (inputEl.value !== findState.query) {
+    inputEl.value = findState.query;
+  }
+}
+
 function applyUiState() {
   document.body.setAttribute('data-expanded', findState.expanded ? 'true' : 'false');
   replaceRowEl.hidden = !findState.expanded;
 
-  if (inputEl.value !== findState.query) {
-    inputEl.value = findState.query;
-  }
-
   const hasQuery = findState.query.length > 0;
   const hasMatches = findState.matches > 0;
-  inputEl.disabled = findState.busy;
-  replaceInputEl.disabled = findState.busy;
-  prevEl.disabled = findState.busy || !hasQuery;
-  nextEl.disabled = findState.busy || !hasQuery;
-  replaceOneEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
-  replaceAllEl.disabled = findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
-  toggleEl.disabled = findState.busy;
-  closeEl.disabled = findState.busy;
+  const commandsAvailable = findSemanticReady && !findI18nTerminal;
+  inputEl.disabled = !commandsAvailable || findState.busy;
+  replaceInputEl.disabled = !commandsAvailable || findState.busy;
+  prevEl.disabled = !commandsAvailable || findState.busy || !hasQuery;
+  nextEl.disabled = !commandsAvailable || findState.busy || !hasQuery;
+  replaceOneEl.disabled = !commandsAvailable || findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
+  replaceAllEl.disabled = !commandsAvailable || findState.busy || !hasQuery || !hasMatches || !findState.finalUpdate;
+  toggleEl.disabled = !commandsAvailable || findState.busy;
+  closeEl.disabled = false;
   statusEl.textContent = resolveStatusText();
   rendererIcons.applyIconToElement(toggleEl, findState.expanded ? 'collapse' : 'expand', {
     preserveContent: false,
@@ -182,8 +205,6 @@ function applyUiState() {
 }
 
 async function applyTranslations() {
-  await ensureTranslations(idiomaActual);
-
   const title = tr('renderer.editor.editor_find.input_aria');
   document.title = title;
   wrapEl.setAttribute('aria-label', title);
@@ -209,27 +230,60 @@ async function applyTranslations() {
   const replaceAllHelp = tr('renderer.editor.editor_find.help.replace_all');
   replaceAllDescriptionEl.textContent = replaceAllHelp;
 
+  findSemanticReady = true;
   applyUiState();
 }
 
-// =============================================================================
-// Focus and bridge command helpers
-// =============================================================================
-function focusQuery(selectAll = false) {
+async function transitionFindTranslations(language) {
+  await transitionRendererTranslations(language || DEFAULT_LANG, {
+    applyTranslations: ({ language: appliedLanguage }) => {
+      idiomaActual = appliedLanguage;
+      return applyTranslations();
+    },
+  });
+  translationsLoadedFor = idiomaActual;
+}
+
+function reportFindI18nFailure(err, { startup = false } = {}) {
+  const transition = err && err.rendererI18nTransition;
+  if (!transition) {
+    return;
+  }
+  if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+    log.error('Editor Find language transition failed; previous translation state remains authoritative:', err);
+    return;
+  }
+  log.error('Editor Find i18n failure requires window closure:', err);
+  reportTerminalFindI18nFailure(startup ? 'startup' : 'transition-restoration');
+}
+
+function reportTerminalFindI18nFailure(kind) {
+  if (findI18nTerminal) return;
+  findI18nTerminal = true;
+  inputEl.disabled = true;
+  replaceInputEl.disabled = true;
+  prevEl.disabled = true;
+  nextEl.disabled = true;
+  replaceOneEl.disabled = true;
+  replaceAllEl.disabled = true;
+  toggleEl.disabled = true;
+  closeEl.disabled = false;
+  if (!window.editorFindAPI || typeof window.editorFindAPI.reportRendererI18nFailure !== 'function') {
+    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
+    return;
+  }
   try {
-    inputEl.focus();
-    if (selectAll && typeof inputEl.select === 'function') {
-      inputEl.select();
-    }
-  } catch (err) {
-    log.warnOnce(
-      'editor-find.focusQuery.failed',
-      'Unable to focus/select find query input (ignored):',
-      err
-    );
+    window.editorFindAPI.reportRendererI18nFailure({ kind });
+  } catch (reportErr) {
+    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    if (typeof window.close === 'function') window.close();
   }
 }
 
+// =============================================================================
+// Bridge command helpers
+// =============================================================================
 function focusRequestedTarget(target, selectAll = false) {
   const targetEl = target === 'replace' ? replaceInputEl : inputEl;
   if (!targetEl) return;
@@ -249,6 +303,7 @@ function focusRequestedTarget(target, selectAll = false) {
 }
 
 function notifyReplaceTimeout() {
+  if (findI18nTerminal) return;
   try {
     window.Notify.notifyEditor('renderer.editor.editor_find.replace_timeout', {
       type: 'error',
@@ -260,6 +315,7 @@ function notifyReplaceTimeout() {
 }
 
 function handleReplaceResult(result) {
+  if (findI18nTerminal) return;
   if (!result || typeof result !== 'object') return;
   if (result.status === 'timeout') {
     notifyReplaceTimeout();
@@ -299,18 +355,19 @@ async function runReplaceAll() {
 // =============================================================================
 // Language bootstrap helper
 // =============================================================================
-async function initLanguage() {
+async function getInitialFindLanguage() {
+  let language = DEFAULT_LANG;
   try {
     if (typeof findApi.getSettings !== 'function') {
       log.warn(
         'BOOTSTRAP: [editor-find] editorFindAPI.getSettings missing; using default language.'
       );
-      return;
+      return language;
     }
 
     const settings = await findApi.getSettings();
     if (settings && settings.language) {
-      idiomaActual = settings.language || idiomaActual;
+      language = settings.language || language;
     }
   } catch (err) {
     log.warn(
@@ -318,6 +375,7 @@ async function initLanguage() {
       err
     );
   }
+  return language;
 }
 
 // =============================================================================
@@ -327,10 +385,12 @@ inputEl.maxLength = findInputMaxChars;
 replaceInputEl.maxLength = findInputMaxChars;
 
 inputEl.addEventListener('input', () => {
+  if (!findSemanticReady || findI18nTerminal) return;
   pushQuery();
 });
 
 inputEl.addEventListener('keydown', (event) => {
+  if (!findSemanticReady || findI18nTerminal) return;
   if (event.key !== 'Enter') return;
   event.preventDefault();
   if (event.shiftKey) {
@@ -341,22 +401,27 @@ inputEl.addEventListener('keydown', (event) => {
 });
 
 toggleEl.addEventListener('click', () => {
+  if (!findSemanticReady || findI18nTerminal) return;
   findApi.toggleExpanded().catch((err) => log.error('Error toggling find window mode:', err));
 });
 
 prevEl.addEventListener('click', () => {
+  if (!findSemanticReady || findI18nTerminal) return;
   findApi.prev().catch((err) => log.error('Error navigating to previous match:', err));
 });
 
 nextEl.addEventListener('click', () => {
+  if (!findSemanticReady || findI18nTerminal) return;
   findApi.next().catch((err) => log.error('Error navigating to next match:', err));
 });
 
 replaceOneEl.addEventListener('click', () => {
+  if (!findSemanticReady || findI18nTerminal) return;
   runReplaceCurrent();
 });
 
 replaceAllEl.addEventListener('click', () => {
+  if (!findSemanticReady || findI18nTerminal) return;
   runReplaceAll();
 });
 
@@ -381,6 +446,7 @@ findApi.onState(applyIncomingState);
 
 if (typeof findApi.onFocusTarget === 'function') {
   findApi.onFocusTarget((payload) => {
+    if (findI18nTerminal || !findSemanticReady) return;
     const target = payload && payload.target === 'replace' ? 'replace' : 'query';
     const selectAll = !!(payload && payload.selectAll);
     focusRequestedTarget(target, selectAll);
@@ -391,17 +457,40 @@ if (typeof findApi.onFocusTarget === 'function') {
   );
 }
 
+function enqueueFindSemanticWork(work) {
+  const run = async () => {
+    // Window closure is coordinated asynchronously through the main process.
+    // Do not admit queued Editor Find semantic work after terminal i18n failure.
+    if (findI18nTerminal) return;
+    return work();
+  };
+  findSemanticQueue = findSemanticQueue.then(run, run);
+  return findSemanticQueue;
+}
+
+async function applyFindLanguage(language, { startup = false } = {}) {
+  try {
+    await transitionFindTranslations(language);
+    return true;
+  } catch (err) {
+    reportFindI18nFailure(err, { startup });
+    return false;
+  }
+}
+
+function enqueueFindSettingsApplication(settings) {
+  const run = async () => {
+    const nextLang = settings && settings.language ? settings.language : '';
+    if (!nextLang || nextLang === idiomaActual) return;
+    await applyFindLanguage(nextLang);
+  };
+  // Preload listeners do not await async callbacks. Admit full settings
+  // snapshots after the preceding root semantic operation has settled.
+  return enqueueFindSemanticWork(run);
+}
+
 if (typeof findApi.onSettingsChanged === 'function') {
-  findApi.onSettingsChanged(async (settings) => {
-    try {
-      const nextLang = settings && settings.language ? settings.language : '';
-      if (!nextLang || nextLang === idiomaActual) return;
-      idiomaActual = nextLang;
-      await applyTranslations();
-    } catch (err) {
-      log.warn('editor-find: failed to apply settings update:', err);
-    }
-  });
+  findApi.onSettingsChanged((settings) => enqueueFindSettingsApplication(settings));
 } else {
   log.warn(
     'BOOTSTRAP: [editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
@@ -412,12 +501,15 @@ if (typeof findApi.onSettingsChanged === 'function') {
 // Bootstrap sequence
 // =============================================================================
 (async () => {
-  await initLanguage();
-  await applyTranslations();
-  applyUiState();
-  focusQuery(true);
+  await enqueueFindSemanticWork(async () => {
+    const language = await getInitialFindLanguage();
+    if (!await applyFindLanguage(language, { startup: true })) {
+      throw new Error('[editor-find] required renderer translation state could not be established during bootstrap');
+    }
+  });
 })().catch((err) => {
   log.error('editor-find bootstrap failed:', err);
+  reportFindI18nFailure(err, { startup: true });
 });
 
 // =============================================================================
