@@ -12,6 +12,10 @@
 // - Preserve Task-first parent/application-close ordering through the controller contract.
 // =============================================================================
 
+// =============================================================================
+// Imports and logger
+// =============================================================================
+
 const Log = require('./log');
 
 const log = Log.get('task-editor-window-lifecycle');
@@ -461,6 +465,10 @@ function createController({ dialog, getDialogTexts }) {
     },
   };
 }
+
+// =============================================================================
+// Module exports
+// =============================================================================
 
 module.exports = {
   createController,
