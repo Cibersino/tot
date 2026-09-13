@@ -101,14 +101,14 @@ const editorTextSizeController = editorTextSize.createController({
   getWindows: () => getSettingsBroadcastWindows(),
 });
 
-const IS_SMOKE_TEST = process.env.TOT_SMOKE_TEST === '1';
-const SMOKE_USER_DATA_DIR = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
+const isSmokeTest = process.env.TOT_SMOKE_TEST === '1';
+const smokeUserDataDir = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
   ? process.env.TOT_SMOKE_USER_DATA_DIR.trim()
   : '';
 
-if (IS_SMOKE_TEST && SMOKE_USER_DATA_DIR) {
+if (isSmokeTest && smokeUserDataDir) {
   try {
-    app.setPath('userData', path.resolve(SMOKE_USER_DATA_DIR));
+    app.setPath('userData', path.resolve(smokeUserDataDir));
   } catch (err) {
     log.error('Failed to override userData path for smoke test mode:', err);
   }
@@ -1054,7 +1054,7 @@ function handleSplashRemoved() {
   splashRemoved = true;
   menuEnabled = true;
 
-  if (IS_SMOKE_TEST) {
+  if (isSmokeTest) {
     try {
       console.log('TOT_SMOKE_READY');
     } catch (err) {
@@ -1969,17 +1969,17 @@ app.whenReady().then(() => {
     log.warn('Reading-test bundled pool startup sync failed (ignored):', readingTestPoolSync);
   }
 
-  const SETTINGS_FILE = getSettingsFile();
-  const SNAPSHOT_TAGS_FILE = getSnapshotTagsFile();
-  const CURRENT_TEXT_FILE = getCurrentTextFile();
+  const settingsFile = getSettingsFile();
+  const snapshotTagsFile = getSnapshotTagsFile();
+  const currentTextFile = getCurrentTextFile();
 
   // Initialize shared text state early (current text file).
   // This module owns loading/saving current text and its IPC surface.
   textState.init({
     loadJson,
     saveJson,
-    currentTextFile: CURRENT_TEXT_FILE,
-    settingsFile: SETTINGS_FILE,
+    currentTextFile,
+    settingsFile,
     app,
     maxTextChars: MAX_TEXT_CHARS,
     currentTextProcessingController: currentTextProcessingStateController,
@@ -1993,14 +1993,14 @@ app.whenReady().then(() => {
     loadJson,
     saveJson,
     saveJsonStrict,
-    settingsFile: SETTINGS_FILE,
+    settingsFile,
   });
 
   snapshotTagSettings.init({
     loadJson,
     saveJson,
     saveJsonStrict,
-    snapshotTagsFile: SNAPSHOT_TAGS_FILE,
+    snapshotTagsFile,
   });
 
   spellcheckController.apply(settings);
