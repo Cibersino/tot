@@ -434,13 +434,13 @@ function getSelectedLanguage() {
     if (!lang) {
       log.warnOnce(
         'main.menu.language.empty',
-        `Settings language is empty; falling back to "${DEFAULT_LANG}" for menu.`
+        `Settings language is empty; falling back to "${DEFAULT_LANG}".`
       );
       return DEFAULT_LANG;
     }
     return lang;
   } catch (err) {
-    log.error(`Failed to read settings language for menu; falling back to "${DEFAULT_LANG}":`, err);
+    log.warn(`Settings language read failed; using "${DEFAULT_LANG}".`, err);
     return DEFAULT_LANG;
   }
 }
@@ -739,7 +739,7 @@ function createEditorWindow(options = {}) {
   try {
     editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
   } catch (err) {
-    log.error('Error attaching Text Editor find listeners:', err);
+    log.warn('Text Editor find listener attachment failed (ignored):', err);
   }
 
   // Keep the editor hidden here when startup presentation must be finalized later.
@@ -906,7 +906,7 @@ function createPresetWindow(initialData) {
       presetWin.focus();
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
-      log.error('Error sending init to presetWin already open:', err);
+      log.warn('Preset window refresh failed (ignored):', err);
     }
     return presetWin;
   }
@@ -1079,7 +1079,7 @@ function handleSplashRemoved() {
   try {
     updater.scheduleInitialCheck();
   } catch (err) {
-    log.error('Error scheduling updater initial check post-READY:', err);
+    log.warn('Updater initial-check scheduling failed (ignored):', err);
   }
 }
 
@@ -1650,7 +1650,7 @@ ipcMain.handle('get-available-languages', async () => {
 
     return filtered;
   } catch (err) {
-    log.error('Error loading language manifest. Using fallback:', err);
+    log.warn('Language manifest load failed; using fallback:', err);
     return FALLBACK_LANGUAGES;
   }
 });
