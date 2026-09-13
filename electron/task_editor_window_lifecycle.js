@@ -364,7 +364,7 @@ function createController({ dialog, getDialogTexts }) {
           priorResolve(authorized);
           resolve(authorized);
         };
-      })
+      });
     }
     closeRequestPending = true;
 
