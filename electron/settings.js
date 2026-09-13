@@ -748,7 +748,7 @@ function registerIpc(
     try {
       return decorateSettingsPayload(getSettings());
     } catch (err) {
-      log.errorOnce(
+      log.warnOnce(
         'settings.ipc.get-settings',
         'IPC get-settings failed (using safe fallback):',
         err
