@@ -14,7 +14,7 @@
 // - Orchestrate app lifecycle paths including first run, activate, quit, and smoke-test startup.
 
 // =============================================================================
-// Imports (external + internal modules)
+// Imports
 // =============================================================================
 
 const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell, dialog } = require('electron');
@@ -80,6 +80,10 @@ const {
   materializeBundledCredentials,
 } = require('./text_extraction_platform/ocr_google_drive_bundled_credentials');
 
+// =============================================================================
+// Logger and early dependency wiring
+// =============================================================================
+
 const log = Log.get('main');
 log.debug('Main process starting...');
 const { formatStopwatchMs } = stopwatchTimeCore.createStopwatchTimeUtils();
@@ -100,6 +104,10 @@ const editorTextSizeController = editorTextSize.createController({
   settingsState,
   getWindows: () => getSettingsBroadcastWindows(),
 });
+
+// =============================================================================
+// Smoke-test configuration
+// =============================================================================
 
 const isSmokeTest = process.env.TOT_SMOKE_TEST === '1';
 const smokeUserDataDir = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
@@ -130,7 +138,7 @@ const FALLBACK_LANGUAGES = [
 ];
 
 // =============================================================================
-// Helpers (guards + validation)
+// Shared helpers and cross-window coordination
 // =============================================================================
 
 function isPlainObject(x) {
@@ -349,6 +357,7 @@ let readingTestSessionController = null;
 // =============================================================================
 // Startup readiness gates + handshake state
 // =============================================================================
+// READY requires both main-side invariants and the renderer readiness signal.
 let mainReadyState = 'PRE_READY';
 let menuEnabled = false;
 let mainInvariantsReady = false;
@@ -424,7 +433,7 @@ currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBri
 });
 
 // =============================================================================
-// Menu + development utilities
+// Language, menu, and development utilities
 // =============================================================================
 
 function getSelectedLanguage() {
@@ -931,7 +940,7 @@ function createPresetWindow(initialData) {
   presetWin.setMenu(null);
   presetWin.loadFile(path.join(__dirname, '../public/preset_modal.html'));
 
-  // Show and send initial payload only when ready.
+  // A usable preset modal requires its initial payload; close it if delivery fails.
   presetWin.once('ready-to-show', () => {
     presetWin.show();
     try {
@@ -954,8 +963,8 @@ function createPresetWindow(initialData) {
 }
 
 /**
- * Create the language selection window (first launch).
- * This is a small window used only to select the UI language on first run.
+ * Create the language selection window.
+ * It supports both first-run selection and later language changes.
  * It is not modal relative to mainWin because it can be opened before mainWin exists.
  */
 function createLanguageWindow() {
@@ -994,7 +1003,7 @@ function createLanguageWindow() {
     langWin.show();
   });
 
-  // If the user closes the language window without choosing, persist a safe fallback and continue startup.
+  // Before startup language resolution, closing this window persists the safe fallback and continues startup.
   langWin.on('closed', () => {
     try {
       if (!languageResolved) {
@@ -1955,7 +1964,7 @@ ipcMain.on('startup:splash-removed', () => {
 ipcMain.on('renderer-i18n-failed', closeRendererAfterI18nFailure);
 
 // =============================================================================
-// App lifecycle (startup, activate, quit)
+// App lifecycle and startup bootstrap
 // =============================================================================
 
 app.whenReady().then(() => {
