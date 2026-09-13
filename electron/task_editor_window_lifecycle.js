@@ -348,6 +348,9 @@ function createController({ dialog, getDialogTexts }) {
     if (payload.kind === 'terminal') {
       return acceptTerminalOutcome(event, payload);
     }
+    if (payload.kind !== 'normal') {
+      log.warn('task-editor-close-response unsupported payload (ignored):', payload);
+    }
     settleCloseRequest(false);
     return false;
   }
@@ -357,7 +360,10 @@ function createController({ dialog, getDialogTexts }) {
     if (forceCloseAuthorized) return Promise.resolve(true);
     if (terminalResolutionPromise) return terminalResolutionPromise;
     if (closeRequestPending) {
-      if (!closeRequestResolver) return Promise.resolve(false);
+      if (!closeRequestResolver) {
+        log.error('Task Editor close request is pending without a resolver.');
+        return Promise.resolve(false);
+      }
       return new Promise((resolve) => {
         const priorResolve = closeRequestResolver;
         closeRequestResolver = (authorized) => {
