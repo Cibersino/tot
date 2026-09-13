@@ -73,6 +73,15 @@ function createController({ dialog, getDialogTexts }) {
     dirtyEvidence = { state: 'unknown', initId: currentInitId };
   }
 
+  function resetWindowLifecycleState() {
+    currentInitId = 0;
+    terminalOutcome = null;
+    terminalResolutionPromise = null;
+    forceCloseAuthorized = false;
+    closeRequestPending = false;
+    resetEvidence();
+  }
+
   function isCurrentWindow(win) {
     return isAliveWindow(taskWindow) && taskWindow === win;
   }
@@ -212,24 +221,14 @@ function createController({ dialog, getDialogTexts }) {
 
   function attachWindow(win) {
     taskWindow = win;
-    currentInitId = 0;
-    terminalOutcome = null;
-    terminalResolutionPromise = null;
-    forceCloseAuthorized = false;
-    closeRequestPending = false;
-    resetEvidence();
+    resetWindowLifecycleState();
   }
 
   function handleWindowClosed(win) {
     if (taskWindow !== win) return;
     settleCloseRequest(forceCloseAuthorized);
     taskWindow = null;
-    terminalOutcome = null;
-    terminalResolutionPromise = null;
-    forceCloseAuthorized = false;
-    closeRequestPending = false;
-    currentInitId = 0;
-    resetEvidence();
+    resetWindowLifecycleState();
   }
 
   function prepareInitialization(win, payload) {
@@ -357,15 +356,16 @@ function createController({ dialog, getDialogTexts }) {
     if (!isCurrentWindow(taskWindow)) return Promise.resolve(true);
     if (forceCloseAuthorized) return Promise.resolve(true);
     if (terminalResolutionPromise) return terminalResolutionPromise;
-    if (closeRequestPending) return closeRequestResolver
-      ? new Promise((resolve) => {
+    if (closeRequestPending) {
+      if (!closeRequestResolver) return Promise.resolve(false);
+      return new Promise((resolve) => {
         const priorResolve = closeRequestResolver;
         closeRequestResolver = (authorized) => {
           priorResolve(authorized);
           resolve(authorized);
         };
       })
-      : Promise.resolve(false);
+    }
     closeRequestPending = true;
 
     if (terminalOutcome) {
