@@ -344,10 +344,7 @@
     async function loadInitialWidths() {
       const api = window.taskEditorAPI;
       if (!api || typeof api.getColumnLayout !== 'function') {
-        log.warnOnce(
-          'BOOTSTRAP:task_editor.columns.load.missingApi',
-          'Task column layout load unavailable; using session defaults.'
-        );
+        log.warn('BOOTSTRAP: Task column layout load unavailable; using session defaults.');
         return false;
       }
 
