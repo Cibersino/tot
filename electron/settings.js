@@ -76,12 +76,12 @@ function normalizeEditorFontSizePx(value) {
   );
 }
 
-function isPlainObjectRecord(value) {
+function isNonArrayObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isValidNumberFormattingEntry(value) {
-  return isPlainObjectRecord(value)
+  return isNonArrayObject(value)
     && typeof value.separadorMiles === 'string'
     && !!value.separadorMiles
     && typeof value.separadorDecimal === 'string'
@@ -180,7 +180,7 @@ function ensureNumberFormattingForBase(settings, base) {
         langKey,
         type: typeof currentEntry,
         isArray: Array.isArray(currentEntry),
-        keys: isPlainObjectRecord(currentEntry) ? Object.keys(currentEntry) : [],
+        keys: isNonArrayObject(currentEntry) ? Object.keys(currentEntry) : [],
       }
     );
   }
@@ -217,7 +217,7 @@ function ensureNumberFormattingForBase(settings, base) {
  * - Ensure language-dependent buckets exist for the current language base.
  */
 function normalizeSettings(settings) {
-  if (!isPlainObjectRecord(settings)) {
+  if (!isNonArrayObject(settings)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidRoot',
       'Settings root is invalid; using empty object:',
@@ -245,7 +245,7 @@ function normalizeSettings(settings) {
   // - present but invalid -> warnOnce + default
   if (typeof settings.presets_by_language === 'undefined') {
     settings.presets_by_language = {};
-  } else if (!isPlainObjectRecord(settings.presets_by_language)) {
+  } else if (!isNonArrayObject(settings.presets_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidPresetsByLanguage',
       'Invalid presets_by_language; resetting to empty object:',
@@ -262,7 +262,7 @@ function normalizeSettings(settings) {
   // - present but invalid -> warnOnce + default
   if (typeof settings.selected_preset_by_language === 'undefined') {
     settings.selected_preset_by_language = {};
-  } else if (!isPlainObjectRecord(settings.selected_preset_by_language)) {
+  } else if (!isNonArrayObject(settings.selected_preset_by_language)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidSelectedPresetByLanguage',
       'Invalid selected_preset_by_language; resetting to empty object:',
@@ -274,10 +274,10 @@ function normalizeSettings(settings) {
     settings.selected_preset_by_language = {};
   }
 
-  // numberFormatting must be a plain object (may be missing/null/array/invalid types).
+  // numberFormatting must be a non-array object (may be missing/null/array/invalid types).
   if (typeof settings.numberFormatting === 'undefined') {
     settings.numberFormatting = {};
-  } else if (!isPlainObjectRecord(settings.numberFormatting)) {
+  } else if (!isNonArrayObject(settings.numberFormatting)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidNumberFormatting',
       'Invalid numberFormatting; resetting to empty object:',
@@ -289,10 +289,10 @@ function normalizeSettings(settings) {
     settings.numberFormatting = {};
   }
 
-  // disabled_default_presets must be a plain object (may be missing/null/array/invalid types).
+  // disabled_default_presets must be a non-array object (may be missing/null/array/invalid types).
   if (typeof settings.disabled_default_presets === 'undefined') {
     settings.disabled_default_presets = {};
-  } else if (!isPlainObjectRecord(settings.disabled_default_presets)) {
+  } else if (!isNonArrayObject(settings.disabled_default_presets)) {
     log.warnOnce(
       'settings.normalizeSettings.invalidDisabledDefaultPresets',
       'Invalid disabled_default_presets; resetting to empty object:',
@@ -433,19 +433,19 @@ function normalizeSettings(settings) {
 // Mutation helper
 // =============================================================================
 function cloneSettingsForMutation(settings) {
-  const source = isPlainObjectRecord(settings) ? settings : createDefaultSettings();
+  const source = isNonArrayObject(settings) ? settings : createDefaultSettings();
   return {
     ...source,
-    presets_by_language: isPlainObjectRecord(source.presets_by_language)
+    presets_by_language: isNonArrayObject(source.presets_by_language)
       ? { ...source.presets_by_language }
       : {},
-    selected_preset_by_language: isPlainObjectRecord(source.selected_preset_by_language)
+    selected_preset_by_language: isNonArrayObject(source.selected_preset_by_language)
       ? { ...source.selected_preset_by_language }
       : {},
-    numberFormatting: isPlainObjectRecord(source.numberFormatting)
+    numberFormatting: isNonArrayObject(source.numberFormatting)
       ? { ...source.numberFormatting }
       : {},
-    disabled_default_presets: isPlainObjectRecord(source.disabled_default_presets)
+    disabled_default_presets: isNonArrayObject(source.disabled_default_presets)
       ? { ...source.disabled_default_presets }
       : {},
   };
