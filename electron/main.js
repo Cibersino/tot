@@ -938,6 +938,11 @@ function createPresetWindow(initialData) {
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
       log.error('Error sending preset-init:', err);
+      try {
+        if (isAliveWindow(presetWin)) presetWin.close();
+      } catch (closeErr) {
+        log.error('Error closing presetWin after failed preset-init:', closeErr);
+      }
     }
   });
 
