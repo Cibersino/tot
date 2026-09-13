@@ -4,8 +4,16 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Canonical current-text snapshot schema shared by normal snapshot and
-// reading-test-pool flows.
+// Canonical current-text snapshot schema shared by normal snapshot and reading-test-pool flows.
+// Responsibilities:
+// - Define the persisted snapshot fields and their canonical values.
+// - Normalize tags and count locales through their shared owners.
+// - Validate optional metrics against the exact reading-duration calculation.
+// - Return normalized snapshot data and reading-test questions without I/O.
+// =============================================================================
+
+// =============================================================================
+// Imports (shared schema collaborators)
 // =============================================================================
 
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
@@ -17,6 +25,10 @@ const {
   SNAPSHOT_NAME_MAX_CHARS,
   SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
 } = require('./constants_main');
+
+// =============================================================================
+// Schema contract and dependency checks
+// =============================================================================
 
 const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 
@@ -46,6 +58,10 @@ if (!readingTestQuestionsCore
   || typeof readingTestQuestionsCore.validateQuestionsPayload !== 'function') {
   throw new Error('[current_text_snapshot_schema] ReadingTestQuestionsCore unavailable; cannot continue');
 }
+
+// =============================================================================
+// Schema validation helpers
+// =============================================================================
 
 function hasExactKeys(value, expectedKeys) {
   if (!snapshotTagCatalog.isPlainObject(value)) return false;
@@ -225,6 +241,10 @@ function validateSnapshotMetrics(rawMetrics) {
   return { ok: true, metrics };
 }
 
+// =============================================================================
+// Snapshot document validation
+// =============================================================================
+
 function validateSnapshotDocument(rawSnapshot) {
   if (!hasCanonicalSnapshotKeys(rawSnapshot)
     || rawSnapshot.type !== SNAPSHOT_TYPE
@@ -276,6 +296,10 @@ function validateSnapshotDocument(rawSnapshot) {
     questions,
   };
 }
+
+// =============================================================================
+// Module exports
+// =============================================================================
 
 module.exports = {
   SNAPSHOT_TYPE,
