@@ -115,71 +115,6 @@ if (IS_SMOKE_TEST && SMOKE_USER_DATA_DIR) {
 }
 
 // =============================================================================
-// Text extraction orchestration (shared controller)
-// =============================================================================
-// main.js owns only the cross-window coordination for processing mode:
-// - broadcast state changes to the main renderer,
-// - block main-window interaction while processing is active,
-// - complete a deferred main-window close after an abort finishes.
-// Domain IPC and feature logic stay in the delegated text_extraction_platform modules.
-const textExtractionProcessingModeController = textExtractionProcessingModeIpc.createController({
-  onStateChanged: (state) => {
-    try {
-      const targetWin = resolveMainWindow();
-      if (hasLiveWebContents(targetWin)) {
-        targetWin.webContents.send('text-extraction-processing-mode-changed', state);
-      } else {
-        log.warn('text-extraction-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
-      }
-      if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
-        pendingMainWindowCloseAfterProcessingAbort = false;
-        if (targetWin && !targetWin.isDestroyed()) {
-          setTimeout(() => {
-            try {
-              if (targetWin && !targetWin.isDestroyed()) {
-                targetWin.close();
-              }
-            } catch (err) {
-              log.warn('Failed to close main window after processing cancellation (ignored):', err);
-            }
-          }, 0);
-        }
-      }
-    } catch (err) {
-      log.warn('Failed to broadcast processing-mode state (ignored):', err);
-    }
-  },
-});
-
-let currentTextProcessingStateMainBridge = null;
-let pendingMainWindowCloseAfterCurrentTextProcessing = false;
-const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
-  onStateChanged: (state) => {
-    currentTextProcessingStateMainBridge.handleStateChanged(state);
-    if (state && state.active === false && pendingMainWindowCloseAfterCurrentTextProcessing) {
-      pendingMainWindowCloseAfterCurrentTextProcessing = false;
-      const targetWin = resolveMainWindow();
-      if (targetWin && !targetWin.isDestroyed()) {
-        setTimeout(() => {
-          try {
-            if (targetWin && !targetWin.isDestroyed()) {
-              targetWin.close();
-            }
-          } catch (err) {
-            log.warn('Failed to close main window after current-text processing settled (ignored):', err);
-          }
-        }, 0);
-      }
-    }
-  },
-});
-currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBridge({
-  resolveMainWindow,
-  hasLiveWebContents,
-  log,
-});
-
-// =============================================================================
 // Constants / config (paths, defaults, limits)
 // =============================================================================
 // Static file paths and fallback data used across startup.
@@ -407,6 +342,8 @@ let taskEditorWin = null; // Task Editor window (task_editor.html)
 let textTimeCalculatorWin = null; // Quick text/time calculator window
 let pendingMainWindowCloseAfterProcessingAbort = false;
 let pendingMainWindowCloseAfterTaskResolution = false;
+let currentTextProcessingStateMainBridge = null;
+let pendingMainWindowCloseAfterCurrentTextProcessing = false;
 let readingTestSessionController = null;
 
 // =============================================================================
@@ -422,6 +359,69 @@ let languageResolved = false;
 let menuInstalled = false;
 let mainWindowCreated = false;
 let languageSelectionHandler = null;
+
+// =============================================================================
+// Text extraction orchestration (shared controller)
+// =============================================================================
+// main.js owns only the cross-window coordination for processing mode:
+// - broadcast state changes to the main renderer,
+// - block main-window interaction while processing is active,
+// - complete a deferred main-window close after an abort finishes.
+// Domain IPC and feature logic stay in the delegated text_extraction_platform modules.
+const textExtractionProcessingModeController = textExtractionProcessingModeIpc.createController({
+  onStateChanged: (state) => {
+    try {
+      const targetWin = resolveMainWindow();
+      if (hasLiveWebContents(targetWin)) {
+        targetWin.webContents.send('text-extraction-processing-mode-changed', state);
+      } else {
+        log.warn('text-extraction-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
+      }
+      if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
+        pendingMainWindowCloseAfterProcessingAbort = false;
+        if (targetWin && !targetWin.isDestroyed()) {
+          setTimeout(() => {
+            try {
+              if (targetWin && !targetWin.isDestroyed()) {
+                targetWin.close();
+              }
+            } catch (err) {
+              log.warn('Failed to close main window after processing cancellation (ignored):', err);
+            }
+          }, 0);
+        }
+      }
+    } catch (err) {
+      log.warn('Failed to broadcast processing-mode state (ignored):', err);
+    }
+  },
+});
+
+const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
+  onStateChanged: (state) => {
+    currentTextProcessingStateMainBridge.handleStateChanged(state);
+    if (state && state.active === false && pendingMainWindowCloseAfterCurrentTextProcessing) {
+      pendingMainWindowCloseAfterCurrentTextProcessing = false;
+      const targetWin = resolveMainWindow();
+      if (targetWin && !targetWin.isDestroyed()) {
+        setTimeout(() => {
+          try {
+            if (targetWin && !targetWin.isDestroyed()) {
+              targetWin.close();
+            }
+          } catch (err) {
+            log.warn('Failed to close main window after current-text processing settled (ignored):', err);
+          }
+        }, 0);
+      }
+    }
+  },
+});
+currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBridge({
+  resolveMainWindow,
+  hasLiveWebContents,
+  log,
+});
 
 // =============================================================================
 // Menu + development utilities
