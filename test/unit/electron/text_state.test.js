@@ -272,6 +272,84 @@ test('clipboard-read-text rejects a malformed native value instead of returning 
   assert.deepEqual(result, { ok: false, error: 'clipboard read returned a non-string value' });
 });
 
+test('bootstrap fallback diagnostics use a normal warning', (t) => {
+  const warnCalls = [];
+  const warnOnceCalls = [];
+  const { restore } = loadTextState({
+    logDouble: {
+      debug() {},
+      warn(...args) {
+        warnCalls.push(args);
+      },
+      warnOnce(...args) {
+        warnOnceCalls.push(args);
+      },
+      error() {},
+    },
+    loadJson() {
+      return [];
+    },
+  });
+  t.after(restore);
+
+  assert.deepEqual(warnCalls, [
+    ['BOOTSTRAP: Current text file has unexpected shape; using empty string.'],
+  ]);
+  assert.deepEqual(warnOnceCalls, []);
+});
+
+test('set-current-text logs each distinct invalid action and oversized payload', async (t) => {
+  const warnCalls = [];
+  const warnOnceCalls = [];
+  const { textState, restore } = loadTextState({
+    logDouble: {
+      debug() {},
+      warn(...args) {
+        warnCalls.push(args);
+      },
+      warnOnce(...args) {
+        warnOnceCalls.push(args);
+      },
+      error() {},
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({ mainWin: mainWindowDouble.win }));
+
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    { text: 'one', meta: { action: 'unexpected-one' } }
+  );
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    { text: 'two', meta: { action: 'unexpected-two' } }
+  );
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    { text: 'x'.repeat(513) }
+  );
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    { text: 'x'.repeat(514) }
+  );
+
+  assert.deepEqual(warnCalls, [
+    ["set-current-text invalid action 'unexpected-one'; using 'set'."],
+    ["set-current-text invalid action 'unexpected-two'; using 'set'."],
+    ['set-current-text payload too large (513 > 512); rejecting.'],
+    ['set-current-text payload too large (514 > 512); rejecting.'],
+  ]);
+  assert.deepEqual(warnOnceCalls, []);
+});
+
 test('applyCurrentText leaves an absent editor window as a normal no-op', (t) => {
   const warnOnceCalls = [];
   const { textState, restore } = loadTextState({
@@ -309,11 +387,14 @@ test('applyCurrentText leaves an absent editor window as a normal no-op', (t) =>
 });
 
 test('applyCurrentText keeps destroyed-window diagnostics separate from send failures', (t) => {
+  const warnCalls = [];
   const warnOnceCalls = [];
   const { textState, restore } = loadTextState({
     logDouble: {
       debug() {},
-      warn() {},
+      warn(...args) {
+        warnCalls.push(args);
+      },
       warnOnce(...args) {
         warnOnceCalls.push(args);
       },
@@ -345,17 +426,57 @@ test('applyCurrentText keeps destroyed-window diagnostics separate from send fai
 
   textState.applyCurrentText('hello', { source: 'main-window', action: 'set' });
 
-  assert.equal(warnOnceCalls.length, 2);
+  assert.equal(warnOnceCalls.length, 1);
   assert.deepEqual(warnOnceCalls[0], [
     'text_state.safeSend.destroyed:current-text-updated',
     "webContents.send('current-text-updated') failed (ignored): target window destroyed.",
   ]);
-  assert.equal(warnOnceCalls[1][0], 'text_state.safeSend:editor-text-updated');
-  assert.equal(
-    warnOnceCalls[1][1],
-    "webContents.send('editor-text-updated') failed (ignored):"
-  );
-  assert.equal(warnOnceCalls[1][2].message, 'editor renderer unavailable');
+  assert.equal(warnCalls.length, 1);
+  assert.equal(warnCalls[0][0], "webContents.send('editor-text-updated') failed (ignored):");
+  assert.equal(warnCalls[0][1].message, 'editor renderer unavailable');
+});
+
+test('applyCurrentText logs each distinct send exception on the same channel', (t) => {
+  const warnCalls = [];
+  const { textState, restore } = loadTextState({
+    logDouble: {
+      debug() {},
+      warn(...args) {
+        warnCalls.push(args);
+      },
+      warnOnce() {},
+      error() {},
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  let sendAttempt = 0;
+  const throwingEditorWindow = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      send() {
+        sendAttempt += 1;
+        throw new Error(`editor send failure ${sendAttempt}`);
+      },
+    },
+  };
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: throwingEditorWindow,
+  }));
+
+  textState.applyCurrentText('one', { source: 'main-window', action: 'set' });
+  textState.applyCurrentText('two', { source: 'main-window', action: 'set' });
+
+  assert.equal(warnCalls.length, 2);
+  assert.equal(warnCalls[0][0], "webContents.send('editor-text-updated') failed (ignored):");
+  assert.equal(warnCalls[0][1].message, 'editor send failure 1');
+  assert.equal(warnCalls[1][0], "webContents.send('editor-text-updated') failed (ignored):");
+  assert.equal(warnCalls[1][1].message, 'editor send failure 2');
 });
 
 test('set-current-text notifies empty transition only when authoritative text becomes empty', async (t) => {

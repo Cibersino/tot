@@ -114,8 +114,7 @@ function safeSend(win, channel, payload) {
   try {
     win.webContents.send(channel, payload);
   } catch (err) {
-    log.warnOnce(
-      `text_state.safeSend:${channel}`,
+    log.warn(
       `webContents.send('${channel}') failed (ignored):`,
       err
     );
@@ -181,8 +180,7 @@ function getNormalizedSetCurrentTextAction(incomingMeta) {
     : 'set';
 
   if (incomingAction && normalizedAction === 'set' && incomingAction !== 'set') {
-    log.warnOnce(
-      'text_state.setCurrentText.invalid_action',
+    log.warn(
       `set-current-text invalid action '${incomingAction}'; using 'set'.`
     );
   }
@@ -279,8 +277,7 @@ function loadInitialCurrentText() {
       txt = raw;
     }
     if (!hasTextProp && !isRawString && typeof raw !== 'undefined') {
-      log.warnOnce(
-        'BOOTSTRAP:text_state.init.unexpectedShape',
+      log.warn(
         'BOOTSTRAP: Current text file has unexpected shape; using empty string.'
       );
     }
@@ -299,8 +296,7 @@ function loadInitialCurrentText() {
     }
 
     if (lineEndingsNormalized) {
-      log.warnOnce(
-        'BOOTSTRAP:text_state.init.line_endings_normalized',
+      log.warn(
         'BOOTSTRAP: Current text line endings normalized to LF and saved.'
       );
     }
@@ -380,8 +376,7 @@ function registerIpc(ipcMain, windowsResolver) {
     const { mainWin } = getWindows() || {};
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!isAllowedSenderWindow(mainWin, senderWin)) {
-      log.warnOnce(
-        'text_state.clipboardRead.unauthorized',
+      log.warn(
         'clipboard-read-text unauthorized (ignored).'
       );
       return { ok: false, error: 'unauthorized', text: '', length: 0 };
@@ -392,8 +387,7 @@ function registerIpc(ipcMain, windowsResolver) {
       return { ok: false, error: 'clipboard read returned a non-string value' };
     }
     if (text.length > maxIpcChars) {
-      log.warnOnce(
-        'text_state.clipboardRead.tooLarge',
+      log.warn(
         'clipboard-read-text too large; rejecting (ignored):',
         text.length,
         '>',
@@ -416,8 +410,7 @@ function registerIpc(ipcMain, windowsResolver) {
       const editorAllowed = isAllowedSenderWindow(editorWin, senderWin);
 
       if (!mainAllowed && !editorAllowed) {
-        log.warnOnce(
-          'text_state.setCurrentText.unauthorized',
+        log.warn(
           'set-current-text unauthorized (ignored).'
         );
         return { ok: false, error: 'unauthorized' };
@@ -426,15 +419,13 @@ function registerIpc(ipcMain, windowsResolver) {
       const isPayloadObject = isPlainObject(payload);
       const hasTextProp = isPayloadObject && Object.prototype.hasOwnProperty.call(payload, 'text');
       if (!hasTextProp) {
-        log.warnOnce(
-          'text_state.setCurrentText.invalid_payload',
+        log.warn(
           'set-current-text requires payload { text, meta }; rejecting.'
         );
         return { ok: false, error: 'invalid payload' };
       }
       if (typeof payload.text !== 'string') {
-        log.warnOnce(
-          'text_state.setCurrentText.invalid_text',
+        log.warn(
           'set-current-text payload text must be a string; rejecting.'
         );
         return { ok: false, error: 'invalid payload' };
@@ -442,8 +433,7 @@ function registerIpc(ipcMain, windowsResolver) {
       const text = payload.text;
 
       if (text.length > maxIpcChars) {
-        log.warnOnce(
-          'text_state.setCurrentText.payload_too_large',
+        log.warn(
           `set-current-text payload too large (${text.length} > ${maxIpcChars}); rejecting.`
         );
         throw new Error('set-current-text payload too large');
