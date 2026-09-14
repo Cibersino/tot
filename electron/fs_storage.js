@@ -288,7 +288,6 @@ function loadJson(filePath, fallback = {}) {
 
     return JSON.parse(raw);
   } catch (err) {
-    // Invalid JSON is recoverable: return fallback and continue running.
     log.warn(
       'loadJson failed (using fallback):',
       filePath,
