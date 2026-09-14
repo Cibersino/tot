@@ -46,11 +46,12 @@ function createWindowDouble(name) {
   };
 }
 
-function loadTextState({ clipboardReadText = () => '', ...options } = {}) {
+function loadTextState({ clipboardReadText = () => '', logDouble = null, ...options } = {}) {
   const textStateModulePath = path.resolve(
     __dirname,
     '../../../electron/text_state.js'
   );
+  const logModulePath = path.resolve(__dirname, '../../../electron/log.js');
   const restoreElectronModule = installElectronModuleMock({
     clipboard: {
       readText() {
@@ -64,6 +65,16 @@ function loadTextState({ clipboardReadText = () => '', ...options } = {}) {
     },
   });
   const originalTextStateModule = require.cache[textStateModulePath];
+  const originalLogModule = require.cache[logModulePath];
+  if (logDouble) {
+    require.cache[logModulePath] = {
+      exports: {
+        get() {
+          return logDouble;
+        },
+      },
+    };
+  }
   delete require.cache[textStateModulePath];
 
   const textState = require(textStateModulePath);
@@ -90,6 +101,11 @@ function loadTextState({ clipboardReadText = () => '', ...options } = {}) {
     delete require.cache[textStateModulePath];
     if (originalTextStateModule) {
       require.cache[textStateModulePath] = originalTextStateModule;
+    }
+    if (originalLogModule) {
+      require.cache[logModulePath] = originalLogModule;
+    } else {
+      delete require.cache[logModulePath];
     }
     restoreElectronModule();
   }
@@ -254,6 +270,92 @@ test('clipboard-read-text rejects a malformed native value instead of returning 
   );
 
   assert.deepEqual(result, { ok: false, error: 'clipboard read returned a non-string value' });
+});
+
+test('applyCurrentText leaves an absent editor window as a normal no-op', (t) => {
+  const warnOnceCalls = [];
+  const { textState, restore } = loadTextState({
+    logDouble: {
+      debug() {},
+      warn() {},
+      warnOnce(...args) {
+        warnOnceCalls.push(args);
+      },
+      error() {},
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: null,
+  }));
+
+  textState.applyCurrentText('hello', { source: 'main-window', action: 'set' });
+
+  assert.deepEqual(warnOnceCalls, []);
+  assert.deepEqual(mainWindowDouble.sends, [
+    {
+      channel: 'current-text-updated',
+      payload: {
+        text: 'hello',
+        requestId: 1,
+        meta: { source: 'main-window', action: 'set' },
+      },
+    },
+  ]);
+});
+
+test('applyCurrentText keeps destroyed-window diagnostics separate from send failures', (t) => {
+  const warnOnceCalls = [];
+  const { textState, restore } = loadTextState({
+    logDouble: {
+      debug() {},
+      warn() {},
+      warnOnce(...args) {
+        warnOnceCalls.push(args);
+      },
+      error() {},
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const destroyedMainWindow = {
+    isDestroyed() {
+      return true;
+    },
+  };
+  const throwingEditorWindow = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      send() {
+        throw new Error('editor renderer unavailable');
+      },
+    },
+  };
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: destroyedMainWindow,
+    editorWin: throwingEditorWindow,
+  }));
+
+  textState.applyCurrentText('hello', { source: 'main-window', action: 'set' });
+
+  assert.equal(warnOnceCalls.length, 2);
+  assert.deepEqual(warnOnceCalls[0], [
+    'text_state.safeSend.destroyed:current-text-updated',
+    "webContents.send('current-text-updated') failed (ignored): target window destroyed.",
+  ]);
+  assert.equal(warnOnceCalls[1][0], 'text_state.safeSend:editor-text-updated');
+  assert.equal(
+    warnOnceCalls[1][1],
+    "webContents.send('editor-text-updated') failed (ignored):"
+  );
+  assert.equal(warnOnceCalls[1][2].message, 'editor renderer unavailable');
 });
 
 test('set-current-text notifies empty transition only when authoritative text becomes empty', async (t) => {

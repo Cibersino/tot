@@ -99,7 +99,15 @@ let getWindows = () => ({ mainWin: null, editorWin: null });
 // =============================================================================
 // Best-effort window send; avoids surfacing shutdown races as hard failures.
 function safeSend(win, channel, payload) {
-  if (!win || win.isDestroyed()) {
+  if (!win) {
+    return;
+  }
+
+  if (win.isDestroyed()) {
+    log.warnOnce(
+      `text_state.safeSend.destroyed:${channel}`,
+      `webContents.send('${channel}') failed (ignored): target window destroyed.`
+    );
     return;
   }
 
