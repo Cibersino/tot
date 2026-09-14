@@ -43,9 +43,9 @@ function loadFreshMenuBuilder(t, electronOverrides = {}) {
 
 function createLogDouble() {
   return {
-    warnOnceCalls: [],
-    warnOnce(key, ...args) {
-      this.warnOnceCalls.push({ key, args });
+    warnCalls: [],
+    warn(...args) {
+      this.warnCalls.push(args);
     },
   };
 }
@@ -69,24 +69,20 @@ test('resolveDialogText uses the caller-injected logger for missing dialog keys'
 
   const result = menuBuilder.resolveDialogText({}, 'continue_button', 'Continue', {
     log,
-    warnPrefix: 'updater.dialog.missing',
   });
 
   assert.equal(result, 'Continue');
-  assert.deepEqual(log.warnOnceCalls, [
-    {
-      key: 'updater.dialog.missing:continue_button',
-      args: ['Missing dialog translation key (using fallback):', 'continue_button'],
-    },
+  assert.deepEqual(log.warnCalls, [
+    ['Missing dialog translation key (using fallback):', 'continue_button'],
   ]);
 });
 
-test('resolveDialogText requires caller-injected warnOnce logging', (t) => {
+test('resolveDialogText requires caller-injected warn logging', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 
   assert.throws(
     () => menuBuilder.resolveDialogText({}, 'continue_button', 'Continue'),
-    /\[menu_builder\] resolveDialogText requires opts\.log\.warnOnce/
+    /\[menu_builder\] resolveDialogText requires opts\.log\.warn/
   );
 });
 

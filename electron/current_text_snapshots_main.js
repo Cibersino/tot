@@ -494,7 +494,6 @@ function inspectSnapshotAtRelPath(snapshotRelPath) {
 function resolveDialogText(dialogTexts, key, fallback) {
   return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
     log,
-    warnPrefix: 'current_text_snapshots.dialog.missing',
   });
 }
 

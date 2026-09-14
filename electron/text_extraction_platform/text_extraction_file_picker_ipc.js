@@ -140,7 +140,6 @@ function getDialogTexts() {
 function resolveDialogText(dialogTexts, key) {
   return menuBuilder.resolveDialogText(dialogTexts, key, undefined, {
     log,
-    warnPrefix: 'text_extraction_picker.dialog.missing',
   });
 }
 

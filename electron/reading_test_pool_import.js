@@ -329,7 +329,6 @@ function getDialogTexts() {
 function resolveDialogText(dialogTexts, key) {
   return menuBuilder.resolveDialogText(dialogTexts, key, undefined, {
     log,
-    warnPrefix: 'reading_test_pool_import.dialog.missing',
   });
 }
 
