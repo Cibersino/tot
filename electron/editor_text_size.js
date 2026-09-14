@@ -39,8 +39,7 @@ function createController({ settingsState } = {}) {
   function applyFontSize(fontSizePx, settings) {
     const parsed = Number(fontSizePx);
     if (!Number.isFinite(parsed)) {
-      log.warnOnce(
-        'editor_text_size.set.invalid',
+      log.warn(
         'Text Editor font-size action received a non-finite value (ignored):',
         { value: fontSizePx }
       );
