@@ -8,8 +8,8 @@
 // - Load bundled and user-configured preset defaults (general + per-language).
 // - Validate and sanitize preset payloads from IPC.
 // - Persist preset changes into settings and broadcast updates.
-// - Show native confirmation/notification dialogs for preset actions.
-// - Register preset-related IPC handlers and events.
+// - Show native confirmation dialogs for preset delete, restore, and edit actions.
+// - Register preset-related IPC handlers and emit preset-created notifications.
 
 // =============================================================================
 // Imports / logger
@@ -239,7 +239,7 @@ function copyDefaultPresetsIfMissing() {
  *
  * @param {Electron.IpcMain} ipcMain
  * @param {Object} opts
- * @param {Function} opts.getWindows -() => ({ mainWin, editorWin, presetWin, flotanteWin, langWin })
+ * @param {Function} opts.getWindows - Returns window references; this module reads mainWin and presetWin.
  */
 function registerIpc(ipcMain, { getWindows } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -827,6 +827,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   });
 }
 
+// =============================================================================
+// Exports
+// =============================================================================
 module.exports = {
   registerIpc,
   sanitizePresetInput,
