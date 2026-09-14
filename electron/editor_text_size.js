@@ -4,7 +4,7 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process controller for Text Editor textarea font size.
+// Main-process controller for Text Editor font size.
 // Responsibilities:
 // - Own Text Editor font-size actions and their IPC boundary.
 // - Persist and publish through the shared settings contract.
@@ -92,6 +92,9 @@ function createController({ settingsState } = {}) {
     };
   }
 
+  // =============================================================================
+  // IPC registration
+  // =============================================================================
   function registerIpc(ipcMain) {
     if (!ipcMain || typeof ipcMain.handle !== 'function') {
       throw new Error('[editor-text-size] registerIpc requires ipcMain');
