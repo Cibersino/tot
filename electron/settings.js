@@ -7,12 +7,12 @@
 // This module owns persisted user settings.
 //
 // Responsibilities:
-// - Load settings from disk, normalize persisted shape, and keep an in-memory cache in sync.
+// - Load and normalize settings, refreshing the in-memory cache on reads and saves.
 // - Canonicalize language tags and maintain language-scoped settings buckets.
 // - Hydrate numberFormatting defaults when persisted data is missing or invalid.
 // - Expose the state owner API consumed by main-process modules.
 // - Register settings IPC handlers and publish settings-updated to open windows.
-// - Persist a logged startup fallback language when the language picker closes without a selection.
+// - Attempt to persist a logged startup fallback language when the language picker closes without a selection.
 // =============================================================================
 
 // =============================================================================
@@ -163,7 +163,7 @@ function loadNumberFormatDefaults(lang) {
 // =============================================================================
 /**
  * Ensures settings.numberFormatting[langBase] exists.
- * If missing, load separators from i18n; otherwise use safe defaults and log once.
+ * Missing or invalid entries load separators from i18n, with safe defaults as the fallback.
  */
 function ensureNumberFormattingForBase(settings, base) {
   if (!settings || typeof settings !== 'object') return;
@@ -213,7 +213,7 @@ function ensureNumberFormattingForBase(settings, base) {
  * Normalizes settings without overwriting existing valid values.
  *
  * Goals:
- * - Keep the persisted schema stable even if the file is missing/edited externally.
+ * - Rebuild a safe in-memory shape when the persisted file is missing or edited externally.
  * - Convert invalid shapes to safe defaults (and log once).
  * - Ensure language-dependent buckets exist for the current language base.
  */
@@ -458,7 +458,7 @@ function cloneSettingsForMutation(settings) {
 /**
  * Initializes the module (called from main.js).
  * - Stores injected dependencies and settings file path.
- * - Loads, normalizes, caches, and persists settings once on startup.
+ * - Loads, normalizes, caches, and attempts to persist settings once on startup.
  */
 function init({ loadJson, saveJson, saveJsonStrict, settingsFile }) {
   if (
@@ -507,7 +507,7 @@ function getSettings() {
 }
 
 /**
- * Normalizes and persists settings, updating the in-memory cache.
+ * Normalizes settings, updates the in-memory cache, and attempts best-effort persistence.
  * If nextSettings is falsy, it reloads from disk (getSettings()).
  */
 function saveSettings(nextSettings) {
@@ -532,6 +532,10 @@ function saveSettings(nextSettings) {
   return _currentSettings;
 }
 
+/**
+ * Normalizes settings and requires persistence before updating the in-memory cache.
+ * If nextSettings is falsy, it reloads from disk (getSettings()).
+ */
 function saveSettingsStrict(nextSettings) {
   if (!nextSettings) return getSettings();
   if (!_saveJsonStrict || !_settingsFile) {
@@ -547,6 +551,10 @@ function saveSettingsStrict(nextSettings) {
 // =============================================================================
 // Renderer settings publication
 // =============================================================================
+/**
+ * Installs dependencies for the canonical settings publication path.
+ * getWindows and decorateSettings are required; onSettingsUpdated is a best-effort main-process side effect.
+ */
 function configurePublication({ getWindows, onSettingsUpdated, decorateSettings } = {}) {
   if (typeof getWindows !== 'function') {
     throw new Error('[settings] configurePublication requires getWindows');
@@ -690,6 +698,10 @@ function sendSettingsUpdated(settingsPayload, windows) {
   });
 }
 
+/**
+ * Runs the main-process update, then decorates and sends the renderer payload.
+ * A decoration failure drops the window send.
+ */
 function publishSettingsUpdated(settings) {
   notifySettingsUpdated(settings);
   const settingsPayload = decorateSettingsPayload(settings);
@@ -709,7 +721,7 @@ function publishCurrentSettings() {
 /**
  * If the language modal closes without selecting anything, apply a fallback language.
  * Used by main.js startup flow when language resolution must continue.
- * This is intentionally not silent: it modifies settings.language and persists it.
+ * This is intentionally not silent: it updates settings.language and attempts a best-effort save.
  */
 function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
   try {
@@ -763,7 +775,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     return savedSettings;
   }
 
-  // get-settings: returns the current settings object (normalized)
+  // get-settings: returns the decorated renderer payload; storage failures use safe defaults.
   ipcMain.handle('get-settings', async () => {
     let settings;
     try {
@@ -788,7 +800,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     }
   });
 
-  // set-language: saves language, rebuilds menu, updates secondary windows, broadcasts
+  // set-language: applies a nonempty selection, rebuilds the menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
     try {
       const chosenRaw = String(lang || '');
@@ -810,7 +822,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
 
       const windows = resolvePublicationWindows();
 
-      // Rebuild the app menu using the new language (best-effort).
+      // Rebuild the app menu using the effective language (best-effort).
       if (typeof buildAppMenu !== 'function') {
         log.warn(
           'buildAppMenu unavailable; menu rebuild skipped.',
