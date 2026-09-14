@@ -30,7 +30,7 @@ const log = Log.get('text-state');
 log.debug('Text state starting...');
 
 // =============================================================================
-// Helpers (validation / normalization)
+// Validation / normalization helpers and action policy
 // =============================================================================
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
@@ -91,13 +91,13 @@ let appRef = null;
 let currentTextProcessingController = null;
 let onCurrentTextDidBecomeEmpty = null;
 
-// Window resolver for best-effort UI notifications.
+// main.js owns window lifecycle; this module resolves windows only to authorize and notify.
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
 // =============================================================================
 // Runtime helpers
 // =============================================================================
-// Best-effort window send; avoids surfacing shutdown races as hard failures.
+// Best-effort notification: a window race must not change the text-update outcome.
 function safeSend(win, channel, payload) {
   if (!win) {
     return;
@@ -229,14 +229,14 @@ function applyCurrentText(rawText, rawMeta) {
   const { mainWin, editorWin } = getWindows() || {};
   const broadcastMeta = incomingMeta || { source: 'main', action: 'set' };
 
-  // Notify main window (for renderer to update preview/results)
+  // Main renderer uses live updates to refresh derived views.
   safeSend(mainWin, 'current-text-updated', {
     text: currentText,
     requestId,
     meta: broadcastMeta,
   });
 
-  // Notify Text Editor with object { text, meta }
+  // Text Editor bootstraps its initial text independently; live updates use a separate best-effort path.
   safeSend(editorWin, 'editor-text-updated', {
     text: currentText,
     requestId,
@@ -261,8 +261,7 @@ function applyCurrentText(rawText, rawMeta) {
   };
 }
 
-// Initial file load keeps legacy persisted shapes working, then normalizes to the
-// current in-memory/storage format before the rest of init continues.
+// Load the current { text: ... } storage form and accepted raw-string compatibility form.
 function loadInitialCurrentText() {
   try {
     let raw = loadJson
@@ -336,7 +335,6 @@ function init(options) {
   }
   maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
 
-  // Initial load from disk + truncated if hard cap is exceeded
   loadInitialCurrentText();
 
   beginCurrentTextProcessing({
@@ -344,7 +342,6 @@ function init(options) {
     action: 'initial_load',
   });
 
-  // Persistence in before-quit
   if (appRef && typeof appRef.on === 'function') {
     appRef.on('before-quit', persistCurrentTextOnQuit);
   }
