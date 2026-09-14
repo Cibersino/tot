@@ -526,10 +526,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       try {
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('preset-created', sanitizedPreset);
+        } else {
+          log.warn(
+            '[presets_main] preset-created notify failed (ignored): main window unavailable.'
+          );
         }
       } catch (err) {
-        log.warnOnce(
-          'presets_main.send.preset-created.create',
+        log.warn(
           '[presets_main] preset-created notify failed (ignored):',
           err
         );
@@ -837,10 +840,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         const { mainWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
           mainWin.webContents.send('preset-created', sanitizedPreset);
+        } else {
+          log.warn(
+            '[presets_main] preset-created notify failed (ignored): main window unavailable.'
+          );
         }
       } catch (err) {
-        log.warnOnce(
-          'presets_main.send.preset-created.edit',
+        log.warn(
           '[presets_main] preset-created notify failed (ignored):',
           err
         );
