@@ -522,8 +522,7 @@ function saveSettings(nextSettings) {
   try {
     _saveJson(_settingsFile, normalizedSettings);
   } catch (err) {
-    log.errorOnce(
-      'settings.saveSettings.persist',
+    log.error(
       'saveSettings failed (not persisted):',
       _settingsFile,
       err
@@ -717,11 +716,9 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
     let settings = getSettings();
     if (!settings.language) {
       const lang = normalizeLangTag(fallbackLang);
-      const base = deriveLangKey(lang);
       settings.language = lang;
 
-      log.warnOnce(
-        `BOOTSTRAP:settings.applyFallbackLanguageIfUnset.applied:${base}`,
+      log.warn(
         'BOOTSTRAP: language was unset; applying fallback language:',
         lang
       );
@@ -772,8 +769,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     try {
       settings = getSettings();
     } catch (err) {
-      log.warnOnce(
-        'settings.ipc.get-settings',
+      log.warn(
         'IPC get-settings failed (using safe fallback):',
         err
       );
@@ -798,9 +794,8 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       const chosenRaw = String(lang || '');
       const chosen = normalizeLangTag(chosenRaw);
       if (!chosen) {
-        log.warnOnce(
-          'settings.set-language.invalid',
-          `set-language called with empty/invalid language; falling back to "${DEFAULT_LANG}" for menu.`
+        log.warn(
+          'set-language called with empty language; leaving persisted language unchanged.'
         );
       }
 
@@ -873,8 +868,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     try {
       const name = typeof presetName === 'string' ? presetName.trim() : '';
       if (!name) {
-        log.warnOnce(
-          'settings.set-selected-preset.invalid',
+        log.warn(
           'set-selected-preset called with empty/invalid preset name (ignored).'
         );
         return { ok: false, error: 'invalid' };
@@ -883,8 +877,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       const settings = getSettings();
       const langTag = settings.language;
       if (!langTag) {
-        log.warnOnce(
-          'settings.set-selected-preset.emptyLanguage',
+        log.warn(
           `settings.language is empty; using fallback "${DEFAULT_LANG}" langKey for preset selection.`
         );
       }
@@ -906,8 +899,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
   ipcMain.handle('set-preview-spoiler-enabled', async (_event, enabled) => {
     try {
       if (typeof enabled !== 'boolean') {
-        log.warnOnce(
-          'settings.set-preview-spoiler-enabled.invalid',
+        log.warn(
           'set-preview-spoiler-enabled called with non-boolean value (ignored).',
           { type: typeof enabled }
         );
@@ -932,8 +924,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
   ipcMain.handle('set-spellcheck-enabled', async (_event, enabled) => {
     try {
       if (typeof enabled !== 'boolean') {
-        log.warnOnce(
-          'settings.set-spellcheck-enabled.invalid',
+        log.warn(
           'set-spellcheck-enabled called with non-boolean value (ignored).',
           { type: typeof enabled }
         );
