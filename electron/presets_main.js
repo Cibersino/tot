@@ -40,6 +40,9 @@ const menuBuilder = require('./menu_builder');
 const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
 const PRESETS_SOURCE_DIR_RESOLVED = path.resolve(PRESETS_SOURCE_DIR);
 
+// =============================================================================
+// Helpers
+// =============================================================================
 function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
   try {
     const senderWin = event && event.sender
@@ -56,9 +59,6 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
   }
 }
 
-// =============================================================================
-// Helpers
-// =============================================================================
 function presetJsonKey(filePath) {
   const resolved = path.resolve(filePath);
   const base = path.basename(resolved);
