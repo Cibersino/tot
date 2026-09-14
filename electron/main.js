@@ -102,7 +102,6 @@ const taskEditorWindowLifecycleController = taskEditorWindowLifecycle.createCont
 });
 const editorTextSizeController = editorTextSize.createController({
   settingsState,
-  getWindows: () => getSettingsBroadcastWindows(),
 });
 
 // =============================================================================
@@ -2019,6 +2018,14 @@ app.whenReady().then(() => {
 
   spellcheckController.apply(settings);
 
+  settingsState.configurePublication({
+    getWindows: () => getSettingsBroadcastWindows(),
+    onSettingsUpdated: (nextSettings) => {
+      spellcheckController.apply(nextSettings);
+    },
+    decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
+  });
+
   // Delegated IPC registration (feature modules).
   // main.js owns windows; feature modules own their IPC contract and internal logic.
   textState.registerIpc(ipcMain, () => ({
@@ -2039,17 +2046,11 @@ app.whenReady().then(() => {
 
   editorFindMain.registerIpc(ipcMain);
 
-  const settingsIpc = settingsState.registerIpc(ipcMain, {
-    getWindows: () => getSettingsBroadcastWindows(),
-    buildAppMenu,
-    onSettingsUpdated: (nextSettings) => {
-      spellcheckController.apply(nextSettings);
-    },
-    decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
-  });
+  settingsState.registerIpc(ipcMain, { buildAppMenu });
+  editorTextSizeController.registerIpc(ipcMain);
 
   snapshotTagSettings.registerIpc(ipcMain, {
-    publishSettingsUpdate: () => settingsIpc.publishCurrentSettings(),
+    publishSettingsUpdate: () => settingsState.publishCurrentSettings(),
   });
 
   presetsMain.registerIpc(ipcMain, {

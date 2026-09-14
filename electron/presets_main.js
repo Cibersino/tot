@@ -279,20 +279,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
   function broadcast(settings) {
     try {
-      const windows = resolveWindows();
-      if (typeof settingsState.broadcastSettingsUpdated === 'function') {
-        settingsState.broadcastSettingsUpdated(settings, windows);
-      } else {
-        // Defensive fallback if for some reason it is not exported
-        log.warnOnce(
-          'presets_main.broadcastSettingsUpdated.missing',
-          '[presets_main] broadcastSettingsUpdated missing; using mainWin send (ignored).'
-        );
-        const { mainWin } = windows;
-        if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('settings-updated', settings);
-        }
-      }
+      settingsState.publishSettingsUpdated(settings);
     } catch (err) {
       log.warnOnce(
         'presets_main.broadcast.settings-updated',

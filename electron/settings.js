@@ -96,6 +96,7 @@ let _loadJson = null;
 let _saveJson = null;
 let _saveJsonStrict = null;
 let _settingsFile = null;
+let publicationConfig = null;
 
 // Last normalized settings kept in memory.
 let _currentSettings = null;
@@ -545,13 +546,117 @@ function saveSettingsStrict(nextSettings) {
 }
 
 // =============================================================================
-// Broadcast
+// Renderer settings publication
 // =============================================================================
+function configurePublication({ getWindows, onSettingsUpdated, decorateSettings } = {}) {
+  if (typeof getWindows !== 'function') {
+    throw new Error('[settings] configurePublication requires getWindows');
+  }
+  if (typeof decorateSettings !== 'function') {
+    throw new Error('[settings] configurePublication requires decorateSettings');
+  }
+
+  publicationConfig = {
+    getWindows,
+    onSettingsUpdated,
+    decorateSettings,
+  };
+}
+
+function decorateSettingsPayload(settings) {
+  const decorateSettings = publicationConfig && publicationConfig.decorateSettings;
+  if (typeof decorateSettings !== 'function') {
+    log.errorOnce(
+      'settings.decorateSettings.unavailable',
+      'Renderer settings decorator unavailable; settings payload dropped.'
+    );
+    return null;
+  }
+
+  try {
+    const decoratedSettings = decorateSettings(settings);
+    if (
+      !decoratedSettings
+      || typeof decoratedSettings !== 'object'
+      || Array.isArray(decoratedSettings)
+    ) {
+      log.errorOnce(
+        'settings.decorateSettings.invalid',
+        'Renderer settings decorator returned an invalid payload; settings payload dropped.'
+      );
+      return null;
+    }
+    return decoratedSettings;
+  } catch (err) {
+    log.errorOnce(
+      'settings.decorateSettings.failed',
+      'Renderer settings decorator failed; settings payload dropped:',
+      err
+    );
+    return null;
+  }
+}
+
+function requireDecoratedSettingsPayload(settings) {
+  const settingsPayload = decorateSettingsPayload(settings);
+  if (!settingsPayload) {
+    throw new Error('[settings] renderer settings payload unavailable');
+  }
+  return settingsPayload;
+}
+
+function resolvePublicationWindows() {
+  const getWindows = publicationConfig && publicationConfig.getWindows;
+  if (typeof getWindows !== 'function') {
+    log.warnOnce(
+      'settings.getWindows.unavailable',
+      'getWindows unavailable; window-targeted updates skipped.'
+    );
+    return {};
+  }
+
+  try {
+    const windows = getWindows();
+    if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
+      log.warnOnce(
+        'settings.getWindows.invalid',
+        'getWindows returned no windows object; window-targeted updates skipped.'
+      );
+      return {};
+    }
+    return windows;
+  } catch (err) {
+    log.warnOnce(
+      'settings.getWindows.failed',
+      'getWindows failed (window-targeted updates skipped):',
+      err
+    );
+    return {};
+  }
+}
+
+function notifySettingsUpdated(settings) {
+  const onSettingsUpdated = publicationConfig && publicationConfig.onSettingsUpdated;
+  if (typeof onSettingsUpdated !== 'function') {
+    log.warnOnce(
+      'settings.onSettingsUpdated.unavailable',
+      'onSettingsUpdated callback unavailable; settings callback publish skipped.'
+    );
+    return;
+  }
+
+  try {
+    onSettingsUpdated(settings);
+  } catch (err) {
+    log.warn('onSettingsUpdated callback failed (ignored):', err);
+  }
+}
+
 /**
- * Sends 'settings-updated' to open windows (best-effort).
+ * Sends a prepared 'settings-updated' payload to open windows (best-effort).
  * This may fail during shutdown/races; failures are logged once and ignored.
  */
-function broadcastSettingsUpdated(settings, windows) {
+function sendSettingsUpdated(settingsPayload, windows) {
   if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
     log.warnOnce(
       'settings.broadcastSettingsUpdated.windows.invalid',
@@ -574,7 +679,7 @@ function broadcastSettingsUpdated(settings, windows) {
   targets.forEach(({ win, name }) => {
     if (!win || win.isDestroyed()) return;
     try {
-      win.webContents.send('settings-updated', settings);
+      win.webContents.send('settings-updated', settingsPayload);
     } catch (err) {
       log.warnOnce(
         `settings.broadcastSettingsUpdated.${name}`,
@@ -584,6 +689,19 @@ function broadcastSettingsUpdated(settings, windows) {
       );
     }
   });
+}
+
+function publishSettingsUpdated(settings) {
+  notifySettingsUpdated(settings);
+  const settingsPayload = decorateSettingsPayload(settings);
+  if (!settingsPayload) return;
+  sendSettingsUpdated(settingsPayload, resolvePublicationWindows());
+}
+
+function publishCurrentSettings() {
+  const settings = getSettings();
+  publishSettingsUpdated(settings);
+  return settings;
 }
 
 // =============================================================================
@@ -626,81 +744,10 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-selected-preset
  * - set-preview-spoiler-enabled
  * - set-spellcheck-enabled
- * - set-editor-font-size-px
  */
-function registerIpc(
-  ipcMain,
-  {
-    getWindows, // () => ({ mainWin, editorWin, editorFindWin, presetWin, langWin, flotanteWin, taskEditorWin, textTimeCalculatorWin })
-    buildAppMenu, // function(lang)
-    onSettingsUpdated, // function(settings)
-    decorateSettings, // function(settings) => settings payload
-  } = {}
-) {
+function registerIpc(ipcMain, { buildAppMenu } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
-  }
-
-  function decorateSettingsPayload(settings) {
-    if (typeof decorateSettings !== 'function') {
-      log.warnOnce(
-        'settings.decorateSettings.unavailable',
-        'decorateSettings unavailable; using raw settings payload.'
-      );
-      return settings;
-    }
-
-    try {
-      const decoratedSettings = decorateSettings(settings);
-      if (
-        !decoratedSettings
-        || typeof decoratedSettings !== 'object'
-        || Array.isArray(decoratedSettings)
-      ) {
-        log.warnOnce(
-          'settings.decorateSettings.invalid',
-          'decorateSettings returned an invalid payload; using raw settings payload.'
-        );
-        return settings;
-      }
-      return decoratedSettings;
-    } catch (err) {
-      log.warnOnce(
-        'settings.decorateSettings.failed',
-        'decorateSettings failed; using raw settings payload:',
-        err
-      );
-      return settings;
-    }
-  }
-
-  function resolveWindows() {
-    if (typeof getWindows !== 'function') {
-      log.warnOnce(
-        'settings.getWindows.unavailable',
-        'getWindows unavailable; window-targeted updates skipped.'
-      );
-      return {};
-    }
-
-    try {
-      const windows = getWindows();
-      if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
-        log.warnOnce(
-          'settings.getWindows.invalid',
-          'getWindows returned no windows object; window-targeted updates skipped.'
-        );
-        return {};
-      }
-      return windows;
-    } catch (err) {
-      log.warnOnce(
-        'settings.getWindows.failed',
-        'getWindows failed (window-targeted updates skipped):',
-        err
-      );
-      return {};
-    }
   }
 
   function hideWindowMenu(win, name) {
@@ -713,50 +760,26 @@ function registerIpc(
     }
   }
 
-  function publishSettingsUpdated(settings, windows) {
-    if (typeof onSettingsUpdated !== 'function') {
-      log.warnOnce(
-        'settings.onSettingsUpdated.unavailable',
-        'onSettingsUpdated callback unavailable; settings callback publish skipped.'
-      );
-    } else {
-      try {
-        onSettingsUpdated(settings);
-      } catch (err) {
-        log.warn('onSettingsUpdated callback failed (ignored):', err);
-      }
-    }
-    broadcastSettingsUpdated(decorateSettingsPayload(settings), windows);
-  }
-
   function saveAndPublishSettingsStrict(nextSettings) {
     const savedSettings = saveSettingsStrict(nextSettings);
-    const windows = resolveWindows();
-    publishSettingsUpdated(savedSettings, windows);
+    publishSettingsUpdated(savedSettings);
     return savedSettings;
-  }
-
-  function publishCurrentSettings() {
-    const settings = getSettings();
-    const windows = resolveWindows();
-    publishSettingsUpdated(settings, windows);
-    return settings;
   }
 
   // get-settings: returns the current settings object (normalized)
   ipcMain.handle('get-settings', async () => {
+    let settings;
     try {
-      return decorateSettingsPayload(getSettings());
+      settings = getSettings();
     } catch (err) {
       log.warnOnce(
         'settings.ipc.get-settings',
         'IPC get-settings failed (using safe fallback):',
         err
       );
-      return decorateSettingsPayload(
-        normalizeSettings(createDefaultSettings(DEFAULT_LANG))
-      );
+      settings = normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
+    return requireDecoratedSettingsPayload(settings);
   });
 
   // get-current-language: returns only the persisted language needed by the language window
@@ -790,7 +813,7 @@ function registerIpc(
 
       const menuLang = settings.language || DEFAULT_LANG;
 
-      const windows = resolveWindows();
+      const windows = resolvePublicationWindows();
 
       // Rebuild the app menu using the new language (best-effort).
       if (typeof buildAppMenu !== 'function') {
@@ -815,7 +838,7 @@ function registerIpc(
       hideWindowMenu(taskEditorWin, 'taskEditorWin');
       hideWindowMenu(textTimeCalculatorWin, 'textTimeCalculatorWin');
 
-      publishSettingsUpdated(settings, windows);
+      publishSettingsUpdated(settings);
 
       return { ok: true, language: chosen };
     } catch (err) {
@@ -932,38 +955,6 @@ function registerIpc(
     }
   });
 
-  // set-editor-font-size-px: persists manual-editor textarea font size and broadcasts
-  ipcMain.handle('set-editor-font-size-px', async (_event, fontSizePx) => {
-    try {
-      const parsed = Number(fontSizePx);
-      if (!Number.isFinite(parsed)) {
-        log.warnOnce(
-          'settings.set-editor-font-size-px.invalid',
-          'set-editor-font-size-px called with non-finite value (ignored).',
-          { value: fontSizePx }
-        );
-        return { ok: false, error: 'invalid' };
-      }
-
-      const settings = getSettings();
-      const nextEditorFontSizePx = normalizeEditorFontSizePx(parsed);
-      if (settings.editorFontSizePx === nextEditorFontSizePx) {
-        return { ok: true, editorFontSizePx: nextEditorFontSizePx };
-      }
-      const nextSettings = cloneSettingsForMutation(settings);
-      nextSettings.editorFontSizePx = nextEditorFontSizePx;
-      const savedSettings = saveAndPublishSettingsStrict(nextSettings);
-
-      return { ok: true, editorFontSizePx: savedSettings.editorFontSizePx };
-    } catch (err) {
-      log.error('IPC set-editor-font-size-px failed:', err);
-      throw err;
-    }
-  });
-
-  return {
-    publishCurrentSettings,
-  };
 }
 
 // =============================================================================
@@ -974,12 +965,16 @@ module.exports = {
   normalizeLangBase,
   getLangBase,
   deriveLangKey,
+  normalizeEditorFontSizePx,
   init,
   registerIpc,
   getSettings,
   saveSettings,
+  saveSettingsStrict,
+  configurePublication,
+  publishSettingsUpdated,
+  publishCurrentSettings,
   applyFallbackLanguageIfUnset,
-  broadcastSettingsUpdated,
 };
 
 // =============================================================================

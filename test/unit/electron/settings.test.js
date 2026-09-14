@@ -234,7 +234,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
     settingsFile: 'C:\\fake\\settings.json',
   });
 
-  const settingsIpc = settings.registerIpc(ipcMain, {
+  settings.configurePublication({
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -257,6 +257,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
       };
     },
   });
+  settings.registerIpc(ipcMain);
 
   const initialSettings = await ipcMain.invoke('get-settings');
   assert.equal(initialSettings.language, 'ar');
@@ -277,24 +278,34 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(sentPayloads[0].payload.spellcheckAvailable, false);
   assert.equal(settings.getSettings().spellcheckEnabled, false);
   assert.equal(Object.hasOwn(settings.getSettings(), 'spellcheckAvailable'), false);
-  assert.equal(typeof settingsIpc.publishCurrentSettings, 'function');
+  assert.equal(typeof settings.publishCurrentSettings, 'function');
 
-  settingsIpc.publishCurrentSettings();
+  settings.publishCurrentSettings();
 
   assert.equal(onSettingsUpdatedCalls.length, 2);
   assert.equal(sentPayloads.length, 2);
   assert.equal(sentPayloads[1].channel, 'settings-updated');
   assert.equal(sentPayloads[1].payload.spellcheckEnabled, false);
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
+
+  const externallyProducedSettings = {
+    language: 'ar',
+    spellcheckEnabled: true,
+  };
+  settings.publishSettingsUpdated(externallyProducedSettings);
+
+  assert.equal(onSettingsUpdatedCalls.length, 3);
+  assert.equal(sentPayloads.length, 3);
+  assert.equal(sentPayloads[2].payload.spellcheckAvailable, false);
+  assert.equal(Object.hasOwn(externallyProducedSettings, 'spellcheckAvailable'), false);
 });
 
-test('broadcastSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
+test('publishSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
   const settings = loadFreshSettingsModule();
   const sentPayloads = [];
 
-  settings.broadcastSettingsUpdated(
-    { language: 'en' },
-    {
+  settings.configurePublication({
+    getWindows: () => ({
       textTimeCalculatorWin: {
         isDestroyed() {
           return false;
@@ -325,8 +336,13 @@ test('broadcastSettingsUpdated includes calculator and reading-test window roles
           },
         },
       },
-    }
-  );
+    }),
+    onSettingsUpdated() {},
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.publishSettingsUpdated({ language: 'en' });
 
   assert.deepEqual(sentPayloads, [
     {
@@ -344,9 +360,18 @@ test('broadcastSettingsUpdated includes calculator and reading-test window roles
   ]);
 });
 
-test('set-preview-spoiler-enabled strictly saves the main-window preference without broadcasting', async () => {
+test('configurePublication requires the renderer settings decorator', () => {
   const settings = loadFreshSettingsModule();
-  const harness = createSettingsHarness();
+
+  assert.throws(
+    () => settings.configurePublication({ getWindows: () => ({}) }),
+    /configurePublication requires decorateSettings/
+  );
+});
+
+test('invalid renderer decoration drops live updates and rejects get-settings', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({ language: 'en' });
   const ipcMain = createIpcMainDouble();
   const sentPayloads = [];
 
@@ -356,7 +381,7 @@ test('set-preview-spoiler-enabled strictly saves the main-window preference with
     saveJsonStrict: harness.saveJsonStrict,
     settingsFile: 'C:\\fake\\settings.json',
   });
-  settings.registerIpc(ipcMain, {
+  settings.configurePublication({
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -369,7 +394,78 @@ test('set-preview-spoiler-enabled strictly saves the main-window preference with
         },
       },
     }),
+    decorateSettings() {
+      return null;
+    },
   });
+  settings.registerIpc(ipcMain);
+
+  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+
+  assert.deepEqual(sentPayloads, []);
+  await assert.rejects(
+    ipcMain.invoke('get-settings'),
+    /renderer settings payload unavailable/
+  );
+});
+
+test('throwing renderer decoration drops live updates', () => {
+  const settings = loadFreshSettingsModule();
+  const sentPayloads = [];
+
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+    decorateSettings() {
+      throw new Error('decorator failed');
+    },
+  });
+
+  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+
+  assert.deepEqual(sentPayloads, []);
+});
+
+test('set-preview-spoiler-enabled strictly saves the main-window preference without broadcasting', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness();
+  const ipcMain = createIpcMainDouble();
+  const sentPayloads = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.registerIpc(ipcMain);
 
   const result = await ipcMain.invoke('set-preview-spoiler-enabled', false);
 
@@ -411,7 +507,7 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
     settingsFile: 'C:\\fake\\settings.json',
   });
 
-  settings.registerIpc(ipcMain, {
+  settings.configurePublication({
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -427,7 +523,11 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
     onSettingsUpdated(nextSettings) {
       onSettingsUpdatedCalls.push(nextSettings);
     },
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
   });
+  settings.registerIpc(ipcMain);
 
   await assert.rejects(
     ipcMain.invoke('set-spellcheck-enabled', false),
