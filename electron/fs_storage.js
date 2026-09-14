@@ -310,7 +310,7 @@ function saveJson(filePath, obj) {
 
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
   } catch (err) {
-    log.error('saveJson failed:', filePath, err);
+    log.warn('saveJson failed (ignored):', filePath, err);
   }
 }
 
