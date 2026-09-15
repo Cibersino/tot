@@ -494,28 +494,11 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
 
     const wasVisible = typeof editorWin.isVisible === 'function' && editorWin.isVisible();
 
-    if (wasVisible) {
+    if (wasVisible || !deferShow || startupOwner === 'ordinary') {
       showEditorWindow(editorWin, {
         maximize: options && options.maximize === true,
         useSavedMaximized: false,
       });
-      return {
-        ok: true,
-        editorWin,
-        baseReadyPromise: null,
-      };
-    }
-
-    if (!deferShow || startupOwner === 'ordinary') {
-      showEditorWindow(editorWin, {
-        maximize: options && options.maximize === true,
-        useSavedMaximized: false,
-      });
-      return {
-        ok: true,
-        editorWin,
-        baseReadyPromise: null,
-      };
     }
 
     return {
