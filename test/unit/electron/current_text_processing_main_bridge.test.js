@@ -71,7 +71,7 @@ test('handleStateChanged warns when a main window exists but is unavailable for 
   assert.equal(delivered, false);
   assert.deepEqual(sends, []);
   assert.deepEqual(log.warnings, [
-    ['current-text-processing-state-changed broadcast skipped (ignored): main window unavailable.'],
+    ['current-text-processing-state-changed broadcast failed (ignored): main window unavailable.'],
   ]);
 });
 

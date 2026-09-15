@@ -42,7 +42,7 @@ function createBridge({
         return false;
       }
       if (!hasLiveWebContents(targetWin)) {
-        log.warn(`${CHANNEL} broadcast skipped (ignored): main window unavailable.`);
+        log.warn(`${CHANNEL} broadcast failed (ignored): main window unavailable.`);
         return false;
       }
       targetWin.webContents.send(CHANNEL, state);
