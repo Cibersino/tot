@@ -664,19 +664,13 @@ function createSession({
 
   function handleEditorReplaceResponse(payload) {
     if (!pendingEditorReplace) {
-      log.warnOnce(
-        'editorFind.editorReplaceResponse.unexpected',
-        'editor-replace-response without a pending request (ignored).'
-      );
+      log.warn('editor-replace-response without a pending request (ignored).');
       return;
     }
 
     const responseRequestId = Number(payload && payload.requestId);
     if (!Number.isFinite(responseRequestId) || responseRequestId !== pendingEditorReplace.requestId) {
-      log.warnOnce(
-        'editorFind.editorReplaceResponse.mismatch',
-        'editor-replace-response requestId mismatch (ignored).'
-      );
+      log.warn('editor-replace-response requestId mismatch (ignored).');
       return;
     }
 

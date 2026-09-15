@@ -125,11 +125,15 @@ function safeSendToFindWindow(channel, payload) {
   try {
     wc.send(channel, payload);
   } catch (err) {
-    log.warnOnce(
-      `editorFind.send.${channel}`,
-      `Text Editor find send('${channel}') failed (ignored):`,
-      err
-    );
+    if (channel === 'editor-find-state') {
+      log.warnOnce(
+        'editorFind.send.editor-find-state',
+        `Text Editor find send('${channel}') failed (ignored):`,
+        err
+      );
+    } else {
+      log.warn(`Text Editor find send('${channel}') failed (ignored):`, err);
+    }
   }
 }
 
@@ -147,11 +151,7 @@ function sendToFindWindowAfterLoad(wc, channel, payload) {
   try {
     wc.send(channel, payload);
   } catch (err) {
-    log.warnOnce(
-      `editorFind.sendAfterLoad.${channel}`,
-      `Text Editor find post-load send('${channel}') failed (ignored):`,
-      err
-    );
+    log.warn(`Text Editor find post-load send('${channel}') failed (ignored):`, err);
   }
 }
 
@@ -757,10 +757,10 @@ function isAuthorizedEditorSender(event) {
   return event.sender === editorWin.webContents;
 }
 
-function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handler) {
+function registerAuthorizedFindIpc(ipcMain, channel, warnMessage, handler) {
   ipcMain.handle(channel, (event, ...args) => {
     if (!isAuthorizedFindSender(event)) {
-      log.warnOnce(warnKey, warnMessage);
+      log.warn(warnMessage);
       return { ok: false, error: 'unauthorized' };
     }
     return handler(...args);
@@ -769,10 +769,7 @@ function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handl
 
 function handleEditorReplaceResponse(event, payload) {
   if (!isAuthorizedEditorSender(event)) {
-    log.warnOnce(
-      'editorFind.editorReplaceResponse.unauthorized',
-      'editor-replace-response unauthorized (ignored).'
-    );
+    log.warn('editor-replace-response unauthorized (ignored).');
     return;
   }
 
@@ -792,7 +789,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-set-query',
-    'editorFind.ipc.setQuery.unauthorized',
     'editor-find-set-query unauthorized (ignored).',
     (rawQuery) => {
       session.clearPendingResyncRequest();
@@ -803,7 +799,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-next',
-    'editorFind.ipc.next.unauthorized',
     'editor-find-next unauthorized (ignored).',
     () => session.navigate(true)
   );
@@ -811,7 +806,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-prev',
-    'editorFind.ipc.prev.unauthorized',
     'editor-find-prev unauthorized (ignored).',
     () => session.navigate(false)
   );
@@ -819,7 +813,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-replace-current',
-    'editorFind.ipc.replaceCurrent.unauthorized',
     'editor-find-replace-current unauthorized (ignored).',
     (replacement) => session.replaceCurrent(replacement)
   );
@@ -827,7 +820,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-replace-all',
-    'editorFind.ipc.replaceAll.unauthorized',
     'editor-find-replace-all unauthorized (ignored).',
     (replacement) => session.replaceAll(replacement)
   );
@@ -835,7 +827,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-toggle-expanded',
-    'editorFind.ipc.toggleExpanded.unauthorized',
     'editor-find-toggle-expanded unauthorized (ignored).',
     () => {
       setExpanded(!state.expanded);
@@ -846,7 +837,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-close',
-    'editorFind.ipc.close.unauthorized',
     'editor-find-close unauthorized (ignored).',
     () => closeFindUi({ restoreFocus: true })
   );
