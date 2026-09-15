@@ -99,10 +99,7 @@ function isAuthorizedSender(event, mainWin) {
       ? BrowserWindow.fromWebContents(event.sender)
       : null;
     if (!mainWin || senderWin !== mainWin) {
-      log.warnOnce(
-        'text_extraction_picker.unauthorized',
-        'text-extraction-open-picker unauthorized (ignored).'
-      );
+      log.warn('text-extraction-open-picker unauthorized (ignored).');
       return false;
     }
     return true;
@@ -128,11 +125,7 @@ function getDialogTexts() {
       language = settings.language;
     }
   } catch (err) {
-    log.warnOnce(
-      'text_extraction_picker.dialogTexts',
-      'Text-extraction picker settings unavailable; using DEFAULT_LANG dialog texts:',
-      err
-    );
+    log.warn('Text-extraction picker settings unavailable; using DEFAULT_LANG dialog texts:', err);
   }
   return menuBuilder.getDialogTexts(language);
 }
@@ -183,7 +176,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         properties: ['openFile', 'multiSelections'],
       });
 
-      if (!dialogResult || dialogResult.canceled || !Array.isArray(dialogResult.filePaths) || !dialogResult.filePaths.length) {
+      if (!dialogResult || !Array.isArray(dialogResult.filePaths)) {
+        log.warn('text-extraction-open-picker returned an invalid dialog result (treated as cancelled).');
+        return { ok: true, canceled: true };
+      }
+      if (dialogResult.canceled) {
+        return { ok: true, canceled: true };
+      }
+      if (!dialogResult.filePaths.length) {
+        log.warn('text-extraction-open-picker returned no selected paths (treated as cancelled).');
         return { ok: true, canceled: true };
       }
 
@@ -191,10 +192,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         .map((filePath) => platformAdapter.normalizeSelectedFilePath(filePath))
         .filter(Boolean);
       if (!selectedPaths.length) {
-        log.warnOnce(
-          'text_extraction_picker.empty_selection',
-          'text-extraction-open-picker returned empty selection (treated as cancelled).'
-        );
+        log.warn('text-extraction-open-picker returned empty selection (treated as cancelled).');
         return { ok: true, canceled: true };
       }
       const selectedPath = selectedPaths[0];

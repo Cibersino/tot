@@ -28,19 +28,14 @@ function normalizeAbsolutePath(rawPath) {
   }
 }
 
-function resolveExistingDirectory(candidates, fallbackPath, log, warnPrefix) {
+function resolveExistingDirectory(candidates, fallbackPath, log) {
   for (const candidate of candidates) {
     const normalized = normalizeAbsolutePath(candidate);
     if (isExistingDirectory(normalized)) return normalized;
   }
 
   const fallback = normalizeAbsolutePath(fallbackPath);
-  if (warnPrefix) {
-    log.warnOnce(
-      `${warnPrefix}.fallback`,
-      'Default picker directory candidates unavailable; using fallback directory.'
-    );
-  }
+  log.warn('Default picker directory candidates unavailable; using fallback directory.');
 
   if (isExistingDirectory(fallback)) return fallback;
   return process.cwd();
@@ -62,26 +57,15 @@ function normalizeSelectedDirectoryFromFilePath(rawFilePath) {
   }
 }
 
-function safeGetSystemPath(app, key, log, onceKey) {
+function safeGetSystemPath(app, key, log) {
   if (!app || typeof app.getPath !== 'function') {
-    if (onceKey) {
-      log.warnOnce(
-        `${onceKey}.missing`,
-        `app.getPath('${key}') unavailable; using fallback path resolution.`
-      );
-    }
+    log.warn(`app.getPath('${key}') unavailable; using fallback path resolution.`);
     return '';
   }
   try {
     return app.getPath(key);
   } catch (err) {
-    if (onceKey) {
-      log.warnOnce(
-        `${onceKey}.failed`,
-        `app.getPath('${key}') failed; using fallback path resolution:`,
-        err
-      );
-    }
+    log.warn(`app.getPath('${key}') failed; using fallback path resolution:`, err);
     return '';
   }
 }
@@ -95,4 +79,3 @@ module.exports = {
   normalizeSelectedDirectoryFromFilePath,
   safeGetSystemPath,
 };
-
