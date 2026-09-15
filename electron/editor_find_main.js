@@ -187,50 +187,10 @@ const session = createSession({
   publishState,
 });
 
-function clearStateOnly() {
-  return session.clearStateOnly();
-}
-
-function clearSearch(options) {
-  return session.clearSearch(options);
-}
-
-function hasQuery() {
-  return session.hasQuery();
-}
-
-function setQuery(rawQuery) {
-  return session.setQuery(rawQuery);
-}
-
-function navigate(forward) {
-  return session.navigate(forward);
-}
-
-function handleFoundInPage(result) {
-  return session.handleFoundInPage(result);
-}
-
-function clearPendingSearchWait(status) {
-  return session.clearPendingSearchWait(status);
-}
-
-function clearPendingEditorReplace(status) {
-  return session.clearPendingEditorReplace(status);
-}
-
 function clearPendingSessionState(status) {
   session.clearPendingResyncRequest();
-  clearPendingSearchWait(status);
-  clearPendingEditorReplace(status);
-}
-
-function replaceCurrent(rawReplacement) {
-  return session.replaceCurrent(rawReplacement);
-}
-
-function replaceAll(rawReplacement) {
-  return session.replaceAll(rawReplacement);
+  session.clearPendingSearchWait(status);
+  session.clearPendingEditorReplace(status);
 }
 
 function runEditorShortcutAction(actionName) {
@@ -372,7 +332,7 @@ function handleFindWindowClosed() {
   clearPendingSessionState('find-window-closed');
 
   if (!closingFindWindow) {
-    clearSearch({ clearSelection: true });
+    session.clearSearch({ clearSelection: true });
     focusEditorWindow();
   }
 
@@ -538,7 +498,7 @@ function openFindUi({
 }
 
 function closeFindUi({ restoreFocus = true } = {}) {
-  clearSearch({ clearSelection: true });
+  session.clearSearch({ clearSelection: true });
   pendingFocusTarget = null;
   closeFindWindow();
 
@@ -570,7 +530,7 @@ function handleEditorBeforeInput(event, input) {
     openFindUi({
       expanded: true,
       preserveExpandedWhenOpen: false,
-      focusTarget: hasQuery() ? 'replace' : 'query',
+      focusTarget: session.hasQuery() ? 'replace' : 'query',
     });
     return;
   }
@@ -578,9 +538,9 @@ function handleEditorBeforeInput(event, input) {
   if (isF3(input)) {
     event.preventDefault();
     if (input.shift) {
-      navigate(false);
+      session.navigate(false);
     } else {
-      navigate(true);
+      session.navigate(true);
     }
     return;
   }
@@ -624,7 +584,7 @@ function handleFindBeforeInput(event, input) {
     if (!state.expanded) {
       setExpanded(true);
     }
-    queueFocusTarget(hasQuery() ? 'replace' : 'query', true);
+    queueFocusTarget(session.hasQuery() ? 'replace' : 'query', true);
     tryDispatchPendingFocus();
     return;
   }
@@ -632,9 +592,9 @@ function handleFindBeforeInput(event, input) {
   if (isF3(input)) {
     event.preventDefault();
     if (input.shift) {
-      navigate(false);
+      session.navigate(false);
     } else {
-      navigate(true);
+      session.navigate(true);
     }
     return;
   }
@@ -669,7 +629,7 @@ function onEditorWindowClosed() {
   clearPendingSessionState('editor-window-closed');
   closingFindWindow = false;
   editorShortcutActions = null;
-  clearStateOnly();
+  session.clearStateOnly();
   detachEditorWindow();
   editorWinRef = null;
 }
@@ -770,7 +730,7 @@ function attachEditorWindow(editorWin, options = {}) {
   };
   const onFoundInPage = (_event, result) => {
     try {
-      handleFoundInPage(result);
+      session.handleFoundInPage(result);
     } catch (err) {
       log.error('Error in Text Editor found-in-page handler:', err);
     }
@@ -865,7 +825,7 @@ function registerIpc(ipcMain) {
     'editor-find-set-query unauthorized (ignored).',
     (rawQuery) => {
       session.clearPendingResyncRequest();
-      return setQuery(rawQuery);
+      return session.setQuery(rawQuery);
     }
   );
 
@@ -874,7 +834,7 @@ function registerIpc(ipcMain) {
     'editor-find-next',
     'editorFind.ipc.next.unauthorized',
     'editor-find-next unauthorized (ignored).',
-    () => navigate(true)
+    () => session.navigate(true)
   );
 
   registerAuthorizedFindIpc(
@@ -882,7 +842,7 @@ function registerIpc(ipcMain) {
     'editor-find-prev',
     'editorFind.ipc.prev.unauthorized',
     'editor-find-prev unauthorized (ignored).',
-    () => navigate(false)
+    () => session.navigate(false)
   );
 
   registerAuthorizedFindIpc(
@@ -890,7 +850,7 @@ function registerIpc(ipcMain) {
     'editor-find-replace-current',
     'editorFind.ipc.replaceCurrent.unauthorized',
     'editor-find-replace-current unauthorized (ignored).',
-    (replacement) => replaceCurrent(replacement)
+    (replacement) => session.replaceCurrent(replacement)
   );
 
   registerAuthorizedFindIpc(
@@ -898,7 +858,7 @@ function registerIpc(ipcMain) {
     'editor-find-replace-all',
     'editorFind.ipc.replaceAll.unauthorized',
     'editor-find-replace-all unauthorized (ignored).',
-    (replacement) => replaceAll(replacement)
+    (replacement) => session.replaceAll(replacement)
   );
 
   registerAuthorizedFindIpc(
