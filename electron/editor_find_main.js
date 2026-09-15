@@ -249,6 +249,29 @@ function setExpanded(expanded, { publish = true } = {}) {
   return changed;
 }
 
+function handleSharedFindShortcut(event, input) {
+  if (isF3(input)) {
+    event.preventDefault();
+    session.navigate(!input.shift);
+    return true;
+  }
+
+  let actionName = null;
+  if (isIncreaseTextSizeShortcut(input)) {
+    actionName = 'onIncreaseTextSize';
+  } else if (isDecreaseTextSizeShortcut(input)) {
+    actionName = 'onDecreaseTextSize';
+  } else if (isResetTextSizeShortcut(input)) {
+    actionName = 'onResetTextSize';
+  }
+
+  if (!actionName) return false;
+
+  event.preventDefault();
+  runEditorShortcutAction(actionName);
+  return true;
+}
+
 // =============================================================================
 // Find window lifecycle / wiring
 // =============================================================================
@@ -535,33 +558,7 @@ function handleEditorBeforeInput(event, input) {
     return;
   }
 
-  if (isF3(input)) {
-    event.preventDefault();
-    if (input.shift) {
-      session.navigate(false);
-    } else {
-      session.navigate(true);
-    }
-    return;
-  }
-
-  if (isIncreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onIncreaseTextSize');
-    return;
-  }
-
-  if (isDecreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onDecreaseTextSize');
-    return;
-  }
-
-  if (isResetTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onResetTextSize');
-    return;
-  }
+  if (handleSharedFindShortcut(event, input)) return;
 
   if (isEscape(input) && resolveFindWindow()) {
     event.preventDefault();
@@ -589,33 +586,7 @@ function handleFindBeforeInput(event, input) {
     return;
   }
 
-  if (isF3(input)) {
-    event.preventDefault();
-    if (input.shift) {
-      session.navigate(false);
-    } else {
-      session.navigate(true);
-    }
-    return;
-  }
-
-  if (isIncreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onIncreaseTextSize');
-    return;
-  }
-
-  if (isDecreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onDecreaseTextSize');
-    return;
-  }
-
-  if (isResetTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onResetTextSize');
-    return;
-  }
+  if (handleSharedFindShortcut(event, input)) return;
 }
 
 function onEditorWindowWillClose() {
