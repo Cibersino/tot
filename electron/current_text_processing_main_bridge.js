@@ -48,7 +48,7 @@ function createBridge({
       targetWin.webContents.send(CHANNEL, state);
       return true;
     } catch (err) {
-      log.warn('Failed to broadcast current-text processing state (ignored):', err);
+      log.warn('Current-text processing state broadcast failed (ignored):', err);
       return false;
     }
   }
