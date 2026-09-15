@@ -171,7 +171,7 @@ function getWindowState(editorWin) {
 
 function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowState') {
   if (!hasLiveWebContents(editorWin)) {
-    log.warn('editor-window-state skipped (ignored): Text Editor window unavailable.', logContext);
+    log.warn('editor-window-state notification failed (ignored): Text Editor window unavailable.', logContext);
     return false;
   }
 
@@ -179,7 +179,7 @@ function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowStat
     editorWin.webContents.send('editor-window-state-changed', getWindowState(editorWin));
     return true;
   } catch (err) {
-    log.warn(`Unable to notify editor-window-state from ${logContext}:`, err);
+    log.warn(`editor-window-state notification failed (ignored) from ${logContext}:`, err);
     return false;
   }
 }
