@@ -483,12 +483,11 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
         };
       }
 
+      const activeWaiter = getStartupCycleWaiter(hiddenStartupCycle.generation);
       return {
         ok: true,
         editorWin,
-        baseReadyPromise: getStartupCycleWaiter(hiddenStartupCycle.generation)
-          ? getStartupCycleWaiter(hiddenStartupCycle.generation).promise
-          : null,
+        baseReadyPromise: activeWaiter ? activeWaiter.promise : null,
       };
     }
 
