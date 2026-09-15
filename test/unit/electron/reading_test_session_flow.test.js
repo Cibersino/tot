@@ -21,7 +21,6 @@ test('Reading arming suppresses its renderer notice when Editor creation is life
     editorState: {
       notifyWindowState() {},
     },
-    log: createLoggerDouble(),
     showStartupFailureDisclosure(details) {
       disclosures.push(details);
     },

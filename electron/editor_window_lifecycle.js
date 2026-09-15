@@ -1,6 +1,9 @@
 // electron/editor_window_lifecycle.js
 'use strict';
 
+const Log = require('./log');
+const log = Log.get('editor-window-lifecycle');
+
 // =============================================================================
 // Overview
 // =============================================================================
@@ -54,10 +57,7 @@ function requireCreateEditorWindow(createEditorWindow, logContext) {
 // =============================================================================
 // Controller factory / lifecycle coordination
 // =============================================================================
-function createController({ log, editorState, showStartupFailureDisclosure = null }) {
-  if (!log || typeof log.warn !== 'function' || typeof log.error !== 'function') {
-    throw new Error('[editor_window_lifecycle] createController requires log');
-  }
+function createController({ editorState, showStartupFailureDisclosure = null }) {
   if (!editorState || typeof editorState.notifyWindowState !== 'function') {
     throw new Error('[editor_window_lifecycle] createController requires editorState.notifyWindowState');
   }

@@ -92,7 +92,6 @@ const spellcheckController = spellcheck.createController({
   settingsState,
 });
 const editorWindowLifecycleController = editorWindowLifecycle.createController({
-  log,
   editorState,
   showStartupFailureDisclosure: showEditorStartupFailureDisclosure,
 });
