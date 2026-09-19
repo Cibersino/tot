@@ -83,11 +83,7 @@ function createSession({
       try {
         editorWin.webContents.stopFindInPage('clearSelection');
       } catch (err) {
-        log.warnOnce(
-          'editorFind.stopFind.clearSelection',
-          "stopFindInPage('clearSelection') failed (ignored):",
-          err
-        );
+        log.warn("stopFindInPage('clearSelection') failed (ignored):", err);
       }
     }
 
@@ -98,10 +94,7 @@ function createSession({
   function runFind(options) {
     const editorWin = resolveEditorWindow();
     if (!editorWin) {
-      log.warnOnce(
-        'editorFind.runFind.noEditor',
-        'runFind ignored: Text Editor window unavailable.'
-      );
+      log.warn('runFind ignored: Text Editor window unavailable.');
       return { ok: false, error: 'Text Editor window unavailable' };
     }
 
@@ -227,14 +220,14 @@ function createSession({
 
     try {
       clearTimeout(timeoutId);
-    } catch {
-      // ignore timeout cleanup failure
+    } catch (err) {
+      log.warn('findInPage completion timeout cleanup failed (ignored):', err);
     }
 
     try {
       resolve({ ok: false, status });
-    } catch {
-      // ignore resolve failure
+    } catch (err) {
+      log.error('findInPage completion cancellation settlement failed:', err);
     }
   }
 
@@ -324,8 +317,8 @@ function createSession({
 
     try {
       clearTimeout(timeoutId);
-    } catch {
-      // ignore timeout cleanup failure
+    } catch (err) {
+      log.warn('editor replace timeout cleanup failed (ignored):', err);
     }
 
     try {
@@ -336,8 +329,8 @@ function createSession({
         replacements: 0,
         error: '',
       });
-    } catch {
-      // ignore resolve failure
+    } catch (err) {
+      log.error('Editor replace cancellation settlement failed:', err);
     }
   }
 
@@ -474,13 +467,12 @@ function createSession({
     return navigateToMatchOrdinal(targetOrdinal);
   }
 
-  async function refreshFindAfterReplaceAction(warnKey, warnLabel, preferredOrdinal = 1) {
+  async function refreshFindAfterReplaceAction(warnLabel, preferredOrdinal = 1) {
     if (!hasQuery()) return;
 
     const refreshResult = await rerunCurrentQueryAndRestoreOrdinal(preferredOrdinal);
     if (!refreshResult.ok) {
-      log.warnOnce(
-        warnKey,
+      log.warn(
         `${warnLabel} refresh search did not complete cleanly (ignored):`,
         refreshResult.status
       );
@@ -561,7 +553,6 @@ function createSession({
     } finally {
       if (shouldRefresh) {
         await refreshFindAfterReplaceAction(
-          'editorFind.replaceCurrent.refresh',
           'replace-current',
           preferredTargetOrdinal
         );
@@ -653,7 +644,6 @@ function createSession({
     } finally {
       if (shouldRefresh) {
         await refreshFindAfterReplaceAction(
-          'editorFind.replaceAll.refresh',
           'replace-all'
         );
       }
