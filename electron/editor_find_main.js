@@ -8,8 +8,8 @@
 // Responsibilities:
 // - Own the find window lifecycle (create/show/close/position).
 // - Handle Text Editor/find-window shortcuts via before-input-event.
-// - Drive native search lifecycle using webContents.findInPage APIs.
-// - Keep find UI state synced from found-in-page events.
+// - Coordinate native search state through editor_find_session and found-in-page events.
+// - Publish find-window state and focus requests to its renderer.
 // - Enforce that find IPC commands are accepted only from the find window.
 
 // =============================================================================
@@ -120,6 +120,7 @@ function safeSendToFindWindow(channel, payload) {
   if (!win) return;
 
   const wc = win.webContents;
+  // The load callback republishes state and attempts queued focus, so pre-load sends are skipped.
   if (isLoadingWindowContents(wc)) return;
 
   try {
@@ -347,6 +348,7 @@ function handleFindWindowClosed() {
   pendingFocusTarget = null;
   clearPendingSessionState('find-window-closed');
 
+  // Coordinated closure already owns cleanup or editor teardown; this branch clears search and attempts focus restoration.
   if (!closingFindWindow) {
     session.clearSearch({ clearSelection: true });
     focusEditorWindow();
