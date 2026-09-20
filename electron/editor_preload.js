@@ -24,7 +24,7 @@ function subscribeWithUnsub(channel, cb, callbackErrorMessage, removeErrorMessag
 }
 
 const api = {
-  getCurrentText: () => ipcRenderer.invoke('get-current-text'),
+  getInitialCurrentTextSnapshot: () => ipcRenderer.invoke('get-editor-current-text-snapshot'),
   setCurrentText: (payload) => ipcRenderer.invoke('set-current-text', payload),
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),

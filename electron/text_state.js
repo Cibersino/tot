@@ -8,7 +8,7 @@
 // - Own in-memory current text, normalize line endings, and enforce size limits.
 // - Load persisted current text during init and save it during app shutdown.
 // - Accept current-text updates from authorized IPC senders only.
-// - Expose get-current-text, set-current-text, and clipboard-read-text handlers.
+// - Expose current-text IPC handlers, including the Editor bootstrap snapshot with a canonical write revision.
 // - Broadcast current-text updates to the main window and Text Editor window.
 // - Preserve compatibility behavior for the settings file on quit.
 
@@ -90,6 +90,8 @@ let settingsFile = null;
 let appRef = null;
 let currentTextProcessingController = null;
 let onCurrentTextDidBecomeEmpty = null;
+// Starts after bootstrap and advances on every canonical write for the Editor snapshot/live stream.
+let currentTextRevision = 0;
 
 // main.js owns window lifecycle; this module resolves windows only to authorize and notify.
 let getWindows = () => ({ mainWin: null, editorWin: null });
@@ -167,6 +169,13 @@ function getProcessingRequestId(processingState) {
     : null;
 }
 
+function getEditorCurrentTextSnapshot() {
+  // Both reads occur in this synchronous main-process turn, so the text and
+  // revision describe the same canonical write. This is independent from the
+  // optional processing lifecycle and its requestId.
+  return { ok: true, text: currentText, revision: currentTextRevision };
+}
+
 function isAllowedSenderWindow(targetWin, senderWin) {
   return !!(targetWin && !targetWin.isDestroyed() && senderWin && senderWin === targetWin);
 }
@@ -225,6 +234,7 @@ function applyCurrentText(rawText, rawMeta) {
   }
 
   currentText = text;
+  currentTextRevision += 1;
 
   const { mainWin, editorWin } = getWindows() || {};
   const broadcastMeta = incomingMeta || { source: 'main', action: 'set' };
@@ -236,9 +246,10 @@ function applyCurrentText(rawText, rawMeta) {
     meta: broadcastMeta,
   });
 
-  // Text Editor bootstraps its initial text independently; live updates use a separate best-effort path.
+  // Text Editor bootstraps independently; its live stream carries this canonical write revision.
   safeSend(editorWin, 'editor-text-updated', {
     text: currentText,
+    revision: currentTextRevision,
     requestId,
     meta: broadcastMeta,
   });
@@ -336,6 +347,7 @@ function init(options) {
   maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
 
   loadInitialCurrentText();
+  currentTextRevision = 1;
 
   beginCurrentTextProcessing({
     source: 'main',
@@ -368,6 +380,17 @@ function registerIpc(ipcMain, windowsResolver) {
   // The main-owned current-text value is always a canonical string.
   ipcMain.handle('get-current-text', async () => {
     return currentText;
+  });
+  ipcMain.handle('get-editor-current-text-snapshot', (event) => {
+    const { editorWin } = getWindows() || {};
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (!isAllowedSenderWindow(editorWin, senderWin)) {
+      log.warn('get-editor-current-text-snapshot unauthorized (ignored).');
+      return { ok: false, error: 'unauthorized' };
+    }
+    return getEditorCurrentTextSnapshot();
   });
   ipcMain.handle('clipboard-read-text', (event) => {
     const { mainWin } = getWindows() || {};

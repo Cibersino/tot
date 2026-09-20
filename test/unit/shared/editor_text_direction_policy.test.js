@@ -224,8 +224,8 @@ function createEditorScriptHarness({
     spellcheckAvailable: true,
     editorFontSizePx: 20,
   }),
-  getCurrentTextImpl = async () => '',
-  includeGetCurrentText = true,
+  getInitialCurrentTextSnapshotImpl = async () => ({ ok: true, text: '', revision: 1 }),
+  includeInitialCurrentTextSnapshot = true,
   includeAppConstants = true,
   appConstantsOverrides = {},
   omittedAppConstants = [],
@@ -248,7 +248,7 @@ function createEditorScriptHarness({
   const spellcheckStateCalls = [];
   const fontSizeCalls = [];
   const normalInteractionCalls = [];
-  let getCurrentTextCallCount = 0;
+  let getInitialCurrentTextSnapshotCallCount = 0;
   let releaseHeldTransition = null;
   let resolveHeldTransitionReached = null;
   const heldTransition = holdTransitionLanguage
@@ -532,10 +532,10 @@ function createEditorScriptHarness({
     },
     async setSpellcheckEnabled() { return { ok: true }; },
   };
-  if (includeGetCurrentText) {
-    sandbox.window.editorAPI.getCurrentText = async () => {
-      getCurrentTextCallCount += 1;
-      return getCurrentTextImpl();
+  if (includeInitialCurrentTextSnapshot) {
+    sandbox.window.editorAPI.getInitialCurrentTextSnapshot = async () => {
+      getInitialCurrentTextSnapshotCallCount += 1;
+      return getInitialCurrentTextSnapshotImpl();
     };
   }
 
@@ -579,7 +579,7 @@ function createEditorScriptHarness({
     spellcheckStateCalls,
     fontSizeCalls,
     normalInteractionCalls,
-    getCurrentTextCallCount: () => getCurrentTextCallCount,
+    getInitialCurrentTextSnapshotCallCount: () => getInitialCurrentTextSnapshotCallCount,
     releaseHeldTransition() {
       if (releaseHeldTransition) releaseHeldTransition();
     },
@@ -619,24 +619,107 @@ test('editor UI applies resolved direction to the textarea surface', () => {
   assert.equal(harness.editor.getAttribute('dir'), 'ltr');
 });
 
-test('editor script bootstraps initial text once through getCurrentText with init meta', async () => {
+test('editor script bootstraps initial text once through the versioned snapshot with init meta', async () => {
   const harness = await bootstrapEditorScriptHarness({
-    getCurrentTextImpl: async () => 'bootstrap text',
+    getInitialCurrentTextSnapshotImpl: async () => ({
+      ok: true,
+      text: 'bootstrap text',
+      revision: 1,
+    }),
   });
 
-  assert.equal(harness.getCurrentTextCallCount(), 1);
+  assert.equal(harness.getInitialCurrentTextSnapshotCallCount(), 1);
   assert.equal(harness.bootstrapApplyCalls.length, 1);
   assert.equal(harness.bootstrapApplyCalls[0].payload.text, 'bootstrap text');
   assert.equal(harness.bootstrapApplyCalls[0].payload.meta.source, 'main');
   assert.equal(harness.bootstrapApplyCalls[0].payload.meta.action, 'init');
 });
 
-test('editor reports a bootstrap failure when getCurrentText is missing', async () => {
-  const harness = await bootstrapEditorScriptHarness({ includeGetCurrentText: false });
+test('editor keeps a newer live current-text update over an older bootstrap snapshot', async () => {
+  let resolveSnapshot;
+  let markSnapshotRequested;
+  const snapshotPending = new Promise((resolve) => { resolveSnapshot = resolve; });
+  const snapshotRequested = new Promise((resolve) => { markSnapshotRequested = resolve; });
+  const harness = createEditorScriptHarness({
+    getInitialCurrentTextSnapshotImpl: async () => {
+      markSnapshotRequested();
+      return snapshotPending;
+    },
+  });
+
+  await snapshotRequested;
+  await harness.subscriptions.externalUpdate({
+    text: 'live newer text',
+    revision: 2,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+  resolveSnapshot({ ok: true, text: 'bootstrap older text', revision: 1 });
+  await tick();
+  await tick();
+
+  assert.equal(harness.elements.editorArea.value, 'live newer text');
+  assert.deepEqual(
+    harness.bootstrapApplyCalls.map(({ payload }) => payload.text),
+    ['live newer text']
+  );
+});
+
+test('editor accepts a revisioned live update when the processing requestId is absent', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  await harness.subscriptions.externalUpdate({
+    text: 'committed without processing request',
+    revision: 2,
+    requestId: null,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(harness.elements.editorArea.value, 'committed without processing request');
+});
+
+test('editor applies a newer bootstrap snapshot after an older live update arrives while it is pending', async () => {
+  let resolveSnapshot;
+  let markSnapshotRequested;
+  const snapshotPending = new Promise((resolve) => { resolveSnapshot = resolve; });
+  const snapshotRequested = new Promise((resolve) => { markSnapshotRequested = resolve; });
+  const harness = createEditorScriptHarness({
+    getInitialCurrentTextSnapshotImpl: async () => {
+      markSnapshotRequested();
+      return snapshotPending;
+    },
+  });
+
+  await snapshotRequested;
+  await harness.subscriptions.externalUpdate({
+    text: 'older live text',
+    revision: 1,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+  resolveSnapshot({ ok: true, text: 'newer snapshot text', revision: 2 });
+  await tick();
+  await tick();
+
+  assert.equal(harness.elements.editorArea.value, 'newer snapshot text');
+  assert.deepEqual(
+    harness.bootstrapApplyCalls.map(({ payload }) => payload.text),
+    ['older live text', 'newer snapshot text']
+  );
+
+  await harness.subscriptions.externalUpdate({
+    text: 'older delayed text',
+    revision: 1,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+  assert.equal(harness.elements.editorArea.value, 'newer snapshot text');
+  assert.equal(harness.bootstrapApplyCalls.length, 2);
+});
+
+test('editor reports a bootstrap failure when the initial current-text snapshot is missing', async () => {
+  const harness = await bootstrapEditorScriptHarness({ includeInitialCurrentTextSnapshot: false });
 
   assert.match(
     String(harness.errorLogs.at(-1)),
-    /\[editor\] editorAPI\.getCurrentText unavailable; cannot continue/
+    /\[editor\] editorAPI\.getInitialCurrentTextSnapshot unavailable; cannot continue/
   );
   assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
     { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
@@ -717,7 +800,7 @@ test('editor rejects each required AppConstants value before startup work is adm
     assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
       { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
     ], testCase.label);
-    assert.equal(harness.getCurrentTextCallCount(), 0, testCase.label);
+    assert.equal(harness.getInitialCurrentTextSnapshotCallCount(), 0, testCase.label);
     assert.equal(harness.bootstrapApplyCalls.length, 0, testCase.label);
     assert.equal(harness.normalInteractionCalls.includes(true), false, testCase.label);
     assert.match(String(harness.errorLogs.at(-1)), /AppConstants\./, testCase.label);
@@ -728,7 +811,7 @@ test('editor rejects each required AppConstants value before startup work is adm
     assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
       { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
     ], `${name} missing`);
-    assert.equal(harness.getCurrentTextCallCount(), 0, `${name} missing`);
+    assert.equal(harness.getInitialCurrentTextSnapshotCallCount(), 0, `${name} missing`);
     assert.equal(harness.bootstrapApplyCalls.length, 0, `${name} missing`);
     assert.equal(harness.normalInteractionCalls.includes(true), false, `${name} missing`);
     assert.match(String(harness.errorLogs.at(-1)), /AppConstants\./, `${name} missing`);
@@ -749,18 +832,18 @@ test('editor reports a missing startup-presentation core through the base-presen
   );
 });
 
-test('editor script logs a startup failure when getCurrentText bootstrap rejects', async () => {
+test('editor script logs a startup failure when the initial current-text snapshot rejects', async () => {
   const harness = await bootstrapEditorScriptHarness({
-    getCurrentTextImpl: async () => {
+    getInitialCurrentTextSnapshotImpl: async () => {
       throw new Error('bootstrap failed');
     },
   });
 
-  assert.equal(harness.getCurrentTextCallCount(), 1);
+  assert.equal(harness.getInitialCurrentTextSnapshotCallCount(), 1);
   assert.equal(harness.bootstrapApplyCalls.length, 0);
   assert.equal(harness.errorLogs.length, 1);
   assert.match(String(harness.errorLogs[0][0]), /BOOTSTRAP: Text Editor startup failed:/);
-  assert.match(String(harness.errorLogs[0][1]), /editorAPI\.getCurrentText failed during bootstrap/);
+  assert.match(String(harness.errorLogs[0][1]), /editorAPI\.getInitialCurrentTextSnapshot failed during bootstrap/);
 });
 
 test('editor script resolves config before applying the initial text seed', async () => {
@@ -770,13 +853,13 @@ test('editor script resolves config before applying the initial text seed', asyn
       callOrder.push('getAppConfig');
       return { maxTextChars: 7 };
     },
-    getCurrentTextImpl: async () => {
-      callOrder.push('getCurrentText');
-      return '123456789';
+    getInitialCurrentTextSnapshotImpl: async () => {
+      callOrder.push('getInitialCurrentTextSnapshot');
+      return { ok: true, text: '123456789', revision: 1 };
     },
   });
 
-  assert.deepEqual(callOrder, ['getAppConfig', 'getCurrentText']);
+  assert.deepEqual(callOrder, ['getAppConfig', 'getInitialCurrentTextSnapshot']);
   assert.equal(harness.bootstrapApplyCalls.length, 1);
   assert.equal(harness.bootstrapApplyCalls[0].maxTextCharsAtApply, 7);
 });
@@ -804,7 +887,11 @@ test('editor script recomputes textarea direction on local input, external updat
   assert.deepEqual(harness.updateDirectionCalls, ['typed text']);
 
   harness.updateDirectionCalls.length = 0;
-  await harness.subscriptions.externalUpdate({ text: 'שלום', meta: { source: 'main' } });
+  await harness.subscriptions.externalUpdate({
+    text: 'שלום',
+    revision: 2,
+    meta: { source: 'main' },
+  });
   assert.deepEqual(harness.updateDirectionCalls, ['שלום']);
 
   harness.updateDirectionCalls.length = 0;
@@ -868,7 +955,7 @@ test('editor does not admit later settings semantics after a terminal language f
     editorFontSizePx: 24,
   });
   const externalUpdateCallCount = harness.bootstrapApplyCalls.length;
-  await harness.subscriptions.externalUpdate({ text: 'ignored after terminal failure' });
+  await harness.subscriptions.externalUpdate({ text: 'ignored after terminal failure', revision: 2 });
 
   assert.deepEqual(harness.spellcheckStateCalls, []);
   assert.deepEqual(harness.fontSizeCalls, []);
@@ -992,6 +1079,7 @@ test('editor script recomputes direction for paste, drop, replace, append update
   harness.updateDirectionCalls.length = 0;
   await harness.subscriptions.externalUpdate({
     text: 'alpha\n\nbeta',
+    revision: 2,
     meta: { source: 'main-window', action: 'append_newline' },
   });
   assert.deepEqual(harness.updateDirectionCalls, ['alpha\n\nbeta']);

@@ -163,11 +163,117 @@ test('set-current-text accepts canonical payloads from authorized windows and re
       channel: 'editor-text-updated',
       payload: {
         text: 'hello',
+        revision: 2,
         requestId: 1,
         meta: { source: 'editor', action: 'typing' },
       },
     },
   ]);
+});
+
+test('Editor receives an authorized versioned current-text bootstrap snapshot', async (t) => {
+  const { textState, restore } = loadTextState();
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+  textState.applyCurrentText('authoritative text', {
+    source: 'main-window',
+    action: 'overwrite',
+  });
+
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  const snapshot = await ipcMain.invoke(
+    'get-editor-current-text-snapshot',
+    { sender: editorWindowDouble.win.webContents }
+  );
+
+  assert.deepEqual(snapshot, {
+    ok: true,
+    text: 'authoritative text',
+    revision: 2,
+  });
+});
+
+test('Editor current-text revision remains available when processing begin fails', async (t) => {
+  let beginCalls = 0;
+  const { textState, restore } = loadTextState({
+    currentTextProcessingController: {
+      begin() {
+        beginCalls += 1;
+        if (beginCalls === 1) return { requestId: 5 };
+        throw new Error('processing begin failed');
+      },
+      getState() {
+        return { requestId: 5 };
+      },
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  const result = textState.applyCurrentText('committed despite processing failure', {
+    source: 'main-window',
+    action: 'overwrite',
+  });
+  const snapshot = await ipcMain.invoke(
+    'get-editor-current-text-snapshot',
+    { sender: editorWindowDouble.win.webContents }
+  );
+
+  assert.equal(result.requestId, null);
+  assert.deepEqual(editorWindowDouble.sends.at(-1), {
+    channel: 'editor-text-updated',
+    payload: {
+      text: 'committed despite processing failure',
+      revision: 2,
+      requestId: null,
+      meta: { source: 'main-window', action: 'overwrite' },
+    },
+  });
+  assert.deepEqual(snapshot, {
+    ok: true,
+    text: 'committed despite processing failure',
+    revision: 2,
+  });
+});
+
+test('Editor current-text bootstrap snapshot rejects a non-Editor sender', async (t) => {
+  const { textState, restore } = loadTextState();
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  const snapshot = await ipcMain.invoke(
+    'get-editor-current-text-snapshot',
+    { sender: mainWindowDouble.win.webContents }
+  );
+
+  assert.deepEqual(snapshot, { ok: false, error: 'unauthorized' });
 });
 
 test('set-current-text rejects legacy string payloads', async (t) => {
