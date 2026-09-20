@@ -374,7 +374,14 @@ function attachFindWindow(win) {
   const onDidFinishLoad = () => {
     sendToFindWindowAfterLoad(wc, 'editor-find-init', buildPublicState());
     sendToFindWindowAfterLoad(wc, 'editor-find-state', buildPublicState());
-    tryDispatchPendingFocus();
+    if (pendingFocusTarget) {
+      sendToFindWindowAfterLoad(
+        wc,
+        'editor-find-focus-target',
+        pendingFocusTarget
+      );
+      pendingFocusTarget = null;
+    }
   };
   const onFocus = () => {
     tryDispatchPendingFocus();
