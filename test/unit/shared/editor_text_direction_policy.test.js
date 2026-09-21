@@ -96,7 +96,21 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
     clientHeight: 600,
     scrollHeight: 600,
     scrollTop: 0,
+    scrollLeft: 0,
+    selectionStart: 0,
+    selectionEnd: 0,
   });
+  const readingTestPrestartOverlay = createElement('readingTestPrestartOverlay');
+  const focusCalls = [];
+  let activeElement = null;
+  editor.focus = () => {
+    focusCalls.push('editor');
+    activeElement = editor;
+  };
+  readingTestPrestartOverlay.focus = () => {
+    focusCalls.push('reading-test-prestart-overlay');
+    activeElement = readingTestPrestartOverlay;
+  };
 
   const sandbox = {
     window: {
@@ -168,7 +182,7 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
       readProgressLabel: createElement('readProgressLabel'),
       readProgressValue: createElement('readProgressValue'),
       bottomBar: createElement('bottomBar'),
-      readingTestPrestartOverlay: createElement('readingTestPrestartOverlay'),
+      readingTestPrestartOverlay,
       readingTestPrestartMessage: createElement('readingTestPrestartMessage'),
     },
     state: {
@@ -184,13 +198,21 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
     },
     engine: {
       setCaretSafe() {},
-      setSelectionSafe() {},
+      setSelectionSafe(start, end) {
+        editor.selectionStart = start;
+        editor.selectionEnd = end;
+      },
     },
   });
 
   return {
     ui,
     editor,
+    readingTestPrestartOverlay,
+    focusCalls,
+    getActiveElement() {
+      return activeElement;
+    },
   };
 }
 
@@ -248,6 +270,7 @@ function createEditorScriptHarness({
   const spellcheckStateCalls = [];
   const fontSizeCalls = [];
   const normalInteractionCalls = [];
+  const startupEvents = [];
   let getInitialCurrentTextSnapshotCallCount = 0;
   let releaseHeldTransition = null;
   let resolveHeldTransitionReached = null;
@@ -402,6 +425,7 @@ function createEditorScriptHarness({
             setLocalEditorWindowMaximized() {},
             setNormalInteractionAvailable(available) {
               normalInteractionCalls.push(available === true);
+              startupEvents.push(`normal:${available === true}`);
             },
             async applyEditorTranslations() {},
             applyTextareaDefaults() {},
@@ -409,6 +433,9 @@ function createEditorScriptHarness({
             updateReadProgressUi() {},
             scheduleReadProgressUiUpdate() {},
             restoreFocusToEditor() {},
+            focusEditorAtTop() {
+              startupEvents.push('focus-editor-at-top');
+            },
             updateEditorTextDirection() {
               updateDirectionCalls.push(elements.editorArea.value);
             },
@@ -430,6 +457,7 @@ function createEditorScriptHarness({
             getInsertionCapacity() { return 100000; },
             getBeforeInputIncomingLength() { return null; },
             async applyInitialText(payload) {
+              startupEvents.push('initial-text');
               bootstrapApplyCalls.push({
                 payload,
                 maxTextCharsAtApply: engineCtx.state.maxTextChars,
@@ -519,6 +547,7 @@ function createEditorScriptHarness({
     async getWindowState() { return { maximized: false, maximizedTextWidthPx: 960 }; },
     reportBasePresentationState(payload) {
       basePresentationReports.push(payload);
+      startupEvents.push(`base-presentation:${payload.status}`);
     },
     reportRendererI18nFailure() {},
     onSettingsChanged(cb) {
@@ -579,6 +608,7 @@ function createEditorScriptHarness({
     spellcheckStateCalls,
     fontSizeCalls,
     normalInteractionCalls,
+    startupEvents,
     getInitialCurrentTextSnapshotCallCount: () => getInitialCurrentTextSnapshotCallCount,
     releaseHeldTransition() {
       if (releaseHeldTransition) releaseHeldTransition();
@@ -617,6 +647,43 @@ test('editor UI applies resolved direction to the textarea surface', () => {
   const direction = harness.ui.updateEditorTextDirection();
   assert.equal(direction, 'ltr');
   assert.equal(harness.editor.getAttribute('dir'), 'ltr');
+});
+
+test('editor UI focuses the document beginning and lets Reading Test prestart take overlay focus', () => {
+  const harness = createEditorUiHarness();
+  harness.editor.selectionStart = 18;
+  harness.editor.selectionEnd = 18;
+  harness.editor.scrollTop = 320;
+  harness.editor.scrollLeft = 24;
+
+  harness.ui.focusEditorAtTop();
+
+  assert.deepEqual(harness.focusCalls, ['editor']);
+  assert.equal(harness.getActiveElement(), harness.editor);
+  assert.equal(harness.editor.selectionStart, 0);
+  assert.equal(harness.editor.selectionEnd, 0);
+  assert.equal(harness.editor.scrollTop, 0);
+  assert.equal(harness.editor.scrollLeft, 0);
+
+  harness.ui.applyReadingTestPrestartState({ visible: true });
+
+  assert.deepEqual(harness.focusCalls, ['editor', 'reading-test-prestart-overlay']);
+  assert.equal(harness.getActiveElement(), harness.readingTestPrestartOverlay);
+});
+
+test('editor script focuses after normal interaction becomes available and before base readiness', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+  const normalInteractionReady = harness.startupEvents.indexOf('normal:true');
+  const initialFocus = harness.startupEvents.indexOf('focus-editor-at-top');
+  const basePresentationReady = harness.startupEvents.indexOf('base-presentation:ready');
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'ready' },
+  ]);
+  assert.deepEqual(harness.errorLogs, []);
+  assert.ok(normalInteractionReady > harness.startupEvents.indexOf('initial-text'));
+  assert.ok(initialFocus > normalInteractionReady);
+  assert.ok(basePresentationReady > initialFocus);
 });
 
 test('editor script bootstraps initial text once through the versioned snapshot with init meta', async () => {

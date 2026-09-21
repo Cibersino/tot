@@ -364,6 +364,18 @@
       scheduleReadProgressUiUpdate();
     }
 
+    function focusEditorAtTop() {
+      if (!editor) return;
+
+      try {
+        editor.focus();
+      } catch (err) {
+        log.warn('Failed to focus Text Editor at startup (ignored):', err);
+      }
+
+      positionEditorAtTop();
+    }
+
     function setReadingTestPrestartVisible(visible) {
       if (!readingTestPrestartOverlay) return;
       document.body.classList.toggle('reading-test-prestart-active', !!visible);
@@ -629,6 +641,7 @@
       setNormalInteractionAvailable,
       applyEditorTranslations,
       restoreFocusToEditor,
+      focusEditorAtTop,
       applyReadingTestPrestartState,
       applyTextareaDefaults,
       persistEditorFontSizePx,

@@ -740,6 +740,7 @@ Promise.resolve()
     releaseStartupPresentationLock();
     await nextAnimationFrame();
     ctx.ui.setNormalInteractionAvailable(true);
+    ctx.ui.focusEditorAtTop();
     reportBasePresentationState({ status: 'ready' });
   })
   .catch((err) => {
