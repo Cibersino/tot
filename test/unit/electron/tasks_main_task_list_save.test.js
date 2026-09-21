@@ -280,6 +280,41 @@ function loadFreshTasksMainForSave({
   return { tasksMain, restore, openDialogCalls, saveJsonCalls };
 }
 
+test('Task Editor handlers reject non-Task-Editor senders', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-unauthorized-sender');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({ tasksRoot });
+  t.after(() => {
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  const otherWin = createWindow('other');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+    taskEditorLifecycle: createTaskEditorLifecycle(),
+  });
+
+  const channels = [
+    'task-list-save',
+    'task-list-delete',
+    'task-library-list',
+    'task-library-save',
+    'task-library-delete',
+    'task-columns-load',
+    'task-columns-save',
+    'task-file-select',
+    'task-files-select',
+    'task-open-link',
+  ];
+  for (const channel of channels) {
+    const result = await ipcMain.invoke(channel, { sender: otherWin.webContents });
+    assert.deepEqual(result, { ok: false, code: 'UNAUTHORIZED' });
+  }
+});
+
 test('task-list-save persists task data through saveJsonStrict', async (t) => {
   const tempDir = createTestTempDir('tasks-main-save');
   const tasksRoot = path.join(tempDir, 'lists');

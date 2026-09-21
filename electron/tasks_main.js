@@ -156,7 +156,7 @@ async function showContinueCancelDialog(ownerWin, {
 
 function getDefaultTaskFileName(rootDir, taskName) {
   const base = sanitizeTaskBaseName(taskName);
-  let candidate = `${base}${TASK_EXT}`;
+  const candidate = `${base}${TASK_EXT}`;
   if (!fs.existsSync(path.join(rootDir, candidate))) return candidate;
   let idx = 2;
   while (fs.existsSync(path.join(rootDir, `${base}_${idx}${TASK_EXT}`))) {
@@ -308,6 +308,16 @@ function normalizeRow(raw) {
   };
 }
 
+function normalizeTaskRows(rows) {
+  const normalizedRows = [];
+  for (const row of rows) {
+    const rowRes = normalizeRow(row);
+    if (!rowRes.ok) return rowRes;
+    normalizedRows.push(rowRes.row);
+  }
+  return { ok: true, rows: normalizedRows };
+}
+
 function hasExactLibraryEntryKeys(raw) {
   if (!isPlainObject(raw)) return false;
   const keys = Object.keys(raw);
@@ -409,14 +419,10 @@ function normalizeTaskList(raw) {
   const metaRes = validateTaskMeta(raw.meta);
   if (!metaRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: metaRes.code };
 
-  const normalizedRows = [];
-  for (const row of raw.rows) {
-    const rowRes = normalizeRow(row);
-    if (!rowRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: rowRes.code };
-    normalizedRows.push(rowRes.row);
-  }
+  const rowsRes = normalizeTaskRows(raw.rows);
+  if (!rowsRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: rowsRes.code };
 
-  const summaryRes = taskDurationUtils.deriveTaskSummary(normalizedRows);
+  const summaryRes = taskDurationUtils.deriveTaskSummary(rowsRes.rows);
   if (!summaryRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
   const validatedSummary = validateTaskSummary(raw, summaryRes.summary);
   if (!validatedSummary.ok) {
@@ -427,7 +433,7 @@ function normalizeTaskList(raw) {
     type: TASK_TYPE,
     meta: metaRes.meta,
     ...(validatedSummary.summary ? { summary: validatedSummary.summary } : {}),
-    rows: normalizedRows,
+    rows: rowsRes.rows,
   };
   return { ok: true, task };
 }
@@ -534,9 +540,8 @@ function loadAllowedHosts() {
     log.warn('allowed_hosts.json schema invalid; using empty set.');
     return new Set();
   }
-  const arr = Array.isArray(res.data) ? res.data : [];
   const set = new Set();
-  arr.forEach((h) => {
+  res.data.forEach((h) => {
     if (typeof h === 'string' && h.trim()) set.add(h.trim().toLowerCase());
   });
   return set;
@@ -666,6 +671,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
   const resolveWins = () => (typeof getWindows === 'function' ? (getWindows() || {}) : {});
   const resolveMainWin = () => resolveWins().mainWin || null;
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
+  const resolveAuthorizedTaskEditorWin = (event, logKey, logMessage) => {
+    const taskEditorWin = resolveTaskEditorWin();
+    return isAuthorizedSender(event, taskEditorWin, logKey, logMessage)
+      ? taskEditorWin
+      : null;
+  };
 
   const hasTaskEditorLifecycle = !!(taskEditorLifecycle
     && typeof taskEditorLifecycle.acceptDirtyState === 'function'
@@ -811,15 +822,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
   // =============================================================================
   ipcMain.handle('task-list-save', async (event, payload) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.save.unauthorized',
-          'task-list-save unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.save.unauthorized',
+        'task-list-save unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       const root = ensureTasksRoot();
       if (!root) return { ok: false, code: 'WRITE_FAILED', message: 'tasks root unavailable' };
@@ -832,17 +840,13 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         return { ok: false, code: 'ROWS_TOO_MANY' };
       }
 
-      const normalizedRows = [];
-      for (const r of rowsRaw) {
-        const res = normalizeRow(r);
-        if (!res.ok) return { ok: false, code: 'INVALID_SCHEMA', message: res.code };
-        normalizedRows.push(res.row);
-      }
+      const rowsRes = normalizeTaskRows(rowsRaw);
+      if (!rowsRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: rowsRes.code };
 
       const metaRes = normalizeTaskMeta(payload.meta);
       if (!metaRes.ok) return { ok: false, code: metaRes.code, message: metaRes.code };
 
-      const summaryRes = taskDurationUtils.deriveTaskSummary(normalizedRows);
+      const summaryRes = taskDurationUtils.deriveTaskSummary(rowsRes.rows);
       if (!summaryRes.ok) {
         return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
       }
@@ -879,7 +883,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         type: TASK_TYPE,
         meta: metaRes.meta,
         ...(summaryRes.summary ? { summary: summaryRes.summary } : {}),
-        rows: normalizedRows,
+        rows: rowsRes.rows,
       };
       saveJsonStrict(candidateResolved, taskData);
 
@@ -892,15 +896,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
   ipcMain.handle('task-list-delete', async (event, payload) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.delete.unauthorized',
-          'task-list-delete unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.delete.unauthorized',
+        'task-list-delete unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       if (!isPlainObject(payload) || typeof payload.path !== 'string' || !payload.path) {
         log.warn('task-list-delete received invalid path payload:', payload);
@@ -937,15 +938,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
   // =============================================================================
   ipcMain.handle('task-library-list', async (event) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.library.list.unauthorized',
-          'task-library-list unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.library.list.unauthorized',
+        'task-library-list unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const res = loadLibraryData();
@@ -963,15 +961,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
   ipcMain.handle('task-library-save', async (event, payload) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.library.save.unauthorized',
-          'task-library-save unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.library.save.unauthorized',
+        'task-library-save unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       if (!hasExactKeys(payload, TASK_LIBRARY_SAVE_PAYLOAD_KEYS)) {
         return { ok: false, code: 'INVALID_SCHEMA', message: 'INVALID_LIBRARY_SAVE_PAYLOAD' };
@@ -996,10 +991,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
           return { ok: false, code: 'CONFIRM_DENIED' };
         }
         items.splice(existingIdx, 1, resEntry.entry);
+      } else if (items.length >= TASK_LIBRARY_MAX_ITEMS) {
+        return { ok: false, code: 'LIBRARY_TOO_LARGE' };
       } else {
-        if (items.length >= TASK_LIBRARY_MAX_ITEMS) {
-          return { ok: false, code: 'LIBRARY_TOO_LARGE' };
-        }
         items.push(resEntry.entry);
       }
 
@@ -1014,15 +1008,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
   ipcMain.handle('task-library-delete', async (event, payload) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.library.delete.unauthorized',
-          'task-library-delete unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.library.delete.unauthorized',
+        'task-library-delete unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       if (!isPlainObject(payload)
@@ -1064,15 +1055,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
   // =============================================================================
   ipcMain.handle('task-columns-load', async (event) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.columns.load.unauthorized',
-          'task-columns-load unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.columns.load.unauthorized',
+        'task-columns-load unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const file = getTasksColumnWidthsFile();
@@ -1106,15 +1094,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
   ipcMain.handle('task-columns-save', async (event, payload) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.columns.save.unauthorized',
-          'task-columns-save unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.columns.save.unauthorized',
+        'task-columns-save unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const record = validateColumnLayoutRecord(payload && payload.record ? payload.record : null);
@@ -1133,15 +1118,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
   // =============================================================================
   ipcMain.handle('task-file-select', async (event) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.file.select.unauthorized',
-          'task-file-select unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.file.select.unauthorized',
+        'task-file-select unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       const res = await promptForTaskFileSelection(taskEditorWin, { allowMultiple: false });
       if (!res.ok) {
@@ -1159,15 +1141,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
   ipcMain.handle('task-files-select', async (event) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.files.select.unauthorized',
-          'task-files-select unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.files.select.unauthorized',
+        'task-files-select unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       const res = await promptForTaskFileSelection(taskEditorWin, { allowMultiple: true });
       if (!res.ok) {
@@ -1188,15 +1167,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
   // =============================================================================
   ipcMain.handle('task-open-link', async (event, payload) => {
     try {
-      const taskEditorWin = resolveTaskEditorWin();
-      if (
-        !isAuthorizedSender(
-          event,
-          taskEditorWin,
-          'tasks_main.link.unauthorized',
-          'task-open-link unauthorized (ignored).'
-        )
-      ) return { ok: false, code: 'UNAUTHORIZED' };
+      const taskEditorWin = resolveAuthorizedTaskEditorWin(
+        event,
+        'tasks_main.link.unauthorized',
+        'task-open-link unauthorized (ignored).'
+      );
+      if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       const raw = payload && typeof payload.raw === 'string' ? payload.raw.trim() : '';
       if (!raw) return { ok: false, code: 'LINK_BLOCKED' };
@@ -1238,51 +1214,43 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         parsed = null;
       }
 
-      if (parsed) {
-        if (parsed.protocol !== 'https:') {
-          return { ok: false, code: 'LINK_BLOCKED' };
+      if (!parsed || parsed.protocol !== 'https:') {
+        return { ok: false, code: 'LINK_BLOCKED' };
+      }
+
+      const host = parsed.hostname.toLowerCase();
+      const allowlist = loadAllowedHosts();
+
+      if (!allowlist.has(host)) {
+        const parsedUrl = parsed.toString();
+        const dialogTexts = getDialogTexts();
+        const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
+        const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
+        let message = resolveDialogText(dialogTexts, 'task_link_confirm');
+        message = message.replace('{url}', parsedUrl);
+        const checkboxLabel = resolveDialogText(dialogTexts, 'task_link_trust_host');
+
+        const dialogRes = await dialog.showMessageBox(taskEditorWin || null, {
+          type: 'none',
+          buttons: [continueLabel, cancelLabel],
+          defaultId: 1,
+          cancelId: 1,
+          message,
+          detail: parsedUrl,
+          checkboxLabel,
+          checkboxChecked: false,
+        });
+        if (!dialogRes || dialogRes.response !== 0) {
+          return { ok: false, code: 'CONFIRM_DENIED' };
         }
-
-        const host = parsed.hostname.toLowerCase();
-        const allowlist = loadAllowedHosts();
-        let trusted = allowlist.has(host);
-
-        if (!trusted) {
-          const parsedUrl = parsed.toString();
-          const dialogTexts = getDialogTexts();
-          const continueLabel = resolveDialogText(dialogTexts, 'continue_button');
-          const cancelLabel = resolveDialogText(dialogTexts, 'cancel_button');
-          let message = resolveDialogText(dialogTexts, 'task_link_confirm');
-          message = message.replace('{url}', parsedUrl);
-          const checkboxLabel = resolveDialogText(dialogTexts, 'task_link_trust_host');
-
-          const dialogRes = await dialog.showMessageBox(taskEditorWin || null, {
-            type: 'none',
-            buttons: [continueLabel, cancelLabel],
-            defaultId: 1,
-            cancelId: 1,
-            message,
-            detail: parsedUrl,
-            checkboxLabel,
-            checkboxChecked: false,
-          });
-          if (!dialogRes || dialogRes.response !== 0) {
-            return { ok: false, code: 'CONFIRM_DENIED' };
-          }
-          trusted = true;
-          if (dialogRes.checkboxChecked) {
-            allowlist.add(host);
-            saveAllowedHosts(allowlist);
-          }
-        }
-
-        if (trusted) {
-          await shell.openExternal(parsed.toString());
-          return { ok: true };
+        if (dialogRes.checkboxChecked) {
+          allowlist.add(host);
+          saveAllowedHosts(allowlist);
         }
       }
 
-      return { ok: false, code: 'LINK_BLOCKED' };
+      await shell.openExternal(parsed.toString());
+      return { ok: true };
     } catch (err) {
       log.error('task-open-link failed:', err);
       return { ok: false, code: 'ERROR', message: String(err) };
