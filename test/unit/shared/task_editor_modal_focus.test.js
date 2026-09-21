@@ -19,6 +19,7 @@ function createTaskMeta(name = 'Task') {
 
 function createHarness(options = {}) {
   const bootstrapProbe = options.bootstrapProbe || null;
+  const focusCalls = Array.isArray(options.focusCalls) ? options.focusCalls : null;
   const failInitialI18nTransition = options.failInitialI18nTransition === true;
   const terminalTransitionLanguage = options.terminalTransitionLanguage || '';
   const terminalReporterThrows = options.terminalReporterThrows === true;
@@ -149,6 +150,7 @@ function createHarness(options = {}) {
         return candidate === this || children.some((child) => child.contains(candidate));
       },
       focus() {
+        if (focusCalls) focusCalls.push(this);
         activeElement = this;
       },
       blur() {
@@ -648,6 +650,62 @@ test('Task Editor materializes replayed init data only after translations and co
   await harness.waitForTranslations();
   await harness.waitForTaskSemanticWork();
   assert.equal(harness.elements.taskTableBody._children.length, 1);
+});
+
+test('Task Editor New and Load initialization make no programmatic DOM focus call', async () => {
+  const cases = [
+    {
+      mode: 'new',
+      expectedName: '',
+      expectedRowCount: 0,
+      payload: {
+        mode: 'new',
+        sourcePath: null,
+        task: {
+          type: 'task',
+          meta: createTaskMeta(''),
+          rows: [],
+        },
+      },
+    },
+    {
+      mode: 'load',
+      expectedName: 'Loaded task',
+      expectedRowCount: 1,
+      payload: {
+        mode: 'load',
+        sourcePath: 'loaded-task.json',
+        task: {
+          type: 'task',
+          meta: createTaskMeta('Loaded task'),
+          summary: {
+            estimatedTotalSeconds: 60,
+            estimatedRemainingSeconds: 60,
+          },
+          rows: [{
+            texto: 'Loaded text',
+            tiempoSeconds: 60,
+            percentComplete: 0,
+            enlace: '',
+            comentario: '',
+            snapshotRelPath: '',
+          }],
+        },
+      },
+    },
+  ];
+
+  for (const { mode, expectedName, expectedRowCount, payload } of cases) {
+    const focusCalls = [];
+    const harness = createHarness({ focusCalls });
+
+    await harness.initializeTask(payload);
+
+    assert.equal(harness.elements.taskNameInput.value, expectedName, `${mode} task name`);
+    assert.equal(harness.elements.taskTableBody._children.length, expectedRowCount, `${mode} row count`);
+    assert.deepEqual(focusCalls, [], `${mode} initialization must not call focus()`);
+    assert.equal(harness.getActiveElement(), null, `${mode} initialization must leave DOM focus untouched`);
+  }
 });
 
 test('Task Editor stops its buffered bootstrap FIFO after initial payload failure terminalizes it', async () => {

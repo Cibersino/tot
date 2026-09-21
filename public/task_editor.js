@@ -2319,6 +2319,7 @@ async function applyIncomingTaskPayload(payload) {
   }
 }
 
+// Task Editor intentionally has no programmatic initial DOM focus.
 setTaskEditorNormalInteractionAvailable(false);
 try {
   validateTaskEditorBootstrapContracts();
