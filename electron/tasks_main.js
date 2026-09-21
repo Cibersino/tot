@@ -200,18 +200,6 @@ function readJsonFile(filePath) {
 // =============================================================================
 // Helpers (normalization / validation)
 // =============================================================================
-function normalizeTexto(raw) {
-  let s = raw;
-  s = s.trim().replace(/\s+/g, ' ');
-  if (!s) return '';
-  try {
-    s = s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-  } catch {
-    s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  }
-  return s.toLowerCase();
-}
-
 const TASK_LIST_KEYS = Object.freeze(['type', 'meta', 'rows']);
 const TASK_LIST_KEYS_WITH_SUMMARY = Object.freeze(['type', 'meta', 'summary', 'rows']);
 const TASK_META_KEYS = Object.freeze(['name', 'createdAt', 'updatedAt', 'savedWith']);
@@ -227,6 +215,19 @@ const TASK_ROW_KEYS = Object.freeze([
 const TASK_LIBRARY_ENTRY_REQUIRED_KEYS = Object.freeze(['texto', 'tiempoSeconds', 'enlace']);
 const TASK_LIBRARY_ENTRY_OPTIONAL_KEYS = Object.freeze(['comentario', 'snapshotRelPath']);
 const TASK_LIBRARY_SAVE_PAYLOAD_KEYS = Object.freeze(['entry']);
+
+function isPlainObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function hasExactKeys(value, expectedKeys) {
+  if (!isPlainObject(value)) return false;
+  const actualKeys = Object.keys(value);
+  return actualKeys.length === expectedKeys.length
+    && expectedKeys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+}
 
 function isCanonicalIsoTimestamp(value) {
   if (typeof value !== 'string') return false;
@@ -431,9 +432,45 @@ function normalizeTaskList(raw) {
   return { ok: true, task };
 }
 
+function validateColumnLayoutRecord(raw) {
+  if (!hasExactKeys(raw, ['version', 'widths'])) return null;
+  if (raw.version !== TASK_COLUMN_LAYOUT_VERSION) return null;
+
+  const widthKeys = Object.keys(TASK_UTILITY_COLUMN_MIN_WIDTHS);
+  if (!hasExactKeys(raw.widths, widthKeys)) return null;
+
+  const widths = {};
+  for (const key of widthKeys) {
+    const width = raw.widths[key];
+    if (
+      !Number.isSafeInteger(width)
+      || width < TASK_UTILITY_COLUMN_MIN_WIDTHS[key]
+      || width > TASK_COLUMN_WIDTH_MAX_PX
+    ) return null;
+    widths[key] = width;
+  }
+
+  return {
+    version: TASK_COLUMN_LAYOUT_VERSION,
+    widths,
+  };
+}
+
 // =============================================================================
 // Helpers (library + allowlist)
 // =============================================================================
+function normalizeTexto(raw) {
+  let s = raw;
+  s = s.trim().replace(/\s+/g, ' ');
+  if (!s) return '';
+  try {
+    s = s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+  } catch {
+    s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  return s.toLowerCase();
+}
+
 function loadLibraryData() {
   const file = getTasksLibraryFile();
   const res = readJsonFile(file);
@@ -509,43 +546,6 @@ function saveAllowedHosts(set) {
   const file = getTasksAllowedHostsFile();
   const arr = Array.from(set);
   saveJson(file, arr);
-}
-
-function isPlainObject(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
-
-function hasExactKeys(value, expectedKeys) {
-  if (!isPlainObject(value)) return false;
-  const actualKeys = Object.keys(value);
-  return actualKeys.length === expectedKeys.length
-    && expectedKeys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
-}
-
-function validateColumnLayoutRecord(raw) {
-  if (!hasExactKeys(raw, ['version', 'widths'])) return null;
-  if (raw.version !== TASK_COLUMN_LAYOUT_VERSION) return null;
-
-  const widthKeys = Object.keys(TASK_UTILITY_COLUMN_MIN_WIDTHS);
-  if (!hasExactKeys(raw.widths, widthKeys)) return null;
-
-  const widths = {};
-  for (const key of widthKeys) {
-    const width = raw.widths[key];
-    if (
-      !Number.isSafeInteger(width)
-      || width < TASK_UTILITY_COLUMN_MIN_WIDTHS[key]
-      || width > TASK_COLUMN_WIDTH_MAX_PX
-    ) return null;
-    widths[key] = width;
-  }
-
-  return {
-    version: TASK_COLUMN_LAYOUT_VERSION,
-    widths,
-  };
 }
 
 function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
