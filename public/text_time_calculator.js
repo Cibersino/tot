@@ -305,6 +305,11 @@
     }
   }
 
+  function focusInitialWordsInput() {
+    if (document.activeElement && document.activeElement !== document.body) return;
+    fields.words.input.focus({ preventScroll: true });
+  }
+
   async function applySettings(settings) {
     const nextSettings = settings && typeof settings === 'object' ? settings : {};
     const previousSettings = settingsCache;
@@ -412,6 +417,7 @@
       try {
         await applySettings(initialSettings);
         setCalculatorNormalInteractionAvailable(true);
+        focusInitialWordsInput();
       } catch (err) {
         reportCalculatorI18nFailure(err, { startup: true });
       }

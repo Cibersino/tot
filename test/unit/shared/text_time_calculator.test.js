@@ -43,6 +43,7 @@ function createElement(id, tagName = 'div') {
     textContent: '',
     hidden: false,
     options: [],
+    focusCalls: [],
     classList: createClassList(),
     setAttribute(name, value) {
       attributes[name] = String(value);
@@ -59,6 +60,9 @@ function createElement(id, tagName = 'div') {
     dispatch(type) {
       const entries = listeners[type] || [];
       entries.forEach((listener) => listener({ target: this }));
+    },
+    focus(...args) {
+      this.focusCalls.push(args);
     },
   };
 }
@@ -178,6 +182,21 @@ async function createHarness({
     createOption('time'),
     createOption('wpm'),
   ];
+
+  const body = createElement('body', 'body');
+  const document = {
+    body,
+    activeElement: body,
+    title: '',
+    documentElement: {
+      dataset: { languageDirection: 'ltr' },
+      lang: initialLanguage,
+      dir: 'ltr',
+    },
+    getElementById(id) {
+      return elements[id] || null;
+    },
+  };
 
   const sandbox = {
     window: {
@@ -308,17 +327,7 @@ async function createHarness({
         },
       },
     },
-    document: {
-      title: '',
-      documentElement: {
-        dataset: { languageDirection: 'ltr' },
-        lang: initialLanguage,
-        dir: 'ltr',
-      },
-      getElementById(id) {
-        return elements[id] || null;
-      },
-    },
+    document,
     console,
     setTimeout,
     clearTimeout,
@@ -342,7 +351,7 @@ async function createHarness({
 
   return {
     elements,
-    document: sandbox.document,
+    document,
     subscriptions,
     comboboxCreateConfigs,
     comboboxUpdateCalls,
@@ -359,6 +368,38 @@ async function createHarness({
     },
   };
 }
+
+test('text_time_calculator focuses Words after successful initial presentation', async () => {
+  const harness = await createHarness();
+  const wordsInput = harness.elements.textTimeCalculatorWordsInput;
+
+  assert.equal(wordsInput.hidden, false);
+  assert.equal(wordsInput.disabled, false);
+  assert.equal(wordsInput.focusCalls.length, 1);
+  assert.equal(wordsInput.focusCalls[0][0].preventScroll, true);
+  Object.entries(harness.elements)
+    .filter(([id]) => id !== 'textTimeCalculatorWordsInput')
+    .forEach(([, element]) => assert.equal(element.focusCalls.length, 0));
+});
+
+test('text_time_calculator preserves focus established before initial presentation completes', async () => {
+  let resolveInitialSettings;
+  const initialSettingsGate = new Promise((resolve) => {
+    resolveInitialSettings = resolve;
+  });
+  const harness = await createHarness({
+    initialSettingsGate,
+    waitForBootstrap: false,
+  });
+  const existingFocus = harness.elements.textTimeCalculatorTimeInput;
+
+  harness.document.activeElement = existingFocus;
+  resolveInitialSettings();
+  await flushAsyncWork();
+
+  assert.equal(harness.elements.textTimeCalculatorWordsInput.focusCalls.length, 0);
+  assert.equal(harness.document.activeElement, existingFocus);
+});
 
 test('text_time_calculator reports earliest required i18n failure before DOM control setup', async () => {
   const harness = await createHarness({
