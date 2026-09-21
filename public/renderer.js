@@ -610,6 +610,7 @@ function maybeUnblockReady() {
   syncMainInteractionLockUi();
   // Keep the bootstrap current-text settle behind the READY/splash unlock because its synchronous recount work can delay the first useful paint.
   // Current-text derived results may remain pending at READY and settle immediately afterward.
+  // Main intentionally has no programmatic initial DOM focus.
   scheduleDeferredBootstrapSettleAfterUnlock();
 }
 

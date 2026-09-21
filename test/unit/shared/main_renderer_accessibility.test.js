@@ -33,11 +33,11 @@ function createClassList() {
   };
 }
 
-function createElement(id = '') {
+function createMockElement(id = '', onFocus = null) {
   const attributes = {};
   const listeners = new Map();
   const children = [];
-  return {
+  const element = {
     id,
     checked: false,
     classList: createClassList(),
@@ -75,6 +75,10 @@ function createElement(id = '') {
     removeAttribute(name) { delete attributes[name]; },
     setAttribute(name, value) { attributes[name] = String(value); },
   };
+  if (typeof onFocus === 'function') {
+    element.focus = (...args) => onFocus({ args, id });
+  }
+  return element;
 }
 
 function createNoopSurface(overrides = {}) {
@@ -92,6 +96,7 @@ async function createRendererHarness({
   deferStartupReady = false,
   electronMethodOverrides = {},
   expectStartupError = false,
+  focusCalls = null,
   loadLocalizedDocument = null,
   browserExtensionModalOverrides = {},
   mainLogoLinksAvailable = true,
@@ -99,6 +104,9 @@ async function createRendererHarness({
   transitionFailureLanguage = '',
   transitionFailure = null,
 } = {}) {
+  const createElement = Array.isArray(focusCalls)
+    ? (id = '') => createMockElement(id, (focusCall) => focusCalls.push(focusCall))
+    : createMockElement;
   let activeLanguage = 'en';
   const errors = [];
   const notifications = [];
@@ -176,10 +184,19 @@ async function createRendererHarness({
   infoModalPanel.scrollTop = 0;
   infoModal.querySelector = (selector) => (selector === '.info-modal-panel' ? infoModalPanel : null);
   infoModalContent.contains = (node) => node === infoContentFocusTarget;
-  infoModalClose.focus = () => {
-    infoModalClose.focusCount = (infoModalClose.focusCount || 0) + 1;
-    document.activeElement = infoModalClose;
-  };
+  if (Array.isArray(focusCalls)) {
+    const focusInfoModalClose = infoModalClose.focus;
+    infoModalClose.focus = (...args) => {
+      focusInfoModalClose(...args);
+      infoModalClose.focusCount = (infoModalClose.focusCount || 0) + 1;
+      document.activeElement = infoModalClose;
+    };
+  } else {
+    infoModalClose.focus = () => {
+      infoModalClose.focusCount = (infoModalClose.focusCount || 0) + 1;
+      document.activeElement = infoModalClose;
+    };
+  }
 
   const logger = {
     debug() {},
@@ -509,6 +526,14 @@ async function createRendererHarness({
     getElement,
   };
 }
+
+test('Main startup has no programmatic initial DOM focus', async () => {
+  const focusCalls = [];
+
+  await createRendererHarness({ focusCalls });
+
+  assert.deepEqual(focusCalls, []);
+});
 
 test('main renderer settings lifecycle updates precise-mode description and visual help together', async () => {
   const harness = await createRendererHarness();
