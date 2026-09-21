@@ -236,6 +236,7 @@ if (typeof window.flotanteAPI.onSettingsChanged === 'function') {
 // Start state and settings delivery before the initial transition so the
 // main-owned stopwatch state remains current. Bind commands only after the
 // first required semantic presentation has completed successfully.
+// Floating Stopwatch intentionally has no programmatic initial DOM focus.
 enqueueFlotanteSemanticWork(async () => {
   let lang = DEFAULT_LANG;
   if (typeof window.flotanteAPI.getSettings === 'function') {
