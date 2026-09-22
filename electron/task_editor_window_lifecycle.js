@@ -250,7 +250,7 @@ function createController({ dialog, getDialogTexts }) {
       || terminalResolutionPromise
       || !Number.isInteger(initId)
       || initId !== currentInitId + 1) {
-      log.warn('Task Editor initialization issue could not be accepted (ignored):', { initId });
+      log.error('Task Editor initialization issue could not be accepted:', { initId });
       return false;
     }
     currentInitId = initId;

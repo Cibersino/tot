@@ -571,7 +571,7 @@ function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
 
 function sendTaskEditorInit(taskEditorWin, payload, taskEditorLifecycle) {
   if (!taskEditorWin || taskEditorWin.isDestroyed()) {
-    log.warn("taskEditorWin send('task-editor-init') unavailable.");
+    log.error("taskEditorWin send('task-editor-init') unavailable.");
     return false;
   }
   if (!taskEditorLifecycle
@@ -581,11 +581,14 @@ function sendTaskEditorInit(taskEditorWin, payload, taskEditorLifecycle) {
     return false;
   }
   const correlatedPayload = taskEditorLifecycle.prepareInitialization(taskEditorWin, payload);
-  if (!correlatedPayload) return false;
+  if (!correlatedPayload) {
+    log.error('Task Editor initialization could not be prepared.');
+    return false;
+  }
   try {
     taskEditorWin.webContents.send('task-editor-init', correlatedPayload);
   } catch (err) {
-    log.warn("taskEditorWin send('task-editor-init') failed (ignored):", err);
+    log.error("taskEditorWin send('task-editor-init') failed:", err);
     return false;
   }
   return taskEditorLifecycle.acceptInitializationIssued(taskEditorWin, correlatedPayload.initId);
@@ -1077,7 +1080,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
           log.warn('Task column layout JSON invalid; returning fresh-default signal.');
           return { ok: true, record: null };
         }
-        log.error('Task column layout read failed:', res.error);
+        log.warn('Task column layout read failed:', res.error);
         return { ok: false, code: 'READ_FAILED' };
       }
       const record = validateColumnLayoutRecord(res.data);
@@ -1087,7 +1090,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       }
       return { ok: true, record };
     } catch (err) {
-      log.error('task-columns-load failed:', err);
+      log.warn('task-columns-load failed:', err);
       return { ok: false, code: 'READ_FAILED' };
     }
   });
@@ -1108,7 +1111,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       saveJsonStrict(file, record);
       return { ok: true };
     } catch (err) {
-      log.error('task-columns-save failed:', err);
+      log.warn('task-columns-save failed:', err);
       return { ok: false, code: 'WRITE_FAILED' };
     }
   });
