@@ -73,11 +73,11 @@ const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
 // =============================================================================
 // Helpers (paths, dialogs, file IO)
 // =============================================================================
-function safeRealpath(targetPath) {
+function resolveRealpath(targetPath) {
   try {
-    return fs.realpathSync(targetPath);
-  } catch {
-    return null;
+    return { ok: true, path: fs.realpathSync(targetPath) };
+  } catch (err) {
+    return { ok: false, error: err };
   }
 }
 
@@ -89,7 +89,7 @@ function ensureTasksRoot() {
   }
   const root = getTasksListsDir();
   if (!fs.existsSync(root)) {
-    log.warnOnce('tasks_main.tasks_root_missing', 'tasks root missing (using null).');
+    log.warn('tasks root missing (using null).');
     return null;
   }
   return root;
@@ -123,7 +123,7 @@ function getDialogTexts() {
     const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
     return menuBuilder.getDialogTexts(lang);
   } catch (err) {
-    log.warnOnce('tasks_main.dialogTexts', 'Using fallback dialog texts:', err);
+    log.warn('Using fallback dialog texts:', err);
     return {};
   }
 }
@@ -482,13 +482,14 @@ function loadLibraryData() {
   const res = readJsonFile(file);
   if (!res.ok) {
     if (res.code === 'NOT_FOUND') {
-      log.warnOnce(
-        'tasks_main.library.missing',
-        'task library missing (using empty list; may be normal on first run).'
-      );
+      log.warn('task library missing; using empty list. (NOTE: may be normal; no entries have been saved)');
       return { ok: true, items: [] };
     }
-    log.warn('Task library JSON invalid; task library actions unavailable.');
+    if (res.code === 'READ_FAILED') {
+      log.error('Task library read failed; task library actions unavailable.', res.error);
+    } else {
+      log.warn('Task library JSON invalid; task library actions unavailable.', res.error);
+    }
     return { ok: false, code: res.code };
   }
   if (!Array.isArray(res.data)) {
@@ -527,12 +528,11 @@ function loadAllowedHosts() {
   const res = readJsonFile(file);
   if (!res.ok) {
     if (res.code === 'NOT_FOUND') {
-      log.warnOnce(
-        'tasks_main.allowedHosts.missing',
-        'allowed_hosts.json missing (using empty set; may be normal on first run).'
-      );
+      log.warn('allowed_hosts.json missing; using empty set. (NOTE: may be normal; no host has been trusted)');
+    } else if (res.code === 'READ_FAILED') {
+      log.warn('allowed_hosts.json read failed; using empty set.', res.error);
     } else {
-      log.warnOnce('tasks_main.allowedHosts.invalid', 'allowed_hosts.json invalid; using empty set.');
+      log.warn('allowed_hosts.json invalid; using empty set.', res.error);
     }
     return new Set();
   }
@@ -541,9 +541,20 @@ function loadAllowedHosts() {
     return new Set();
   }
   const set = new Set();
+  let invalidEntryCount = 0;
   res.data.forEach((h) => {
-    if (typeof h === 'string' && h.trim()) set.add(h.trim().toLowerCase());
+    if (typeof h === 'string' && h.trim()) {
+      set.add(h.trim().toLowerCase());
+    } else {
+      invalidEntryCount += 1;
+    }
   });
+  if (invalidEntryCount) {
+    log.warn('allowed_hosts.json contains invalid entries; ignoring them.', {
+      invalidEntryCount,
+      totalEntries: res.data.length,
+    });
+  }
   return set;
 }
 
@@ -553,18 +564,18 @@ function saveAllowedHosts(set) {
   saveJson(file, arr);
 }
 
-function isAuthorizedSender(event, expectedWin, logKey, logMessage) {
+function isAuthorizedSender(event, expectedWin, logMessage) {
   try {
     const senderWin = event && event.sender
       ? BrowserWindow.fromWebContents(event.sender)
       : null;
     if (!expectedWin || senderWin !== expectedWin) {
-      log.warnOnce(logKey, logMessage);
+      log.warn(logMessage);
       return false;
     }
     return true;
   } catch (err) {
-    log.warn('tasks_main sender validation failed:', err);
+    log.error('tasks_main sender validation failed:', err);
     return false;
   }
 }
@@ -645,7 +656,14 @@ async function promptForTaskFileSelection(ownerWin, { allowMultiple } = {}) {
   const stateInfo = readTaskFilePickerState();
   const defaultPath = resolveTaskFilePickerDefaultPath(stateInfo.state);
   const dialogRes = await dialog.showOpenDialog(ownerWin || null, { defaultPath, properties });
-  if (!dialogRes || dialogRes.canceled) {
+  if (!dialogRes) {
+    log.error('Task file picker returned no result; treating as cancelled.');
+    return { ok: false, code: 'CANCELLED' };
+  }
+  if (typeof dialogRes.canceled !== 'boolean') {
+    log.error('Task file picker returned an invalid canceled flag:', dialogRes);
+  }
+  if (dialogRes.canceled) {
     return { ok: false, code: 'CANCELLED' };
   }
 
@@ -671,12 +689,23 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     throw new Error('[tasks_main] registerIpc requires ipcMain');
   }
 
-  const resolveWins = () => (typeof getWindows === 'function' ? (getWindows() || {}) : {});
+  const resolveWins = () => {
+    if (typeof getWindows !== 'function') {
+      log.error('tasks_main getWindows unavailable; resolving no windows.');
+      return {};
+    }
+    const windows = getWindows();
+    if (!windows) {
+      log.error('tasks_main getWindows returned no window references; resolving no windows.');
+      return {};
+    }
+    return windows;
+  };
   const resolveMainWin = () => resolveWins().mainWin || null;
   const resolveTaskEditorWin = () => resolveWins().taskEditorWin || null;
-  const resolveAuthorizedTaskEditorWin = (event, logKey, logMessage) => {
+  const resolveAuthorizedTaskEditorWin = (event, logMessage) => {
     const taskEditorWin = resolveTaskEditorWin();
-    return isAuthorizedSender(event, taskEditorWin, logKey, logMessage)
+    return isAuthorizedSender(event, taskEditorWin, logMessage)
       ? taskEditorWin
       : null;
   };
@@ -687,7 +716,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     && typeof taskEditorLifecycle.prepareInitialization === 'function'
     && typeof taskEditorLifecycle.acceptInitializationIssued === 'function');
   if (!hasTaskEditorLifecycle) {
-    log.error('Task Editor lifecycle unavailable; New and Load are disabled.');
+    log.warn('Task Editor lifecycle unavailable; New and Load are disabled.');
   }
 
   ipcMain.on('task-editor-dirty-state', (event, payload) => {
@@ -708,7 +737,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         !isAuthorizedSender(
           event,
           mainWin,
-          'tasks_main.open.unauthorized',
           'open-task-editor unauthorized (ignored).'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
@@ -758,10 +786,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       if (!root) {
         return { ok: false, code: 'READ_FAILED', message: 'tasks root unavailable' };
       }
-      const rootReal = safeRealpath(root);
-      if (!rootReal) {
+      const rootRealRes = resolveRealpath(root);
+      if (!rootRealRes.ok) {
+        log.error('open-task-editor failed to canonicalize tasks root:', rootRealRes.error);
         return { ok: false, code: 'READ_FAILED', message: 'tasks root realpath failed' };
       }
+      const rootReal = rootRealRes.path;
 
       const dialogRes = await dialog.showOpenDialog(resolveMainWin(), {
         defaultPath: root,
@@ -769,25 +799,46 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         properties: ['openFile'],
       });
 
-      if (!dialogRes || dialogRes.canceled || !dialogRes.filePaths || !dialogRes.filePaths.length) {
+      if (!dialogRes) {
+        log.error('open-task-editor file picker returned no result; treating as cancelled.');
+        return { ok: false, code: 'CANCELLED' };
+      }
+      if (typeof dialogRes.canceled !== 'boolean') {
+        log.error('open-task-editor file picker returned an invalid canceled flag:', dialogRes);
+      }
+      if (dialogRes.canceled) {
+        return { ok: false, code: 'CANCELLED' };
+      }
+      if (!Array.isArray(dialogRes.filePaths) || !dialogRes.filePaths.length) {
+        log.error('open-task-editor file picker returned invalid filePaths; treating as cancelled.', dialogRes);
         return { ok: false, code: 'CANCELLED' };
       }
 
       const selectedPath = dialogRes.filePaths[0];
       if (typeof selectedPath !== 'string' || !selectedPath.trim()) {
-        log.warn('open-task-editor file picker returned invalid file path:', dialogRes);
+        log.error('open-task-editor file picker returned invalid file path:', dialogRes);
         return { ok: false, code: 'READ_FAILED', message: 'task list file picker returned invalid file path' };
       }
-      const selectedReal = safeRealpath(selectedPath);
-      if (!selectedReal) {
+      const selectedRealRes = resolveRealpath(selectedPath);
+      if (!selectedRealRes.ok) {
+        log.error('open-task-editor failed to canonicalize selected task list:', selectedRealRes.error);
         return { ok: false, code: 'READ_FAILED', message: 'task list realpath failed' };
       }
+      const selectedReal = selectedRealRes.path;
       if (!isPathInsideRoot(rootReal, selectedReal)) {
+        log.warn('open-task-editor rejected selected path outside managed tasks root:', selectedReal);
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
 
       const jsonRes = readJsonFile(selectedReal);
       if (!jsonRes.ok) {
+        if (jsonRes.code === 'READ_FAILED') {
+          log.error('Task list read failed; loading aborted:', jsonRes.error);
+        } else if (jsonRes.code === 'NOT_FOUND') {
+          log.error('Task list disappeared before it could be read; loading aborted.');
+        } else {
+          log.warn('Task list JSON invalid; loading rejected.', jsonRes.error);
+        }
         return { ok: false, code: jsonRes.code || 'INVALID_JSON' };
       }
       const normalized = normalizeTaskList(jsonRes.data);
@@ -827,30 +878,47 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.save.unauthorized',
         'task-list-save unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       const root = ensureTasksRoot();
       if (!root) return { ok: false, code: 'WRITE_FAILED', message: 'tasks root unavailable' };
-      const rootReal = safeRealpath(root);
-      if (!rootReal) return { ok: false, code: 'WRITE_FAILED', message: 'tasks root realpath failed' };
+      const rootRealRes = resolveRealpath(root);
+      if (!rootRealRes.ok) {
+        log.error('task-list-save failed to canonicalize tasks root:', rootRealRes.error);
+        return { ok: false, code: 'WRITE_FAILED', message: 'tasks root realpath failed' };
+      }
+      const rootReal = rootRealRes.path;
 
       const rowsRaw = payload && Array.isArray(payload.rows) ? payload.rows : null;
-      if (!rowsRaw) return { ok: false, code: 'INVALID_SCHEMA' };
+      if (!rowsRaw) {
+        log.warn('task-list-save received invalid rows payload.');
+        return { ok: false, code: 'INVALID_SCHEMA' };
+      }
       if (rowsRaw.length > TASK_LIST_MAX_ROWS) {
+        log.warn('task-list-save rejected rows exceeding TASK_LIST_MAX_ROWS.', {
+          count: rowsRaw.length,
+          limit: TASK_LIST_MAX_ROWS,
+        });
         return { ok: false, code: 'ROWS_TOO_MANY' };
       }
 
       const rowsRes = normalizeTaskRows(rowsRaw);
-      if (!rowsRes.ok) return { ok: false, code: 'INVALID_SCHEMA', message: rowsRes.code };
+      if (!rowsRes.ok) {
+        log.warn('task-list-save rejected invalid task rows.', { code: rowsRes.code });
+        return { ok: false, code: 'INVALID_SCHEMA', message: rowsRes.code };
+      }
 
       const metaRes = normalizeTaskMeta(payload.meta);
-      if (!metaRes.ok) return { ok: false, code: metaRes.code, message: metaRes.code };
+      if (!metaRes.ok) {
+        log.warn('task-list-save rejected invalid task metadata.', { code: metaRes.code });
+        return { ok: false, code: metaRes.code, message: metaRes.code };
+      }
 
       const summaryRes = taskDurationUtils.deriveTaskSummary(rowsRes.rows);
       if (!summaryRes.ok) {
+        log.warn('task-list-save rejected task rows with an invalid summary.', { code: summaryRes.code });
         return { ok: false, code: 'INVALID_SCHEMA', message: summaryRes.code };
       }
 
@@ -862,23 +930,40 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
 
-      if (!dialogRes || dialogRes.canceled) {
+      if (!dialogRes) {
+        log.error('task-list-save file picker returned no result; treating as cancelled.');
+        return { ok: false, code: 'CANCELLED' };
+      }
+      if (typeof dialogRes.canceled !== 'boolean') {
+        log.error('task-list-save file picker returned an invalid canceled flag:', dialogRes);
+      }
+      if (dialogRes.canceled) {
         return { ok: false, code: 'CANCELLED' };
       }
       if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
-        log.warn('task-list-save file picker returned invalid file path:', dialogRes);
+        log.error('task-list-save file picker returned invalid file path:', dialogRes);
         return { ok: false, code: 'WRITE_FAILED', message: 'task list file picker returned invalid file path' };
       }
 
       const normalizedPath = normalizeSavePath(dialogRes.filePath);
       const candidateResolved = path.resolve(normalizedPath);
       const parentDir = path.dirname(candidateResolved);
-      const parentReal = fs.existsSync(parentDir) ? safeRealpath(parentDir) : null;
+      const parentRealRes = fs.existsSync(parentDir) ? resolveRealpath(parentDir) : null;
+      const parentReal = parentRealRes && parentRealRes.ok ? parentRealRes.path : null;
+
+      if (parentRealRes && !parentRealRes.ok) {
+        log.error(
+          'task-list-save failed to canonicalize destination parent; containment verification skipped:',
+          parentRealRes.error
+        );
+      }
 
       if (!isPathInsideRoot(rootReal, candidateResolved)) {
+        log.warn('task-list-save rejected destination outside managed tasks root:', candidateResolved);
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
       if (parentReal && !isPathInsideRoot(rootReal, parentReal)) {
+        log.warn('task-list-save rejected destination parent outside managed tasks root:', parentReal);
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
 
@@ -901,7 +986,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.delete.unauthorized',
         'task-list-delete unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
@@ -914,9 +998,20 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
       const root = ensureTasksRoot();
       if (!root) return { ok: false, code: 'WRITE_FAILED' };
-      const rootReal = safeRealpath(root);
-      const targetReal = safeRealpath(target);
-      if (!rootReal || !targetReal || !isPathInsideRoot(rootReal, targetReal)) {
+      const rootRealRes = resolveRealpath(root);
+      if (!rootRealRes.ok) {
+        log.error('task-list-delete failed to canonicalize tasks root:', rootRealRes.error);
+        return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
+      }
+      const targetRealRes = resolveRealpath(target);
+      if (!targetRealRes.ok) {
+        log.warn('task-list-delete rejected path because canonicalization failed:', targetRealRes.error);
+        return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
+      }
+      const rootReal = rootRealRes.path;
+      const targetReal = targetRealRes.path;
+      if (!isPathInsideRoot(rootReal, targetReal)) {
+        log.warn('task-list-delete rejected path outside managed tasks root:', targetReal);
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
 
@@ -924,7 +1019,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         messageKey: 'task_delete_confirm',
         messageReplacements: { name: path.basename(targetReal) },
       });
-      if (!dialogRes || dialogRes.response !== 0) {
+      if (!dialogRes || (dialogRes.response !== 0 && dialogRes.response !== 1)) {
+        log.error('task-list-delete confirmation dialog returned invalid result; treating as denied.', dialogRes);
+        return { ok: false, code: 'CONFIRM_DENIED' };
+      }
+      if (dialogRes.response !== 0) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
 
@@ -943,7 +1042,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.library.list.unauthorized',
         'task-library-list unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
@@ -966,16 +1064,19 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.library.save.unauthorized',
         'task-library-save unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       if (!hasExactKeys(payload, TASK_LIBRARY_SAVE_PAYLOAD_KEYS)) {
+        log.warn('task-library-save received invalid payload.');
         return { ok: false, code: 'INVALID_SCHEMA', message: 'INVALID_LIBRARY_SAVE_PAYLOAD' };
       }
       const resEntry = validateLibraryEntry(payload.entry);
-      if (!resEntry.ok) return { ok: false, code: 'INVALID_SCHEMA', message: resEntry.code };
+      if (!resEntry.ok) {
+        log.warn('task-library-save rejected invalid library entry.', { code: resEntry.code });
+        return { ok: false, code: 'INVALID_SCHEMA', message: resEntry.code };
+      }
 
       ensureTasksDirs();
       const res = loadLibraryData();
@@ -990,7 +1091,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
           messageKey: 'task_library_row_save_overwrite',
           messageReplacements: { name: resEntry.entry.texto },
         });
-        if (!dialogRes || dialogRes.response !== 0) {
+        if (!dialogRes || (dialogRes.response !== 0 && dialogRes.response !== 1)) {
+          log.error('task-library-save overwrite dialog returned invalid result; treating as denied.', dialogRes);
+          return { ok: false, code: 'CONFIRM_DENIED' };
+        }
+        if (dialogRes.response !== 0) {
           return { ok: false, code: 'CONFIRM_DENIED' };
         }
         items.splice(existingIdx, 1, resEntry.entry);
@@ -1013,7 +1118,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.library.delete.unauthorized',
         'task-library-delete unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
@@ -1040,7 +1144,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         messageKey: 'task_library_row_delete',
         messageReplacements: { name: items[idx].texto },
       });
-      if (!dialogRes || dialogRes.response !== 0) {
+      if (!dialogRes || (dialogRes.response !== 0 && dialogRes.response !== 1)) {
+        log.error('task-library-delete confirmation dialog returned invalid result; treating as denied.', dialogRes);
+        return { ok: false, code: 'CONFIRM_DENIED' };
+      }
+      if (dialogRes.response !== 0) {
         return { ok: false, code: 'CONFIRM_DENIED' };
       }
 
@@ -1060,7 +1168,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.columns.load.unauthorized',
         'task-columns-load unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
@@ -1070,10 +1177,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       const res = readJsonFile(file);
       if (!res.ok) {
         if (res.code === 'NOT_FOUND') {
-          log.warnOnce(
-            'tasks_main.columns.missing',
-            'task column widths missing (returning null; may be normal on first run).'
-          );
+          log.warn('task column widths missing; returning null. (NOTE: may be normal; fresh layouts are persisted after initialization)');
           return { ok: true, record: null };
         }
         if (res.code === 'INVALID_JSON') {
@@ -1099,14 +1203,16 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.columns.save.unauthorized',
         'task-columns-save unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
       ensureTasksDirs();
       const record = validateColumnLayoutRecord(payload && payload.record ? payload.record : null);
-      if (!record) return { ok: false, code: 'INVALID_SCHEMA' };
+      if (!record) {
+        log.warn('task-columns-save received invalid column layout payload.');
+        return { ok: false, code: 'INVALID_SCHEMA' };
+      }
       const file = getTasksColumnWidthsFile();
       saveJsonStrict(file, record);
       return { ok: true };
@@ -1123,7 +1229,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.file.select.unauthorized',
         'task-file-select unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
@@ -1131,7 +1236,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       const res = await promptForTaskFileSelection(taskEditorWin, { allowMultiple: false });
       if (!res.ok) {
         if (res.code === 'READ_FAILED') {
-          log.warn('task-file-select returned empty filePaths.');
+          log.error('task-file-select returned invalid filePaths.');
         }
         return res;
       }
@@ -1146,7 +1251,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.files.select.unauthorized',
         'task-files-select unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
@@ -1154,7 +1258,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       const res = await promptForTaskFileSelection(taskEditorWin, { allowMultiple: true });
       if (!res.ok) {
         if (res.code === 'READ_FAILED') {
-          log.warn('task-files-select returned empty filePaths.');
+          log.error('task-files-select returned invalid filePaths.');
         }
         return res;
       }
@@ -1172,7 +1276,6 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
     try {
       const taskEditorWin = resolveAuthorizedTaskEditorWin(
         event,
-        'tasks_main.link.unauthorized',
         'task-open-link unauthorized (ignored).'
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
@@ -1197,7 +1300,11 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
           messageKey: 'task_path_confirm',
           messageReplacements: { path: raw },
         });
-        if (!dialogRes || dialogRes.response !== 0) {
+        if (!dialogRes || (dialogRes.response !== 0 && dialogRes.response !== 1)) {
+          log.error('task-open-link confirmation dialog returned invalid result; treating as denied.', dialogRes);
+          return { ok: false, code: 'CONFIRM_DENIED' };
+        }
+        if (dialogRes.response !== 0) {
           return { ok: false, code: 'CONFIRM_DENIED' };
         }
 
@@ -1243,8 +1350,15 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
           checkboxLabel,
           checkboxChecked: false,
         });
-        if (!dialogRes || dialogRes.response !== 0) {
+        if (!dialogRes || (dialogRes.response !== 0 && dialogRes.response !== 1)) {
+          log.error('task-open-link trust dialog returned invalid result; treating as denied.', dialogRes);
           return { ok: false, code: 'CONFIRM_DENIED' };
+        }
+        if (dialogRes.response !== 0) {
+          return { ok: false, code: 'CONFIRM_DENIED' };
+        }
+        if (typeof dialogRes.checkboxChecked !== 'boolean') {
+          log.error('task-open-link trust dialog returned invalid checkboxChecked value:', dialogRes);
         }
         if (dialogRes.checkboxChecked) {
           allowlist.add(host);
