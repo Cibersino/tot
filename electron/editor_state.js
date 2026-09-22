@@ -272,10 +272,10 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
           y: state.reduced.y
         });
       } else {
-        log.warnOnce(
+        log.warn(
           'editor-state.unmaximize.fallback-reduced',
           'unmaximize: reduced bounds missing; using fallback placement (ignored).',
-          'note: may be normal until the Text Editor window is first resized/moved while not maximized.'
+          'NOTE: may be normal until the Text Editor window is first resized/moved while not maximized.'
         );
         // Fallback: place at upper-right half of the current monitor work area.
         const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());

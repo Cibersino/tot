@@ -239,19 +239,19 @@ function ensureOcrGoogleDriveDir() {
 
 const LOAD_JSON_FILE_METADATA = Object.freeze({
   'current_text.json': {
-    missingNote: ' (note: may be normal on first run; file is created on quit)',
+    missingNote: ' (NOTE: may be normal on first run; file is created on quit)',
   },
   'user_settings.json': {
-    missingNote: ' (note: may be normal on first run; file is created during startup)',
+    missingNote: ' (NOTE: may be normal on first run; file is created during startup)',
   },
   'snapshot_tags.json': {
-    missingNote: ' (note: may be normal on first run; file is created during startup)',
+    missingNote: ' (NOTE: may be normal on first run; file is created during startup)',
   },
   'editor_state.json': {
-    missingNote: ' (note: may be normal on first run; file is created when Text Editor window is opened for the first time)',
+    missingNote: ' (NOTE: may be normal on first run; file is created when Text Editor window is opened for the first time)',
   },
   'task_editor_state.json': {
-    missingNote: ' (note: may be normal on first run; file is created after the Task Editor window is opened and window state is saved)',
+    missingNote: ' (NOTE: may be normal on first run; file is created after the Task Editor window is opened and window state is saved)',
   },
 });
 
