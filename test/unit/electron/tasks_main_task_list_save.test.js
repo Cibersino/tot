@@ -112,7 +112,9 @@ function createLibraryEntry(overrides = {}) {
 function loadFreshTasksMainForSave({
   tasksRoot,
   saveDialogPath,
+  saveDialogResponses = null,
   saveJsonStrictImpl = null,
+  createJsonStrictImpl = null,
   openDialogResponse = null,
   openDialogResponses = null,
   appPaths = {},
@@ -129,9 +131,15 @@ function loadFreshTasksMainForSave({
   const originalFsStorageModule = require.cache[fsStorageModulePath];
   const taskFilePickerStatePath = path.join(tasksRoot, '..', 'task_file_picker_state.json');
   const openDialogCalls = [];
+  const saveDialogCalls = [];
+  const messageBoxCalls = [];
   const saveJsonCalls = [];
+  const createJsonCalls = [];
   const pendingOpenDialogResponses = Array.isArray(openDialogResponses)
     ? [...openDialogResponses]
+    : null;
+  const pendingSaveDialogResponses = Array.isArray(saveDialogResponses)
+    ? [...saveDialogResponses]
     : null;
   let persistedTaskFilePickerState = null;
 
@@ -145,10 +153,15 @@ function loadFreshTasksMainForSave({
         if (openDialogResponse) return openDialogResponse;
         return { canceled: true, filePaths: [] };
       },
-      async showSaveDialog() {
+      async showSaveDialog(owner, options) {
+        saveDialogCalls.push({ owner, options });
+        if (pendingSaveDialogResponses && pendingSaveDialogResponses.length) {
+          return pendingSaveDialogResponses.shift();
+        }
         return { canceled: false, filePath: saveDialogPath };
       },
-      async showMessageBox() {
+      async showMessageBox(owner, options) {
+        messageBoxCalls.push({ owner, options });
         return { response: 0 };
       },
     },
@@ -242,6 +255,16 @@ function loadFreshTasksMainForSave({
         fs.mkdirSync(path.dirname(targetPath), { recursive: true });
         fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2), 'utf8');
       },
+      createJsonStrict(targetPath, payload) {
+        createJsonCalls.push({ targetPath, payload });
+        if (typeof createJsonStrictImpl === 'function') {
+          return createJsonStrictImpl(targetPath, payload);
+        }
+        fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2), {
+          encoding: 'utf8',
+          flag: 'wx',
+        });
+      },
     },
   };
 
@@ -277,7 +300,15 @@ function loadFreshTasksMainForSave({
     }
   }
 
-  return { tasksMain, restore, openDialogCalls, saveJsonCalls };
+  return {
+    tasksMain,
+    restore,
+    openDialogCalls,
+    saveDialogCalls,
+    messageBoxCalls,
+    saveJsonCalls,
+    createJsonCalls,
+  };
 }
 
 test('Task Editor handlers reject non-Task-Editor senders', async (t) => {
@@ -315,11 +346,11 @@ test('Task Editor handlers reject non-Task-Editor senders', async (t) => {
   }
 });
 
-test('task-list-save persists task data through saveJsonStrict', async (t) => {
+test('task-list-save creates task data at a new destination', async (t) => {
   const tempDir = createTestTempDir('tasks-main-save');
   const tasksRoot = path.join(tempDir, 'lists');
   const saveDialogPath = path.join(tasksRoot, 'Session Plan.json');
-  const { tasksMain, restore } = loadFreshTasksMainForSave({
+  const { tasksMain, restore, createJsonCalls } = loadFreshTasksMainForSave({
     tasksRoot,
     saveDialogPath,
   });
@@ -342,8 +373,10 @@ test('task-list-save persists task data through saveJsonStrict', async (t) => {
   );
 
   assert.equal(result.ok, true);
-  assert.equal(result.path, path.resolve(path.join(tasksRoot, 'Session_Plan.json')));
+  assert.equal(result.path, path.resolve(saveDialogPath));
   assert.equal(result.meta.name, 'Session Plan');
+  assert.equal(createJsonCalls.length, 1);
+  assert.equal(createJsonCalls[0].targetPath, path.resolve(saveDialogPath));
 
   const savedPayload = JSON.parse(fs.readFileSync(result.path, 'utf8'));
   assert.equal(savedPayload.type, 'task');
@@ -355,6 +388,285 @@ test('task-list-save persists task data through saveJsonStrict', async (t) => {
   });
   assert.equal(savedPayload.rows.length, 1);
   assert.equal(savedPayload.rows[0].texto, 'Read chapter 1');
+});
+
+test('task-list-save writes an existing destination through its verified canonical path', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-existing-canonical-path');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const selectedPath = path.join(tasksRoot, 'selected-link.json');
+  const canonicalPath = path.join(tasksRoot, 'canonical-target.json');
+  fs.mkdirSync(tasksRoot, { recursive: true });
+  fs.writeFileSync(selectedPath, 'selected entry unchanged', 'utf8');
+  fs.writeFileSync(canonicalPath, '{"before":true}', 'utf8');
+
+  const { tasksMain, restore, createJsonCalls } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: selectedPath,
+  });
+  const originalRealpathSync = fs.realpathSync;
+  fs.realpathSync = (targetPath, ...args) => {
+    if (path.resolve(targetPath) === path.resolve(selectedPath)) return canonicalPath;
+    return originalRealpathSync(targetPath, ...args);
+  };
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.path, canonicalPath);
+  assert.equal(createJsonCalls.length, 0);
+  assert.equal(fs.readFileSync(selectedPath, 'utf8'), 'selected entry unchanged');
+  assert.equal(JSON.parse(fs.readFileSync(canonicalPath, 'utf8')).meta.name, 'Session Plan');
+});
+
+test('task-list-save rejects an existing destination whose canonical path is outside the tasks root', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-existing-outside-canonical-path');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const selectedPath = path.join(tasksRoot, 'selected-link.json');
+  const outsidePath = path.join(tempDir, 'outside.json');
+  fs.mkdirSync(tasksRoot, { recursive: true });
+  fs.writeFileSync(selectedPath, 'selected entry unchanged', 'utf8');
+  fs.writeFileSync(outsidePath, 'outside entry unchanged', 'utf8');
+
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: selectedPath,
+  });
+  const originalRealpathSync = fs.realpathSync;
+  fs.realpathSync = (targetPath, ...args) => {
+    if (path.resolve(targetPath) === path.resolve(selectedPath)) return outsidePath;
+    return originalRealpathSync(targetPath, ...args);
+  };
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'PATH_OUTSIDE_TASKS' });
+  assert.equal(fs.readFileSync(selectedPath, 'utf8'), 'selected entry unchanged');
+  assert.equal(fs.readFileSync(outsidePath, 'utf8'), 'outside entry unchanged');
+});
+
+test('task-list-save aborts when an existing destination cannot be canonicalized', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-existing-realpath-failure');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const selectedPath = path.join(tasksRoot, 'selected-link.json');
+  fs.mkdirSync(tasksRoot, { recursive: true });
+  fs.writeFileSync(selectedPath, 'selected entry unchanged', 'utf8');
+
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: selectedPath,
+  });
+  const originalRealpathSync = fs.realpathSync;
+  fs.realpathSync = (targetPath, ...args) => {
+    if (path.resolve(targetPath) === path.resolve(selectedPath)) {
+      throw new Error('destination realpath failed');
+    }
+    return originalRealpathSync(targetPath, ...args);
+  };
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'WRITE_FAILED' });
+  assert.equal(fs.readFileSync(selectedPath, 'utf8'), 'selected entry unchanged');
+});
+
+test('task-list-save does not create a destination under a missing parent directory', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-missing-parent');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const missingParent = path.join(tasksRoot, 'missing-parent');
+  const selectedPath = path.join(missingParent, 'plan.json');
+  const { tasksMain, restore, createJsonCalls } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: selectedPath,
+  });
+  t.after(() => {
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'WRITE_FAILED' });
+  assert.equal(fs.existsSync(missingParent), false);
+  assert.equal(createJsonCalls.length, 0);
+});
+
+test('task-list-save maps an exclusive-create collision to WRITE_FAILED without overwriting', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-exclusive-create-collision');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const selectedPath = path.join(tasksRoot, 'raced-destination.json');
+  const { tasksMain, restore, createJsonCalls } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: selectedPath,
+    createJsonStrictImpl() {
+      const err = new Error('destination already exists');
+      err.code = 'EEXIST';
+      throw err;
+    },
+  });
+  t.after(() => {
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, 'WRITE_FAILED');
+  assert.equal(createJsonCalls.length, 1);
+  assert.equal(fs.existsSync(selectedPath), false);
+});
+
+test('task-list-save retries invalid filenames without rewriting the selected destination', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-invalid-filename-retry');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const invalidNoExtension = path.join(tasksRoot, 'Plan A');
+  const invalidOtherExtension = path.join(tasksRoot, 'Plan A.txt');
+  const selectedPath = path.join(tasksRoot, 'Plan A.json');
+  const {
+    tasksMain,
+    restore,
+    saveDialogCalls,
+    messageBoxCalls,
+  } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogResponses: [
+      { canceled: false, filePath: invalidNoExtension },
+      { canceled: false, filePath: invalidOtherExtension },
+      { canceled: false, filePath: selectedPath },
+    ],
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  const expectedDefaultPath = path.join(tasksRoot, 'Session_Plan.json');
+  assert.equal(result.path, path.resolve(selectedPath));
+  assert.equal(fs.existsSync(selectedPath), true);
+  assert.equal(fs.existsSync(path.join(tasksRoot, 'Plan_A.json')), false);
+  assert.equal(saveDialogCalls.length, 3);
+  for (const { options } of saveDialogCalls) {
+    assert.equal(options.defaultPath, expectedDefaultPath);
+    assert.deepEqual(options.filters, [{ name: 'JSON', extensions: ['json'] }]);
+    assert.deepEqual(options.properties, ['showOverwriteConfirmation']);
+  }
+  assert.equal(messageBoxCalls.length, 2);
+  for (const { options } of messageBoxCalls) {
+    assert.equal(options.message, 'task_list_invalid_filename');
+    assert.deepEqual(options.buttons, ['ok']);
+  }
+});
+
+test('task-list-save returns CANCELLED when cancellation follows an invalid filename', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-invalid-filename-cancel');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const {
+    tasksMain,
+    restore,
+    saveDialogCalls,
+    messageBoxCalls,
+  } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogResponses: [
+      { canceled: false, filePath: path.join(tasksRoot, 'Plan A') },
+      { canceled: true },
+    ],
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'CANCELLED' });
+  assert.equal(fs.existsSync(tasksRoot), true);
+  assert.deepEqual(fs.readdirSync(tasksRoot), []);
+  assert.equal(saveDialogCalls.length, 2);
+  assert.equal(messageBoxCalls.length, 1);
 });
 
 test('task-list-save aggregates exact Task Editor remaining hundredths before flooring', async (t) => {
@@ -425,10 +737,12 @@ test('task-list-save omits the summary when the total estimate is zero', async (
   assert.equal(Object.prototype.hasOwnProperty.call(savedPayload, 'summary'), false);
 });
 
-test('task-list-save maps saveJsonStrict failures to WRITE_FAILED', async (t) => {
+test('task-list-save maps existing-destination write failures to WRITE_FAILED', async (t) => {
   const tempDir = createTestTempDir('tasks-main-save-failure');
   const tasksRoot = path.join(tempDir, 'lists');
   const saveDialogPath = path.join(tasksRoot, 'Failure Plan.json');
+  fs.mkdirSync(tasksRoot, { recursive: true });
+  fs.writeFileSync(saveDialogPath, '{}', 'utf8');
   const { tasksMain, restore } = loadFreshTasksMainForSave({
     tasksRoot,
     saveDialogPath,
@@ -457,6 +771,122 @@ test('task-list-save maps saveJsonStrict failures to WRITE_FAILED', async (t) =>
   assert.equal(result.ok, false);
   assert.equal(result.code, 'WRITE_FAILED');
   assert.match(String(result.message || ''), /disk full/i);
+});
+
+test('task-list-save keeps outside-path rejection ahead of destination parent canonicalization failure', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-outside-parent-realpath-failure');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const outsideParent = path.join(tempDir, 'outside');
+  const saveDialogPath = path.join(outsideParent, 'Outside plan.json');
+  fs.mkdirSync(outsideParent, { recursive: true });
+
+  const { tasksMain, restore } = loadFreshTasksMainForSave({ tasksRoot, saveDialogPath });
+  const originalRealpathSync = fs.realpathSync;
+  fs.realpathSync = (targetPath, ...args) => {
+    if (path.resolve(targetPath) === path.resolve(outsideParent)) {
+      throw new Error('outside destination parent realpath failed');
+    }
+    return originalRealpathSync(targetPath, ...args);
+  };
+
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'PATH_OUTSIDE_TASKS' });
+  assert.equal(fs.existsSync(saveDialogPath), false);
+});
+
+test('task-list-save aborts when an inside destination parent cannot be canonicalized', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-save-parent-realpath-failure');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const selectedParent = path.join(tasksRoot, 'selected-parent');
+  const saveDialogPath = path.join(selectedParent, 'Parent failure.json');
+  fs.mkdirSync(selectedParent, { recursive: true });
+
+  const { tasksMain, restore } = loadFreshTasksMainForSave({ tasksRoot, saveDialogPath });
+  const originalRealpathSync = fs.realpathSync;
+  fs.realpathSync = (targetPath, ...args) => {
+    if (path.resolve(targetPath) === path.resolve(selectedParent)) {
+      throw new Error('inside destination parent realpath failed');
+    }
+    return originalRealpathSync(targetPath, ...args);
+  };
+
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-list-save',
+    { sender: taskEditorWin.webContents },
+    { meta: createTaskMeta(), rows: [createTaskRow()] }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'WRITE_FAILED' });
+  assert.equal(fs.existsSync(saveDialogPath), false);
+});
+
+test('task-list-delete maps root and target canonicalization failures to WRITE_FAILED', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-delete-realpath-failure');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const targetPath = path.join(tasksRoot, 'Delete me.json');
+  fs.mkdirSync(tasksRoot, { recursive: true });
+  fs.writeFileSync(targetPath, '{}', 'utf8');
+
+  const { tasksMain, restore } = loadFreshTasksMainForSave({ tasksRoot });
+  const originalRealpathSync = fs.realpathSync;
+  let failedPath = tasksRoot;
+  fs.realpathSync = (candidatePath, ...args) => {
+    if (path.resolve(candidatePath) === path.resolve(failedPath)) {
+      throw new Error('realpath failed');
+    }
+    return originalRealpathSync(candidatePath, ...args);
+  };
+
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const event = { sender: taskEditorWin.webContents };
+  const rootFailure = await ipcMain.invoke('task-list-delete', event, { path: targetPath });
+  assert.deepEqual(rootFailure, { ok: false, code: 'WRITE_FAILED' });
+  assert.equal(fs.existsSync(targetPath), true);
+
+  failedPath = targetPath;
+  const targetFailure = await ipcMain.invoke('task-list-delete', event, { path: targetPath });
+  assert.deepEqual(targetFailure, { ok: false, code: 'WRITE_FAILED' });
+  assert.equal(fs.existsSync(targetPath), true);
 });
 
 test('task-list-save rejects noncanonical task-row values without writing a file', async (t) => {

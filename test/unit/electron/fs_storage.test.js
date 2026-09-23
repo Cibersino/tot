@@ -41,6 +41,22 @@ test('saveJsonStrict creates parent directories and persists JSON content', (t) 
   );
 });
 
+test('createJsonStrict creates only a new file in an existing parent directory', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+  const payload = { language: 'en' };
+
+  fsStorage.createJsonStrict(targetPath, payload);
+
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), JSON.stringify(payload, null, 2));
+  assert.throws(() => fsStorage.createJsonStrict(targetPath, payload), { code: 'EEXIST' });
+  assert.throws(
+    () => fsStorage.createJsonStrict(path.join(tempDir, 'missing', 'state.json'), payload),
+    { code: 'ENOENT' }
+  );
+});
+
 test('saveJson swallows write/setup failures while saveJsonStrict throws them', (t) => {
   const tempDir = createTempDir(t);
   const fsStorage = loadFreshFsStorage();

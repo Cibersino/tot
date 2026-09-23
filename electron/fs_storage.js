@@ -323,6 +323,16 @@ function saveJsonStrict(filePath, obj) {
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
 }
 
+// Strict JSON creation for flows that must never replace an entry that appeared
+// after their preflight. Unlike saveJsonStrict(...), this does not create the
+// parent directory and requests exclusive filesystem creation.
+function createJsonStrict(filePath, obj) {
+  fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), {
+    encoding: 'utf8',
+    flag: 'wx',
+  });
+}
+
 // =============================================================================
 // Exports / module surface
 // =============================================================================
@@ -364,6 +374,7 @@ module.exports = {
   loadJson,
   saveJson,
   saveJsonStrict,
+  createJsonStrict,
 };
 
 // =============================================================================

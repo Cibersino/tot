@@ -479,6 +479,12 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Confirmación al cargar un snapshot y reemplazar el texto actual de la app.
         // [CONCEPTO_APP] snapshot de texto; texto actual; reemplazar texto actual
       },
+      "task_list_invalid_filename": {
+        "es": "Usa un nombre de archivo que termine en .json y tenga texto antes de la extensión.",
+        "en": "Use a filename ending in .json, with text before the extension."
+        // [CONCEPTO_APP] tarea
+        // [PROTEGIDO] `.json`
+      },
       "task_delete_confirm": {
         "es": "¿Eliminar la tarea \"{name}\"?",
         "en": "Delete the task \"{name}\"?"

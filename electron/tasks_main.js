@@ -42,6 +42,7 @@ const {
   loadJson,
   saveJson,
   saveJsonStrict,
+  createJsonStrict,
 } = require('./fs_storage');
 const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
@@ -77,6 +78,16 @@ function resolveRealpath(targetPath) {
   try {
     return { ok: true, path: fs.realpathSync(targetPath) };
   } catch (err) {
+    return { ok: false, error: err };
+  }
+}
+
+function inspectPathEntry(targetPath) {
+  try {
+    fs.lstatSync(targetPath);
+    return { ok: true, exists: true };
+  } catch (err) {
+    if (err && err.code === 'ENOENT') return { ok: true, exists: false };
     return { ok: false, error: err };
   }
 }
@@ -163,14 +174,6 @@ function getDefaultTaskFileName(rootDir, taskName) {
     idx += 1;
   }
   return `${base}_${idx}${TASK_EXT}`;
-}
-
-function normalizeSavePath(filePath) {
-  const resolved = path.resolve(filePath);
-  const dir = path.dirname(resolved);
-  const base = path.basename(resolved, path.extname(resolved));
-  const safeBase = sanitizeTaskBaseName(base);
-  return path.join(dir, `${safeBase}${TASK_EXT}`);
 }
 
 function readJsonFile(filePath) {
@@ -924,36 +927,56 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
       const defaultName = getDefaultTaskFileName(root, metaRes.meta.name);
       const defaultPath = path.join(root, defaultName);
-
-      const dialogRes = await dialog.showSaveDialog(taskEditorWin || null, {
+      const dialogOptions = {
         defaultPath,
         filters: [{ name: 'JSON', extensions: ['json'] }],
-      });
+        properties: ['showOverwriteConfirmation'],
+      };
+      let selectedPath = null;
 
-      if (!dialogRes) {
-        log.error('task-list-save file picker returned no result; treating as cancelled.');
-        return { ok: false, code: 'CANCELLED' };
-      }
-      if (typeof dialogRes.canceled !== 'boolean') {
-        log.error('task-list-save file picker returned an invalid canceled flag:', dialogRes);
-      }
-      if (dialogRes.canceled) {
-        return { ok: false, code: 'CANCELLED' };
-      }
-      if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
-        log.error('task-list-save file picker returned invalid file path:', dialogRes);
-        return { ok: false, code: 'WRITE_FAILED', message: 'task list file picker returned invalid file path' };
+      while (!selectedPath) {
+        const dialogRes = await dialog.showSaveDialog(taskEditorWin || null, dialogOptions);
+
+        if (!dialogRes) {
+          log.error('task-list-save file picker returned no result; treating as cancelled.');
+          return { ok: false, code: 'CANCELLED' };
+        }
+        if (typeof dialogRes.canceled !== 'boolean') {
+          log.error('task-list-save file picker returned an invalid canceled flag:', dialogRes);
+        }
+        if (dialogRes.canceled) {
+          return { ok: false, code: 'CANCELLED' };
+        }
+        if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
+          log.error('task-list-save file picker returned invalid file path:', dialogRes);
+          return { ok: false, code: 'WRITE_FAILED', message: 'task list file picker returned invalid file path' };
+        }
+
+        const fileName = path.basename(dialogRes.filePath);
+        if (path.extname(fileName) !== TASK_EXT || fileName === TASK_EXT) {
+          const dialogTexts = getDialogTexts();
+          await dialog.showMessageBox(taskEditorWin || null, {
+            type: 'warning',
+            buttons: [resolveDialogText(dialogTexts, 'ok')],
+            defaultId: 0,
+            cancelId: 0,
+            message: resolveDialogText(dialogTexts, 'task_list_invalid_filename'),
+          });
+          continue;
+        }
+
+        selectedPath = dialogRes.filePath;
       }
 
-      const normalizedPath = normalizeSavePath(dialogRes.filePath);
-      const candidateResolved = path.resolve(normalizedPath);
+      const candidateResolved = path.resolve(selectedPath);
       const parentDir = path.dirname(candidateResolved);
       const parentRealRes = fs.existsSync(parentDir) ? resolveRealpath(parentDir) : null;
       const parentReal = parentRealRes && parentRealRes.ok ? parentRealRes.path : null;
+      const parentCanonicalizationFailed = parentRealRes && !parentRealRes.ok;
 
-      if (parentRealRes && !parentRealRes.ok) {
+      if (parentCanonicalizationFailed) {
         log.error(
-          'task-list-save failed to canonicalize destination parent; containment verification skipped:',
+          'task-list-save failed to canonicalize destination parent:',
           parentRealRes.error
         );
       }
@@ -962,9 +985,41 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         log.warn('task-list-save rejected destination outside managed tasks root:', candidateResolved);
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
       }
+      if (parentCanonicalizationFailed) {
+        return { ok: false, code: 'WRITE_FAILED' };
+      }
       if (parentReal && !isPathInsideRoot(rootReal, parentReal)) {
         log.warn('task-list-save rejected destination parent outside managed tasks root:', parentReal);
         return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
+      }
+
+      const destinationEntryRes = inspectPathEntry(candidateResolved);
+      if (!destinationEntryRes.ok) {
+        log.error('task-list-save failed to inspect destination entry:', destinationEntryRes.error);
+        return { ok: false, code: 'WRITE_FAILED' };
+      }
+
+      let writePath = candidateResolved;
+      if (destinationEntryRes.exists) {
+        const destinationRealRes = resolveRealpath(candidateResolved);
+        if (!destinationRealRes.ok) {
+          log.error(
+            'task-list-save failed to canonicalize existing destination:',
+            destinationRealRes.error
+          );
+          return { ok: false, code: 'WRITE_FAILED' };
+        }
+        if (!isPathInsideRoot(rootReal, destinationRealRes.path)) {
+          log.warn(
+            'task-list-save rejected existing destination outside managed tasks root:',
+            destinationRealRes.path
+          );
+          return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
+        }
+        writePath = destinationRealRes.path;
+      } else if (!parentReal) {
+        log.error('task-list-save failed because destination parent is missing:', parentDir);
+        return { ok: false, code: 'WRITE_FAILED' };
       }
 
       const taskData = {
@@ -973,9 +1028,13 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         ...(summaryRes.summary ? { summary: summaryRes.summary } : {}),
         rows: rowsRes.rows,
       };
-      saveJsonStrict(candidateResolved, taskData);
+      if (destinationEntryRes.exists) {
+        saveJsonStrict(writePath, taskData);
+      } else {
+        createJsonStrict(writePath, taskData);
+      }
 
-      return { ok: true, path: candidateResolved, meta: taskData.meta };
+      return { ok: true, path: writePath, meta: taskData.meta };
     } catch (err) {
       log.error('task-list-save failed:', err);
       return { ok: false, code: 'WRITE_FAILED', message: String(err) };
@@ -1001,12 +1060,12 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       const rootRealRes = resolveRealpath(root);
       if (!rootRealRes.ok) {
         log.error('task-list-delete failed to canonicalize tasks root:', rootRealRes.error);
-        return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
+        return { ok: false, code: 'WRITE_FAILED' };
       }
       const targetRealRes = resolveRealpath(target);
       if (!targetRealRes.ok) {
-        log.warn('task-list-delete rejected path because canonicalization failed:', targetRealRes.error);
-        return { ok: false, code: 'PATH_OUTSIDE_TASKS' };
+        log.error('task-list-delete failed to canonicalize target path:', targetRealRes.error);
+        return { ok: false, code: 'WRITE_FAILED' };
       }
       const rootReal = rootRealRes.path;
       const targetReal = targetRealRes.path;
