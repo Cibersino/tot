@@ -168,7 +168,7 @@
     const selectedName = persisted || (typeof currentPresetName === 'string' ? currentPresetName.trim() : '');
     if (!selectedName) {
       log.warn(
-        'No persisted preset selection for langKey; selecting safe default and persisting (NOTE: may be normal on first run).',
+        'No persisted preset selection for langKey; selecting safe default and persisting (NOTE: may be normal; no preset has been selected for this language).',
         { lang: langBase }
       );
     }

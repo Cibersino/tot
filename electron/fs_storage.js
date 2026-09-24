@@ -239,19 +239,31 @@ function ensureOcrGoogleDriveDir() {
 
 const LOAD_JSON_FILE_METADATA = Object.freeze({
   'current_text.json': {
-    missingNote: ' (NOTE: may be normal on first run; file is created on quit)',
+    missingNote: ' (NOTE: may be normal; file is created on quit)',
   },
   'user_settings.json': {
-    missingNote: ' (NOTE: may be normal on first run; file is created during startup)',
+    missingNote: ' (NOTE: may be normal; file is created during startup)',
   },
   'snapshot_tags.json': {
-    missingNote: ' (NOTE: may be normal on first run; file is created during startup)',
+    missingNote: ' (NOTE: may be normal; file is created during startup)',
   },
   'editor_state.json': {
-    missingNote: ' (NOTE: may be normal on first run; file is created when Text Editor window is opened for the first time)',
+    missingNote: ' (NOTE: may be normal; file is created when the Text Editor window is first opened)',
   },
   'task_editor_state.json': {
-    missingNote: ' (NOTE: may be normal on first run; file is created after the Task Editor window is opened and window state is saved)',
+    missingNote: ' (NOTE: may be normal; file is created after the Task Editor window is opened and window state is saved)',
+  },
+  'task_file_picker_state.json': {
+    missingNote: ' (NOTE: may be normal; file is created after the first Task Editor file selection)',
+  },
+  'text_extraction_state.json': {
+    missingNote: ' (NOTE: may be normal; file is created after the first text-extraction file selection)',
+  },
+  'reading_test_pool_import_state.json': {
+    missingNote: ' (NOTE: may be normal; file is created after the first reading-test import file selection)',
+  },
+  'reading_test_pool_state.json': {
+    missingNote: ' (NOTE: may be normal; file is initialized during the first reading-test pool synchronization)',
   },
 });
 
