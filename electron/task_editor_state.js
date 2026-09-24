@@ -7,7 +7,7 @@
 // Persist and restore Task Editor window geometry and maximized state.
 // - Reads/writes task_editor_state.json via fs_storage.
 // - Validates stored reduced bounds against available displays when possible.
-// - Attaches move/resize/maximize/close handlers to persist state changes.
+// - Attaches Task Editor window listeners to persist reduced bounds and maximized state.
 
 // =============================================================================
 // Imports / logger
@@ -34,7 +34,7 @@ const DEFAULT_STATE = Object.freeze({
 });
 
 // =============================================================================
-// Helpers
+// Geometry and state normalization helpers
 // =============================================================================
 function isFiniteNumber(n) {
   return typeof n === 'number' && Number.isFinite(n);
@@ -151,6 +151,9 @@ function normalizeState(raw) {
   return state;
 }
 
+// =============================================================================
+// Window and persistence helpers
+// =============================================================================
 function isLiveWindow(taskEditorWin) {
   if (
     !taskEditorWin
@@ -178,9 +181,6 @@ function isWindowMaximized(taskEditorWin) {
 }
 
 function readCurrentState(loader, stateFile) {
-  // A native first-open move can run before this file exists. Keep the
-  // read-before-write path so every update starts from normalized persisted
-  // state; the second expected missing-file fallback precedes its first save.
   return normalizeState(loader(stateFile, DEFAULT_STATE));
 }
 
@@ -245,6 +245,7 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
 
   const saveMaximizedFlag = (maximized) => {
     try {
+      // Preserve normalized reduced bounds while updating only the maximized flag.
       const state = readCurrentState(loader, stateFile);
       state.maximized = !!maximized;
       saver(stateFile, state);
