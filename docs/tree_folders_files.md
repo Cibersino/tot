@@ -456,7 +456,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/current_text.json` — Texto actual persistido.
 - `config/editor_state.json` — Estado persistido del Editor de Texto (geometría/maximizado y `maximizedTextWidthPx`).
 - `config/text_extraction_state.json` — Estado local del picker de text extraction (por ejemplo, última carpeta utilizada).
-- `config/reading_test_pool_state.json` — Estado externo del pool del reading speed test; guarda la preferencia `showBundledEntries`, el `used` por `snapshotRelPath` y, para starter files gestionados por la app, el `managedBundledHash` instalado.
+- `config/reading_test_pool_state.json` — Estado externo del pool del reading speed test; guarda la preferencia `showBundledEntries`, el `used` por `snapshotRelPath` y, para starter files actualmente gestionados por la app, el `managedBundledHash` de su contenido instalado. Si el contenido runtime ya no coincide, la entrada deja de ser gestionada; el hash no conserva procedencia histórica.
 - `config/reading_test_pool_import_state.json` — Estado local del picker del importador del pool del reading speed test (última carpeta utilizada).
 - `config/ocr_google_drive/credentials.json` — Espejo/copia runtime gestionado por la app para la configuración OAuth de Google OCR; en el modelo actual se materializa desde credenciales empaquetadas de la app y no forma parte del onboarding manual del usuario.
 - `config/ocr_google_drive/token.json` — Estado local del token OAuth del usuario final para la ruta OCR de Google Drive/Docs; se elimina al desconectar Google OCR tras revocación exitosa.

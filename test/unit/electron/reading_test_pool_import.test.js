@@ -102,9 +102,46 @@ function loadFreshReadingTestPoolImportForIpc({
         }
         return { ok: true, data: rawData };
       },
-      ensurePoolDir() {
-        fs.mkdirSync(poolDir, { recursive: true });
-        return poolDir;
+      resolvePoolContext({ poolDir: requestedPoolDir } = {}) {
+        const ok = !requestedPoolDir || requestedPoolDir === poolDir;
+        if (ok) {
+          fs.mkdirSync(poolDir, { recursive: true });
+        }
+        return {
+          ok,
+          poolDir,
+        };
+      },
+      resolvePoolDestination(_context, destinationName) {
+        const destinationPath = path.join(poolDir, destinationName);
+        if (!fs.existsSync(destinationPath)) {
+          return {
+            ok: true,
+            destinationPath,
+            entry: { exists: false, kind: 'missing' },
+          };
+        }
+        const stats = fs.lstatSync(destinationPath);
+        return {
+          ok: true,
+          destinationPath,
+          entry: {
+            exists: true,
+            kind: stats.isFile() ? 'file' : (stats.isDirectory() ? 'directory' : 'other'),
+          },
+        };
+      },
+      writePoolJsonEntry(_context, destinationName, payload, { replace = false } = {}) {
+        const destinationPath = path.join(poolDir, destinationName);
+        const exists = fs.existsSync(destinationPath);
+        if (exists && !replace) {
+          return { ok: false, code: 'DESTINATION_EXISTS' };
+        }
+        fs.writeFileSync(destinationPath, JSON.stringify(payload, null, 2), {
+          encoding: 'utf8',
+          ...(exists ? {} : { flag: 'wx' }),
+        });
+        return { ok: true };
       },
       buildPoolSnapshotRelPath(destinationName) {
         const normalizedName = String(destinationName || '').trim();
@@ -181,7 +218,7 @@ function loadFreshReadingTestPoolImportForIpc({
 test('importSelectedFiles imports a valid canonical snapshot and preserves readingTest questions', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'sample.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   writeJson(sourcePath, createSnapshotData({
@@ -250,7 +287,7 @@ test('importSelectedFiles imports a valid canonical snapshot and preserves readi
 test('importSelectedFiles rejects imported json that contains invalid readingTest questions', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'invalid-reading-test.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   writeJson(sourcePath, createSnapshotData({
@@ -279,7 +316,7 @@ test('importSelectedFiles rejects imported json that contains invalid readingTes
 test('importSelectedFiles rejects legacy snapshot JSON', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'legacy-snapshot.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   writeJson(sourcePath, {
@@ -301,7 +338,7 @@ test('importSelectedFiles rejects legacy snapshot JSON', async () => {
 test('importSelectedFiles imports valid zip entries and reports invalid json entries as failed validation', async () => {
   const tempDir = makeTempDir();
   const zipPath = path.join(tempDir, 'pack.zip');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   const zip = new AdmZip();
@@ -336,7 +373,7 @@ test('importSelectedFiles imports valid zip entries and reports invalid json ent
 test('importSelectedFiles skips duplicate destination filenames when conflict strategy is skip', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'duplicate.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
@@ -374,7 +411,7 @@ test('importSelectedFiles skips duplicate destination filenames when conflict st
 test('importSelectedFiles replaces duplicate destination filenames when conflict strategy is replace', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'duplicate.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
@@ -410,10 +447,42 @@ test('importSelectedFiles replaces duplicate destination filenames when conflict
   assert.equal(imported.tags.language, 'pt');
 });
 
+test('importSelectedFiles rejects a redirected replacement destination', async (t) => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'duplicate.json');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
+  const destinationPath = path.join(poolDir, 'duplicate.json');
+  const outsidePath = path.join(tempDir, 'outside.json');
+  fs.mkdirSync(poolDir, { recursive: true });
+  writeJson(sourcePath, createSnapshotData({ text: 'Imported replacement.' }));
+  writeJson(outsidePath, createSnapshotData({ text: 'Outside content.' }));
+
+  try {
+    fs.symlinkSync(outsidePath, destinationPath, 'file');
+  } catch (err) {
+    if (err && (err.code === 'EPERM' || err.code === 'EACCES')) {
+      t.skip('file symlinks are unavailable in this test environment');
+      return;
+    }
+    throw err;
+  }
+
+  const result = await importSelectedFiles({
+    selectedPaths: [sourcePath],
+    poolDir,
+    resolveConflictStrategy: async () => IMPORT_CONFLICT_STRATEGY.REPLACE,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.imported, 0);
+  assert.equal(result.failedWrites, 1);
+  assert.equal(JSON.parse(fs.readFileSync(outsidePath, 'utf8')).text, 'Outside content.');
+});
+
 test('importSelectedFiles reports failed final writes explicitly', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'blocked.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   writeJson(sourcePath, createSnapshotData({
@@ -442,10 +511,33 @@ test('importSelectedFiles reports failed final writes explicitly', async () => {
   assert.equal(result.failedWrites, 1);
 });
 
+test('importSelectedFiles keeps its summary contract when the pool context is unavailable', async () => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'sample.json');
+  const invalidPoolDir = path.join(tempDir, 'not_the_pool_directory');
+
+  writeJson(sourcePath, createSnapshotData({ text: 'Imported text.' }));
+
+  const result = await importSelectedFiles({
+    selectedPaths: [sourcePath],
+    poolDir: invalidPoolDir,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.canceled, false);
+  assert.equal(result.imported, 0);
+  assert.equal(result.skippedDuplicates, 0);
+  assert.equal(result.failedValidation, 0);
+  assert.equal(result.failedArchiveEntries, 0);
+  assert.equal(result.failedWrites, 1);
+  assert.deepEqual(result.writtenDestinationNames, []);
+  assert.equal(fs.existsSync(path.join(invalidPoolDir, 'sample.json')), false);
+});
+
 test('importSelectedFiles rejects imported json that contains unsupported tag keys', async () => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'invalid.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   fs.mkdirSync(poolDir, { recursive: true });
 
   writeJson(sourcePath, createSnapshotData({
@@ -472,8 +564,9 @@ test('importSelectedFiles rejects imported json that contains unsupported tag ke
 test('registerIpc returns partial success when imported files are written but pool-state cleanup fails', async (t) => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'sample.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   const statePath = path.join(tempDir, 'picker_state.json');
+  let cleanupDestinationNames = null;
   const senderWin = {
     isDestroyed() {
       return false;
@@ -498,7 +591,8 @@ test('registerIpc returns partial success when imported files are written but po
       canceled: false,
       filePaths: [sourcePath],
     },
-    clearImportedPoolEntriesStateImpl() {
+    clearImportedPoolEntriesStateImpl(destinationNames) {
+      cleanupDestinationNames = destinationNames;
       return { ok: false, code: 'WRITE_FAILED', message: 'disk full' };
     },
   });
@@ -518,6 +612,7 @@ test('registerIpc returns partial success when imported files are written but po
 
   assert.equal(result.ok, true);
   assert.equal(result.imported, 1);
+  assert.deepEqual(cleanupDestinationNames, ['sample.json']);
   assert.equal(result.partialSuccess, true);
   assert.equal(
     result.warningGuidanceKey,
@@ -529,7 +624,7 @@ test('registerIpc returns partial success when imported files are written but po
 test('registerIpc resolves reading-test picker and conflict copy from main dialog translations', async (t) => {
   const tempDir = makeTempDir();
   const sourcePath = path.join(tempDir, 'duplicate.json');
-  const poolDir = path.join(tempDir, 'pool');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
   const statePath = path.join(tempDir, 'picker_state.json');
   const senderWin = {
     isDestroyed() {
@@ -602,7 +697,7 @@ test('registerIpc resolves reading-test picker copy through DEFAULT_LANG when se
   const dialogOptions = [];
   const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({
     statePath: path.join(tempDir, 'picker_state.json'),
-    poolDir: path.join(tempDir, 'pool'),
+    poolDir: path.join(tempDir, 'reading_speed_test_pool'),
     senderWin,
     dialogOptions,
     openDialogResult: { canceled: true, filePaths: [] },
