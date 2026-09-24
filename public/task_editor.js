@@ -343,9 +343,7 @@ function normalizeSnapshotRelPath(input) {
   const segments = withoutLeading.split('/').filter(Boolean);
   if (!segments.length) return '';
   if (segments.some((seg) => seg === '.' || seg === '..')) return '';
-  const rel = `/${segments.join('/')}`;
-  if (!rel.toLowerCase().endsWith('.json')) return '';
-  return rel;
+  return `/${segments.join('/')}`;
 }
 
 function isCanonicalSnapshotRelPath(value) {

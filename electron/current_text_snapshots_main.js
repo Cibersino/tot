@@ -34,6 +34,7 @@ const {
   getCurrentTextSnapshotsDir,
   ensureCurrentTextSnapshotsDir,
   saveJsonStrict,
+  createJsonStrict,
 } = require('./fs_storage');
 const textState = require('./text_state');
 const settingsState = require('./settings');
@@ -82,10 +83,27 @@ const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 // Helpers (paths)
 // =============================================================================
 function safeRealpath(targetPath) {
+  const result = resolveRealpath(targetPath);
+  return result.ok ? result.path : null;
+}
+
+function resolveRealpath(targetPath) {
   try {
-    return fs.realpathSync(targetPath);
-  } catch {
-    return null;
+    return { ok: true, path: fs.realpathSync(targetPath) };
+  } catch (error) {
+    return { ok: false, error };
+  }
+}
+
+function inspectPathEntry(targetPath) {
+  try {
+    fs.lstatSync(targetPath);
+    return { ok: true, exists: true };
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
+      return { ok: true, exists: false };
+    }
+    return { ok: false, error };
   }
 }
 
@@ -116,9 +134,7 @@ function normalizeSnapshotRelPath(raw) {
   const segments = withoutLeading.split('/').filter(Boolean);
   if (!segments.length) return '';
   if (segments.some((seg) => seg === '.' || seg === '..')) return '';
-  const rel = `/${segments.join('/')}`;
-  if (!rel.toLowerCase().endsWith('.json')) return '';
-  return rel;
+  return `/${segments.join('/')}`;
 }
 
 function getRequestedSnapshotRelPath(payload, { allowOmitted = false } = {}) {
@@ -173,17 +189,6 @@ function isWindowsReservedDeviceName(baseName) {
   return /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(baseName);
 }
 
-function sanitizeSnapshotBaseName(base) {
-  let next = base.trim().normalize('NFC');
-  next = next.replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ');
-  next = next.replace(/\s+/g, ' ').trim();
-  next = next.replace(/[. ]+$/g, '');
-  if (isWindowsReservedDeviceName(next)) {
-    next = `_${next}`;
-  }
-  return next || 'current_text';
-}
-
 function normalizeDerivedSnapshotBaseName(base) {
   let next = base.trim().normalize('NFC');
   next = next.replace(/[^\p{L}\p{N}\p{M}_-]+/gu, '_');
@@ -195,29 +200,22 @@ function normalizeDerivedSnapshotBaseName(base) {
   return next || 'current_text';
 }
 
-function normalizeSavePath(filePath) {
-  const resolved = path.resolve(filePath);
-  const dir = path.dirname(resolved);
-  const base = path.basename(resolved, path.extname(resolved));
-  const safeBase = sanitizeSnapshotBaseName(base);
-  return path.join(dir, `${safeBase}${SNAPSHOT_EXT}`);
+function isValidInteractiveSnapshotFileName(filePath) {
+  const fileName = path.basename(filePath);
+  if (path.extname(fileName) !== SNAPSHOT_EXT) return false;
+  const stem = fileName.slice(0, -SNAPSHOT_EXT.length);
+  return Boolean(stem.trim());
 }
 
-function resolveDeterministicAutoSnapshotPath(rootDir, rawBaseName) {
+function getDeterministicAutoSnapshotCandidate(rootDir, rawBaseName, collisionIndex) {
   const safeBaseName = normalizeDerivedSnapshotBaseName(rawBaseName);
-  let candidateName = `${safeBaseName}${SNAPSHOT_EXT}`;
-  let candidatePath = path.join(rootDir, candidateName);
-  let collisionIndex = 2;
-
-  while (fs.existsSync(candidatePath)) {
-    candidateName = `${safeBaseName}_${collisionIndex}${SNAPSHOT_EXT}`;
-    candidatePath = path.join(rootDir, candidateName);
-    collisionIndex += 1;
-  }
+  const candidateName = collisionIndex === 1
+    ? `${safeBaseName}${SNAPSHOT_EXT}`
+    : `${safeBaseName}_${collisionIndex}${SNAPSHOT_EXT}`;
 
   return {
     candidateName,
-    candidatePath,
+    candidatePath: path.join(rootDir, candidateName),
   };
 }
 
@@ -620,49 +618,118 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const rootInfo = getSnapshotsRoot('write');
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
-      let normalizedPath = '';
-      if (payloadInfo.nonInteractive) {
-        const defaultBaseName = path.basename(getDefaultSnapshotName(root), SNAPSHOT_EXT);
-        const autoPath = resolveDeterministicAutoSnapshotPath(
-          root,
-          payloadInfo.autoFileBaseName === ''
-            ? defaultBaseName
-            : payloadInfo.autoFileBaseName
-        );
-        normalizedPath = normalizeSavePath(autoPath.candidatePath);
-      } else {
+      let writePath = '';
+      let createExclusively = false;
+
+      if (!payloadInfo.nonInteractive) {
         const defaultName = payloadInfo.name
           ? `${normalizeDerivedSnapshotBaseName(payloadInfo.name)}${SNAPSHOT_EXT}`
           : getDefaultSnapshotName(root);
         const defaultPath = path.join(root, defaultName);
-
-        const dialogRes = await dialog.showSaveDialog(resolveOwnerWin(event, getWindows), {
+        const dialogOptions = {
           defaultPath,
           filters: [{ name: 'JSON', extensions: ['json'] }],
-        });
+          properties: process.platform === 'darwin'
+            ? ['showOverwriteConfirmation', 'createDirectory']
+            : ['showOverwriteConfirmation'],
+        };
+        let selectedPath = null;
 
-        if (!dialogRes || dialogRes.canceled) {
-          return { ok: false, code: 'CANCELLED' };
+        while (!selectedPath) {
+          const dialogRes = await dialog.showSaveDialog(
+            resolveOwnerWin(event, getWindows),
+            dialogOptions
+          );
+
+          if (!dialogRes || dialogRes.canceled) {
+            return { ok: false, code: 'CANCELLED' };
+          }
+          if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
+            log.warn('snapshot save file picker returned invalid file path:', dialogRes);
+            return { ok: false, code: 'WRITE_FAILED', message: 'snapshot save file picker returned invalid file path' };
+          }
+          if (!isValidInteractiveSnapshotFileName(dialogRes.filePath)) {
+            const dialogTexts = getDialogTexts();
+            await dialog.showMessageBox(resolveOwnerWin(event, getWindows), {
+              type: 'warning',
+              buttons: [resolveDialogText(dialogTexts, 'ok')],
+              defaultId: 0,
+              cancelId: 0,
+              message: resolveDialogText(dialogTexts, 'snapshot_invalid_filename'),
+            });
+            continue;
+          }
+
+          selectedPath = dialogRes.filePath;
         }
-        if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
-          log.warn('snapshot save file picker returned invalid file path:', dialogRes);
-          return { ok: false, code: 'WRITE_FAILED', message: 'snapshot save file picker returned invalid file path' };
+
+        const candidateResolved = path.resolve(selectedPath);
+        if (!isPathInsideRoot(rootReal, candidateResolved)) {
+          log.warn('snapshot save blocked outside root:', { candidateResolved });
+          return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
         }
 
-        normalizedPath = normalizeSavePath(dialogRes.filePath);
-      }
-      const candidateResolved = path.resolve(normalizedPath);
-      const parentDir = path.dirname(candidateResolved);
-      const parentReal = fs.existsSync(parentDir) ? safeRealpath(parentDir) : null;
+        const parentDir = path.dirname(candidateResolved);
+        const parentEntryRes = inspectPathEntry(parentDir);
+        if (!parentEntryRes.ok) {
+          log.error('snapshot save failed to inspect destination parent:', parentEntryRes.error);
+          return { ok: false, code: 'WRITE_FAILED' };
+        }
+        if (!parentEntryRes.exists) {
+          log.error('snapshot save failed because destination parent is missing:', parentDir);
+          return { ok: false, code: 'WRITE_FAILED' };
+        }
 
-      if (!isPathInsideRoot(rootReal, candidateResolved)) {
-        log.warn('snapshot save blocked outside root:', { candidateResolved });
-        return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
-      }
+        const parentRealRes = resolveRealpath(parentDir);
+        if (!parentRealRes.ok) {
+          log.error('snapshot save failed to canonicalize destination parent:', parentRealRes.error);
+          return { ok: false, code: 'WRITE_FAILED' };
+        }
+        if (!isPathInsideRoot(rootReal, parentRealRes.path)) {
+          log.warn('snapshot save blocked; parent realpath outside root:', {
+            parentReal: parentRealRes.path,
+            candidateResolved,
+          });
+          return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
+        }
 
-      if (parentReal && !isPathInsideRoot(rootReal, parentReal)) {
-        log.warn('snapshot save blocked; parent realpath outside root:', { parentReal, candidateResolved });
-        return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
+        const destinationEntryRes = inspectPathEntry(candidateResolved);
+        if (!destinationEntryRes.ok) {
+          log.error('snapshot save failed to inspect destination entry:', destinationEntryRes.error);
+          return { ok: false, code: 'WRITE_FAILED' };
+        }
+        if (destinationEntryRes.exists) {
+          const destinationRealRes = resolveRealpath(candidateResolved);
+          if (!destinationRealRes.ok) {
+            log.error(
+              'snapshot save failed to canonicalize existing destination:',
+              destinationRealRes.error
+            );
+            return { ok: false, code: 'WRITE_FAILED' };
+          }
+          if (!isPathInsideRoot(rootReal, destinationRealRes.path)) {
+            log.warn('snapshot save blocked existing destination outside root:', {
+              destinationReal: destinationRealRes.path,
+            });
+            return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
+          }
+          const destinationStats = fs.statSync(destinationRealRes.path);
+          if (!destinationStats.isFile()) {
+            log.warn(
+              'snapshot save rejected existing destination because canonical target is not a file:',
+              { destinationReal: destinationRealRes.path }
+            );
+            return {
+              ok: false,
+              code: 'INVALID_SCHEMA',
+              message: 'snapshot destination is not a file',
+            };
+          }
+          writePath = destinationRealRes.path;
+        } else {
+          writePath = candidateResolved;
+          createExclusively = true;
+        }
       }
 
       const text = textState.getCurrentText();
@@ -682,13 +749,37 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         tags: payloadInfo.tags === null ? {} : payloadInfo.tags,
         ...(metrics ? { metrics } : {}),
       };
-      saveJsonStrict(candidateResolved, snapshotData);
-      const stats = fs.statSync(candidateResolved);
+      if (payloadInfo.nonInteractive) {
+        const defaultBaseName = path.basename(getDefaultSnapshotName(rootReal), SNAPSHOT_EXT);
+        const rawBaseName = payloadInfo.autoFileBaseName === ''
+          ? defaultBaseName
+          : payloadInfo.autoFileBaseName;
+        let collisionIndex = 1;
+        while (!writePath) {
+          const candidate = getDeterministicAutoSnapshotCandidate(
+            rootReal,
+            rawBaseName,
+            collisionIndex
+          );
+          try {
+            createJsonStrict(candidate.candidatePath, snapshotData);
+            writePath = candidate.candidatePath;
+          } catch (error) {
+            if (!error || error.code !== 'EEXIST') throw error;
+            collisionIndex += 1;
+          }
+        }
+      } else if (createExclusively) {
+        createJsonStrict(writePath, snapshotData);
+      } else {
+        saveJsonStrict(writePath, snapshotData);
+      }
+      const stats = fs.statSync(writePath);
 
       return {
         ok: true,
-        path: candidateResolved,
-        filename: path.basename(candidateResolved),
+        path: writePath,
+        filename: path.basename(writePath),
         bytes: stats.size,
         mtime: stats.mtimeMs,
         length: text.length,

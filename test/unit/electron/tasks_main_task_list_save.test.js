@@ -368,7 +368,10 @@ test('task-list-save creates task data at a new destination', async (t) => {
     { sender: taskEditorWin.webContents },
     {
       meta: createTaskMeta(),
-      rows: [createTaskRow({ percentComplete: 25 })],
+      rows: [createTaskRow({
+        percentComplete: 25,
+        snapshotRelPath: '/snapshots/canonical-target.txt',
+      })],
     }
   );
 
@@ -388,6 +391,7 @@ test('task-list-save creates task data at a new destination', async (t) => {
   });
   assert.equal(savedPayload.rows.length, 1);
   assert.equal(savedPayload.rows[0].texto, 'Read chapter 1');
+  assert.equal(savedPayload.rows[0].snapshotRelPath, '/snapshots/canonical-target.txt');
 });
 
 test('task-list-save writes an existing destination through its verified canonical path', async (t) => {
@@ -1243,6 +1247,37 @@ test('task-library-save persists library entries through saveJsonStrict', async 
     comentario: 'Review key ideas',
     snapshotRelPath: '/snapshots/chapter-1.json',
   }]);
+});
+
+test('task-library-save preserves canonical Snapshot identities independent of file extension', async (t) => {
+  const tempDir = createTestTempDir('tasks-main-library-save-canonical-snapshot-identity');
+  const tasksRoot = path.join(tempDir, 'lists');
+  const { tasksMain, restore } = loadFreshTasksMainForSave({
+    tasksRoot,
+    saveDialogPath: path.join(tasksRoot, 'unused.json'),
+  });
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  t.after(restore);
+
+  const ipcMain = createIpcMainMock();
+  const taskEditorWin = createWindow('task-editor');
+  tasksMain.registerIpc(ipcMain, {
+    getWindows: () => ({ taskEditorWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'task-library-save',
+    { sender: taskEditorWin.webContents },
+    {
+      entry: createLibraryEntry({
+        snapshotRelPath: '/snapshots/canonical-target.txt',
+      }),
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const savedLibrary = JSON.parse(fs.readFileSync(getLibraryFilePath(tasksRoot), 'utf8'));
+  assert.equal(savedLibrary[0].snapshotRelPath, '/snapshots/canonical-target.txt');
 });
 
 test('task-library-list returns canonical library entries without materializing absent optional fields', async (t) => {
