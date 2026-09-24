@@ -789,7 +789,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         return { ok: true };
       }
 
-      // Load mode only accepts JSON files inside the managed tasks root.
+      // Load mode opens the managed tasks root with a JSON picker, then verifies containment.
       const root = ensureTasksRoot();
       if (!root) {
         return { ok: false, code: 'READ_FAILED', message: 'tasks root unavailable' };
