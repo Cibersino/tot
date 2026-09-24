@@ -63,7 +63,13 @@ function clampReduced(reduced) {
 
 function intersectsWorkArea(bounds, display) {
   const workArea = display && display.workArea ? display.workArea : null;
-  if (!workArea) return false;
+  if (!workArea) {
+    log.warnOnce(
+      'task-editor-state.normalize.work-area-unavailable',
+      'intersectsWorkArea: display.workArea unavailable; treating display as non-intersecting (ignored).'
+    );
+    return false;
+  }
 
   const left = Math.max(bounds.x, workArea.x);
   const top = Math.max(bounds.y, workArea.y);
@@ -79,7 +85,13 @@ function normalizeReduced(rawReduced) {
 
   try {
     const displays = screen.getAllDisplays() || [];
-    if (!displays.length) return reduced;
+    if (!displays.length) {
+      log.warnOnce(
+        'task-editor-state.normalize.no-displays',
+        'normalizeReduced: no displays available; using stored bounds (ignored).'
+      );
+      return reduced;
+    }
     const ok = displays.some((display) => intersectsWorkArea(reduced, display));
     return ok ? reduced : null;
   } catch (err) {
@@ -140,11 +152,29 @@ function normalizeState(raw) {
 }
 
 function isLiveWindow(taskEditorWin) {
-  return !!(
-    taskEditorWin
-    && typeof taskEditorWin.isDestroyed === 'function'
-    && taskEditorWin.isDestroyed() === false
-  );
+  if (
+    !taskEditorWin
+    || typeof taskEditorWin.isDestroyed !== 'function'
+    || taskEditorWin.isDestroyed() !== false
+  ) {
+    log.warnOnce(
+      'task-editor-state.window.unavailable',
+      'isLiveWindow: Task Editor window unavailable; state persistence skipped (ignored).'
+    );
+    return false;
+  }
+  return true;
+}
+
+function isWindowMaximized(taskEditorWin) {
+  if (typeof taskEditorWin.isMaximized !== 'function') {
+    log.warnOnce(
+      'task-editor-state.window.is-maximized-unavailable',
+      'isWindowMaximized: Task Editor window isMaximized unavailable; treating it as not maximized (ignored).'
+    );
+    return false;
+  }
+  return taskEditorWin.isMaximized();
 }
 
 function readCurrentState(loader, stateFile) {
@@ -174,7 +204,10 @@ function loadInitialState(customLoadJson) {
 }
 
 function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
-  if (!taskEditorWin) return;
+  if (!taskEditorWin) {
+    log.warn('attachTo: Task Editor window unavailable; persistence listeners not attached (ignored).');
+    return;
+  }
 
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJson;
@@ -190,13 +223,13 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
   const saveReducedState = () => {
     try {
       if (!isLiveWindow(taskEditorWin)) return;
-      if (typeof taskEditorWin.isMaximized === 'function' && taskEditorWin.isMaximized()) return;
+      if (isWindowMaximized(taskEditorWin)) return;
 
       const reduced = getReducedBounds(taskEditorWin);
       if (!reduced) {
         log.warnOnce(
           'task-editor-state.save.invalid-reduced',
-          'saveReducedState: current Task Editor bounds are invalid; save skipped (ignored).'
+          'saveReducedState: current Task Editor bounds unavailable or invalid; save skipped (ignored).'
         );
         return;
       }
@@ -227,7 +260,7 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
   taskEditorWin.on('close', () => {
     try {
       if (!isLiveWindow(taskEditorWin)) return;
-      const maximized = typeof taskEditorWin.isMaximized === 'function' && taskEditorWin.isMaximized();
+      const maximized = isWindowMaximized(taskEditorWin);
       if (!maximized) {
         saveReducedState();
       }
