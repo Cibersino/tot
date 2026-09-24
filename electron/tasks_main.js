@@ -474,7 +474,12 @@ function normalizeTexto(raw) {
   if (!s) return '';
   try {
     s = s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-  } catch {
+  } catch (err) {
+    log.warnOnce(
+      'tasks-main:normalize-texto-diacritic-fallback',
+      'normalizeTexto preferred diacritic removal failed; using combining-mark fallback:',
+      err
+    );
     s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
   return s.toLowerCase();
@@ -1243,7 +1248,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
           log.warn('Task column layout JSON invalid; returning fresh-default signal.');
           return { ok: true, record: null };
         }
-        log.warn('Task column layout read failed:', res.error);
+        log.error('Task column layout read failed:', res.error);
         return { ok: false, code: 'READ_FAILED' };
       }
       const record = validateColumnLayoutRecord(res.data);
@@ -1253,7 +1258,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       }
       return { ok: true, record };
     } catch (err) {
-      log.warn('task-columns-load failed:', err);
+      log.error('task-columns-load failed:', err);
       return { ok: false, code: 'READ_FAILED' };
     }
   });
@@ -1276,7 +1281,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       saveJsonStrict(file, record);
       return { ok: true };
     } catch (err) {
-      log.warn('task-columns-save failed:', err);
+      log.error('task-columns-save failed:', err);
       return { ok: false, code: 'WRITE_FAILED' };
     }
   });
@@ -1369,7 +1374,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
         const openRes = await shell.openPath(raw);
         if (openRes) {
-          log.warn('task-open-link openPath failed:', openRes);
+          log.error('task-open-link openPath failed:', openRes);
           return { ok: false, code: 'OPEN_FAILED' };
         }
         return { ok: true };
