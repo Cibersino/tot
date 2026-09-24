@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Cancel·lar la importació",
       "snapshot_overwrite_save": "Vols sobreescriure el snapshot existent?",
       "snapshot_overwrite_load": "Vols substituir el text actual pel snapshot seleccionat \"{name}\"?",
+      "snapshot_invalid_filename": "Utilitza un nom de fitxer que acabi en .json i que tingui text abans de l’extensió.",
+      "task_list_invalid_filename": "Utilitza un nom de fitxer que acabi en .json i que tingui text abans de l’extensió.",
       "task_delete_confirm": "Vols eliminar la llista de tasques \"{name}\"?",
       "task_discard_changes_confirm": "Hi ha canvis sense desar. Vols descartar-los?",
       "task_discard_changes_title": "Descarta els canvis de la tasca",

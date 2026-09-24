@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Avbryt import",
       "snapshot_overwrite_save": "Skriva över befintlig snapshotfil?",
       "snapshot_overwrite_load": "Ersätta aktuell text med vald snapshot \"{name}\"?",
+      "snapshot_invalid_filename": "Använd ett filnamn som slutar med .json och har text före filändelsen.",
+      "task_list_invalid_filename": "Använd ett filnamn som slutar med .json och har text före filändelsen.",
       "task_delete_confirm": "Ta bort uppgiftslistan \"{name}\"?",
       "task_discard_changes_confirm": "Det finns osparade ändringar. Kasta dem?",
       "task_discard_changes_title": "Släng uppgiftsändringar",

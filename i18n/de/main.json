@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Import abbrechen",
       "snapshot_overwrite_save": "Vorhandenes Snapshot überschreiben?",
       "snapshot_overwrite_load": "Aktuellen Text durch ausgewähltes Snapshot \"{name}\" ersetzen?",
+      "snapshot_invalid_filename": "Verwende einen Dateinamen, der auf .json endet und vor der Erweiterung Text enthält.",
+      "task_list_invalid_filename": "Verwende einen Dateinamen, der auf .json endet und vor der Erweiterung Text enthält.",
       "task_delete_confirm": "Aufgabenliste \"{name}\" löschen?",
       "task_discard_changes_confirm": "Es gibt ungespeicherte Änderungen. Diese verwerfen?",
       "task_discard_changes_title": "Aufgabenänderungen verwerfen",

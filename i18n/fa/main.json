@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "لغو وارد کردن",
       "snapshot_overwrite_save": "فایل اسنپ‌شات موجود بازنویسی شود؟",
       "snapshot_overwrite_load": "متن فعلی با اسنپ‌شات انتخاب‌شده «{name}» جایگزین شود؟",
+      "snapshot_invalid_filename": "از نام فایلی استفاده کنید که به .json ختم شود و پیش از پسوند، متن داشته باشد.",
+      "task_list_invalid_filename": "از نام فایلی استفاده کنید که به .json ختم شود و پیش از پسوند، متن داشته باشد.",
       "task_delete_confirm": "فهرست کار «{name}» حذف شود؟",
       "task_discard_changes_confirm": "تغییرات ذخیره‌نشده وجود دارد. نادیده گرفته شوند؟",
       "task_discard_changes_title": "نادیده گرفتن تغییرات کار",

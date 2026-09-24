@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Utzi inportazioa",
       "snapshot_overwrite_save": "Gainidatzi lehendik dagoen snapshota?",
       "snapshot_overwrite_load": "Ordeztu uneko testua hautatutako \"{name}\" snapshotarekin?",
+      "snapshot_invalid_filename": "Erabili .json amaiera duen fitxategi-izen bat, luzapenaren aurretik testua duena.",
+      "task_list_invalid_filename": "Erabili .json amaiera duen fitxategi-izen bat, luzapenaren aurretik testua duena.",
       "task_delete_confirm": "Ezabatu \"{name}\" ataza-zerrenda?",
       "task_discard_changes_confirm": "Gorde gabeko aldaketak daude. Baztertu nahi dituzu?",
       "task_discard_changes_title": "Baztertu atazaren aldaketak",

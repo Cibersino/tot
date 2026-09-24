@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Cancel import",
       "snapshot_overwrite_save": "Overwrite di snapshot file wey dey already?",
       "snapshot_overwrite_load": "Replace current text with di selected snapshot \"{name}\"?",
+      "snapshot_invalid_filename": "Use filename wey end with .json, with some text before di extension.",
+      "task_list_invalid_filename": "Use filename wey end with .json, with some text before di extension.",
       "task_delete_confirm": "Delete di task list \"{name}\"?",
       "task_discard_changes_confirm": "Unsaved changes dey. Discard dem?",
       "task_discard_changes_title": "Throway task changes",

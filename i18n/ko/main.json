@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "가져오기 취소",
       "snapshot_overwrite_save": "기존 스냅샷 파일을 덮어쓸까요?",
       "snapshot_overwrite_load": "선택한 스냅샷 \"{name}\"(으)로 현재 텍스트를 교체할까요?",
+      "snapshot_invalid_filename": "확장자 앞에 텍스트가 있고 .json으로 끝나는 파일 이름을 사용하세요.",
+      "task_list_invalid_filename": "확장자 앞에 텍스트가 있고 .json으로 끝나는 파일 이름을 사용하세요.",
       "task_delete_confirm": "작업 목록 \"{name}\"을(를) 삭제할까요?",
       "task_discard_changes_confirm": "저장되지 않은 변경 사항이 있습니다. 버릴까요?",
       "task_discard_changes_title": "작업 변경 내용 버리기",

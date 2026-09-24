@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "درآمد منسوخ کریں",
       "snapshot_overwrite_save": "کیا موجودہ اسنیپ شاٹ فائل کو اوور رائٹ کرنا ہے؟",
       "snapshot_overwrite_load": "کیا منتخب اسنیپ شاٹ \"{name}\" سے موجودہ متن بدلنا ہے؟",
+      "snapshot_invalid_filename": "ایسا فائل نام استعمال کریں جو .json پر ختم ہو اور ایکسٹینشن سے پہلے متن موجود ہو۔",
+      "task_list_invalid_filename": "ایسا فائل نام استعمال کریں جو .json پر ختم ہو اور ایکسٹینشن سے پہلے متن موجود ہو۔",
       "task_delete_confirm": "کیا ٹاسک فہرست \"{name}\" حذف کرنی ہے؟",
       "task_discard_changes_confirm": "غیر محفوظ شدہ تبدیلیاں موجود ہیں۔ کیا انہیں رد کرنا ہے؟",
       "task_discard_changes_title": "ٹاسک کی تبدیلیاں مسترد کریں",

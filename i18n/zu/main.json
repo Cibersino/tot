@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Khansela ukungenisa",
       "snapshot_overwrite_save": "Bhala phezu kwefayela le-snapshot elikhona?",
       "snapshot_overwrite_load": "Buyisela umbhalo wamanje nge-snapshot ekhethiwe \"{name}\"?",
+      "snapshot_invalid_filename": "Sebenzisa igama lefayela eligcina ngo-.json futhi elinombhalo ngaphambi kwesandiso.",
+      "task_list_invalid_filename": "Sebenzisa igama lefayela eligcina ngo-.json futhi elinombhalo ngaphambi kwesandiso.",
       "task_delete_confirm": "Susa uhlu lwemisebenzi \"{name}\"?",
       "task_discard_changes_confirm": "Kunezinguquko ezingakagcinwa. Uzilahle?",
       "task_discard_changes_title": "Lahla izinguquko zomsebenzi",

@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Katrüntun importación",
       "snapshot_overwrite_save": "¿Küpal we snapshot chumgechi?",
       "snapshot_overwrite_load": "¿Wiño eluael tachi wirin, tachi snapshot \"{name}\" mew?",
+      "snapshot_invalid_filename": "Pünege archivo üi .json mew afkey, ka wirin müleay extensión ñi wüne.",
+      "task_list_invalid_filename": "Pünege archivo üi .json mew afkey, ka wirin müleay extensión ñi wüne.",
       "task_delete_confirm": "¿Ñamümual tachi lista de tareas \"{name}\"?",
       "task_discard_changes_confirm": "Wirintukun petu elkünungelay. ¿Ñamümafimi?",
       "task_discard_changes_title": "Katrüntun küdaw ñi cambios",

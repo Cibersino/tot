@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Batalkan impor",
       "snapshot_overwrite_save": "Timpa file snapshot yang sudah ada?",
       "snapshot_overwrite_load": "Ganti teks saat ini dengan snapshot yang dipilih \"{name}\"?",
+      "snapshot_invalid_filename": "Gunakan nama file yang diakhiri dengan .json dan memiliki teks sebelum ekstensinya.",
+      "task_list_invalid_filename": "Gunakan nama file yang diakhiri dengan .json dan memiliki teks sebelum ekstensinya.",
       "task_delete_confirm": "Hapus daftar tugas \"{name}\"?",
       "task_discard_changes_confirm": "Ada perubahan yang belum disimpan. Buang perubahan?",
       "task_discard_changes_title": "Buang perubahan tugas",

@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Cancelar importación",
       "snapshot_overwrite_save": "¿Querís aplastar el coso?",
       "snapshot_overwrite_load": "¿Querís cambiar el texto actual con \"{name}\"?",
+      "snapshot_invalid_filename": "Ponle un nombre al archivo que termine en .json y tenga algo antes de la extensión.",
+      "task_list_invalid_filename": "Ponle un nombre al archivo que termine en .json y tenga algo antes de la extensión.",
       "task_delete_confirm": "¿Querís pitiarte la misión \"{name}\"?",
       "task_discard_changes_confirm": "Hay modificaciones sin salvar. ¿Querís descartarlos?",
       "task_discard_changes_title": "Botar cambios de la tarea",

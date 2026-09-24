@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Eheja importación",
       "snapshot_overwrite_save": "¿Emyengoviátapa snapshot oĩmava?",
       "snapshot_overwrite_load": "¿Emyengoviátapa jehai ko’ág̃agua snapshot ojeporavóva \"{name}\" rupive?",
+      "snapshot_invalid_filename": "Eipuru peteĩ archivo réra opáva .json-pe ha oguerekóva jehai extensión mboyve.",
+      "task_list_invalid_filename": "Eipuru peteĩ archivo réra opáva .json-pe ha oguerekóva jehai extensión mboyve.",
       "task_delete_confirm": "¿Emboguetepa tembiaporã lista \"{name}\"?",
       "task_discard_changes_confirm": "Oĩ ñemoambue oñeñongatu’ỹva. ¿Rehejátapa?",
       "task_discard_changes_title": "Tembiapo ñemoambue mboyke",

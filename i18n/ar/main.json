@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "إلغاء الاستيراد",
       "snapshot_overwrite_save": "هل تريد استبدال ملف اللقطة النصية الموجود؟",
       "snapshot_overwrite_load": "هل تريد استبدال النص الحالي باللقطة النصية المحددة \"{name}\"؟",
+      "snapshot_invalid_filename": "استخدم اسم ملف ينتهي بـ .json ويحتوي على نص قبل الامتداد.",
+      "task_list_invalid_filename": "استخدم اسم ملف ينتهي بـ .json ويحتوي على نص قبل الامتداد.",
       "task_delete_confirm": "هل تريد حذف قائمة المهام \"{name}\"؟",
       "task_discard_changes_confirm": "توجد تغييرات غير محفوظة. هل تريد تجاهلها؟",
       "task_discard_changes_title": "تجاهل تغييرات المهمة",

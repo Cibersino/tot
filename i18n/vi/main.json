@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Hủy nhập",
       "snapshot_overwrite_save": "Ghi đè tệp bản lưu hiện có?",
       "snapshot_overwrite_load": "Thay thế văn bản hiện tại bằng bản lưu đã chọn \"{name}\"?",
+      "snapshot_invalid_filename": "Dùng tên tệp kết thúc bằng .json và có phần chữ trước phần mở rộng.",
+      "task_list_invalid_filename": "Dùng tên tệp kết thúc bằng .json và có phần chữ trước phần mở rộng.",
       "task_delete_confirm": "Xóa danh sách tác vụ \"{name}\"?",
       "task_discard_changes_confirm": "Có thay đổi chưa lưu. Bỏ các thay đổi đó?",
       "task_discard_changes_title": "Bỏ thay đổi tác vụ",

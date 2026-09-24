@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Whakakore kawemai",
       "snapshot_overwrite_save": "Tuhia anō te kōnae hopunga kuputuhi e tīariari ana?",
       "snapshot_overwrite_load": "Whakakapia te kuputuhi o nāianei ki te hopunga kua tīpakohia \"{name}\"?",
+      "snapshot_invalid_filename": "Whakamahia he ingoa kōnae ka mutu ki te .json, ā, he kupu kei mua i te toronga.",
+      "task_list_invalid_filename": "Whakamahia he ingoa kōnae ka mutu ki te .json, ā, he kupu kei mua i te toronga.",
       "task_delete_confirm": "Muku te rārangi tūmahi \"{name}\"?",
       "task_discard_changes_confirm": "He panoni kāore anō kia tiakina. Makaia?",
       "task_discard_changes_title": "Mukua ngā panonitanga tūmahi",

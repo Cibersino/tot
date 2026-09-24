@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "आयात रद्द करें",
       "snapshot_overwrite_save": "क्या मौजूदा स्नैपशॉट फ़ाइल को ओवरराइट करना है?",
       "snapshot_overwrite_load": "क्या चयनित स्नैपशॉट \"{name}\" से वर्तमान पाठ बदलना है?",
+      "snapshot_invalid_filename": "ऐसा फ़ाइल नाम इस्तेमाल करें जो .json पर समाप्त हो और एक्सटेंशन से पहले कुछ टेक्स्ट हो।",
+      "task_list_invalid_filename": "ऐसा फ़ाइल नाम इस्तेमाल करें जो .json पर समाप्त हो और एक्सटेंशन से पहले कुछ टेक्स्ट हो।",
       "task_delete_confirm": "क्या कार्य-सूची \"{name}\" हटानी है?",
       "task_discard_changes_confirm": "बिना सहेजे बदलाव हैं। क्या उन्हें छोड़ना है?",
       "task_discard_changes_title": "कार्य के बदलाव त्यागें",

@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "Ghairi uletaji",
       "snapshot_overwrite_save": "Badilisha snapshot ya maandishi iliyopo?",
       "snapshot_overwrite_load": "Badilisha maandishi ya sasa kwa snapshot ya maandishi iliyochaguliwa \"{name}\"?",
+      "snapshot_invalid_filename": "Tumia jina la faili linaloishia kwa .json na lenye maandishi kabla ya kiendelezi.",
+      "task_list_invalid_filename": "Tumia jina la faili linaloishia kwa .json na lenye maandishi kabla ya kiendelezi.",
       "task_delete_confirm": "Futa jukumu \"{name}\"?",
       "task_discard_changes_confirm": "Kuna jukumu lililofunguliwa lenye mabadiliko ambayo hayajahifadhiwa. Tupilia mbali mabadiliko?",
       "task_discard_changes_title": "Tupilia mbali mabadiliko ya kazi",

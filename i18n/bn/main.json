@@ -52,6 +52,8 @@
       "reading_test_import_conflict_cancel": "আমদানি বাতিল করুন",
       "snapshot_overwrite_save": "বিদ্যমান স্ন্যাপশট ফাইলটি ওভাররাইট করবেন?",
       "snapshot_overwrite_load": "নির্বাচিত স্ন্যাপশট \"{name}\" দিয়ে বর্তমান লেখা প্রতিস্থাপন করবেন?",
+      "snapshot_invalid_filename": "এমন একটি ফাইলের নাম ব্যবহার করুন যা .json দিয়ে শেষ হয় এবং এক্সটেনশনের আগে লেখা থাকে।",
+      "task_list_invalid_filename": "এমন একটি ফাইলের নাম ব্যবহার করুন যা .json দিয়ে শেষ হয় এবং এক্সটেনশনের আগে লেখা থাকে।",
       "task_delete_confirm": "টাস্ক তালিকা \"{name}\" মুছে ফেলবেন?",
       "task_discard_changes_confirm": "সংরক্ষণ না করা পরিবর্তন আছে। সেগুলো বাতিল করবেন?",
       "task_discard_changes_title": "টাস্কের পরিবর্তন বাতিল করুন",
