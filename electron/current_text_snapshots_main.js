@@ -374,12 +374,13 @@ function resolveSnapshotCountContext() {
   const requestedLocale = settings && typeof settings.language === 'string'
     ? settings.language
     : DEFAULT_LANG;
-  const locale = normalizeSnapshotCountLocale(requestedLocale)
+  const normalizedRequestedLocale = normalizeSnapshotCountLocale(requestedLocale);
+  const locale = normalizedRequestedLocale
     || normalizeSnapshotCountLocale(DEFAULT_LANG);
   if (!locale) {
     throw new Error('snapshot count locale unavailable');
   }
-  if (!normalizeSnapshotCountLocale(requestedLocale)) {
+  if (!normalizedRequestedLocale) {
     log.warn('Snapshot count locale invalid; using default locale:', { requestedLocale, locale });
   }
   return { mode, locale };
@@ -848,13 +849,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       if (!rootInfo.ok) return rootInfo;
       const { root, rootReal } = rootInfo;
 
-      let selectedReal = '';
-      let snapshotRelPath = '';
-      let stats = null;
       const request = getRequestedSnapshotRelPath(payload, { allowOmitted: true });
       if (!request.ok) return request;
+      let selectedInfo;
       if (request.snapshotRelPath !== null) {
-        selectedReal = resolveSnapshotFromRelPath(rootReal, request.snapshotRelPath);
+        const selectedReal = resolveSnapshotFromRelPath(rootReal, request.snapshotRelPath);
         if (!selectedReal) {
           log.warn('snapshot load blocked outside root from rel path:', { snapshotRelPath: request.snapshotRelPath });
           return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
@@ -863,22 +862,16 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           log.warn('snapshot load target not found:', { snapshotRelPath: request.snapshotRelPath, selectedReal });
           return { ok: false, code: 'NOT_FOUND' };
         }
-        const selectedInfo = validateSelectedSnapshot(rootReal, selectedReal);
-        if (!selectedInfo.ok) return selectedInfo;
-        selectedReal = selectedInfo.selectedReal;
-        stats = selectedInfo.stats;
-        snapshotRelPath = selectedInfo.snapshotRelPath;
+        selectedInfo = validateSelectedSnapshot(rootReal, selectedReal);
       } else {
-        const selectedInfo = await promptForSnapshotSelection(
+        selectedInfo = await promptForSnapshotSelection(
           resolveOwnerWin(event, getWindows),
           root,
           rootReal
         );
-        if (!selectedInfo.ok) return selectedInfo;
-        selectedReal = selectedInfo.selectedReal;
-        stats = selectedInfo.stats;
-        snapshotRelPath = selectedInfo.snapshotRelPath;
       }
+      if (!selectedInfo.ok) return selectedInfo;
+      const { selectedReal, snapshotRelPath, stats } = selectedInfo;
 
       if (hasCurrentTextToOverwrite()) {
         const confirmed = await confirmLoadOverwrite(
