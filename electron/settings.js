@@ -13,7 +13,6 @@
 // - Expose the state owner API consumed by main-process modules.
 // - Register settings IPC handlers and publish settings-updated to open windows.
 // - Attempt to persist a logged startup fallback language when the language picker closes without a selection.
-// =============================================================================
 
 // =============================================================================
 // Imports / logger

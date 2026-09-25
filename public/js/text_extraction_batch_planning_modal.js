@@ -9,7 +9,6 @@
 // - Render planner-controlled units/inputs without moving batch business logic
 //   into renderer.js.
 // - Expose the maintained public prompt through window.Notify.
-// =============================================================================
 
 (() => {
 

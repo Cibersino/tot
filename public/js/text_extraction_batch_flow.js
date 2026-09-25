@@ -9,7 +9,6 @@
 // - Reuse the existing prepare/execute/apply/snapshot contracts for multi-file work.
 // - Keep automatic heavy-PDF splitting local to its logical source input while
 //   using the normal unit model for planning and reporting.
-// =============================================================================
 
 (() => {
   // =============================================================================

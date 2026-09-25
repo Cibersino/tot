@@ -9,7 +9,6 @@
 // - Reuse one inspect/prepare/execute/apply pipeline across single-file entrypoints.
 // - Coordinate single-file heavy-PDF decisions, including reruns and batch-flow handoff.
 // - Keep renderer.js limited to dependency wiring and app-level orchestration.
-// =============================================================================
 
 (() => {
   // =============================================================================

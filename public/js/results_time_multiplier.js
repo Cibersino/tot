@@ -8,7 +8,6 @@
 // - Own the main-window time multiplier UI below the estimated-time result.
 // - Apply the repeat-input validation and normalization rules with its configured cap.
 // - Render the multiplied time from a canonical exact reading-duration descriptor.
-// =============================================================================
 
 (() => {
   // =============================================================================

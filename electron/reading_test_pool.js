@@ -10,7 +10,6 @@
 // - Track pool usage + current bundled-entry ownership hashes in external state.
 // - Synchronize bundled starter files at startup using bundled content hashes.
 // - Scan pool files and return validated metadata for filtering and selection.
-// =============================================================================
 
 // =============================================================================
 // Imports / logger

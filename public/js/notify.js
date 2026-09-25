@@ -10,7 +10,6 @@
 // - Show toast notifications for main and Text Editor contexts.
 // - Own stack-aware renderer modal focus containment and per-open restoration.
 // - Provide a small, stable window.Notify surface for callers.
-// =============================================================================
 
 (() => {
   // =============================================================================

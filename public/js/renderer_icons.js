@@ -10,7 +10,6 @@
 // - Cache parsed SVG templates and rewrite embedded IDs per icon instance.
 // - Apply icons to static markup placeholders and JS-created controls.
 // - Expose the renderer icon helpers used by feature modules.
-// =============================================================================
 
 (() => {
   // =============================================================================

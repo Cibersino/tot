@@ -9,7 +9,6 @@
 // - Render the selector title and current-text preview.
 // - Own selector-toolbar DOM bindings, lock state, and event wiring.
 // - Own clipboard-repeat input normalization and visual state for that section.
-// =============================================================================
 
 (() => {
   // =============================================================================

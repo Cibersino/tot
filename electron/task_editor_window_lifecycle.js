@@ -10,7 +10,6 @@
 // - Resolve terminal disposal through Main-native disclosure or explicit discard authorization.
 // - Coalesce pending native close requests while one terminal outcome is being resolved.
 // - Preserve Task-first parent/application-close ordering through the controller contract.
-// =============================================================================
 
 // =============================================================================
 // Imports and logger

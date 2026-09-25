@@ -10,7 +10,6 @@
 // - Open the reading session windows.
 // - Update the Text Editor prestart overlay state.
 // - Open the result/questions modal windows.
-// =============================================================================
 
 // =============================================================================
 // Imports

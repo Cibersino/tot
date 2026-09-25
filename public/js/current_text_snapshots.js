@@ -10,7 +10,6 @@
 // - Forward optional name/source metadata, metrics choices, and active WPM to IPC.
 // - Call electronAPI save/load snapshot IPC.
 // - Map { ok, code } responses to Notify toasts (no DOM wiring).
-// =============================================================================
 
 (() => {
   // =============================================================================

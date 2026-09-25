@@ -11,7 +11,7 @@
 // - Finalize and report ordinary first show after an accepted ready report.
 // - Resolve Reading Test's hidden-startup cycle without ordinary first-show finalization.
 // - Distinguish lifecycle-owned disposal from an externally closed editor window.
-//
+
 // =============================================================================
 // Imports and logger
 // =============================================================================

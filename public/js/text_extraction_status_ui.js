@@ -9,7 +9,6 @@
 // - Keep prepare UI state separate from processing-mode UI state.
 // - Render route-aware waiting copy and live elapsed time during execution.
 // - Capture final elapsed time for the post-success apply modal.
-// =============================================================================
 
 (() => {
   // =============================================================================

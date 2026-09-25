@@ -10,7 +10,6 @@
 // - Apply bootstrap config, settings, translations, and initial text state.
 // - Keep editor window state and settings-driven UI in sync with bridge updates.
 // - Route local editor interactions back through the main-process text bridge.
-// =============================================================================
 
 const editorBridge = window.editorAPI;
 if (!editorBridge || typeof editorBridge.reportBasePresentationState !== 'function') {

@@ -9,7 +9,6 @@
 // - Populate disclosure copy from renderer translations at prompt time.
 // - Open the bundled privacy policy through the existing app-doc bridge.
 // - Resolve explicit user consent without bloating renderer orchestration.
-// =============================================================================
 
 (() => {
   // =============================================================================

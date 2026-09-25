@@ -8,7 +8,6 @@
 // - Own main-window brand-logo external link bindings.
 // - Route fixed brand links through the shared electronAPI.openExternalUrl bridge.
 // - Apply translated names and visual-tooltip labels for the clickable brand logos.
-// =============================================================================
 
 (() => {
   // =============================================================================

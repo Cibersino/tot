@@ -11,7 +11,6 @@
 // - Flatten valid zip entries into pool-file candidates.
 // - Handle destination-filename duplicates explicitly before writing.
 // - Install validated files into the local reading-test pool directory.
-// =============================================================================
 
 // =============================================================================
 // Imports / logger

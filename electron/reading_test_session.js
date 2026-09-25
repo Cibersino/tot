@@ -10,7 +10,6 @@
 // - Own guided reading-test session state across running/questions/preset stages.
 // - Reinterpret floating-window controls while a session is active.
 // - Compute authoritative WPM in main and coordinate preset handoff.
-// =============================================================================
 
 // =============================================================================
 // Imports / logger

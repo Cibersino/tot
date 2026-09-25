@@ -9,7 +9,6 @@
 // - Resolve case-specific copy and detail rows for Case A and Case B.
 // - Wire the modal actions that return split, page-selection, native, or cancel.
 // - Expose retained generated-PDF reveal behavior when the callback is available.
-// =============================================================================
 
 (() => {
   // =============================================================================

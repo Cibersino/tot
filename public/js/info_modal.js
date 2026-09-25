@@ -10,7 +10,6 @@
 // - Invalidate stale asynchronous renders and preserve state during language refresh.
 // - Hydrate About version, runtime, and document-availability details.
 // - Expose the narrow Info-modal integration surface consumed by public/renderer.js.
-// =============================================================================
 
 (() => {
   // =============================================================================

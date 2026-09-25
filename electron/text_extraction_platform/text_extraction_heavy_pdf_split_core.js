@@ -9,7 +9,6 @@
 // - Own the provider size limit used by heavy OCR split planning.
 // - Detect when a source PDF exceeds the OCR provider input limit.
 // - Build ordered generated-input preview metadata from source PDF metadata only.
-// =============================================================================
 
 // =============================================================================
 // Imports

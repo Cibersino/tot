@@ -10,7 +10,6 @@
 // - Normalize tags and count locales through their shared owners.
 // - Validate optional metrics against the exact reading-duration calculation.
 // - Return normalized snapshot data and reading-test questions without I/O.
-// =============================================================================
 
 // =============================================================================
 // Imports (shared schema collaborators)

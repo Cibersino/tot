@@ -8,7 +8,6 @@
 // - Own the main-window Google OCR activation action flow from Preferences.
 // - Reuse the shared activation sequence without duplicating the IPC/disclosure logic.
 // - Keep renderer.js limited to wiring and shared app-level helpers.
-// =============================================================================
 
 (() => {
   // =============================================================================

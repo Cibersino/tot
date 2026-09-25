@@ -9,7 +9,6 @@
 // - Render retained generated-artifact reveal actions through window.Notify.
 // - Expose a copy-report and open-snapshots-folder action without creating a
 //   second reporting surface.
-// =============================================================================
 
 (() => {
   // =============================================================================

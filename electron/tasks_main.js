@@ -11,7 +11,6 @@
 // - Persist task column widths under config/tasks.
 // - Open task links with confirmation and allowlist rules.
 // - Register IPC handlers for Task Editor actions.
-// =============================================================================
 
 // =============================================================================
 // Imports / logger
