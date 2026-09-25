@@ -253,3 +253,34 @@ test('handleFlotanteCommand starts the session from arming on toggle', () => {
   assert.equal(handled, true);
   assert.deepEqual(calls, ['startArmedSession']);
 });
+
+test('handleFlotanteCommand logs ignored invalid active-session commands', () => {
+  const warnings = [];
+  const options = {
+    state: {
+      active: true,
+      stage: 'arming',
+      selectedEntry: { sourceMode: 'current_text' },
+    },
+    startArmedSession() {},
+    cancelActiveSession() {},
+    finishRunningSession() {},
+    log: {
+      warn(...args) {
+        warnings.push(args);
+      },
+    },
+  };
+
+  assert.equal(readingTestSessionFlow.handleFlotanteCommand({}, options), true);
+  assert.deepEqual(warnings, [[
+    'Reading-test floating command ignored: payload missing a string cmd (ignored).',
+  ]]);
+
+  warnings.length = 0;
+  assert.equal(readingTestSessionFlow.handleFlotanteCommand({ cmd: 'pause' }, options), true);
+  assert.deepEqual(warnings, [[
+    'Reading-test floating command ignored during arming: unknown cmd (ignored):',
+    'pause',
+  ]]);
+});

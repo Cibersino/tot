@@ -477,7 +477,12 @@ function handleFlotanteCommand(cmd, options = {}) {
   } = options;
 
   if (!isArmingOrRunningSession(state)) return false;
-  if (!cmd || typeof cmd.cmd !== 'string') return true;
+  if (!cmd || typeof cmd.cmd !== 'string') {
+    log.warn(
+      'Reading-test floating command ignored: payload missing a string cmd (ignored).'
+    );
+    return true;
+  }
 
   if (state.stage === 'arming') {
     if (cmd.cmd === 'toggle') {
@@ -492,6 +497,12 @@ function handleFlotanteCommand(cmd, options = {}) {
       log.warnOnce(
         'reading_test_session.flotante_set_blocked',
         'Reading-test floating set command ignored while session is active.'
+      );
+    }
+    if (cmd.cmd !== 'set') {
+      log.warn(
+        'Reading-test floating command ignored during arming: unknown cmd (ignored):',
+        cmd.cmd
       );
     }
     return true;
