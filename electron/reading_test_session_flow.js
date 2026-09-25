@@ -40,6 +40,79 @@ function isLifecycleOwnedEditorStartupFailure(err) {
 // Session flow helpers
 // =============================================================================
 
+async function startPoolSession(selection, options = {}) {
+  const {
+    state,
+    ensureEligibleSelection,
+    chooseRandomEntry,
+    applyCurrentText,
+    buildSessionEntry,
+    setStage,
+    continueArmingSession,
+    log,
+  } = options;
+
+  try {
+    if (state.active) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
+    }
+
+    const selectionInfo = ensureEligibleSelection(selection);
+    if (!selectionInfo.ok) return selectionInfo;
+
+    const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
+    if (!selectedEntry) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.no_matching_files', code: 'NO_MATCHING_FILES' };
+    }
+
+    const applyResult = applyCurrentText(selectedEntry.text, {
+      source: 'main-window',
+      action: 'overwrite',
+    });
+    if (!applyResult || applyResult.ok !== true) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.start_failed', code: 'TEXT_APPLY_FAILED' };
+    }
+
+    const sessionEntry = buildSessionEntry('pool', selectedEntry);
+    setStage('arming', { selectedEntry: sessionEntry });
+    void continueArmingSession(sessionEntry);
+    return { ok: true };
+  } catch (err) {
+    log.error('Reading-test pool session start failed:', err);
+    throw err;
+  }
+}
+
+async function startCurrentTextSession(options = {}) {
+  const {
+    state,
+    hasCurrentText,
+    buildSessionEntry,
+    setStage,
+    continueArmingSession,
+    log,
+  } = options;
+
+  try {
+    if (state.active) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
+    }
+    if (!hasCurrentText()) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
+    }
+
+    const sessionEntry = buildSessionEntry('current_text');
+    setStage('arming', {
+      selectedEntry: sessionEntry,
+    });
+    void continueArmingSession(sessionEntry);
+    return { ok: true };
+  } catch (err) {
+    log.error('Reading-test current-text session start failed:', err);
+    throw err;
+  }
+}
+
 function failArmingSession(selectedEntry, noticeKey, options = {}) {
   const {
     state,
@@ -392,79 +465,6 @@ function handleUnexpectedWindowClosed(flagName, options = {}) {
     return;
   }
   cancelActiveSession('renderer.reading_test.alerts.cancelled_window_closed', { type: 'warn' });
-}
-
-async function startPoolSession(selection, options = {}) {
-  const {
-    state,
-    ensureEligibleSelection,
-    chooseRandomEntry,
-    applyCurrentText,
-    buildSessionEntry,
-    setStage,
-    continueArmingSession,
-    log,
-  } = options;
-
-  try {
-    if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
-    }
-
-    const selectionInfo = ensureEligibleSelection(selection);
-    if (!selectionInfo.ok) return selectionInfo;
-
-    const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
-    if (!selectedEntry) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.no_matching_files', code: 'NO_MATCHING_FILES' };
-    }
-
-    const applyResult = applyCurrentText(selectedEntry.text, {
-      source: 'main-window',
-      action: 'overwrite',
-    });
-    if (!applyResult || applyResult.ok !== true) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.start_failed', code: 'TEXT_APPLY_FAILED' };
-    }
-
-    const sessionEntry = buildSessionEntry('pool', selectedEntry);
-    setStage('arming', { selectedEntry: sessionEntry });
-    void continueArmingSession(sessionEntry);
-    return { ok: true };
-  } catch (err) {
-    log.error('Reading-test pool session start failed:', err);
-    throw err;
-  }
-}
-
-async function startCurrentTextSession(options = {}) {
-  const {
-    state,
-    hasCurrentText,
-    buildSessionEntry,
-    setStage,
-    continueArmingSession,
-    log,
-  } = options;
-
-  try {
-    if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
-    }
-    if (!hasCurrentText()) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
-    }
-
-    const sessionEntry = buildSessionEntry('current_text');
-    setStage('arming', {
-      selectedEntry: sessionEntry,
-    });
-    void continueArmingSession(sessionEntry);
-    return { ok: true };
-  } catch (err) {
-    log.error('Reading-test current-text session start failed:', err);
-    throw err;
-  }
 }
 
 function handleFlotanteCommand(cmd, options = {}) {
