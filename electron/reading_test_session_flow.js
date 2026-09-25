@@ -6,14 +6,14 @@
 // =============================================================================
 // Reading-test session flow helpers.
 // Responsibilities:
-// - Orchestrate arming/running/result/questions/preset stages.
-// - Compute authoritative WPM and preset payloads.
-// - Start/cancel/finish sessions.
-// - Reinterpret floating-window commands and close events.
-// =============================================================================
+// - Start sessions and orchestrate arming/running/result/questions/preset stages.
+// - Calculate WPM and construct prefilled preset payloads.
+// - Cancel and clean up sessions after failed transitions or window events.
+// - Route Floating Stopwatch commands within active session stages.
+// - Use injected collaborators for state, windows, notices, and persistence.
 
 // =============================================================================
-// Session state helpers
+// Session state and lifecycle helpers
 // =============================================================================
 
 function clearSessionTextIfNeeded(selectedEntry, tryClearCurrentText) {
@@ -37,7 +37,7 @@ function isLifecycleOwnedEditorStartupFailure(err) {
 }
 
 // =============================================================================
-// Session flow helpers
+// Session entry and arming
 // =============================================================================
 
 async function startPoolSession(selection, options = {}) {
@@ -225,6 +225,10 @@ function startArmedSession(options = {}) {
   }
 }
 
+// =============================================================================
+// Result calculation and preset preparation
+// =============================================================================
+
 function computeCurrentWpm(options = {}) {
   const {
     getCronoState,
@@ -362,6 +366,10 @@ function beginPresetStep(wpm, options = {}) {
   presetWin.on('closed', onClosed);
 }
 
+// =============================================================================
+// Session completion
+// =============================================================================
+
 async function finishRunningSession(options = {}) {
   const {
     state,
@@ -419,6 +427,10 @@ async function finishRunningSession(options = {}) {
     );
   }
 }
+
+// =============================================================================
+// Session cancellation and external events
+// =============================================================================
 
 function resetAndCloseActiveSession(selectedEntry, resetWarningMessage, options = {}) {
   const {
