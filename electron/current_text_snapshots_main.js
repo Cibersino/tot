@@ -4,15 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Current-text snapshot owner for save/load flows under config/saved_current_texts.
+// Main-process owner for current-text snapshots under config/saved_current_texts.
 // Responsibilities:
-// - Provide save/load snapshot flows for current text via native dialogs.
-// - Persist optional snapshot tag metadata on save.
-// - Enforce snapshot path containment under config/saved_current_texts.
-// - Validate snapshot JSON payloads before save and after load.
-// - Apply loaded snapshots through text_state (same semantics as overwrite).
-// - Register IPC handlers for save, open-folder, select, and load flows.
-// =============================================================================
+// - Register IPC handlers for save, open-folder, select, inspect, and load flows.
+// - Persist optional snapshot tags, count, and reading metadata.
+// - Enforce canonical path containment under config/saved_current_texts.
+// - Validate snapshot requests and documents before persistence or loading.
+// - Apply loaded text through textState's canonical current-text write path.
 
 // =============================================================================
 // Imports / logger
@@ -80,7 +78,7 @@ const countUtils = countCore.createCountUtils({
 const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 
 // =============================================================================
-// Helpers (paths)
+// Helpers (snapshot paths + storage)
 // =============================================================================
 function resolveRealpath(targetPath) {
   try {
@@ -120,6 +118,7 @@ function isPathInsideRoot(rootReal, candidatePath) {
 }
 
 function normalizeSnapshotRelPath(raw) {
+  // Stored references use a root-relative slash path; reject dot segments instead of resolving them into a different snapshot identity.
   const source = typeof raw === 'string' ? raw.trim() : '';
   if (!source) return '';
   const normalizedSlashes = source.replace(/\\/g, '/');
@@ -215,6 +214,7 @@ function getDeterministicAutoSnapshotCandidate(rootDir, rawBaseName, collisionIn
 }
 
 function getSnapshotsRoot(mode = 'read') {
+  // Canonicalize the root before treating it as the containment boundary, including when a selected path may traverse symlinks.
   const code = mode === 'write' ? 'WRITE_FAILED' : 'READ_FAILED';
   const root = ensureSnapshotsRoot();
   if (!root) {
@@ -543,6 +543,7 @@ function hasCurrentTextToOverwrite() {
 }
 
 function resolveMainWin(getWindows) {
+  // This fallback runs when resolveOwnerWin cannot use the IPC sender. Keep native dialogs attached to mainWin when possible, otherwise unowned.
   if (typeof getWindows !== 'function') {
     log.warnOnce(
       'current_text_snapshots.owner_window.get_windows_missing',
