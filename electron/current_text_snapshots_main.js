@@ -82,11 +82,6 @@ const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 // =============================================================================
 // Helpers (paths)
 // =============================================================================
-function safeRealpath(targetPath) {
-  const result = resolveRealpath(targetPath);
-  return result.ok ? result.path : null;
-}
-
 function resolveRealpath(targetPath) {
   try {
     return { ok: true, path: fs.realpathSync(targetPath) };
@@ -223,15 +218,15 @@ function getSnapshotsRoot(mode = 'read') {
   const code = mode === 'write' ? 'WRITE_FAILED' : 'READ_FAILED';
   const root = ensureSnapshotsRoot();
   if (!root) {
-    log.warn('snapshot root unavailable:', { mode, code });
+    log.error('snapshot root unavailable:', { mode, code });
     return { ok: false, code, message: 'snapshots dir unavailable' };
   }
-  const rootReal = safeRealpath(root);
-  if (!rootReal) {
-    log.warn('snapshot root realpath failed:', { mode, root });
+  const rootRealRes = resolveRealpath(root);
+  if (!rootRealRes.ok) {
+    log.error('snapshot root realpath failed:', { mode, root, error: rootRealRes.error });
     return { ok: false, code, message: 'snapshots dir realpath failed' };
   }
-  return { ok: true, root, rootReal };
+  return { ok: true, root, rootReal: rootRealRes.path };
 }
 
 function getSnapshotRelPath(rootReal, selectedReal) {
@@ -240,11 +235,12 @@ function getSnapshotRelPath(rootReal, selectedReal) {
 }
 
 function validateSelectedSnapshot(rootReal, selectedPath) {
-  const selectedReal = safeRealpath(selectedPath);
-  if (!selectedReal) {
-    log.warn('snapshot realpath failed:', { selectedPath });
+  const selectedRealRes = resolveRealpath(selectedPath);
+  if (!selectedRealRes.ok) {
+    log.error('snapshot realpath failed:', { selectedPath, error: selectedRealRes.error });
     return { ok: false, code: 'READ_FAILED', message: 'snapshot realpath failed' };
   }
+  const selectedReal = selectedRealRes.path;
   if (!isPathInsideRoot(rootReal, selectedReal)) {
     log.warn('snapshot path outside allowed root:', { selectedPath, selectedReal });
     return { ok: false, code: 'PATH_OUTSIDE_SNAPSHOTS' };
@@ -269,7 +265,15 @@ async function promptForSnapshotSelection(ownerWin, root, rootReal) {
     properties: ['openFile'],
   });
 
-  if (!dialogResult || dialogResult.canceled || !dialogResult.filePaths || !dialogResult.filePaths.length) {
+  if (!dialogResult) {
+    log.error('snapshot file picker returned no result; treating as cancelled.');
+    return { ok: false, code: 'CANCELLED' };
+  }
+  if (dialogResult.canceled) {
+    return { ok: false, code: 'CANCELLED' };
+  }
+  if (!dialogResult.filePaths || !dialogResult.filePaths.length) {
+    log.error('snapshot file picker returned no selected file; treating as cancelled:', dialogResult);
     return { ok: false, code: 'CANCELLED' };
   }
 
@@ -523,6 +527,10 @@ async function confirmLoadOverwrite(ownerWin, name = '') {
     cancelId: 1,
     message,
   });
+  if (!dialogResult || !Number.isInteger(dialogResult.response)) {
+    log.error('snapshot overwrite confirmation returned invalid result:', dialogResult);
+    return false;
+  }
   return dialogResult && dialogResult.response === 0;
 }
 
@@ -642,11 +650,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             dialogOptions
           );
 
-          if (!dialogRes || dialogRes.canceled) {
+          if (!dialogRes) {
+            log.error('snapshot save file picker returned no result; treating as cancelled.');
+            return { ok: false, code: 'CANCELLED' };
+          }
+          if (dialogRes.canceled) {
             return { ok: false, code: 'CANCELLED' };
           }
           if (typeof dialogRes.filePath !== 'string' || !dialogRes.filePath.trim()) {
-            log.warn('snapshot save file picker returned invalid file path:', dialogRes);
+            log.error('snapshot save file picker returned invalid file path:', dialogRes);
             return { ok: false, code: 'WRITE_FAILED', message: 'snapshot save file picker returned invalid file path' };
           }
           if (!isValidInteractiveSnapshotFileName(dialogRes.filePath)) {
