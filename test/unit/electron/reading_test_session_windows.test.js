@@ -76,6 +76,29 @@ function createWindowDouble({ visible = true, loading = false } = {}) {
   };
 }
 
+test('waitForWindowRendererLoad warns when it uses the broad loading fallback', async (t) => {
+  const readingTestSessionWindows = loadFreshReadingTestSessionWindows(t);
+  const win = createWindowDouble({ loading: false });
+  const warnings = [];
+  let isLoadingCalls = 0;
+  delete win.webContents.isLoadingMainFrame;
+  win.webContents.isLoading = () => {
+    isLoadingCalls += 1;
+    return false;
+  };
+
+  await readingTestSessionWindows.waitForWindowRendererLoad(win, 'EDITOR', {
+    warn(...args) {
+      warnings.push(args);
+    },
+  }, 5000);
+
+  assert.equal(isLoadingCalls, 1);
+  assert.deepEqual(warnings, [[
+    'Reading-test renderer load: isLoadingMainFrame unavailable; using isLoading() fallback.',
+  ]]);
+});
+
 test('openReadingSessionWindows starts a hidden maximized editor bootstrap and waits for base readiness', async (t) => {
   const readingTestSessionWindows = loadFreshReadingTestSessionWindows(t);
   const calls = [];
