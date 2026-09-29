@@ -223,6 +223,7 @@ const presetDescription = document.getElementById('presetDescription');
 let maxTextChars = AppConstants.MAX_TEXT_CHARS;
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4;
 let modoConteo = 'preciso';
+let isModeConteoPersistencePending = false;
 let idiomaActual = DEFAULT_LANG;
 let settingsCache = null;
 let settingsApplicationQueue = Promise.resolve();
@@ -284,6 +285,7 @@ if (!window.electronAPI || typeof window.electronAPI.resolveCurrentTextProcessin
 currentTextRuntime.configure({
   currentTextSelectorSection,
   resultsTimeMultiplier,
+  countText: contarTexto,
   getCountContext: () => ({
     modoConteo,
     idioma: idiomaActual,
@@ -335,10 +337,25 @@ function isStandaloneFullRefreshPendingActive() {
   return textExtractionStatusUi.isStandaloneFullRefreshPendingActive();
 }
 
+function isMainInteractionLocked() {
+  return !isRendererReady()
+    || isProcessingModeActive()
+    || isCurrentTextAreaPendingActive()
+    || isAbortFinalizationActive()
+    || isReadingTestInteractionLocked();
+}
+
 function setControlInteractionLocked(element, locked) {
   if (!element) return;
   element.disabled = locked;
   element.setAttribute('aria-disabled', locked ? 'true' : 'false');
+}
+
+function syncToggleModoPrecisoInteractionState() {
+  setControlInteractionLocked(
+    toggleModoPreciso,
+    isModeConteoPersistencePending || isMainInteractionLocked()
+  );
 }
 
 function hasSelectedPreset() {
@@ -385,11 +402,7 @@ function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
 }
 
 function syncMainInteractionLockUi() {
-  const locked = !isRendererReady()
-    || isProcessingModeActive()
-    || isCurrentTextAreaPendingActive()
-    || isAbortFinalizationActive()
-    || isReadingTestInteractionLocked();
+  const locked = isMainInteractionLocked();
 
   currentTextSelectorSection.setInteractionLocked(locked);
   textTimeCalculatorLauncher.setInteractionLocked(locked);
@@ -401,7 +414,7 @@ function syncMainInteractionLockUi() {
   syncPresetActionButtons({ interactionLocked: locked });
   setControlInteractionLocked(btnResetDefaultPresets, locked);
   setControlInteractionLocked(resultsTimeMultiplierInput, locked);
-  setControlInteractionLocked(toggleModoPreciso, locked);
+  syncToggleModoPrecisoInteractionState();
   setControlInteractionLocked(toggleVF, locked);
   setControlInteractionLocked(cronoDisplayInput, locked);
   setControlInteractionLocked(cronoToggleBtnMain, locked);
@@ -866,8 +879,11 @@ function reportTerminalRendererI18nFailure(kind) {
 // =============================================================================
 // Text counting
 // =============================================================================
-const { contarTexto: contarTextoModulo } = window.CountUtils || {};
-if (typeof contarTextoModulo !== 'function') {
+const {
+  contarTexto: contarTextoModulo,
+  isPreciseCountFailure,
+} = window.CountUtils || {};
+if (typeof contarTextoModulo !== 'function' || typeof isPreciseCountFailure !== 'function') {
   throw new Error('[renderer] CountUtils unavailable; cannot continue');
 }
 const { obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
@@ -875,13 +891,33 @@ if (!obtenerSeparadoresDeNumeros || !formatearNumero) {
   throw new Error('[renderer] FormatUtils unavailable; cannot continue');
 }
 
-function contarTexto(texto) {
-  return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
+function reportPreciseCountingFailure(error) {
+  const api = window.electronAPI;
+  if (!api || typeof api.reportPreciseCountingFailure !== 'function') {
+    log.error('Precise-counting failure could not be reported to main:', error);
+    return;
+  }
+  void api.reportPreciseCountingFailure({
+    code: error.code,
+    stage: error.stage,
+  }).then((result) => {
+    if (!result || result.ok !== true) {
+      log.error('Precise-counting failure report was not committed:', result);
+    }
+  }).catch((reportErr) => {
+    log.error('Precise-counting failure report failed:', reportErr);
+  });
 }
 
-function setModoConteo(nuevoModo) {
-  if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
-    modoConteo = nuevoModo;
+function contarTexto(texto, countContext = null) {
+  const options = countContext || { modoConteo, idioma: idiomaActual };
+  try {
+    return contarTextoModulo(texto, options);
+  } catch (err) {
+    if (isPreciseCountFailure(err)) {
+      reportPreciseCountingFailure(err);
+    }
+    throw err;
   }
 }
 
@@ -890,13 +926,6 @@ function setModoConteo(nuevoModo) {
 // =============================================================================
 function getCurrentTextValue() {
   return currentTextRuntime.getCurrentText();
-}
-
-function startPreviewAndResultsUpdate(textOrReason, maybeReason) {
-  const reason = typeof maybeReason === 'string'
-    ? maybeReason
-    : (typeof textOrReason === 'string' ? textOrReason : 'current-text refresh');
-  currentTextRuntime.requestDerivedRefresh(reason);
 }
 
 function updateTimeOnlyFromStats() {
@@ -977,8 +1006,7 @@ async function applySettingsChange(newSettings) {
         if (!transition || !transition.hadEstablishedState || transition.restorationFailed) {
           return;
         }
-        // The failed language is not part of this renderer's established state,
-        // but independent settings from the same full payload still apply.
+        // The failed language is not part of this renderer's established state, but independent settings from the same full payload still apply.
         settingsCache = { ...nextSettings, language: idiomaActual };
         recoveredLanguageFailure = true;
       }
@@ -1038,8 +1066,7 @@ function enqueueMainSemanticWork(work) {
 
 function settingsChangeHandler(newSettings) {
   const run = () => applySettingsChange(newSettings);
-  // Preload listeners do not await async callbacks. Admit live settings after
-  // the preceding bootstrap or settings semantic operation has settled.
+  // Preload listeners do not await async callbacks. Admit live settings after the preceding bootstrap or settings semantic operation has settled.
   return enqueueMainSemanticWork(run);
 }
 
@@ -1107,10 +1134,17 @@ function armIpcSubscriptions() {
       throw new Error('[renderer] electronAPI.onStartupReady unavailable; cannot bootstrap renderer readiness');
     }
 
-    if (typeof window.electronAPI.onSettingsChanged === 'function') {
-      window.electronAPI.onSettingsChanged(settingsChangeHandler);
+    if (typeof window.electronAPI.onSettingsChanged !== 'function') {
+      throw new Error('[renderer] electronAPI.onSettingsChanged unavailable; cannot maintain settings synchronization');
+    }
+    window.electronAPI.onSettingsChanged(settingsChangeHandler);
+
+    if (typeof window.electronAPI.onPreciseCountingFallback === 'function') {
+      window.electronAPI.onPreciseCountingFallback(() => {
+        window.Notify.toastMain('renderer.main.alerts.precise_counting_fallback', { type: 'warn' });
+      });
     } else {
-      log.warn('onSettingsChanged unavailable; settings updates will not sync.');
+      throw new Error('[renderer] electronAPI.onPreciseCountingFallback unavailable; cannot present Precise fallback notice');
     }
 
     if (typeof window.electronAPI.onTextExtractionProcessingModeChanged === 'function') {
@@ -1160,75 +1194,52 @@ function setupToggleModoPreciso() {
 
     // Ensure initial switch state according to the in-memory mode
     toggleModoPreciso.checked = (modoConteo === 'preciso');
+    toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
 
     // When the user changes the switch:
     toggleModoPreciso.addEventListener('change', async () => {
       if (!guardUserAction('toggle-modo-preciso')) {
         toggleModoPreciso.checked = (modoConteo === 'preciso');
+        toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
         return;
       }
       try {
-        const previousModo = modoConteo;
         const nuevoModo = toggleModoPreciso.checked ? 'preciso' : 'simple';
-
-        // Update state in memory (immediately)
-        setModoConteo(nuevoModo);
-
+        toggleModoPreciso.checked = (modoConteo === 'preciso');
         toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
-
-        // Immediate recount of the current text
-        startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle');
-        if (cronoController && typeof cronoController.handleTextChange === 'function') {
-          cronoController.handleTextChange(null, getCurrentTextValue());
-        }
-
-        // Attempt to persist settings via IPC (if preload/main implemented setModeConteo)
-        if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
-          try {
-            const persistResult = await window.electronAPI.setModeConteo(nuevoModo);
-            if (
-              persistResult
-              && typeof persistResult.ok === 'boolean'
-              && persistResult.ok !== true
-            ) {
-              throw new Error(
-                persistResult.error
-                  ? String(persistResult.error)
-                  : 'setModeConteo returned non-ok result.'
-              );
-            }
-          } catch (err) {
-            log.error('Error persisting modeConteo using setModeConteo:', err);
-            setModoConteo(previousModo);
-            toggleModoPreciso.checked = (previousModo === 'preciso');
-            toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
-            startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle rollback');
-            if (cronoController && typeof cronoController.handleTextChange === 'function') {
-              cronoController.handleTextChange(null, getCurrentTextValue());
-            }
+        isModeConteoPersistencePending = true;
+        syncToggleModoPrecisoInteractionState();
+        try {
+          if (!window.electronAPI || typeof window.electronAPI.setModeConteo !== 'function') {
+            throw new Error('setModeConteo unavailable.');
           }
-        } else if (window.electronAPI) {
-          log.warn('setModeConteo unavailable; mode persistence skipped.');
-          setModoConteo(previousModo);
-          toggleModoPreciso.checked = (previousModo === 'preciso');
-          toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
-          startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle rollback');
-          if (cronoController && typeof cronoController.handleTextChange === 'function') {
-            cronoController.handleTextChange(null, getCurrentTextValue());
+          const persistResult = await window.electronAPI.setModeConteo(nuevoModo);
+          if (!persistResult || persistResult.ok !== true) {
+            throw new Error(
+              persistResult && persistResult.error
+                ? String(persistResult.error)
+                : 'setModeConteo returned non-ok result.'
+            );
           }
+        } catch (err) {
+          log.error('Error persisting modeConteo using setModeConteo:', err);
+          syncToggleFromSettings(settingsCache || {});
+        } finally {
+          isModeConteoPersistencePending = false;
+          syncToggleModoPrecisoInteractionState();
         }
       } catch (err) {
         log.error('Error handling change of toggleModoPreciso:', err);
       }
     });
 
-    // If settings change from main, keep the toggle in sync.
-    // This complements settingsChangeHandler for local safety.
+    // If settings change from main, keep the toggle in sync. This complements settingsChangeHandler for local safety.
     syncToggleFromSettings = (s) => {
       try {
         if (!toggleModoPreciso) return;
         const modo = (s && s.modeConteo) ? s.modeConteo : modoConteo;
         toggleModoPreciso.checked = (modo === 'preciso');
+        toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
       } catch (err) {
         log.error('Error syncing toggle from settings:', err);
       }
@@ -1792,8 +1803,7 @@ function handleEditorFirstShowState(payload) {
     return;
   }
 
-  // Lifecycle-owned Editor startup failures are disclosed once through Main's
-  // native surface. The main renderer only clears its pending launch state.
+  // Lifecycle-owned Editor startup failures are disclosed once through Main's native surface. The main renderer only clears its pending launch state.
 }
 
 // =============================================================================
@@ -1844,8 +1854,7 @@ async function handleTextExtractionAbort() {
 // =============================================================================
 // Current text actions
 // =============================================================================
-// Clipboard overwrite/append use the canonical apply path so truncation,
-// persistence, and shared notifications stay consistent across entry points.
+// Clipboard overwrite/append use the canonical apply path so truncation, persistence, and shared notifications stay consistent across entry points.
 async function handleClipboardOverwrite() {
   if (!guardUserAction('clipboard-overwrite')) return;
   try {
@@ -2134,8 +2143,7 @@ async function handleOpenReadingSpeedTest() {
 // =============================================================================
 // Preset actions
 // =============================================================================
-// Preset buttons are wired here; preset modals and native confirmation
-// dialogs are handled by main.
+// Preset buttons are wired here; preset modals and native confirmation dialogs are handled by main.
 async function openPresetModalFromMain(payload) {
   if (!window.electronAPI || typeof window.electronAPI.openPresetModal !== 'function') {
     log.warn('openPresetModal unavailable in electronAPI; preset-modal action skipped.');
@@ -2316,8 +2324,7 @@ const initCronoController = () => {
 // Renderer bootstrap entrypoint
 // =============================================================================
 // Core listener and UI wiring must happen before runStartupOrchestrator().
-// The current-text stream is armed by runMainStartup() after its authoritative
-// bootstrap snapshot is synchronized and before READY can unblock.
+// The current-text stream is armed by runMainStartup() after its authoritative bootstrap snapshot is synchronized and before READY can unblock.
 function startRendererBootstrap() {
   infoModal.init({
     getCurrentLanguage: () => (settingsCache && settingsCache.language) || idiomaActual || DEFAULT_LANG,

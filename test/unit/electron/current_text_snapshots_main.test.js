@@ -72,6 +72,8 @@ function loadSnapshotsMainWithMocks({
   openDialogResult = null,
   saveJsonStrictImpl = null,
   createJsonStrictImpl = null,
+  countCoreOverride = null,
+  fallbackPreciseCountingToSimple = null,
 }) {
   const snapshotsModulePath = path.resolve(
     __dirname,
@@ -89,6 +91,10 @@ function loadSnapshotsMainWithMocks({
     __dirname,
     '../../../electron/settings.js'
   );
+  const countCoreModulePath = path.resolve(
+    __dirname,
+    '../../../public/js/lib/count_core.js'
+  );
   const menuBuilderModulePath = path.resolve(
     __dirname,
     '../../../electron/menu_builder.js'
@@ -98,6 +104,7 @@ function loadSnapshotsMainWithMocks({
   const originalFsStorageModule = require.cache[fsStorageModulePath];
   const originalTextStateModule = require.cache[textStateModulePath];
   const originalSettingsModule = require.cache[settingsModulePath];
+  const originalCountCoreModule = require.cache[countCoreModulePath];
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const openPathCalls = [];
   const showMessageBoxCalls = [];
@@ -193,8 +200,18 @@ function loadSnapshotsMainWithMocks({
       getSettings() {
         return settings;
       },
+      fallbackPreciseCountingToSimple,
     },
   };
+
+  if (countCoreOverride) {
+    require.cache[countCoreModulePath] = {
+      id: countCoreModulePath,
+      filename: countCoreModulePath,
+      loaded: true,
+      exports: countCoreOverride,
+    };
+  }
 
   require.cache[menuBuilderModulePath] = {
     id: menuBuilderModulePath,
@@ -240,6 +257,12 @@ function loadSnapshotsMainWithMocks({
       delete require.cache[settingsModulePath];
     }
 
+    if (originalCountCoreModule) {
+      require.cache[countCoreModulePath] = originalCountCoreModule;
+    } else {
+      delete require.cache[countCoreModulePath];
+    }
+
     if (originalMenuBuilderModule) {
       require.cache[menuBuilderModulePath] = originalMenuBuilderModule;
     } else {
@@ -256,6 +279,63 @@ function loadSnapshotsMainWithMocks({
     showOpenDialogCalls,
   };
 }
+
+test('snapshot metrics retry only counting after the canonical Precise fallback establishes Simple mode', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-precise-fallback');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+  const senderWin = { isDestroyed: () => false, webContents: {} };
+  const settings = { language: 'en', modeConteo: 'preciso' };
+  const countCalls = [];
+  const preciseFailure = Object.assign(new Error('Segmenter unavailable'), {
+    name: 'PreciseCountError',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+  let fallbackCalls = 0;
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'one two',
+    settings,
+    countCoreOverride: {
+      createCountUtils() {
+        return {
+          contarTexto(_text, options) {
+            countCalls.push(options);
+            if (options.modoConteo === 'preciso') throw preciseFailure;
+            return { palabras: 2 };
+          },
+          isPreciseCountFailure(error) {
+            return error === preciseFailure;
+          },
+        };
+      },
+    },
+    fallbackPreciseCountingToSimple() {
+      fallbackCalls += 1;
+      settings.modeConteo = 'simple';
+      return { ok: true, changed: true, mode: 'simple' };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, { getWindows: () => ({ mainWin: senderWin }) });
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { nonInteractive: true, autoFileBaseName: 'fallback', includeCount: true, includeReading: false }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(fallbackCalls, 1);
+  assert.deepEqual(countCalls, [
+    { modoConteo: 'preciso', idioma: 'en' },
+    { modoConteo: 'simple' },
+  ]);
+  const saved = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(saved.metrics.count, { words: 2, mode: 'simple' });
+});
 
 test('task-row snapshot inspection returns canonical optional metadata and reading metrics', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots-inspect');

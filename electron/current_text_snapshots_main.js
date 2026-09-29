@@ -392,17 +392,42 @@ function resolveSnapshotCountContext() {
   return { mode, locale };
 }
 
-function buildSnapshotMetrics(text, payloadInfo) {
-  if (!payloadInfo.includeCount) return null;
-
-  const countContext = resolveSnapshotCountContext();
+function countSnapshotText(text, countContext) {
   const countOptions = {
     modoConteo: countContext.mode,
   };
   if (countContext.mode === 'preciso') {
     countOptions.idioma = countContext.locale;
   }
-  const stats = countUtils.contarTexto(text, countOptions);
+
+  try {
+    return { stats: countUtils.contarTexto(text, countOptions), countContext };
+  } catch (err) {
+    if (!countUtils.isPreciseCountFailure(err)) throw err;
+
+    const fallbackInfo = settingsState.fallbackPreciseCountingToSimple({
+      source: 'current-text-snapshot',
+      code: err.code,
+      stage: err.stage,
+    });
+    if (!fallbackInfo || fallbackInfo.ok !== true) throw err;
+
+    const simpleCountContext = resolveSnapshotCountContext();
+    if (simpleCountContext.mode !== 'simple') {
+      throw new Error('snapshot Precise fallback did not establish simple mode');
+    }
+    return {
+      stats: countUtils.contarTexto(text, { modoConteo: 'simple' }),
+      countContext: simpleCountContext,
+    };
+  }
+}
+
+function buildSnapshotMetrics(text, payloadInfo) {
+  if (!payloadInfo.includeCount) return null;
+
+  const counted = countSnapshotText(text, resolveSnapshotCountContext());
+  const { stats, countContext } = counted;
   const words = stats && stats.palabras;
   if (!Number.isSafeInteger(words) || words < 0) {
     throw new Error('snapshot word count invalid');

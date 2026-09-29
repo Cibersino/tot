@@ -100,6 +100,18 @@ let publicationConfig = null;
 // Last normalized settings kept in memory.
 let _currentSettings = null;
 
+const PRECISE_FAILURE_CODES = new Set([
+  'PRECISE_SEGMENTER_UNAVAILABLE',
+  'PRECISE_SEGMENTER_EXECUTION_FAILED',
+]);
+const PRECISE_FAILURE_STAGES = new Set([
+  'availability',
+  'grapheme-construction',
+  'grapheme-segmentation',
+  'word-construction',
+  'word-segmentation',
+]);
+
 // =============================================================================
 // Number format defaults loader
 // =============================================================================
@@ -683,8 +695,8 @@ function sendSettingsUpdated(settingsPayload, windows) {
   ];
 
   targets.forEach(({ win, name }) => {
-    if (!win || win.isDestroyed()) return;
     try {
+      if (!win || win.isDestroyed()) return;
       win.webContents.send('settings-updated', settingsPayload);
     } catch (err) {
       log.warnOnce(
@@ -712,6 +724,70 @@ function publishCurrentSettings() {
   const settings = getSettings();
   publishSettingsUpdated(settings);
   return settings;
+}
+
+function saveAndPublishSettingsStrict(nextSettings) {
+  const savedSettings = saveSettingsStrict(nextSettings);
+  publishSettingsUpdated(savedSettings);
+  return savedSettings;
+}
+
+function sendPreciseCountingFallbackNotice() {
+  try {
+    const windows = resolvePublicationWindows();
+    const mainWin = windows && windows.mainWin;
+    if (!mainWin || mainWin.isDestroyed()) {
+      log.warn('Precise-counting fallback notice could not be delivered (ignored): main window unavailable.');
+      return;
+    }
+    mainWin.webContents.send('precise-counting-fallback');
+  } catch (err) {
+    log.warn('Precise-counting fallback notice delivery failed (ignored):', err);
+  }
+}
+
+function isValidPreciseCountingFailureReport(payload) {
+  return !!payload
+    && typeof payload === 'object'
+    && !Array.isArray(payload)
+    && PRECISE_FAILURE_CODES.has(payload.code)
+    && PRECISE_FAILURE_STAGES.has(payload.stage);
+}
+
+/**
+ * Canonical, idempotent transition after genuine Precise counting fails.
+ * Strict persistence is the commit boundary. Publication and notice delivery
+ * happen only after that commit and are deliberately best effort.
+ */
+function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
+  const details = { source, code, stage };
+  let savedSettings;
+  try {
+    const settings = getSettings();
+    if (settings.modeConteo === 'simple') {
+      return { ok: true, changed: false, mode: 'simple' };
+    }
+
+    const nextSettings = cloneSettingsForMutation(settings);
+    nextSettings.modeConteo = 'simple';
+    savedSettings = saveSettingsStrict(nextSettings);
+  } catch (err) {
+    log.error('Precise-counting fallback persistence failed:', details, err);
+    return { ok: false, code: 'PERSIST_FAILED' };
+  }
+
+  try {
+    publishSettingsUpdated(savedSettings);
+  } catch (err) {
+    log.warn('Precise-counting fallback settings publication failed (ignored):', err);
+  }
+  try {
+    log.warn('Precise counting failed; switched modeConteo to simple:', details);
+  } catch {
+    // Logging must not change the established fallback state.
+  }
+  sendPreciseCountingFallbackNotice();
+  return { ok: true, changed: true, mode: savedSettings.modeConteo };
 }
 
 // =============================================================================
@@ -766,12 +842,6 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     } catch (err) {
       log.warn('hide window menu failed (ignored):', name, err);
     }
-  }
-
-  function saveAndPublishSettingsStrict(nextSettings) {
-    const savedSettings = saveSettingsStrict(nextSettings);
-    publishSettingsUpdated(savedSettings);
-    return savedSettings;
   }
 
   // get-settings: returns the decorated renderer payload; storage failures use safe defaults.
@@ -872,6 +942,18 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       log.error('IPC set-mode-conteo failed:', err);
       throw err;
     }
+  });
+
+  ipcMain.handle('precise-counting-failed', async (_event, payload) => {
+    if (!isValidPreciseCountingFailureReport(payload)) {
+      log.warn('precise-counting-failed received invalid payload:', payload);
+      return { ok: false, code: 'INVALID_PRECISE_FAILURE_REPORT' };
+    }
+    return fallbackPreciseCountingToSimple({
+      source: 'renderer',
+      code: payload.code,
+      stage: payload.stage,
+    });
   });
 
   // set-selected-preset: persists selection per language
@@ -976,6 +1058,7 @@ module.exports = {
   configurePublication,
   publishSettingsUpdated,
   publishCurrentSettings,
+  fallbackPreciseCountingToSimple,
   applyFallbackLanguageIfUnset,
 };
 

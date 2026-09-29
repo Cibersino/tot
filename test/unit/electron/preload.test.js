@@ -121,6 +121,28 @@ test('main preload forwards preview Spoiler preference updates unchanged', () =>
   ]);
 });
 
+test('main preload forwards Precise-counting failures and exposes an unsubscribe listener for the fallback notice', () => {
+  const { exposedApi, invoked, subscriptions, removed } = loadMainPreload();
+  const payload = {
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  };
+  let notices = 0;
+
+  exposedApi.api.reportPreciseCountingFailure(payload);
+  const unsubscribe = exposedApi.api.onPreciseCountingFallback(() => {
+    notices += 1;
+  });
+
+  assert.deepEqual(invoked, [{ channel: 'precise-counting-failed', payload }]);
+  assert.equal(subscriptions.at(-1).channel, 'precise-counting-fallback');
+  subscriptions.at(-1).listener();
+  assert.equal(notices, 1);
+
+  unsubscribe();
+  assert.equal(removed.at(-1).channel, 'precise-counting-fallback');
+});
+
 test('main preload exposes openTextTimeCalculator through electronAPI', () => {
   const { exposedApi, invoked } = loadMainPreload();
 

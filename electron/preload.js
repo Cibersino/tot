@@ -91,6 +91,7 @@ const api = {
     getSnapshotTagPreferences: () => ipcRenderer.invoke('get-snapshot-tag-preferences'),
     setSnapshotTagPreferences: (payload) => ipcRenderer.invoke('set-snapshot-tag-preferences', payload),
     setModeConteo: (mode) => ipcRenderer.invoke('set-mode-conteo', mode),
+    reportPreciseCountingFailure: (payload) => ipcRenderer.invoke('precise-counting-failed', payload),
     setPreviewSpoilerEnabled: (enabled) => ipcRenderer.invoke('set-preview-spoiler-enabled', enabled),
     getAppConfig: () => ipcRenderer.invoke('get-app-config'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
@@ -102,6 +103,16 @@ const api = {
         };
         // return function to remove listener if used by caller
         return subscribeWithUnsub('settings-updated', listener, 'removeListener error:');
+    },
+    onPreciseCountingFallback: (cb) => {
+        const listener = () => {
+            try { cb(); } catch (err) { console.error('precise-counting fallback callback error:', err); }
+        };
+        return subscribeWithUnsub(
+            'precise-counting-fallback',
+            listener,
+            'removeListener error (precise-counting-fallback):'
+        );
     },
 
     // Presets

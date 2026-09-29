@@ -95,6 +95,7 @@
         "append_clipboard_error": "Ocurrió un error al agregar el texto del portapapeles al texto actual.",
         "clear_error": "Ocurrió un error al vaciar el texto actual.",
         "current_text_processing_locked": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
+        "precise_counting_fallback": "No se pudo usar el modo Preciso. toT cambió al modo Simple.",
         "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
         "wip": {
           "design_skins": "WIP: Aquí se abrirá el selector de skins en una futura versión.",

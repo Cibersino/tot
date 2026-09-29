@@ -101,6 +101,7 @@ async function createRendererHarness({
   browserExtensionModalOverrides = {},
   mainLogoLinksAvailable = true,
   mainLogoLinksOverride = null,
+  statusUiOverrides = {},
   transitionFailureLanguage = '',
   transitionFailure = null,
 } = {}) {
@@ -218,6 +219,7 @@ async function createRendererHarness({
     isCurrentTextProcessingActive() { return false; },
     isProcessingModeActive() { return false; },
     isStandaloneFullRefreshPendingActive() { return false; },
+    ...statusUiOverrides,
   });
   const currentTextSelectorSection = createNoopSurface({
     bindActions(actions) { selectorActions = actions; },
@@ -319,6 +321,7 @@ async function createRendererHarness({
     onCurrentTextUpdated(callback) { subscriptions.currentTextUpdated = callback; },
     onPresetCreated(callback) { subscriptions.presetCreated = callback; },
     onSettingsChanged(callback) { subscriptions.settingsChanged = callback; },
+    onPreciseCountingFallback(callback) { subscriptions.preciseCountingFallback = callback; },
     onStartupReady(callback) { subscriptions.startupReady = callback; },
     async openEditor() { return { ok: true, launchDisposition: 'first-show-pending' }; },
     resolveCurrentTextProcessing() {},
@@ -371,7 +374,10 @@ async function createRendererHarness({
       applyConfig() { return 100000; },
     },
     BrowserExtensionModal: browserExtensionModal,
-    CountUtils: { contarTexto() { return { palabras: 0, caracteres: 0, caracteresSinEspacios: 0 }; } },
+    CountUtils: {
+      contarTexto() { return { palabras: 0, caracteres: 0, caracteresSinEspacios: 0 }; },
+      isPreciseCountFailure() { return false; },
+    },
     CurrentTextRefreshPolicy: {
       createController() { return createNoopSurface(); },
     },
@@ -392,6 +398,7 @@ async function createRendererHarness({
       },
       deactivateModalFocus() {},
       notifyMain(key) { notifications.push(key); },
+      toastMain(key) { notifications.push(key); },
     }),
     ReadingSpeedTestUi: readingSpeedTestUi,
     RendererCombobox: { create() { return presetsCombobox; } },
@@ -551,6 +558,48 @@ test('main renderer settings lifecycle updates precise-mode description and visu
   assert.equal(harness.preciseWrapper.getAttribute('data-tot-tooltip'), 'Basado en Intl.Segmenter');
   assert.equal(harness.preciseLabel.getAttribute('aria-label'), null);
   assert.equal(harness.errors.length, 0);
+});
+
+test('main renderer keeps the Precise toggle disabled while persistence is pending and a global lock is active', async () => {
+  let processingActive = false;
+  let resolveModePersistence = null;
+  const modePersistence = new Promise((resolve) => {
+    resolveModePersistence = resolve;
+  });
+  const harness = await createRendererHarness({
+    statusUiOverrides: {
+      isProcessingModeActive() { return processingActive; },
+    },
+    electronMethodOverrides: {
+      setModeConteo() { return modePersistence; },
+    },
+  });
+  const toggle = harness.getElement('toggleModoPreciso');
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+  processingActive = true;
+  harness.subscriptions.textExtractionProcessingModeChanged({ active: true });
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+  resolveModePersistence({ ok: true, mode: 'simple' });
+  await flushAsyncWork();
+
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+  processingActive = false;
+  harness.subscriptions.textExtractionProcessingModeChanged({ active: false });
+  assert.equal(toggle.disabled, false);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'false');
 });
 
 test('main renderer applies independent settings after a recoverable language transition failure', async () => {

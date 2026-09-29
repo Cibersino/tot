@@ -235,6 +235,7 @@ function computeCurrentWpm(options = {}) {
     getCurrentText,
     getSettingsSnapshot,
     countUtils,
+    fallbackPreciseCountingToSimple,
     DEFAULT_LANG,
     PRESET_WPM_MIN,
     PRESET_WPM_MAX,
@@ -251,10 +252,32 @@ function computeCurrentWpm(options = {}) {
 
   const currentText = String(getCurrentText() || '');
   const settings = getSettingsSnapshot();
-  const stats = countUtils.contarTexto(currentText, {
+  const countOptions = {
     modoConteo: settings.modeConteo === 'simple' ? 'simple' : 'preciso',
     idioma: settings.language || DEFAULT_LANG,
-  });
+  };
+  let stats;
+  try {
+    stats = countUtils.contarTexto(currentText, countOptions);
+  } catch (err) {
+    if (!countUtils.isPreciseCountFailure(err)) throw err;
+    if (typeof fallbackPreciseCountingToSimple !== 'function') {
+      throw new Error('Reading-test Precise fallback owner unavailable');
+    }
+    const fallbackInfo = fallbackPreciseCountingToSimple({
+      source: 'reading-test',
+      code: err.code,
+      stage: err.stage,
+    });
+    if (!fallbackInfo || fallbackInfo.ok !== true) {
+      return {
+        ok: false,
+        guidanceKey: 'renderer.reading_test.alerts.result_invalid',
+        code: 'PRECISE_FALLBACK_FAILED',
+      };
+    }
+    stats = countUtils.contarTexto(currentText, { modoConteo: 'simple' });
+  }
   const wordCount = stats && typeof stats.palabras === 'number' ? stats.palabras : 0;
   if (!(wordCount > 0)) {
     return { ok: false, guidanceKey: 'renderer.reading_test.alerts.result_invalid', code: 'WORD_COUNT_INVALID' };

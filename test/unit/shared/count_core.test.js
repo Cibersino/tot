@@ -107,39 +107,42 @@ test('createCountUtils uses injected DEFAULT_LANG for direct precise counting wh
   ]);
 });
 
-test('createCountUtils falls back when Intl.Segmenter is unavailable', () => {
-  const { log, warnOnceCalls } = createLogSpy();
+test('createCountUtils reports a structured failure when Intl.Segmenter is unavailable', () => {
+  const { log } = createLogSpy();
   const utils = createCountUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
     log,
     intlObject: {},
   });
 
-  const result = utils.contarTexto('hola mundo', { modoConteo: 'preciso' });
-
-  assert.deepEqual(result, {
-    conEspacios: 10,
-    sinEspacios: 9,
-    palabras: 2,
-  });
   assert.equal(utils.hasIntlSegmenter(), false);
-  assert.equal(warnOnceCalls.length, 1);
+  assert.throws(
+    () => utils.contarTexto('hola mundo', { modoConteo: 'preciso' }),
+    (err) => utils.isPreciseCountFailure(err)
+      && err.code === 'PRECISE_SEGMENTER_UNAVAILABLE'
+      && err.stage === 'availability'
+  );
 });
 
-test('createCountUtils fallback keeps precise-mode whitespace and grapheme semantics', () => {
+test('createCountUtils reports Segmenter construction failures structurally', () => {
   const utils = createCountUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
     log: createWarnLogDouble(),
-    intlObject: {},
+    intlObject: {
+      Segmenter: class SegmenterMock {
+        constructor() {
+          throw new Error('construction failed');
+        }
+      },
+    },
   });
 
-  assert.deepEqual(
-    utils.contarTextoPrecisoFallback('hola\u00a0mundo\t\nemoji 😀 aquí'),
-    {
-      conEspacios: 24,
-      sinEspacios: 19,
-      palabras: 5,
-    }
+  assert.throws(
+    () => utils.contarTexto('hola', { modoConteo: 'preciso' }),
+    (err) => utils.isPreciseCountFailure(err)
+      && err.code === 'PRECISE_SEGMENTER_EXECUTION_FAILED'
+      && err.stage === 'grapheme-construction'
+      && err.cause && err.cause.message === 'construction failed'
   );
 });
 
@@ -174,9 +177,9 @@ test('createCountUtils requires DEFAULT_LANG to be injected', () => {
   );
 });
 
-test('createCountUtils requires injected warn and warnOnce logging', () => {
+test('createCountUtils requires injected warn logging', () => {
   assert.throws(
     () => createCountUtils({ DEFAULT_LANG: TEST_DEFAULT_LANG }),
-    /\[count_core\] log\.warn\(\) and log\.warnOnce\(\) are required/
+    /\[count_core\] log\.warn\(\) is required/
   );
 });

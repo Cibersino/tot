@@ -451,6 +451,7 @@ function createController(options = {}) {
       getCurrentText,
       getSettingsSnapshot,
       countUtils,
+      fallbackPreciseCountingToSimple: settingsState.fallbackPreciseCountingToSimple,
       DEFAULT_LANG,
       PRESET_WPM_MIN,
       PRESET_WPM_MAX,

@@ -1124,6 +1124,11 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] texto actual
           // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
         },
+        "precise_counting_fallback": {
+          "es": "No se pudo usar el modo Preciso. toT cambió al modo Simple.",
+          "en": "Precise mode could not be used. toT switched to Simple mode."
+          // [CONCEPTO_APP] modo preciso/simple;
+        },
         "current_text_recount_locked": {
           "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
           "en": "Current text results are still being recalculated. Main-window interactions are locked until the latest recount settles."

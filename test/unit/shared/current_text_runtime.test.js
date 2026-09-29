@@ -221,6 +221,15 @@ function createHarness({
         baseReadingDuration = value;
       },
     },
+    countText(text, options) {
+      const normalizedText = String(text || '');
+      countCalls.push({ text: normalizedText, options });
+      return {
+        conEspacios: normalizedText.length,
+        sinEspacios: normalizedText.replace(/\s/g, '').length,
+        palabras: normalizedText.trim() ? normalizedText.trim().split(/\s+/).length : 0,
+      };
+    },
     getCountContext() {
       return countContext;
     },

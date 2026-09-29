@@ -540,6 +540,131 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
   assert.equal(settings.getSettings().spellcheckEnabled, true);
 });
 
+test('Precise-counting fallback strictly persists Simple once, then publishes and notifies the main window', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presets_by_language: {},
+    selected_preset_by_language: {},
+    disabled_default_presets: {},
+    numberFormatting: {},
+    modeConteo: 'preciso',
+  });
+  const ipcMain = createIpcMainDouble();
+  const sent = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed: () => false,
+        webContents: { send: (channel, payload) => sent.push({ channel, payload }) },
+      },
+    }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+  settings.registerIpc(ipcMain);
+
+  const first = await ipcMain.invoke('precise-counting-failed', {
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+  const second = await ipcMain.invoke('precise-counting-failed', {
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+
+  assert.deepEqual(first, { ok: true, changed: true, mode: 'simple' });
+  assert.deepEqual(second, { ok: true, changed: false, mode: 'simple' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
+  assert.deepEqual(sent.map(({ channel }) => channel), [
+    'settings-updated',
+    'precise-counting-fallback',
+  ]);
+
+  const invalid = await ipcMain.invoke('precise-counting-failed', {
+    code: 'not-a-precise-failure',
+    stage: 'availability',
+  });
+  assert.deepEqual(invalid, { ok: false, code: 'INVALID_PRECISE_FAILURE_REPORT' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
+});
+
+test('Precise-counting fallback does not publish or notify when strict persistence fails', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({ modeConteo: 'preciso' }, {
+    saveJsonStrictImpl() {
+      throw new Error('disk full');
+    },
+  });
+  const sent = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed: () => false,
+        webContents: { send: (channel) => sent.push(channel) },
+      },
+    }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+
+  const result = settings.fallbackPreciseCountingToSimple({
+    source: 'test',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+
+  assert.deepEqual(result, { ok: false, code: 'PERSIST_FAILED' });
+  assert.equal(harness.getStoredValue().modeConteo, 'preciso');
+  assert.deepEqual(sent, []);
+});
+
+test('Precise-counting fallback remains committed when settings or notice delivery fails', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({ modeConteo: 'preciso' });
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed: () => false,
+        webContents: {
+          send() {
+            throw new Error('window closing');
+          },
+        },
+      },
+    }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+
+  const result = settings.fallbackPreciseCountingToSimple({
+    source: 'test',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+
+  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
+});
+
 test('set-selected-preset rejects on strict save failure and keeps persisted selection unchanged', async () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
