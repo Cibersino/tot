@@ -95,6 +95,7 @@
         "append_clipboard_error": "I hapa i te tāpiri i te tuhinga mai i te papatopenga.",
         "clear_error": "I puta he hapa i te ūkui kuputuhi. Tirohia te papatohu.",
         "current_text_processing_locked": "Kei te whakahōu tonu te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te kuputuhi hou.",
+        "precise_counting_fallback": "Kāore i taea te whakamahi Aratau tōtika. I huri a toT ki te aratau māmā.",
         "current_text_recount_locked": "Kei te tātai anō tonu ngā hua o te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te tātaitanga hou.",
         "wip": {
           "design_skins": "WIP: Ka whakatuwhera te kaikōwhiri skins ki konei i tētahi putanga ā muri ake.",

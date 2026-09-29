@@ -95,6 +95,7 @@
         "append_clipboard_error": "Terjadi kesalahan saat menambahkan teks dari clipboard.",
         "clear_error": "Terjadi kesalahan saat mengosongkan teks. Periksa konsol.",
         "current_text_processing_locked": "Teks saat ini masih diperbarui. Interaksi jendela utama dikunci sampai teks terbaru stabil.",
+        "precise_counting_fallback": "Mode presisi tidak dapat digunakan. toT beralih ke mode sederhana.",
         "current_text_recount_locked": "Hasil teks saat ini masih dihitung ulang. Interaksi jendela utama dikunci sampai penghitungan ulang terbaru stabil.",
         "wip": {
           "design_skins": "WIP: Pemilih skin akan dibuka di sini pada versi mendatang.",

@@ -95,6 +95,7 @@
         "append_clipboard_error": "Si è verificato un errore durante l'aggiunta del testo dagli appunti.",
         "clear_error": "Si è verificato un errore durante la cancellazione del testo. Controlla la console.",
         "current_text_processing_locked": "Il testo corrente è ancora in aggiornamento. Le interazioni della finestra principale restano bloccate finché il testo più recente non si stabilizza.",
+        "precise_counting_fallback": "Non è stato possibile usare Modalità precisa. toT è passato alla modalità semplice.",
         "current_text_recount_locked": "I risultati del testo corrente sono ancora in fase di ricalcolo. Le interazioni della finestra principale restano bloccate finché l’ultimo ricalcolo non si stabilizza.",
         "wip": {
           "design_skins": "WIP: Il selettore di skin si aprirà qui in una versione futura.",

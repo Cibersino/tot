@@ -95,6 +95,7 @@
         "append_clipboard_error": "Une erreur s'est produite lors de l'ajout du texte depuis le presse-papiers.",
         "clear_error": "Une erreur s'est produite lors de la suppression du texte. Vérifiez la console.",
         "current_text_processing_locked": "Le texte actuel est encore en cours de mise à jour. Les interactions de la fenêtre principale restent verrouillées jusqu’à la stabilisation du texte le plus récent.",
+        "precise_counting_fallback": "Mode précis n’a pas pu être utilisé. toT est passé au mode simple.",
         "current_text_recount_locked": "Les résultats du texte actuel sont encore en cours de recalcul. Les interactions de la fenêtre principale restent verrouillées jusqu’à la stabilisation du dernier recalcul.",
         "wip": {
           "design_skins": "WIP : Le sélecteur de skins s'ouvrira ici dans une version future.",

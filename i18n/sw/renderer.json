@@ -95,6 +95,7 @@
         "append_clipboard_error": "Hitilafu ilitokea wakati wa kuongeza maandishi ya ubao wa kunakili kwenye maandishi ya sasa.",
         "clear_error": "Hitilafu ilitokea wakati wa kufuta maandishi ya sasa.",
         "current_text_processing_locked": "Maandishi ya sasa bado yanasasishwa. Matendo katika dirisha kuu yamezuiwa hadi maandishi ya hivi karibuni yakamilike.",
+        "precise_counting_fallback": "Hali ya usahihi haikuweza kutumika. toT ilibadilisha hadi hali rahisi.",
         "current_text_recount_locked": "Matokeo ya maandishi ya sasa bado yanakokotolewa upya. Matendo katika dirisha kuu yamezuiwa hadi hesabu ya hivi karibuni ikamilike.",
         "wip": {
           "design_skins": "WIP: Kiteuzi cha mionekano kitafunguka hapa katika toleo la baadaye.",

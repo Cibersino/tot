@@ -95,6 +95,7 @@
         "append_clipboard_error": "Portapapeles-manta qillqata yapachkaspa pantay karqan.",
         "clear_error": "Qillqa pichaypi pantay karqan. Consolata qhaway.",
         "current_text_processing_locked": "Kunan textoqa musuqyachisqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa musuq texto takyanankama.",
+        "precise_counting_fallback": "Chiqap modo mana llamk'achiyta atirqanchu. toT Simple modo nisqamanmi tikrarqan.",
         "current_text_recount_locked": "Kunan textopa resultadokunaqa yapamanta yupasqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa qhipa yupay takyankama.",
         "wip": {
           "design_skins": "WIP: Kaypi hamuq versiónpi skins akllana kichakunqa.",

@@ -95,6 +95,7 @@
         "append_clipboard_error": "Panodan metin eklenirken bir hata oluştu.",
         "clear_error": "Metin temizlenirken hata oluştu. Konsolu kontrol edin.",
         "current_text_processing_locked": "Geçerli metin hâlâ güncelleniyor. En son metin sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
+        "precise_counting_fallback": "Hassas mod kullanılamadı. toT basit moda geçti.",
         "current_text_recount_locked": "Geçerli metin sonuçları hâlâ yeniden hesaplanıyor. En son yeniden hesaplama sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
         "wip": {
           "design_skins": "WIP: Tema seçici gelecek bir sürümde burada açılacak.",

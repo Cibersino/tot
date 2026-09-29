@@ -95,6 +95,7 @@
         "append_clipboard_error": "Oiko peteĩ jejavy oñembojoapývo jehaipyre portapapeles-gui.",
         "clear_error": "Oiko jejavy oñemopotĩ aja jehai. Ehecha consola.",
         "current_text_processing_locked": "Texto ko’ag̃agua oñembopyahu gueteri. Ventana principal rehegua interacciones oñembotýta texto ipyahuvéva oñemohenda peve.",
+        "precise_counting_fallback": "Ndaikatúi ojepuru Modo preciso. toT ohasa Modo simple-pe.",
         "current_text_recount_locked": "Texto ko’ag̃agua resultado oñeñemboheko jey gueteri. Ventana principal rehegua interacciones oñembotýta conteo ipaháva oñemohenda peve.",
         "wip": {
           "design_skins": "WIP: Ko’ápe ojepe’áta selector de skins versión oútavape.",

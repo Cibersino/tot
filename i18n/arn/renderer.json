@@ -95,6 +95,7 @@
         "append_clipboard_error": "Kiñe error müley portapapeles mew texto append mew.",
         "clear_error": "Welulkuy lifün mu. Kintunge consola.",
         "current_text_processing_locked": "Current text petu updatekünuwküley. Main window interacciones bloqueadongey texto asentamün mew.",
+        "precise_counting_fallback": "Pepi pünegelafuy Rüf rakiduam. toT konüy simple rakiduam mew.",
         "current_text_recount_locked": "Current text resultados petu wiño rakinmekey. Main window interacciones bloqueadongey rakin asentamün mew.",
         "wip": {
           "design_skins": "WIP: Faw nülai düllin skins küpalechi version mu.",

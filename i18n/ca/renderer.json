@@ -95,6 +95,7 @@
         "append_clipboard_error": "S'ha produït un error en afegir text des del porta-retalls.",
         "clear_error": "S’ha produït un error en buidar el text. Revisa la consola.",
         "current_text_processing_locked": "El text actual encara s’està actualitzant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi el text més recent.",
+        "precise_counting_fallback": "No s'ha pogut utilitzar Mode precís. toT ha canviat al mode simple.",
         "current_text_recount_locked": "Els resultats del text actual encara s’estan recalculant. Les interaccions de la finestra principal queden bloquejades fins que s’estabilitzi l’últim recompte.",
         "wip": {
           "design_skins": "WIP: Aquí s’obrirà el selector de skins en una versió futura.",

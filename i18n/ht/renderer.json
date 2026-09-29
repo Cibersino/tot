@@ -95,6 +95,7 @@
         "append_clipboard_error": "Gen yon erè ki rive pandan ajoute tèks ki soti nan clipboard la.",
         "clear_error": "Gen yon erè ki fèt pandan vide tèks la. Tcheke konsole a.",
         "current_text_processing_locked": "Tèks aktyèl la toujou ap mete ajou. Entèraksyon fenèt prensipal la bloke jiskaske dènye tèks la estabilize.",
+        "precise_counting_fallback": "Yo pa t kapab itilize Mòd presi. toT chanje pou mòd senp.",
         "current_text_recount_locked": "Rezilta tèks aktyèl la toujou ap rekalkile. Entèraksyon fenèt prensipal la bloke jiskaske dènye rekalkil la estabilize.",
         "wip": {
           "design_skins": "WIP: selektè skins la ap louvri isit nan yon vèsyon pi devan.",
