@@ -599,11 +599,60 @@ test('snapshot save derives count and reading metrics from exact text and settin
     count: {
       words: 3,
       mode: 'simple',
-      locale: 'es-CL',
     },
     reading: {
       estimatedSeconds: 1,
       wpm: 180,
+    },
+  });
+});
+
+test('simple snapshot metrics save without Intl locale canonicalization', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-simple-no-locale-canonicalization');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const originalGetCanonicalLocales = Intl.getCanonicalLocales;
+  Intl.getCanonicalLocales = undefined;
+  t.after(() => {
+    Intl.getCanonicalLocales = originalGetCanonicalLocales;
+  });
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'uno dos tres',
+    settings: { language: 'invalid_locale!', modeConteo: 'simple' },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Simple metrics',
+      includeCount: true,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(payload.metrics, {
+    count: {
+      words: 3,
+      mode: 'simple',
     },
   });
 });

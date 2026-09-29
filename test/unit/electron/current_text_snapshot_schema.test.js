@@ -46,7 +46,6 @@ test('canonical text snapshots accept count-only and count-plus-reading metrics'
       count: {
         words: 100,
         mode: 'simple',
-        locale: 'en',
       },
     },
   }));
@@ -71,7 +70,6 @@ test('canonical text snapshots accept count-only and count-plus-reading metrics'
         count: {
           words: 100,
           mode: 'simple',
-          locale: 'en',
         },
       },
     }),
@@ -96,7 +94,6 @@ test('canonical text snapshots use exact nearest-second reading estimates', () =
     count: {
       words: 123,
       mode: 'simple',
-      locale: 'en',
     },
     reading: {
       estimatedSeconds: 62,
@@ -153,8 +150,21 @@ test('canonical text snapshots reject incomplete or inconsistent metrics', () =>
     {
       count: {
         words: 100,
+        mode: 'simple',
+        locale: 'en',
+      },
+    },
+    {
+      count: {
+        words: 100,
         mode: 'precise',
         locale: 'en',
+      },
+    },
+    {
+      count: {
+        words: 100,
+        mode: 'preciso',
       },
     },
     {
@@ -255,6 +265,35 @@ test('canonical text snapshots reject incomplete or inconsistent metrics', () =>
     assert.equal(info.ok, false);
     assert.equal(info.code, 'INVALID_SCHEMA');
   });
+});
+
+test('simple count metrics do not require Intl locale canonicalization', (t) => {
+  const originalGetCanonicalLocales = Intl.getCanonicalLocales;
+  Intl.getCanonicalLocales = undefined;
+  t.after(() => {
+    Intl.getCanonicalLocales = originalGetCanonicalLocales;
+  });
+
+  const simpleInfo = snapshotSchema.validateSnapshotDocument(createSnapshot({
+    metrics: {
+      count: {
+        words: 100,
+        mode: 'simple',
+      },
+    },
+  }));
+  const preciseInfo = snapshotSchema.validateSnapshotDocument(createSnapshot({
+    metrics: {
+      count: {
+        words: 100,
+        mode: 'preciso',
+        locale: 'en',
+      },
+    },
+  }));
+
+  assert.equal(simpleInfo.ok, true);
+  assert.equal(preciseInfo.ok, false);
 });
 
 test('canonical text snapshots reject legacy and unknown root fields', () => {

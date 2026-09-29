@@ -57,7 +57,7 @@ const SNAPSHOT_EXT = '.json';
 const {
   SNAPSHOT_TYPE,
   SNAPSHOT_SAVED_WITH,
-  normalizeSnapshotCountLocale,
+  normalizeSnapshotPreciseCountLocale,
 } = currentTextSnapshotSchema;
 const SNAPSHOT_NAME_RE = /^current_text_(\d+)\.json$/i;
 const SNAPSHOT_SAVE_PAYLOAD_KEYS = Object.freeze([
@@ -375,12 +375,14 @@ function resolveSnapshotCountContext() {
   }
 
   const mode = settings && settings.modeConteo === 'simple' ? 'simple' : 'preciso';
+  if (mode === 'simple') return { mode };
+
   const requestedLocale = settings && typeof settings.language === 'string'
     ? settings.language
     : DEFAULT_LANG;
-  const normalizedRequestedLocale = normalizeSnapshotCountLocale(requestedLocale);
+  const normalizedRequestedLocale = normalizeSnapshotPreciseCountLocale(requestedLocale);
   const locale = normalizedRequestedLocale
-    || normalizeSnapshotCountLocale(DEFAULT_LANG);
+    || normalizeSnapshotPreciseCountLocale(DEFAULT_LANG);
   if (!locale) {
     throw new Error('snapshot count locale unavailable');
   }
@@ -394,22 +396,26 @@ function buildSnapshotMetrics(text, payloadInfo) {
   if (!payloadInfo.includeCount) return null;
 
   const countContext = resolveSnapshotCountContext();
-  const stats = countUtils.contarTexto(text, {
+  const countOptions = {
     modoConteo: countContext.mode,
-    idioma: countContext.locale,
-  });
+  };
+  if (countContext.mode === 'preciso') {
+    countOptions.idioma = countContext.locale;
+  }
+  const stats = countUtils.contarTexto(text, countOptions);
   const words = stats && stats.palabras;
   if (!Number.isSafeInteger(words) || words < 0) {
     throw new Error('snapshot word count invalid');
   }
 
-  const metrics = {
-    count: {
-      words,
-      mode: countContext.mode,
-      locale: countContext.locale,
-    },
+  const count = {
+    words,
+    mode: countContext.mode,
   };
+  if (countContext.mode === 'preciso') {
+    count.locale = countContext.locale;
+  }
+  const metrics = { count };
   if (!payloadInfo.includeReading) return metrics;
 
   const estimatedSeconds = readingDurationUtils.getEstimatedReadingSeconds(words, payloadInfo.wpm);
