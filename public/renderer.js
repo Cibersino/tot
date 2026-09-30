@@ -201,9 +201,9 @@ const toggleVF = document.getElementById('toggleVF');
 const editorLoader = document.getElementById('editorLoader');
 const editorLoaderStatus = document.getElementById('editorLoaderStatus');
 const startupSplash = document.getElementById('startupSplash');
-const cronoDisplayInput = document.getElementById('cronoDisplay');
-const cronoToggleBtnMain = document.getElementById('cronoToggle');
-const cronoResetBtnMain = document.getElementById('cronoReset');
+const cronoDisplay = document.getElementById('cronoDisplay');
+const cronoToggleButton = document.getElementById('cronoToggle');
+const cronoResetButton = document.getElementById('cronoReset');
 
 const presetsHost = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
@@ -416,9 +416,9 @@ function syncMainInteractionLockUi() {
   setControlInteractionLocked(resultsTimeMultiplierInput, locked);
   syncToggleModoPrecisoInteractionState();
   setControlInteractionLocked(toggleVF, locked);
-  setControlInteractionLocked(cronoDisplayInput, locked);
-  setControlInteractionLocked(cronoToggleBtnMain, locked);
-  setControlInteractionLocked(cronoResetBtnMain, locked);
+  setControlInteractionLocked(cronoDisplay, locked);
+  setControlInteractionLocked(cronoToggleButton, locked);
+  setControlInteractionLocked(cronoResetButton, locked);
   if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
     browserExtensionModal.setInteractionLocked(locked || !browserExtensionCapabilityAvailable);
   } else {
@@ -2289,10 +2289,6 @@ function bindPresetActions() {
 // =============================================================================
 // Stopwatch
 // =============================================================================
-const cronoDisplay = document.getElementById('cronoDisplay');
-const tToggle = document.getElementById('cronoToggle');
-const tReset = document.getElementById('cronoReset');
-
 const cronoModule = (typeof window !== 'undefined') ? window.RendererCrono : null;
 
 const initCronoController = () => {
@@ -2302,7 +2298,13 @@ const initCronoController = () => {
   }
   const icons = getCronoIcons();
   cronoController = cronoModule.createController({
-    elements: { cronoDisplay, tToggle, tReset, realWpmDisplay, toggleVF },
+    elements: {
+      cronoDisplay,
+      tToggle: cronoToggleButton,
+      tReset: cronoResetButton,
+      realWpmDisplay,
+      toggleVF,
+    },
     electronAPI: window.electronAPI,
     contarTexto,
     obtenerSeparadoresDeNumeros,
