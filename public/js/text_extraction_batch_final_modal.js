@@ -323,6 +323,10 @@
       body.replaceChildren(...unitNodes);
       return;
     }
+    log.warnOnce(
+      'text-extraction.batch-final.replace-children-body-unavailable',
+      'Batch final report: replaceChildren unavailable; using DOM fallback.'
+    );
     while (body.firstChild) {
       body.removeChild(body.firstChild);
     }

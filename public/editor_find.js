@@ -518,12 +518,16 @@ function enqueueFindSettingsApplication(settings) {
   return enqueueFindSemanticWork(run);
 }
 
-if (typeof findApi.onSettingsChanged === 'function') {
-  findApi.onSettingsChanged((settings) => enqueueFindSettingsApplication(settings));
+if (typeof findApi.onSettingsChanged !== 'function') {
+  log.error('BOOTSTRAP: editorFindAPI.onSettingsChanged unavailable; closing window before normal interaction.');
+  reportTerminalFindI18nFailure('settings-listener');
 } else {
-  log.warn(
-    'BOOTSTRAP: [editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
-  );
+  try {
+    findApi.onSettingsChanged((settings) => enqueueFindSettingsApplication(settings));
+  } catch (err) {
+    log.error('BOOTSTRAP: editorFindAPI.onSettingsChanged registration failed; closing window before normal interaction:', err);
+    reportTerminalFindI18nFailure('settings-listener');
+  }
 }
 
 // =============================================================================

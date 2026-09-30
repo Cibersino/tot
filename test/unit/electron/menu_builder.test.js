@@ -86,6 +86,21 @@ test('resolveDialogText requires caller-injected warn logging', (t) => {
   );
 });
 
+test('getDialogTexts provides distinct terminal copy for settings-listener failure', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(
+    dialogTexts.renderer_settings_listener_failure_message,
+    'The interface could not establish the required settings synchronization. The window will close.'
+  );
+  assert.equal(
+    dialogTexts.renderer_i18n_failure_message,
+    'The interface could not load its required language resources. The window will close.'
+  );
+});
+
 test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {
   withPlatform(t, 'darwin');
 

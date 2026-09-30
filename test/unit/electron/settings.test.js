@@ -595,6 +595,39 @@ test('Precise-counting fallback strictly persists Simple once, then publishes an
   assert.equal(harness.getStoredValue().modeConteo, 'simple');
 });
 
+test('Precise-counting fallback accepts a Unicode-property capability failure report', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presets_by_language: {},
+    selected_preset_by_language: {},
+    disabled_default_presets: {},
+    numberFormatting: {},
+    modeConteo: 'preciso',
+  });
+  const ipcMain = createIpcMainDouble();
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({ mainWin: null }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+  settings.registerIpc(ipcMain);
+
+  const result = await ipcMain.invoke('precise-counting-failed', {
+    code: 'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE',
+    stage: 'unicode-properties',
+  });
+
+  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
+});
+
 test('Precise-counting fallback does not publish or notify when strict persistence fails', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({ modeConteo: 'preciso' }, {

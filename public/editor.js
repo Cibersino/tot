@@ -364,6 +364,7 @@ function releaseStartupPresentationLock() {
 
 function nextAnimationFrame() {
   if (typeof window.requestAnimationFrame !== 'function') {
+    log.warn('BOOTSTRAP: requestAnimationFrame unavailable; continuing without startup frame boundary.');
     return Promise.resolve();
   }
   return new Promise((resolve) => {
@@ -664,14 +665,15 @@ function registerEditorBridgeListeners() {
     throw new Error(`[editor] required live listener registration failed: ${String(err)}`);
   }
 
-  if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
-    try {
-      ctx.editorAPI.onSettingsChanged((settings) => enqueueEditorSettingsApplication(settings));
-    } catch (err) {
-      log.warn('BOOTSTRAP: editorAPI.onSettingsChanged registration failed; live settings updates disabled:', err);
-    }
-  } else {
-    log.warn('BOOTSTRAP: editorAPI.onSettingsChanged missing; live settings updates disabled.');
+  if (typeof ctx.editorAPI.onSettingsChanged !== 'function') {
+    reportTerminalEditorI18nFailure('settings-listener');
+    throw new Error('[editor] editorAPI.onSettingsChanged unavailable; cannot maintain required live settings synchronization');
+  }
+  try {
+    ctx.editorAPI.onSettingsChanged((settings) => enqueueEditorSettingsApplication(settings));
+  } catch (err) {
+    reportTerminalEditorI18nFailure('settings-listener');
+    throw new Error(`[editor] editorAPI.onSettingsChanged registration failed: ${String(err)}`);
   }
 
   if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {

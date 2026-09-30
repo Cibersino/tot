@@ -602,6 +602,7 @@ function scheduleDeferredBootstrapSettleAfterUnlock() {
     return;
   }
 
+  log.warn('BOOTSTRAP: requestAnimationFrame unavailable; deferring bootstrap settle with setTimeout.');
   setTimeout(() => {
     currentTextRuntime.startDeferredBootstrapSettle();
   }, 0);

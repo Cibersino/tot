@@ -1155,8 +1155,13 @@ function closeRendererAfterI18nFailure(event, payload) {
     log.error('Renderer i18n failure native dialog translations unavailable:', err);
   }
 
-  const title = dialogTexts && dialogTexts.renderer_i18n_failure_title;
-  const message = dialogTexts && dialogTexts.renderer_i18n_failure_message;
+  const isSettingsListenerFailure = failureKind === 'settings-listener';
+  const title = dialogTexts && (isSettingsListenerFailure
+    ? dialogTexts.renderer_settings_listener_failure_title
+    : dialogTexts.renderer_i18n_failure_title);
+  const message = dialogTexts && (isSettingsListenerFailure
+    ? dialogTexts.renderer_settings_listener_failure_message
+    : dialogTexts.renderer_i18n_failure_message);
   const ok = dialogTexts && dialogTexts.ok;
   if (typeof title === 'string' && title.trim()
     && typeof message === 'string' && message.trim()

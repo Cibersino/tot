@@ -644,6 +644,14 @@ Estados de revisión recomendados:
         "en": "The interface could not load its required language resources. The window will close."
         // [PROPÓSITO] Mensaje nativo de cierre para un fallo terminal de recursos de idioma del renderer.
       },
+      "renderer_settings_listener_failure_title": {
+        "es": "No se pudo iniciar la interfaz",
+        "en": "The interface could not start"
+      },
+      "renderer_settings_listener_failure_message": {
+        "es": "La interfaz no pudo establecer la sincronización necesaria con la configuración. La ventana se cerrará.",
+        "en": "The interface could not establish the required settings synchronization. The window will close."
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"

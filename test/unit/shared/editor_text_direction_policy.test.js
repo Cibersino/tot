@@ -257,12 +257,14 @@ function createEditorScriptHarness({
   rejectTransitionLanguage = '',
   transitionFailure = null,
   holdTransitionLanguage = '',
+  settingsListenerThrows = false,
 } = {}) {
   const subscriptions = {};
   const updateDirectionCalls = [];
   const transitionLanguages = [];
   const replaceResponses = [];
   const basePresentationReports = [];
+  const rendererFailureReports = [];
   const bootstrapApplyCalls = [];
   const sendCurrentTextCalls = [];
   const errorLogs = [];
@@ -549,8 +551,13 @@ function createEditorScriptHarness({
       basePresentationReports.push(payload);
       startupEvents.push(`base-presentation:${payload.status}`);
     },
-    reportRendererI18nFailure() {},
+    reportRendererI18nFailure(payload) {
+      rendererFailureReports.push(payload);
+    },
     onSettingsChanged(cb) {
+      if (settingsListenerThrows) {
+        throw new Error('settings listener registration failed');
+      }
       subscriptions.settingsChanged = cb;
     },
     onWindowStateChanged(cb) {
@@ -601,6 +608,7 @@ function createEditorScriptHarness({
     transitionLanguages,
     replaceResponses,
     basePresentationReports,
+    rendererFailureReports,
     bootstrapApplyCalls,
     sendCurrentTextCalls,
     errorLogs,
@@ -684,6 +692,17 @@ test('editor script focuses after normal interaction becomes available and befor
   assert.ok(normalInteractionReady > harness.startupEvents.indexOf('initial-text'));
   assert.ok(initialFocus > normalInteractionReady);
   assert.ok(basePresentationReady > initialFocus);
+});
+
+test('editor closes before normal interaction when required live settings registration fails', async () => {
+  const harness = createEditorScriptHarness({ settingsListenerThrows: true });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.rendererFailureReports)), [
+    { kind: 'settings-listener' },
+  ]);
+  assert.equal(harness.subscriptions.settingsChanged, undefined);
+  assert.equal(harness.normalInteractionCalls.includes(true), false);
 });
 
 test('editor script bootstraps initial text once through the versioned snapshot with init meta', async () => {

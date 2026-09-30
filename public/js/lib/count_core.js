@@ -42,12 +42,13 @@
     ]);
     const reWhitespace = /\s/;
 
-    let reAlnumOnly;
+    let reAlnumOnly = null;
+    let unicodePropertyEscapesAvailable = true;
     try {
       reAlnumOnly = new RegExp('^[\\p{L}\\p{N}]+$', 'u');
     } catch {
-      reAlnumOnly = /^[A-Za-z0-9]+$/;
-      log.warn('Unicode property escapes unsupported; using ASCII alnum fallback.');
+      unicodePropertyEscapesAvailable = false;
+      log.warn('Unicode property escapes unavailable; Precise counting will use canonical Simple recovery.');
     }
 
     function hasIntlSegmenter() {
@@ -103,6 +104,7 @@
     }
 
     const PRECISE_FAILURE_CODE_UNAVAILABLE = 'PRECISE_SEGMENTER_UNAVAILABLE';
+    const PRECISE_FAILURE_CODE_UNICODE_PROPERTIES_UNAVAILABLE = 'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE';
     const PRECISE_FAILURE_CODE_EXECUTION = 'PRECISE_SEGMENTER_EXECUTION_FAILED';
 
     function createPreciseCountFailure(code, stage, cause = null) {
@@ -118,6 +120,7 @@
       return !!error
         && error.name === 'PreciseCountError'
         && (error.code === PRECISE_FAILURE_CODE_UNAVAILABLE
+          || error.code === PRECISE_FAILURE_CODE_UNICODE_PROPERTIES_UNAVAILABLE
           || error.code === PRECISE_FAILURE_CODE_EXECUTION)
         && typeof error.stage === 'string';
     }
@@ -145,6 +148,12 @@
     function countPreciseStreaming(texto, language) {
       if (!hasIntlSegmenter()) {
         throw createPreciseCountFailure(PRECISE_FAILURE_CODE_UNAVAILABLE, 'availability');
+      }
+      if (!unicodePropertyEscapesAvailable) {
+        throw createPreciseCountFailure(
+          PRECISE_FAILURE_CODE_UNICODE_PROPERTIES_UNAVAILABLE,
+          'unicode-properties'
+        );
       }
 
       const resolvedLanguage = resolveLanguage(language);

@@ -110,9 +110,11 @@ function buildPublicState() {
 
 function isLoadingWindowContents(wc) {
   if (!wc) return true;
-  return typeof wc.isLoadingMainFrame === 'function'
-    ? wc.isLoadingMainFrame()
-    : wc.isLoading();
+  if (typeof wc.isLoadingMainFrame === 'function') {
+    return wc.isLoadingMainFrame();
+  }
+  log.warn('Editor Find renderer load: isLoadingMainFrame unavailable; using isLoading() fallback.');
+  return wc.isLoading();
 }
 
 function safeSendToFindWindow(channel, payload) {

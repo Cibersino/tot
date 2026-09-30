@@ -639,3 +639,26 @@ test('set-current-text notifies empty transition only when authoritative text be
     },
   ]);
 });
+
+test('loadInitialCurrentText recovers a noncanonical root string and reports it', (t) => {
+  const warnCalls = [];
+  const { textState, restore } = loadTextState({
+    loadJson() {
+      return 'recovered text';
+    },
+    logDouble: {
+      debug() {},
+      warn(...args) {
+        warnCalls.push(args);
+      },
+      warnOnce() {},
+      error() {},
+    },
+  });
+  t.after(restore);
+
+  assert.equal(textState.getCurrentText(), 'recovered text');
+  assert.deepEqual(warnCalls, [[
+    'BOOTSTRAP: Current text file uses noncanonical root-string form; recovering text.',
+  ]]);
+});

@@ -76,6 +76,10 @@
     if (typeof window.requestAnimationFrame === 'function') {
       window.requestAnimationFrame(showToast);
     } else {
+      log.warnOnce(
+        'notify.toast.request-animation-frame-unavailable',
+        'Toast presentation: requestAnimationFrame unavailable; using setTimeout fallback.'
+      );
       setTimeout(showToast, 0);
     }
 

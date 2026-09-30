@@ -310,6 +310,10 @@
       if (state.readProgressFramePending) return;
 
       if (typeof window.requestAnimationFrame !== 'function') {
+        log.warnOnce(
+          'editor-ui.read-progress.request-animation-frame-unavailable',
+          'Read-progress update: requestAnimationFrame unavailable; updating immediately.'
+        );
         updateReadProgressUi();
         return;
       }

@@ -62,6 +62,7 @@ function createHarness({
   transitionFailureAt = 0,
   transitionFailureAfterApplyAt = 0,
   transitionFailure = null,
+  settingsListenerMode = 'available',
 } = {}) {
   const subscriptions = {};
   const transitionLanguages = [];
@@ -183,9 +184,14 @@ function createHarness({
         onInit(cb) {
           subscriptions.onInit = cb;
         },
-        onSettingsChanged(cb) {
-          subscriptions.onSettingsChanged = cb;
-        },
+        ...(settingsListenerMode === 'missing' ? {} : {
+          onSettingsChanged(cb) {
+            if (settingsListenerMode === 'throw') {
+              throw new Error('settings listener registration failed');
+            }
+            subscriptions.onSettingsChanged = cb;
+          },
+        }),
         async getSettings() {
           if (heldSettings) {
             markSettingsRequested();
@@ -242,6 +248,18 @@ function createHarness({
     },
   };
 }
+
+test('preset modal closes before normal interaction when live settings registration is unavailable or throws', () => {
+  for (const settingsListenerMode of ['missing', 'throw']) {
+    const harness = createHarness({ settingsListenerMode });
+
+    assert.equal(harness.getReportRendererI18nFailureCalls(), 1, settingsListenerMode);
+    assert.equal(harness.subscriptions.onSettingsChanged, undefined, settingsListenerMode);
+    assert.equal(harness.subscriptions.onInit, undefined, settingsListenerMode);
+    assert.equal(harness.elements.presetName.disabled, true, settingsListenerMode);
+    assert.equal(harness.elements.btnSave.disabled, true, settingsListenerMode);
+  }
+});
 
 test('preset modal applies shared direction policy on init, input, and language changes', async () => {
   const harness = createHarness({ initialLanguage: 'ar' });

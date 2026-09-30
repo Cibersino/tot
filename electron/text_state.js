@@ -272,7 +272,8 @@ function applyCurrentText(rawText, rawMeta) {
   };
 }
 
-// Load the current { text: ... } storage form and accepted raw-string compatibility form.
+// Load the canonical { text: ... } storage form and a raw-string root only as
+// defensive recovery for noncanonical data; writers remain object-form only.
 function loadInitialCurrentText() {
   try {
     let raw = loadJson
@@ -284,6 +285,9 @@ function loadInitialCurrentText() {
     const isRawString = typeof raw === 'string';
     let txt = hasTextProp ? String(raw.text || '') : '';
     if (!hasTextProp && isRawString) {
+      log.warn(
+        'BOOTSTRAP: Current text file uses noncanonical root-string form; recovering text.'
+      );
       txt = raw;
     }
     if (!hasTextProp && !isRawString && typeof raw !== 'undefined') {

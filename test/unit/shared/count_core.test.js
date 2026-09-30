@@ -146,7 +146,7 @@ test('createCountUtils reports Segmenter construction failures structurally', ()
   );
 });
 
-test('createCountUtils warns and uses ASCII fallback when unicode property escapes are unsupported', () => {
+test('createCountUtils reports Unicode-property support loss as a structured Precise failure', () => {
   const originalRegExp = global.RegExp;
   const { log, warnCalls } = createLogSpy();
 
@@ -158,16 +158,26 @@ test('createCountUtils warns and uses ASCII fallback when unicode property escap
   };
 
   try {
-    createCountUtils({
+    const utils = createCountUtils({
       DEFAULT_LANG: TEST_DEFAULT_LANG,
       log,
-      intlObject: {},
+      intlObject: {
+        Segmenter: class SegmenterMock {},
+      },
     });
+
+    assert.throws(
+      () => utils.contarTexto('hola mundo', { modoConteo: 'preciso' }),
+      (err) => utils.isPreciseCountFailure(err)
+        && err.code === 'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE'
+        && err.stage === 'unicode-properties'
+    );
   } finally {
     global.RegExp = originalRegExp;
   }
 
   assert.equal(warnCalls.length, 1);
+  assert.match(warnCalls[0][0], /canonical Simple recovery/);
 });
 
 test('createCountUtils requires DEFAULT_LANG to be injected', () => {

@@ -53,6 +53,7 @@ function createHarness({
   holdInitialSettings = false,
   includeRendererI18n = true,
   expectStartupThrow = false,
+  settingsListenerMode = 'available',
 } = {}) {
   const notifyCalls = [];
   const replaceCurrentCalls = [];
@@ -188,10 +189,15 @@ function createHarness({
           }
           return { language: 'en' };
         },
-        onSettingsChanged(cb) {
-          subscriptions.settingsChanged = cb;
-          return () => {};
-        },
+        ...(settingsListenerMode === 'missing' ? {} : {
+          onSettingsChanged(cb) {
+            if (settingsListenerMode === 'throw') {
+              throw new Error('settings listener registration failed');
+            }
+            subscriptions.settingsChanged = cb;
+            return () => {};
+          },
+        }),
       },
       Notify: {
         notifyEditor(key, options) {
@@ -261,6 +267,17 @@ test('find reports earliest required i18n failure before dynamic control setup',
 
   assert.match(harness.startupError && harness.startupError.message, /RendererI18n unavailable/);
   assert.equal(harness.getReporterCalls(), 1);
+});
+
+test('find closes before normal interaction when live settings registration is unavailable or throws', () => {
+  for (const settingsListenerMode of ['missing', 'throw']) {
+    const harness = createHarness({ settingsListenerMode });
+
+    assert.equal(harness.getReporterCalls(), 1, settingsListenerMode);
+    assert.equal(harness.subscriptions.settingsChanged, undefined, settingsListenerMode);
+    assert.equal(harness.elements.findQuery.disabled, true, settingsListenerMode);
+    assert.equal(harness.elements.findNext.disabled, true, settingsListenerMode);
+  }
 });
 
 async function bootstrapReady() {

@@ -102,10 +102,12 @@ let _currentSettings = null;
 
 const PRECISE_FAILURE_CODES = new Set([
   'PRECISE_SEGMENTER_UNAVAILABLE',
+  'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE',
   'PRECISE_SEGMENTER_EXECUTION_FAILED',
 ]);
 const PRECISE_FAILURE_STAGES = new Set([
   'availability',
+  'unicode-properties',
   'grapheme-construction',
   'grapheme-segmentation',
   'word-construction',

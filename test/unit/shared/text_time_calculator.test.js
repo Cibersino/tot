@@ -147,6 +147,7 @@ async function createHarness({
   includeRendererI18n = true,
   expectStartupThrow = false,
   waitForBootstrap = true,
+  settingsListenerMode = 'available',
 } = {}) {
   const translations = getTranslationMap();
   let activeLanguage = initialLanguage;
@@ -228,12 +229,17 @@ async function createHarness({
             },
           };
         },
-        onSettingsChanged(cb) {
-          subscriptions.onSettingsChanged = cb;
-          return () => {
-            subscriptions.unsubscribed = true;
-          };
-        },
+        ...(settingsListenerMode === 'missing' ? {} : {
+          onSettingsChanged(cb) {
+            if (settingsListenerMode === 'throw') {
+              throw new Error('settings listener registration failed');
+            }
+            subscriptions.onSettingsChanged = cb;
+            return () => {
+              subscriptions.unsubscribed = true;
+            };
+          },
+        }),
       },
       RendererI18n: includeRendererI18n ? {
         normalizeLangTag(lang) {
@@ -409,6 +415,18 @@ test('text_time_calculator reports earliest required i18n failure before DOM con
 
   assert.match(harness.startupError && harness.startupError.message, /RendererI18n unavailable/);
   assert.equal(harness.getReporterCalls(), 1);
+});
+
+test('text_time_calculator closes before normal interaction when live settings registration is unavailable or throws', async () => {
+  for (const settingsListenerMode of ['missing', 'throw']) {
+    const harness = await createHarness({ settingsListenerMode });
+
+    assert.equal(harness.getReporterCalls(), 1, settingsListenerMode);
+    assert.equal(harness.subscriptions.onSettingsChanged, undefined, settingsListenerMode);
+    assert.equal(harness.elements.textTimeCalculatorWordsInput.disabled, true, settingsListenerMode);
+    assert.equal(harness.elements.textTimeCalculatorTimeInput.disabled, true, settingsListenerMode);
+    assert.equal(harness.elements.textTimeCalculatorWpmInput.disabled, true, settingsListenerMode);
+  }
 });
 
 test('text_time_calculator creates target options from the active translations', async () => {
