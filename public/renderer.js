@@ -401,6 +401,17 @@ function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
   );
 }
 
+function disableBrowserExtensionCapability() {
+  browserExtensionCapabilityAvailable = false;
+  if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
+    browserExtensionModal.setInteractionLocked(true);
+    return;
+  }
+
+  const element = document.getElementById('browserExtensionLogoLink');
+  if (element) setControlInteractionLocked(element, true);
+}
+
 function syncMainInteractionLockUi() {
   const locked = isMainInteractionLocked();
 
@@ -724,23 +735,11 @@ function applyTranslations() {
       browserExtensionModal.applyTranslations();
     } catch (err) {
       log.warn('BrowserExtensionModal translation application failed; browser extension entry disabled.', err);
-      browserExtensionCapabilityAvailable = false;
-      if (typeof browserExtensionModal.setInteractionLocked === 'function') {
-        browserExtensionModal.setInteractionLocked(true);
-      } else {
-        const element = document.getElementById('browserExtensionLogoLink');
-        if (element) setControlInteractionLocked(element, true);
-      }
+      disableBrowserExtensionCapability();
     }
   } else {
     log.warn('BrowserExtensionModal.applyTranslations unavailable; browser extension entry disabled.');
-    browserExtensionCapabilityAvailable = false;
-    if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
-      browserExtensionModal.setInteractionLocked(true);
-    } else {
-      const element = document.getElementById('browserExtensionLogoLink');
-      if (element) setControlInteractionLocked(element, true);
-    }
+    disableBrowserExtensionCapability();
   }
   infoModal.applyTranslations();
   activeCustomPromptTranslationOwners.forEach((owner) => {
