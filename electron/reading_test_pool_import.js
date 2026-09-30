@@ -101,7 +101,10 @@ function collectJsonFileCandidate(filePath) {
   if (!destinationName) return { ok: false, code: 'INVALID_DESTINATION_NAME' };
 
   const textInfo = readJsonTextWithBomStrip(filePath);
-  if (!textInfo.ok) return { ok: false, code: textInfo.code };
+  if (!textInfo.ok) {
+    log.warn('Reading-test JSON file read failed:', filePath, textInfo.error);
+    return { ok: false, code: textInfo.code };
+  }
 
   return buildCandidateFromJsonSource({
     destinationName,
