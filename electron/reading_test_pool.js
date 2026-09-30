@@ -51,7 +51,8 @@ const POOL_STATE_DEFAULTS = Object.freeze({
 function safeRealpath(targetPath) {
   try {
     return fs.realpathSync(targetPath);
-  } catch {
+  } catch (err) {
+    log.warn('Reading-test pool path canonicalization failed:', targetPath, err);
     return null;
   }
 }
@@ -938,8 +939,7 @@ function synchronizeBundledPoolContent(options = {}) {
   const stateFilePath = suppliedStateFilePath || resolvePoolStateFilePath();
 
   if (!fs.existsSync(bundledSourceDir)) {
-    log.warnOnce(
-      'reading_test_pool.seed.source_missing',
+    log.warn(
       'Reading-test bundled source dir missing; pool sync skipped (ignored):',
       bundledSourceDir
     );
