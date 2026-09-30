@@ -502,7 +502,7 @@ function getPoolStateAssociation(associations, preferredSnapshotRelPath) {
 }
 
 // =============================================================================
-// Pool context and startup synchronization
+// Pool context and entry paths
 // =============================================================================
 
 function resolvePoolContext(options = {}) {
@@ -623,6 +623,10 @@ function resolvePoolDestination(context, relativePathWithinPool, { ensureParent 
     entry,
   };
 }
+
+// =============================================================================
+// Pool entry state ownership
+// =============================================================================
 
 function clearImportedPoolEntriesState(destinationNames, options = {}) {
   const context = options.context && options.context.ok === true
@@ -814,6 +818,10 @@ function reconcilePoolEntryOwnership(state, snapshotRelPath, runtimeInfo) {
     ownershipInfo,
   };
 }
+
+// =============================================================================
+// Pool entry writes and bundled synchronization
+// =============================================================================
 
 function writePoolJsonEntry(context, relativePathWithinPool, payload, { replace = false } = {}) {
   const destinationInfo = resolvePoolDestination(context, relativePathWithinPool, { ensureParent: true });
@@ -1119,6 +1127,10 @@ function synchronizeBundledPoolContent(options = {}) {
     failed,
   };
 }
+
+// =============================================================================
+// Pool entry listing
+// =============================================================================
 
 function listPoolEntries(options = {}) {
   const context = resolvePoolContext(options);
