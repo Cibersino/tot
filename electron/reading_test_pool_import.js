@@ -376,8 +376,7 @@ function getDialogTexts() {
       language = settings.language;
     }
   } catch (err) {
-    log.warnOnce(
-      'reading_test_pool_import.dialogTexts',
+    log.warn(
       'Reading-test import dialog settings unavailable; using DEFAULT_LANG dialog texts:',
       err
     );
@@ -466,8 +465,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         ? BrowserWindow.fromWebContents(event.sender)
         : null;
       if (!mainWin || senderWin !== mainWin) {
-        log.warnOnce(
-          'reading_test_pool_import.unauthorized',
+        log.warn(
           'reading-test-import-pool-files unauthorized or mainWin unavailable (ignored).'
         );
         return false;
@@ -527,8 +525,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         };
       }
       if (!dialogResult.filePaths.length) {
-        log.warnOnce(
-          'reading_test_pool_import.empty_selection',
+        log.warn(
           'reading-test-import-pool-files returned empty selection (treated as cancelled).'
         );
         return { ok: true, canceled: true };
@@ -538,8 +535,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         .map((filePath) => platformAdapter.normalizeSelectedFilePath(filePath))
         .filter(Boolean);
       if (!normalizedSelectedPaths.length) {
-        log.warnOnce(
-          'reading_test_pool_import.empty_normalized_selection',
+        log.warn(
           'reading-test-import-pool-files returned empty normalized selection (treated as cancelled).'
         );
         return { ok: true, canceled: true };
