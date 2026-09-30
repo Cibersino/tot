@@ -84,6 +84,8 @@
       "update_failed_message": "اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
       "renderer_i18n_failure_title": "انٹرفیس شروع نہیں ہو سکا",
       "renderer_i18n_failure_message": "انٹرفیس مطلوبہ زبان کے وسائل لوڈ نہیں کر سکا۔ ونڈو بند ہو جائے گی۔",
+      "renderer_settings_listener_failure_title": "انٹرفیس شروع نہیں ہو سکا",
+      "renderer_settings_listener_failure_message": "انٹرفیس مطلوبہ ترتیبات کی ہم وقت سازی قائم نہیں کر سکا۔ ونڈو بند ہو جائے گی۔",
       "editor_startup_failed_title": "ٹیکسٹ ایڈیٹر شروع نہیں ہو سکا",
       "editor_startup_failed_message": "ٹیکسٹ ایڈیٹر آغاز مکمل نہیں کر سکا اور بند ہو جائے گا۔",
       "editor_startup_timeout_title": "ٹیکسٹ ایڈیٹر شروع ہونے میں بہت زیادہ وقت لے گیا",

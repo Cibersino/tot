@@ -84,6 +84,8 @@
       "update_failed_message": "Ehecha ne conexión ha eha’ã jey.",
       "renderer_i18n_failure_title": "Interfaz ndaikatúi oñepyrũ",
       "renderer_i18n_failure_message": "Interfaz ndaikatúi omyenyhẽ iñe’ẽ mba’e oikotevẽva. Ovetã oñembotýta.",
+      "renderer_settings_listener_failure_title": "Interfaz ndaikatúi oñepyrũ",
+      "renderer_settings_listener_failure_message": "Interfaz ndaikatúi omopyenda sincronización oñeikotevẽva configuración ndive. Ovetã oñembotýta.",
       "editor_startup_failed_title": "Jehai myatyrõha ndaikatúi oñepyrũ",
       "editor_startup_failed_message": "Jehai myatyrõha ndaikatúi omohu’ã ñepyrũ ha oñembotýta.",
       "editor_startup_timeout_title": "Jehai myatyrõha areterei oñepyrũ hag̃ua",

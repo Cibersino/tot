@@ -84,6 +84,8 @@
       "update_failed_message": "Hãy kiểm tra kết nối và thử lại.",
       "renderer_i18n_failure_title": "Không thể khởi động giao diện",
       "renderer_i18n_failure_message": "Giao diện không thể tải các tài nguyên ngôn ngữ bắt buộc. Cửa sổ sẽ đóng.",
+      "renderer_settings_listener_failure_title": "Không thể khởi động giao diện",
+      "renderer_settings_listener_failure_message": "Giao diện không thể thiết lập đồng bộ hóa cần thiết với các cài đặt. Cửa sổ sẽ đóng.",
       "editor_startup_failed_title": "Không thể khởi động Trình soạn thảo văn bản",
       "editor_startup_failed_message": "Trình soạn thảo văn bản không thể hoàn tất khởi động và sẽ đóng.",
       "editor_startup_timeout_title": "Trình soạn thảo văn bản mất quá nhiều thời gian để khởi động",

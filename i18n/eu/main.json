@@ -84,6 +84,8 @@
       "update_failed_message": "Egiaztatu konexioa eta saiatu berriro.",
       "renderer_i18n_failure_title": "Interfazea ezin izan da abiarazi",
       "renderer_i18n_failure_message": "Interfazeak ezin izan ditu beharrezko hizkuntza-baliabideak kargatu. Leihoa itxi egingo da.",
+      "renderer_settings_listener_failure_title": "Interfazea ezin izan da abiarazi",
+      "renderer_settings_listener_failure_message": "Interfazeak ezin izan du konfigurazioarekin beharrezko sinkronizazioa ezarri. Leihoa itxi egingo da.",
       "editor_startup_failed_title": "Testu-editorea ezin izan da abiarazi",
       "editor_startup_failed_message": "Testu-editoreak ezin izan du abioa osatu eta itxi egingo da.",
       "editor_startup_timeout_title": "Testu-editoreak denbora gehiegi behar izan du abiarazteko",

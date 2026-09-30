@@ -84,6 +84,8 @@
       "update_failed_message": "আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
       "renderer_i18n_failure_title": "ইন্টারফেস শুরু করা যায়নি",
       "renderer_i18n_failure_message": "ইন্টারফেস তার প্রয়োজনীয় ভাষা রিসোর্স লোড করতে পারেনি। উইন্ডোটি বন্ধ হবে।",
+      "renderer_settings_listener_failure_title": "ইন্টারফেস শুরু করা যায়নি",
+      "renderer_settings_listener_failure_message": "ইন্টারফেস প্রয়োজনীয় সেটিংস সিঙ্ক্রোনাইজেশন স্থাপন করতে পারেনি। উইন্ডোটি বন্ধ হবে।",
       "editor_startup_failed_title": "টেক্সট এডিটর শুরু করা যায়নি",
       "editor_startup_failed_message": "টেক্সট এডিটর স্টার্টআপ সম্পূর্ণ করতে পারেনি এবং বন্ধ হবে।",
       "editor_startup_timeout_title": "টেক্সট এডিটর শুরু হতে অতিরিক্ত সময় নিয়েছে",

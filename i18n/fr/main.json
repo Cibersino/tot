@@ -84,6 +84,8 @@
       "update_failed_message": "Vérifiez votre connexion et réessayez.",
       "renderer_i18n_failure_title": "L’interface n’a pas pu démarrer",
       "renderer_i18n_failure_message": "L’interface n’a pas pu charger les ressources linguistiques requises. La fenêtre va se fermer.",
+      "renderer_settings_listener_failure_title": "L’interface n’a pas pu démarrer",
+      "renderer_settings_listener_failure_message": "L’interface n’a pas pu établir la synchronisation requise avec les paramètres. La fenêtre va se fermer.",
       "editor_startup_failed_title": "L’Éditeur de texte n’a pas pu démarrer",
       "editor_startup_failed_message": "L’Éditeur de texte n’a pas pu terminer son démarrage et va se fermer.",
       "editor_startup_timeout_title": "L’Éditeur de texte a mis trop de temps à démarrer",

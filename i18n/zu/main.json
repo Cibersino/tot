@@ -84,6 +84,8 @@
       "update_failed_message": "Hlola uxhumano lwakho bese uzama futhi.",
       "renderer_i18n_failure_title": "Isixhumi esibonakalayo asikwazanga ukuqala",
       "renderer_i18n_failure_message": "Isixhumi esibonakalayo asikwazanga ukulayisha izinsiza zolimi ezidingekayo. Iwindi lizovalwa.",
+      "renderer_settings_listener_failure_title": "Isixhumi esibonakalayo asikwazanga ukuqala",
+      "renderer_settings_listener_failure_message": "Isixhumi esibonakalayo asikwazanga ukusungula ukuvumelanisa okudingekayo nezilungiselelo. Iwindi lizovalwa.",
       "editor_startup_failed_title": "Isihleli Sombhalo asikwazanga ukuqala",
       "editor_startup_failed_message": "Isihleli Sombhalo asikwazanga ukuqeda ukuqalisa futhi sizovalwa.",
       "editor_startup_timeout_title": "Isihleli Sombhalo sithathe isikhathi eside kakhulu ukuqala",

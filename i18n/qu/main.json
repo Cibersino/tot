@@ -84,6 +84,8 @@
       "update_failed_message": "T'inkiykita qhaway hinaspa wakmanta ruwapay.",
       "renderer_i18n_failure_title": "Interfaz mana qallariyta atirqanchu",
       "renderer_i18n_failure_message": "Interfaz mana munasqa simi recurso-kunata churayta atirqanchu. Qhawana wichq’akunqa.",
+      "renderer_settings_listener_failure_title": "Interfaz mana qallariyta atirqanchu",
+      "renderer_settings_listener_failure_message": "Interfaz mana atirqanchu wakisqa configuración sincronizaciónta churayta. Qhawana wichq’akunqa.",
       "editor_startup_failed_title": "Qillqa allichana mana qallarirqanchu",
       "editor_startup_failed_message": "Qillqa allichana mana qallariyta tukuchirqanchu hinaspa wichq’akunqa.",
       "editor_startup_timeout_title": "Qillqa allichana qallarinanpaq anchata unaykurqan",

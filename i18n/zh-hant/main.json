@@ -84,6 +84,8 @@
       "update_failed_message": "請檢查連線後重試。",
       "renderer_i18n_failure_title": "介面無法啟動",
       "renderer_i18n_failure_message": "介面無法載入所需的語言資源。視窗即將關閉。",
+      "renderer_settings_listener_failure_title": "介面無法啟動",
+      "renderer_settings_listener_failure_message": "介面無法建立所需的設定同步。視窗即將關閉。",
       "editor_startup_failed_title": "文字編輯器無法啟動",
       "editor_startup_failed_message": "文字編輯器無法完成啟動，即將關閉。",
       "editor_startup_timeout_title": "文字編輯器啟動耗時過長",

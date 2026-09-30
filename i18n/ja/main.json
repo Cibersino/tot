@@ -84,6 +84,8 @@
       "update_failed_message": "接続を確認して、もう一度お試しください。",
       "renderer_i18n_failure_title": "インターフェースを起動できませんでした",
       "renderer_i18n_failure_message": "インターフェースは必要な言語リソースを読み込めませんでした。ウィンドウを閉じます。",
+      "renderer_settings_listener_failure_title": "インターフェースを起動できませんでした",
+      "renderer_settings_listener_failure_message": "インターフェースは必要な設定同期を確立できませんでした。ウィンドウを閉じます。",
       "editor_startup_failed_title": "テキストエディターを起動できませんでした",
       "editor_startup_failed_message": "テキストエディターは起動を完了できなかったため閉じます。",
       "editor_startup_timeout_title": "テキストエディターの起動に時間がかかりすぎました",

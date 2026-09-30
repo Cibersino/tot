@@ -84,6 +84,8 @@
       "update_failed_message": "Verifique sua conexão e tente novamente.",
       "renderer_i18n_failure_title": "A interface não pôde iniciar",
       "renderer_i18n_failure_message": "A interface não pôde carregar os recursos de idioma necessários. A janela será fechada.",
+      "renderer_settings_listener_failure_title": "A interface não pôde iniciar",
+      "renderer_settings_listener_failure_message": "A interface não pôde estabelecer a sincronização necessária com as configurações. A janela será fechada.",
       "editor_startup_failed_title": "O Editor de Texto não pôde iniciar",
       "editor_startup_failed_message": "O Editor de Texto não pôde concluir a inicialização e será fechado.",
       "editor_startup_timeout_title": "O Editor de Texto demorou demais para iniciar",

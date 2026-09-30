@@ -84,6 +84,8 @@
       "update_failed_message": "अपना कनेक्शन जाँचें और फिर प्रयास करें।",
       "renderer_i18n_failure_title": "इंटरफ़ेस शुरू नहीं हो सका",
       "renderer_i18n_failure_message": "इंटरफ़ेस अपने आवश्यक भाषा संसाधन लोड नहीं कर सका। विंडो बंद हो जाएगी।",
+      "renderer_settings_listener_failure_title": "इंटरफ़ेस शुरू नहीं हो सका",
+      "renderer_settings_listener_failure_message": "इंटरफ़ेस सेटिंग्स के साथ आवश्यक सिंक्रोनाइज़ेशन स्थापित नहीं कर सका। विंडो बंद हो जाएगी।",
       "editor_startup_failed_title": "टेक्स्ट एडिटर शुरू नहीं हो सका",
       "editor_startup_failed_message": "टेक्स्ट एडिटर स्टार्टअप पूरा नहीं कर सका और बंद हो जाएगा।",
       "editor_startup_timeout_title": "टेक्स्ट एडिटर शुरू होने में बहुत अधिक समय लगा",

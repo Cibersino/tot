@@ -84,6 +84,8 @@
       "update_failed_message": "Periksa koneksi Anda dan coba lagi.",
       "renderer_i18n_failure_title": "Antarmuka tidak dapat dimulai",
       "renderer_i18n_failure_message": "Antarmuka tidak dapat memuat sumber daya bahasa yang diperlukan. Jendela akan ditutup.",
+      "renderer_settings_listener_failure_title": "Antarmuka tidak dapat dimulai",
+      "renderer_settings_listener_failure_message": "Antarmuka tidak dapat menyiapkan sinkronisasi pengaturan yang diperlukan. Jendela akan ditutup.",
       "editor_startup_failed_title": "Editor Teks tidak dapat dimulai",
       "editor_startup_failed_message": "Editor Teks tidak dapat menyelesaikan startup dan akan ditutup.",
       "editor_startup_timeout_title": "Editor Teks terlalu lama untuk dimulai",

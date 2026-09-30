@@ -84,6 +84,8 @@
       "update_failed_message": "تحقق من اتصالك ثم حاول مرة أخرى.",
       "renderer_i18n_failure_title": "تعذّر بدء الواجهة",
       "renderer_i18n_failure_message": "تعذّر على الواجهة تحميل موارد اللغة المطلوبة. ستُغلَق النافذة.",
+      "renderer_settings_listener_failure_title": "تعذّر بدء الواجهة",
+      "renderer_settings_listener_failure_message": "تعذّر على الواجهة إنشاء المزامنة المطلوبة مع الإعدادات. ستُغلَق النافذة.",
       "editor_startup_failed_title": "تعذّر بدء محرر النصوص",
       "editor_startup_failed_message": "تعذّر على محرر النصوص إكمال بدء التشغيل وسيُغلَق.",
       "editor_startup_timeout_title": "استغرق محرر النصوص وقتًا طويلًا جدًا لبدء التشغيل",

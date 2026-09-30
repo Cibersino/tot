@@ -84,6 +84,8 @@
       "update_failed_message": "Tirohia tō hononga ka ngana anō.",
       "renderer_i18n_failure_title": "Kāore te atanga i tīmata",
       "renderer_i18n_failure_message": "Kāore te atanga i uta i ngā rauemi reo e hiahiatia ana. Ka kati te matapihi.",
+      "renderer_settings_listener_failure_title": "Kāore te atanga i tīmata",
+      "renderer_settings_listener_failure_message": "Kāore te atanga i āhei ki te whakarite i te tukutahitanga e hiahiatia ana ki ngā tautuhinga. Ka kati te matapihi.",
       "editor_startup_failed_title": "Kāore te Kaiwhakatika Kuputuhi i tīmata",
       "editor_startup_failed_message": "Kāore te Kaiwhakatika Kuputuhi i oti tana tīmatanga, ā, ka kati.",
       "editor_startup_timeout_title": "He roa rawa te tīmatanga o te Kaiwhakatika Kuputuhi",
