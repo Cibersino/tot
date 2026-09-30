@@ -38,9 +38,9 @@ log.debug('Reading test pool starting...');
 
 const POOL_DIR_NAME = 'reading_speed_test_pool';
 const BUNDLED_POOL_SOURCE_DIR = path.join(__dirname, 'reading_test_pool');
-const SHOW_BUNDLED_ENTRIES_DEFAULT = true;
-const POOL_STATE_FALLBACK = Object.freeze({
-  showBundledEntries: SHOW_BUNDLED_ENTRIES_DEFAULT,
+const DEFAULT_SHOW_BUNDLED_ENTRIES = true;
+const POOL_STATE_DEFAULTS = Object.freeze({
+  showBundledEntries: DEFAULT_SHOW_BUNDLED_ENTRIES,
   entries: {},
 });
 
@@ -318,7 +318,7 @@ function resolvePoolStateFilePath(stateFilePath) {
 
 function loadPoolState({ stateFilePath } = {}) {
   const targetStateFile = resolvePoolStateFilePath(stateFilePath);
-  const rawState = loadJson(targetStateFile, POOL_STATE_FALLBACK);
+  const rawState = loadJson(targetStateFile, POOL_STATE_DEFAULTS);
   return normalizePoolState(rawState);
 }
 
