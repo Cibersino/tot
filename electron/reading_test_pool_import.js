@@ -43,7 +43,7 @@ const IMPORT_CONFLICT_STRATEGY = Object.freeze({
   REPLACE: 'replace',
   CANCEL: 'cancel',
 });
-const PICKER_STATE_FALLBACK = Object.freeze({
+const DEFAULT_PICKER_STATE = Object.freeze({
   lastDirectory: '',
 });
 
@@ -401,7 +401,7 @@ function normalizePickerState(rawState) {
 function readPickerState() {
   try {
     const statePath = getReadingTestPoolImportStateFile();
-    const raw = loadJson(statePath, PICKER_STATE_FALLBACK);
+    const raw = loadJson(statePath, DEFAULT_PICKER_STATE);
     return {
       statePath,
       state: normalizePickerState(raw),
@@ -410,7 +410,7 @@ function readPickerState() {
     log.warn('Failed to read reading-test pool import picker state (using defaults):', err);
     return {
       statePath: null,
-      state: { ...PICKER_STATE_FALLBACK },
+      state: { ...DEFAULT_PICKER_STATE },
     };
   }
 }
