@@ -6,11 +6,11 @@
 // =============================================================================
 // Main renderer entry point for the primary window UI.
 // Responsibilities:
-// - Bootstrap renderer-owned UI state from main-owned config, settings, and READY signals.
-// - Consume required renderer surfaces that must be loaded before renderer.js runs.
-// - Keep current-text preview, counts, and timing displays in sync with main-owned updates.
-// - Coordinate clipboard, presets, text extraction, Text Editor, Task Editor, and reading-test entry flows.
-// - Host window-level integrations such as menu actions and the stopwatch controller.
+// - Validate and compose required renderer feature surfaces before interaction is admitted.
+// - Bootstrap UI state from main-owned config and settings, then coordinate the READY handshake.
+// - Route main-to-renderer updates and synchronize interaction locks across feature owners.
+// - Wire main-window actions to current-text, preset, extraction, editor, and reading-test owners.
+// - Host cross-feature renderer orchestration, including menu actions and stopwatch state.
 
 // =============================================================================
 // Logger and startup constants
@@ -1090,7 +1090,7 @@ function armCurrentTextSubscription() {
 
 function armIpcSubscriptions() {
 
-  // Subscribe to preset create/update notifications from main
+  // preset-created is accepted only after READY, when its dependent controls and settings are established.
   if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
     window.electronAPI.onPresetCreated(async (preset) => {
       if (!isRendererReady()) {
@@ -1200,11 +1200,9 @@ function setupToggleModoPreciso() {
       log.warn('setModeConteo unavailable; Precise mode persistence disabled.');
     }
 
-    // Ensure initial switch state according to the in-memory mode
     toggleModoPreciso.checked = (modoConteo === 'preciso');
     toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
 
-    // When the user changes the switch:
     toggleModoPreciso.addEventListener('change', async () => {
       if (!persistModeConteo) {
         syncToggleFromSettings(settingsCache || {});
@@ -1255,7 +1253,7 @@ function setupToggleModoPreciso() {
       }
     };
 
-    // Perform immediate synchronization with settingsCache (already loaded)
+    // Use the current in-memory mode now; runMainStartup resynchronizes from the startup settings snapshot before READY.
     try {
       syncToggleFromSettings(settingsCache || {});
     } catch (err) {
@@ -1358,7 +1356,7 @@ async function runMainStartup() {
 
     syncMainInteractionLockUi();
 
-    // Load presets and save them to the cache
+    // Resolve presets before marking renderer invariants ready so startup controls use the effective selection.
     const presetLoadResult = await loadPresets({ settingsSnapshot });
     currentTextRefreshPolicy.dispatchPresetOutcome(
       presetLoadResult && presetLoadResult.selectionOutcome
@@ -1428,12 +1426,11 @@ function registerMenuActions() {
 
         const res = await window.electronAPI.openDefaultPresetsFolder();
         if (res && res.ok) {
-          // Folder opened successfully; do not show intrusive notifications
+          // Successful native folder opening is intentionally silent in the main window.
           log.debug('config/presets_defaults folder opened in explorer.');
           return;
         }
 
-        // In case of failure, inform the user
         const errMsg = res && res.error ? String(res.error) : 'Unknown';
         log.error('default presets folder failed to open:', errMsg);
         window.Notify.notifyMain('renderer.presets.alerts.open_default_folder_failed');
@@ -1794,7 +1791,7 @@ function handleEditorFirstShowState(payload) {
     return;
   }
 
-  // Lifecycle-owned Editor startup failures are disclosed once through Main's native surface. The main renderer only clears its pending launch state.
+  // This handler only clears renderer launch state; it does not emit failure UI.
 }
 
 // =============================================================================
@@ -2129,7 +2126,7 @@ async function handleOpenReadingSpeedTest() {
 // =============================================================================
 // Preset actions
 // =============================================================================
-// Preset buttons are wired here; preset modals and native confirmation dialogs are handled by main.
+// Renderer actions request modal or dialog work through electronAPI; this file handles returned outcomes.
 async function openPresetModalFromMain(payload) {
   if (!window.electronAPI || typeof window.electronAPI.openPresetModal !== 'function') {
     log.warn('openPresetModal unavailable in electronAPI; preset-modal action skipped.');
@@ -2155,7 +2152,6 @@ function bindPresetActions() {
     await openPresetModalFromMain(wpmControls.getWpm());
   });
 
-  // Edit preset
   btnEditPreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-edit')) return;
     try {
@@ -2166,14 +2162,12 @@ function bindPresetActions() {
         return;
       }
 
-      // Find preset data from cache
       const preset = wpmControls.getAllPresets().find(p => p.name === selectedName);
       if (!preset) {
         window.Notify.notifyMain('renderer.presets.alerts.not_found');
         return;
       }
 
-      // Open modal in edit mode and pass preset data.
       const payload = { wpm: wpmControls.getWpm(), mode: 'edit', preset: preset };
       log.debug('openPresetModal payload:', payload);
       await openPresetModalFromMain(payload);
@@ -2183,7 +2177,6 @@ function bindPresetActions() {
     }
   });
 
-  // Delete preset
   btnDeletePreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-delete')) return;
     try {
@@ -2200,11 +2193,9 @@ function bindPresetActions() {
         window.Notify.notifyMain('renderer.presets.alerts.delete_error');
         return;
       }
-      // Call main to request deletion; main shows native dialogs as needed
       const res = await requestDeletePreset(name);
 
       if (res && res.ok) {
-        // On success, reload presets and apply fallback selection if needed.
         const presetDeleteResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
         currentTextRefreshPolicy.dispatchPresetOutcome(
           presetDeleteResult && presetDeleteResult.selectionOutcome
@@ -2212,15 +2203,11 @@ function bindPresetActions() {
             : null,
           'preset delete'
         );
-        // No further UI dialog required; main already showed confirmation.
         return;
       } else {
-        // res.ok === false -> handle known codes
         if (res && res.code === 'CANCELLED') {
-          // User cancelled; nothing to do
           return;
         }
-        // Unexpected error: log and show a simple alert
         log.error('Error deleting preset:', res && res.error ? res.error : res);
         window.Notify.notifyMain('renderer.presets.alerts.delete_error');
       }
@@ -2230,7 +2217,6 @@ function bindPresetActions() {
     }
   });
 
-  // Restore default presets
   btnResetDefaultPresets.addEventListener('click', async () => {
     if (!guardUserAction('preset-reset-defaults')) return;
     try {
@@ -2241,11 +2227,9 @@ function bindPresetActions() {
         window.Notify.notifyMain('renderer.presets.alerts.restore_error');
         return;
       }
-      // Call main to request restore. Main will show a native confirmation dialog.
       const res = await requestRestoreDefaults();
 
       if (res && res.ok) {
-        // Reload presets to reflect restored defaults
         const presetRestoreResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
         currentTextRefreshPolicy.dispatchPresetOutcome(
           presetRestoreResult && presetRestoreResult.selectionOutcome
@@ -2256,7 +2240,6 @@ function bindPresetActions() {
         return;
       } else {
         if (res && res.code === 'CANCELLED') {
-          // User cancelled in native dialog; nothing to do
           return;
         }
         log.error('Error restoring presets:', res && res.error ? res.error : res);
