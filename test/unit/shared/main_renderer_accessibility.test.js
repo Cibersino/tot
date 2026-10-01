@@ -117,6 +117,7 @@ async function createRendererHarness({
   const subscriptions = {};
   const textExtractionDragDropConfigs = [];
   const warnings = [];
+  const warningOnceKeys = new Set();
   const currentTextRuntimeCalls = {
     bootstrapStates: [],
     copiedProcessingStates: [],
@@ -208,7 +209,11 @@ async function createRendererHarness({
     error(...args) { errors.push(args); },
     errorOnce(...args) { errors.push(args); },
     warn(...args) { warnings.push(args); },
-    warnOnce(...args) { warnings.push(args); },
+    warnOnce(key, ...args) {
+      if (warningOnceKeys.has(key)) return;
+      warningOnceKeys.add(key);
+      warnings.push(args);
+    },
   };
   const statusUi = createNoopSurface({
     applyCurrentTextProcessingState(state) {
@@ -779,7 +784,30 @@ test('main renderer resolves dropped file paths only through getPathForFile', as
       harness.warnings.some((args) => args.includes(diagnostic)),
       `${name} result should produce its resolver diagnostic`,
     );
+    if (name === 'unavailable') {
+      assert.equal(await resolver(droppedFile), '');
+      assert.equal(
+        harness.warnings.filter((args) => args.includes(diagnostic)).length,
+        1,
+        'per-file dropped-path resolution should deduplicate the same unavailable bridge diagnostic',
+      );
+    }
   }
+});
+
+test('main renderer reports non-hot optional bridge unavailability for each admitted action', async () => {
+  const diagnostic = 'setCurrentText unavailable; clear-text action skipped.';
+  const harness = await createRendererHarness({
+    absentElectronMethods: ['setCurrentText'],
+  });
+
+  await harness.selectorActions.onClearText();
+  await harness.selectorActions.onClearText();
+
+  assert.equal(
+    harness.warnings.filter((args) => args.includes(diagnostic)).length,
+    2,
+  );
 });
 
 test('main renderer applies independent settings after a recoverable language transition failure', async () => {

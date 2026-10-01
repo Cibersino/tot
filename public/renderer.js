@@ -395,8 +395,7 @@ function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
     log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, err || '');
     return;
   }
-  log.warnOnce(
-    'renderer.mainLogoLinks.unavailable',
+  log.warn(
     `Main logo links unavailable for this renderer lifetime: ${reason}`,
     err || ''
   );
@@ -614,7 +613,7 @@ function scheduleDeferredBootstrapSettleAfterUnlock() {
     return;
   }
 
-  log.warn('BOOTSTRAP: requestAnimationFrame unavailable; deferring bootstrap settle with setTimeout.');
+  log.warn('requestAnimationFrame unavailable after READY; scheduling post-unlock deferred settle with setTimeout.');
   setTimeout(() => {
     currentTextRuntime.startDeferredBootstrapSettle();
   }, 0);
@@ -653,13 +652,15 @@ function markRendererInvariantsReady() {
   maybeUnblockReady();
 }
 
-function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
+function getOptionalElectronMethod(methodName, { unavailableMessage, unavailableWarningKey } = {}) {
   const api = window.electronAPI;
   if (!api || typeof api[methodName] !== 'function') {
-    log.warnOnce(
-      dedupeKey || `renderer.ipc.${methodName}.unavailable`,
-      unavailableMessage || `${methodName} unavailable; optional action skipped.`
-    );
+    const message = unavailableMessage || `${methodName} unavailable; optional action skipped.`;
+    if (unavailableWarningKey) {
+      log.warnOnce(unavailableWarningKey, message);
+    } else {
+      log.warn(message);
+    }
     return null;
   }
   return api[methodName].bind(api);
@@ -1122,10 +1123,7 @@ function armIpcSubscriptions() {
       window.electronAPI.onStartupReady(() => {
         if (mainRendererI18nTerminal) return;
         if (startupReadyReceived) {
-          log.warnOnce(
-            'renderer.startup.ready.duplicate',
-            'startup:ready received more than once (ignored).'
-          );
+          log.warn('startup:ready received more than once (ignored).');
           return;
         }
         startupReadyReceived = true;
@@ -1271,8 +1269,7 @@ function setupToggleModoPreciso() {
 async function runMainStartup() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getAppConfig.unavailable',
-      unavailableMessage: 'getAppConfig unavailable; bootstrap will use default limits.'
+      unavailableMessage: 'BOOTSTRAP: getAppConfig unavailable; bootstrap will use default limits.'
     });
     if (getAppConfig) {
       try {
@@ -1295,8 +1292,7 @@ async function runMainStartup() {
     let settingsSnapshot = {};
     // Load user settings once at renderer startup
     const getSettings = getOptionalElectronMethod('getSettings', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getSettings.unavailable',
-      unavailableMessage: 'getSettings unavailable; bootstrap will use default settings.'
+      unavailableMessage: 'BOOTSTRAP: getSettings unavailable; bootstrap will use default settings.'
     });
     if (getSettings) {
       try {
@@ -1472,7 +1468,6 @@ function registerMenuActions() {
     registerMenuActionGuarded('actualizar_version', async () => {
       try {
         const checkForUpdates = getOptionalElectronMethod('checkForUpdates', {
-          dedupeKey: 'renderer.ipc.checkForUpdates.unavailable',
           unavailableMessage: 'checkForUpdates unavailable; update check action skipped.'
         });
         if (!checkForUpdates) return;
@@ -1532,7 +1527,6 @@ function bindSpeedControls() {
 // =============================================================================
 async function readClipboardText({ tooLargeKey, unavailableKey }) {
   const readClipboard = getOptionalElectronMethod('readClipboard', {
-    dedupeKey: 'renderer.ipc.readClipboard.unavailable',
     unavailableMessage: 'readClipboard unavailable; clipboard action skipped.'
   });
   if (!readClipboard) {
@@ -1563,10 +1557,7 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
 function getTextApplyCanonicalApi() {
   const api = window.TextApplyCanonical;
   if (!api || typeof api.applyTextWithMode !== 'function') {
-    log.warnOnce(
-      'renderer.textApplyCanonical.unavailable',
-      'TextApplyCanonical.applyTextWithMode unavailable; canonical apply flow cannot continue.'
-    );
+    log.warn('TextApplyCanonical.applyTextWithMode unavailable; canonical apply flow cannot continue.');
     return null;
   }
   return api;
@@ -1577,7 +1568,6 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   if (!textApplyApi) return { ok: false, code: 'APPLY_API_UNAVAILABLE' };
 
   const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-    dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
     unavailableMessage: 'setCurrentText unavailable; text apply skipped.'
   });
   if (!setCurrentText) return { ok: false, code: 'SET_CURRENT_TEXT_UNAVAILABLE' };
@@ -1585,7 +1575,6 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   let getCurrentText = null;
   if (mode === 'append') {
     getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
       unavailableMessage: 'getCurrentText unavailable; append apply skipped.'
     });
     if (!getCurrentText) return { ok: false, code: 'GET_CURRENT_TEXT_UNAVAILABLE' };
@@ -1621,10 +1610,7 @@ async function maybeRecoverTextExtractionOcrSetupAndRetry({
 }) {
   const recoveryApi = textExtractionOcrActivationRecovery;
   if (!recoveryApi || typeof recoveryApi.recoverAfterSetupFailure !== 'function') {
-    log.warnOnce(
-      'renderer.textExtraction.ocrActivationRecovery.unavailable',
-      'TextExtractionOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.'
-    );
+    log.warn('TextExtractionOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.');
     return { preparation, handled: false };
   }
 
@@ -1648,7 +1634,7 @@ async function maybeRecoverTextExtractionOcrSetupAndRetry({
 
 async function resolveDroppedFilePath(file) {
   const getPathForFile = getOptionalElectronMethod('getPathForFile', {
-    dedupeKey: 'renderer.ipc.getPathForFile.unavailable',
+    unavailableWarningKey: 'renderer.ipc.getPathForFile.unavailable',
     unavailableMessage: 'getPathForFile unavailable; dropped file path cannot be resolved.'
   });
   if (getPathForFile) {
@@ -1822,7 +1808,6 @@ async function handleTextExtractionAbort() {
   if (!guardUserAction('text-extraction-abort', { allowDuringProcessing: true })) return;
   try {
     const requestTextExtractionAbort = getOptionalElectronMethod('requestTextExtractionAbort', {
-      dedupeKey: 'renderer.ipc.requestTextExtractionAbort.unavailable',
       unavailableMessage: 'requestTextExtractionAbort unavailable; abort action skipped.'
     });
     if (!requestTextExtractionAbort) {
@@ -1933,7 +1918,6 @@ async function handleOpenEditor() {
   showEditorLoader();
   try {
     const openEditor = getOptionalElectronMethod('openEditor', {
-      dedupeKey: 'renderer.ipc.openEditor.unavailable',
       unavailableMessage: 'openEditor unavailable; Text Editor launch skipped.'
     });
     if (!openEditor) {
@@ -1969,7 +1953,6 @@ async function handleOpenTextTimeCalculator() {
   if (!guardUserAction('text-time-calculator')) return;
   try {
     const openTextTimeCalculator = getOptionalElectronMethod('openTextTimeCalculator', {
-      dedupeKey: 'renderer.ipc.openTextTimeCalculator.unavailable',
       unavailableMessage: 'openTextTimeCalculator unavailable; calculator launch skipped.',
     });
     if (!openTextTimeCalculator) return;
@@ -1987,7 +1970,6 @@ async function handleClearText() {
   if (!guardUserAction('clear-text')) return;
   try {
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
       unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
     });
     if (!setCurrentText) {
@@ -2061,7 +2043,6 @@ function handleTaskOpenResult(res, { mode } = {}) {
 
 async function openTaskEditorForMode(mode, { unavailableMessage } = {}) {
   const openTaskEditor = getOptionalElectronMethod('openTaskEditor', {
-    dedupeKey: 'renderer.ipc.openTaskEditor.unavailable',
     unavailableMessage,
   });
   if (!openTaskEditor) {
@@ -2213,7 +2194,6 @@ function bindPresetActions() {
         return;
       }
       const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
-        dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
         unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
       });
       if (!requestDeletePreset) {
@@ -2255,7 +2235,6 @@ function bindPresetActions() {
     if (!guardUserAction('preset-reset-defaults')) return;
     try {
       const requestRestoreDefaults = getOptionalElectronMethod('requestRestoreDefaults', {
-        dedupeKey: 'renderer.ipc.requestRestoreDefaults.unavailable',
         unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
       });
       if (!requestRestoreDefaults) {
