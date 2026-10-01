@@ -92,6 +92,7 @@ function createNoopSurface(overrides = {}) {
 }
 
 async function createRendererHarness({
+  absentElectronMethods = [],
   currentTextRuntimeOverrides = {},
   deferStartupReady = false,
   electronMethodOverrides = {},
@@ -105,6 +106,7 @@ async function createRendererHarness({
   transitionFailureLanguage = '',
   transitionFailure = null,
 } = {}) {
+  const absentElectronMethodSet = new Set(absentElectronMethods);
   const createElement = Array.isArray(focusCalls)
     ? (id = '') => createMockElement(id, (focusCall) => focusCalls.push(focusCall))
     : createMockElement;
@@ -113,6 +115,8 @@ async function createRendererHarness({
   const notifications = [];
   const pendingStates = [];
   const subscriptions = {};
+  const textExtractionDragDropConfigs = [];
+  const warnings = [];
   const currentTextRuntimeCalls = {
     bootstrapStates: [],
     copiedProcessingStates: [],
@@ -203,8 +207,8 @@ async function createRendererHarness({
     debug() {},
     error(...args) { errors.push(args); },
     errorOnce(...args) { errors.push(args); },
-    warn() {},
-    warnOnce() {},
+    warn(...args) { warnings.push(args); },
+    warnOnce(...args) { warnings.push(args); },
   };
   const statusUi = createNoopSurface({
     applyCurrentTextProcessingState(state) {
@@ -310,7 +314,10 @@ async function createRendererHarness({
         state: { active: false, requestId: 0, sinceEpochMs: null, source: '', action: '' },
       };
     },
+    getPathForFile() { return ''; },
     async getSettings() { return { language: 'en', modeConteo: 'preciso' }; },
+    async setModeConteo(mode) { return { ok: true, mode }; },
+    async setPreviewSpoilerEnabled(enabled) { return { ok: true, enabled }; },
     onEditorFirstShowState(callback) { subscriptions.editorFirstShowState = callback; },
     onCurrentTextProcessingStateChanged(callback) {
       subscriptions.currentTextProcessingStateChanged = callback;
@@ -336,6 +343,7 @@ async function createRendererHarness({
   };
   const electronAPI = new Proxy(electronMethods, {
     get(target, property) {
+      if (absentElectronMethodSet.has(property)) return undefined;
       if (Object.prototype.hasOwnProperty.call(target, property)) return target[property];
       return () => undefined;
     },
@@ -419,7 +427,9 @@ async function createRendererHarness({
     TextExtractionBatchPlanningModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionBatchPlanningModal'); },
     },
-    TextExtractionDragDrop: createNoopSurface(),
+    TextExtractionDragDrop: createNoopSurface({
+      configure(config) { textExtractionDragDropConfigs.push(config); },
+    }),
     TextExtractionEntry: createNoopSurface(),
     TextExtractionOcrActivationDisclosureModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionOcrActivationDisclosureModal'); },
@@ -517,6 +527,10 @@ async function createRendererHarness({
     },
     pendingStates,
     presetComboboxUpdates,
+    getTextExtractionDragDropConfig() {
+      assert.equal(textExtractionDragDropConfigs.length, 1);
+      return textExtractionDragDropConfigs[0];
+    },
     getPresetCreatedCalls() {
       return presetCreatedCalls;
     },
@@ -529,6 +543,7 @@ async function createRendererHarness({
     },
     subscriptions,
     notifications,
+    warnings,
     textApplyCalls,
     getElement,
   };
@@ -600,6 +615,171 @@ test('main renderer keeps the Precise toggle disabled while persistence is pendi
   harness.subscriptions.textExtractionProcessingModeChanged({ active: false });
   assert.equal(toggle.disabled, false);
   assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+});
+
+test('main renderer disables Precise persistence when its bridge capability is absent or invalid', async () => {
+  const unavailableCapabilityCases = [
+    {
+      name: 'absent',
+      options: { absentElectronMethods: ['setModeConteo'] },
+    },
+    {
+      name: 'non-function',
+      options: { electronMethodOverrides: { setModeConteo: null } },
+    },
+  ];
+
+  for (const { name, options } of unavailableCapabilityCases) {
+    const harness = await createRendererHarness(options);
+    const toggle = harness.getElement('toggleModoPreciso');
+
+    assert.equal(toggle.checked, true, `${name} capability should preserve the established mode`);
+    assert.equal(toggle.disabled, true, `${name} capability should disable persistence`);
+    assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+    toggle.checked = false;
+    toggle.dispatch('change');
+    await flushAsyncWork();
+
+    assert.equal(toggle.checked, true, `${name} capability should not admit a persistence attempt`);
+    assert.equal(toggle.disabled, true, `${name} capability should remain disabled`);
+
+    await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'simple' });
+
+    assert.equal(toggle.checked, false, `${name} capability should still reflect external settings`);
+    assert.equal(toggle.disabled, true, `${name} capability should remain unavailable after settings changes`);
+  }
+});
+
+test('main renderer keeps Precise persistence retryable after a present bridge invocation fails', async () => {
+  let persistCalls = 0;
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      async setModeConteo() {
+        persistCalls += 1;
+        throw new Error('disk full');
+      },
+    },
+  });
+  const toggle = harness.getElement('toggleModoPreciso');
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+
+  assert.equal(persistCalls, 1);
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  assert.equal(toggle.disabled, false);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+
+  assert.equal(persistCalls, 2);
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  assert.equal(toggle.disabled, false);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+});
+
+test('main renderer wires unavailable Spoiler persistence as a disabled capability', async () => {
+  const unavailableCapabilityCases = [
+    {
+      name: 'absent',
+      options: { absentElectronMethods: ['setPreviewSpoilerEnabled'] },
+    },
+    {
+      name: 'non-function',
+      options: { electronMethodOverrides: { setPreviewSpoilerEnabled: null } },
+    },
+  ];
+
+  for (const { name, options } of unavailableCapabilityCases) {
+    const harness = await createRendererHarness(options);
+
+    assert.equal(
+      harness.selectorActions.onPreviewSpoilerEnabledChange,
+      null,
+      `${name} capability should be passed to the selector as unavailable`,
+    );
+  }
+});
+
+test('main renderer Spoiler persistence adapter rejects non-ok bridge results', async () => {
+  let persistCalls = 0;
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      async setPreviewSpoilerEnabled(enabled) {
+        persistCalls += 1;
+        return { ok: false, error: `cannot save ${enabled}` };
+      },
+    },
+  });
+
+  await assert.rejects(
+    harness.selectorActions.onPreviewSpoilerEnabledChange(false),
+    /setPreviewSpoilerEnabled failed/,
+  );
+  assert.equal(persistCalls, 1);
+});
+
+test('main renderer resolves dropped file paths only through getPathForFile', async () => {
+  const droppedFile = { path: 'C:\\legacy\\drop.txt' };
+  let receivedFile = null;
+  const validHarness = await createRendererHarness({
+    electronMethodOverrides: {
+      getPathForFile(file) {
+        receivedFile = file;
+        return '  C:\\current\\drop.txt  ';
+      },
+    },
+  });
+  const validResolver = validHarness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+
+  assert.equal(await validResolver(droppedFile), 'C:\\current\\drop.txt');
+  assert.equal(receivedFile, droppedFile);
+
+  const unresolvedCases = [
+    {
+      name: 'unavailable',
+      options: { absentElectronMethods: ['getPathForFile'] },
+      diagnostic: 'getPathForFile unavailable; dropped file path cannot be resolved.',
+    },
+    {
+      name: 'throwing',
+      options: {
+        electronMethodOverrides: {
+          getPathForFile() {
+            throw new Error('bridge failure');
+          },
+        },
+      },
+      diagnostic: 'getPathForFile failed; dropped file path unresolved:',
+    },
+    {
+      name: 'empty',
+      options: { electronMethodOverrides: { getPathForFile() { return ''; } } },
+      diagnostic: 'getPathForFile returned empty/invalid; dropped file path unresolved.',
+    },
+    {
+      name: 'invalid',
+      options: { electronMethodOverrides: { getPathForFile() { return {}; } } },
+      diagnostic: 'getPathForFile returned empty/invalid; dropped file path unresolved.',
+    },
+  ];
+
+  for (const { name, options, diagnostic } of unresolvedCases) {
+    const harness = await createRendererHarness(options);
+    const resolver = harness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+
+    assert.equal(await resolver(droppedFile), '', `${name} result should leave the file unresolved`);
+    assert.ok(
+      harness.warnings.some((args) => args.includes(diagnostic)),
+      `${name} result should produce its resolver diagnostic`,
+    );
+  }
 });
 
 test('main renderer applies independent settings after a recoverable language transition failure', async () => {

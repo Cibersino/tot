@@ -81,6 +81,7 @@
   let editorLaunchPending = false;
   let lastPreviewText = '';
   let lastPreviewEmptyText = '';
+  let persistPreviewSpoilerEnabled = null;
   let previewSpoilerSavePending = false;
 
   // =============================================================================
@@ -104,7 +105,7 @@
   function applyPreviewSpoilerToggleControlState() {
     setControlInteractionLocked(
       previewSpoilerToggle,
-      selectorInteractionLocked || previewSpoilerSavePending
+      !persistPreviewSpoilerEnabled || selectorInteractionLocked || previewSpoilerSavePending
     );
   }
 
@@ -387,6 +388,11 @@
   } = {}) {
     if (actionsBound) return;
 
+    persistPreviewSpoilerEnabled = typeof onPreviewSpoilerEnabledChange === 'function'
+      ? onPreviewSpoilerEnabledChange
+      : null;
+    applyPreviewSpoilerToggleControlState();
+
     [
       [btnTextExtraction, 'text-extraction', onTextExtraction],
       [btnTextExtractionAbort, 'text-extraction-abort', onTextExtractionAbort],
@@ -409,11 +415,17 @@
       async () => {
         const nextEnabled = previewSpoilerToggle.checked;
         const previousEnabled = !nextEnabled;
+        if (!persistPreviewSpoilerEnabled) {
+          previewSpoilerToggle.checked = previousEnabled;
+          renderPreviewFromState();
+          applyPreviewSpoilerToggleControlState();
+          return;
+        }
         renderPreviewFromState();
         previewSpoilerSavePending = true;
         applyPreviewSpoilerToggleControlState();
         try {
-          await onPreviewSpoilerEnabledChange(nextEnabled);
+          await persistPreviewSpoilerEnabled(nextEnabled);
         } catch (err) {
           log.error('Preview spoiler setting persistence failed; restoring previous value:', err);
           previewSpoilerToggle.checked = previousEnabled;

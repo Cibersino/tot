@@ -223,6 +223,7 @@ const presetDescription = document.getElementById('presetDescription');
 let maxTextChars = AppConstants.MAX_TEXT_CHARS;
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4;
 let modoConteo = 'preciso';
+let persistModeConteo = null;
 let isModeConteoPersistencePending = false;
 let idiomaActual = DEFAULT_LANG;
 let settingsCache = null;
@@ -354,7 +355,7 @@ function setControlInteractionLocked(element, locked) {
 function syncToggleModoPrecisoInteractionState() {
   setControlInteractionLocked(
     toggleModoPreciso,
-    isModeConteoPersistencePending || isMainInteractionLocked()
+    !persistModeConteo || isModeConteoPersistencePending || isMainInteractionLocked()
   );
 }
 
@@ -1192,12 +1193,26 @@ function setupToggleModoPreciso() {
   try {
     if (!toggleModoPreciso) return;
 
+    // Renderer lifecycle has no bridge-update path, so resolve this optional capability during setup.
+    const api = window.electronAPI;
+    persistModeConteo = api && typeof api.setModeConteo === 'function'
+      ? api.setModeConteo.bind(api)
+      : null;
+    if (!persistModeConteo) {
+      log.warn('setModeConteo unavailable; Precise mode persistence disabled.');
+    }
+
     // Ensure initial switch state according to the in-memory mode
     toggleModoPreciso.checked = (modoConteo === 'preciso');
     toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
 
     // When the user changes the switch:
     toggleModoPreciso.addEventListener('change', async () => {
+      if (!persistModeConteo) {
+        syncToggleFromSettings(settingsCache || {});
+        syncToggleModoPrecisoInteractionState();
+        return;
+      }
       if (!guardUserAction('toggle-modo-preciso')) {
         toggleModoPreciso.checked = (modoConteo === 'preciso');
         toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
@@ -1210,10 +1225,7 @@ function setupToggleModoPreciso() {
         isModeConteoPersistencePending = true;
         syncToggleModoPrecisoInteractionState();
         try {
-          if (!window.electronAPI || typeof window.electronAPI.setModeConteo !== 'function') {
-            throw new Error('setModeConteo unavailable.');
-          }
-          const persistResult = await window.electronAPI.setModeConteo(nuevoModo);
+          const persistResult = await persistModeConteo(nuevoModo);
           if (!persistResult || persistResult.ok !== true) {
             throw new Error(
               persistResult && persistResult.error
@@ -1645,19 +1657,12 @@ async function resolveDroppedFilePath(file) {
       if (typeof resolvedPath === 'string' && resolvedPath.trim()) {
         return resolvedPath.trim();
       }
-      log.warn('getPathForFile returned empty/invalid; falling back to File.path.');
+      log.warn('getPathForFile returned empty/invalid; dropped file path unresolved.');
     } catch (err) {
-      log.warn('getPathForFile failed; falling back to File.path:', err);
+      log.warn('getPathForFile failed; dropped file path unresolved:', err);
     }
   }
-
-  const fallbackPath = file && typeof file.path === 'string'
-    ? file.path.trim()
-    : '';
-  if (!fallbackPath) {
-    log.warn('Dropped file path unresolved; returning empty path.');
-  }
-  return fallbackPath;
+  return '';
 }
 
 // renderer.js keeps only app-level wiring here.
@@ -2333,6 +2338,18 @@ function startRendererBootstrap() {
   });
   armIpcSubscriptions();
   setupToggleModoPreciso();
+  const api = window.electronAPI;
+  const persistPreviewSpoilerEnabled = api && typeof api.setPreviewSpoilerEnabled === 'function'
+    ? async (enabled) => {
+      const result = await api.setPreviewSpoilerEnabled(enabled);
+      if (!result || result.ok !== true) {
+        throw new Error('setPreviewSpoilerEnabled failed.');
+      }
+    }
+    : null;
+  if (!persistPreviewSpoilerEnabled) {
+    log.warn('setPreviewSpoilerEnabled unavailable; preview Spoiler persistence disabled.');
+  }
   currentTextSelectorSection.bindActions({
     onTextExtraction: handleTextExtractionPicker,
     onTextExtractionAbort: handleTextExtractionAbort,
@@ -2345,12 +2362,7 @@ function startRendererBootstrap() {
     onNewTask: handleNewTask,
     onLoadTask: handleLoadTask,
     onReadingSpeedTest: handleOpenReadingSpeedTest,
-    onPreviewSpoilerEnabledChange: async (enabled) => {
-      const result = await window.electronAPI.setPreviewSpoilerEnabled(enabled);
-      if (!result || result.ok !== true) {
-        throw new Error('setPreviewSpoilerEnabled failed.');
-      }
-    },
+    onPreviewSpoilerEnabledChange: persistPreviewSpoilerEnabled,
   });
   textTimeCalculatorLauncher.bindActions({
     onOpenCalculator: handleOpenTextTimeCalculator,

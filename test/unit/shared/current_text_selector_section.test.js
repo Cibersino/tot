@@ -310,8 +310,10 @@ test('Spoiler applies saved state and restores the saved state when persistence 
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
 
+  let persistCalls = 0;
   let rejectSave;
   bindSelectorActions(harness.api, () => new Promise((_resolve, reject) => {
+    persistCalls += 1;
     rejectSave = reject;
   }));
 
@@ -326,6 +328,49 @@ test('Spoiler applies saved state and restores the saved state when persistence 
   assert.equal(harness.elements.textPreview.childNodes.length, 1);
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+
+  toggle.checked = true;
+  const retryChange = toggle.dispatch('change');
+  assert.equal(toggle.disabled, true);
+  rejectSave(new Error('disk full'));
+  await retryChange;
+
+  assert.equal(persistCalls, 2);
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.disabled, false);
+  assert.equal(harness.elements.textPreview.childNodes.length, 1);
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
+  assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+});
+
+test('Spoiler remains disabled when persistence capability is unavailable', async () => {
+  const harness = createHarness();
+  const toggle = harness.elements.previewSpoilerToggle;
+
+  harness.api.renderPreview('abcdefghij');
+  harness.api.setPreviewSpoilerEnabled(false);
+  bindSelectorActions(harness.api, null);
+
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.elements.textPreview.childNodes.length, 1);
+
+  toggle.checked = true;
+  await toggle.dispatch('change');
+
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+  assert.equal(harness.elements.textPreview.childNodes.length, 1);
+
+  harness.api.setInteractionLocked(true);
+  harness.api.setInteractionLocked(false);
+  harness.api.setPreviewSpoilerEnabled(true);
+
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
 });
 
 test('Spanish and English define the Spoiler shared help source', () => {
