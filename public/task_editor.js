@@ -303,7 +303,7 @@ function syncDirtyState() {
   if (!taskEditorHasInitializedDraft || !Number.isInteger(taskEditorCurrentInitId)) return;
   const api = window.taskEditorAPI;
   if (!api || typeof api.setDirtyState !== 'function') {
-    log.warnOnce('task_editor.setDirtyState.missing', 'taskEditorAPI.setDirtyState unavailable; dirty state sync disabled.');
+    log.warnOnce('task_editor.setDirtyState.missing', 'taskEditorAPI.setDirtyState unavailable; dirty state sync failed (ignored).');
     return;
   }
   try {
@@ -1354,28 +1354,30 @@ function renderRow(row) {
     ariaLabel: linkName,
   });
   enlaceBtn.setAttribute('data-tot-tooltip', linkName);
-  enlaceBtn.addEventListener('click', async () => {
-    const raw = enlaceInput.value;
-    const api = getTaskEditorApi('openTaskLink');
-    if (!api) return;
-    const res = await api.openTaskLink(raw);
-    if (isFailedTaskEditorResult(res)) {
-      const code = getTaskEditorResultCode(res, 'ERROR');
-      if (code === 'CONFIRM_DENIED') return;
-      log.warn('openTaskLink failed:', { code, response: res || null });
-      if (code === 'LINK_MISSING' || code === 'LINK_BLOCKED') {
-        setTaskFieldInvalidState(enlaceInput, true);
-        enlaceInput.focus();
-        window.Notify.notifyEditor(
-          code === 'LINK_MISSING'
-            ? 'renderer.tasks.alerts.link_missing'
-            : 'renderer.tasks.alerts.link_blocked'
-        );
+  enlaceBtn.addEventListener('click', () => {
+    void (async () => {
+      const raw = enlaceInput.value;
+      const api = getTaskEditorApi('openTaskLink');
+      if (!api) return;
+      const res = await api.openTaskLink(raw);
+      if (isFailedTaskEditorResult(res)) {
+        const code = getTaskEditorResultCode(res, 'ERROR');
+        if (code === 'CONFIRM_DENIED') return;
+        log.warn('openTaskLink failed:', { code, response: res || null });
+        if (code === 'LINK_MISSING' || code === 'LINK_BLOCKED') {
+          setTaskFieldInvalidState(enlaceInput, true);
+          enlaceInput.focus();
+          window.Notify.notifyEditor(
+            code === 'LINK_MISSING'
+              ? 'renderer.tasks.alerts.link_missing'
+              : 'renderer.tasks.alerts.link_blocked'
+          );
+          return;
+        }
+        window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
         return;
       }
-      window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
-      return;
-    }
+    })().catch((err) => log.error('openTaskLink failed:', err));
   });
   enlaceWrap.appendChild(enlaceInput);
   enlaceWrap.appendChild(enlaceSelectBtn);
@@ -1735,17 +1737,21 @@ function renderLibraryItems(items) {
       if (didAdd) closeModal(libraryModal);
     });
     const btnDelete = buildActionButton('trash', 'renderer.tasks.biblioteca.library_row_delete', async () => {
-      const api = getTaskEditorApi('deleteLibraryEntry');
-      if (!api) return;
-      const delRes = await api.deleteLibraryEntry(entry.texto);
-      if (isFailedTaskEditorResult(delRes)) {
-        const code = getTaskEditorResultCode(delRes, 'WRITE_FAILED');
-        if (code === 'CONFIRM_DENIED') return;
-        log.warn('deleteLibraryEntry failed:', { code, response: delRes || null });
-        window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
-        return;
+      try {
+        const api = getTaskEditorApi('deleteLibraryEntry');
+        if (!api) return;
+        const delRes = await api.deleteLibraryEntry(entry.texto);
+        if (isFailedTaskEditorResult(delRes)) {
+          const code = getTaskEditorResultCode(delRes, 'WRITE_FAILED');
+          if (code === 'CONFIRM_DENIED') return;
+          log.warn('deleteLibraryEntry failed:', { code, response: delRes || null });
+          window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
+          return;
+        }
+        await refreshLibraryList();
+      } catch (err) {
+        log.error('Task library delete action failed:', err);
       }
-      await refreshLibraryList();
     });
 
     actions.appendChild(btnLoad);
@@ -2163,8 +2169,16 @@ function wireLibraryModalEvents() {
   }
 
   wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
-  if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
-  if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
+  if (includeCommentYes) {
+    includeCommentYes.addEventListener('click', () => {
+      saveRowToLibrary(true).catch((err) => log.error('saveRowToLibrary failed:', err));
+    });
+  }
+  if (includeCommentNo) {
+    includeCommentNo.addEventListener('click', () => {
+      saveRowToLibrary(false).catch((err) => log.error('saveRowToLibrary failed:', err));
+    });
+  }
 }
 
 function wireTaskEditorEvents() {
@@ -2248,7 +2262,7 @@ async function bootstrapTaskEditor() {
           bootstrapLanguage = settings.language || DEFAULT_LANG;
         }
       } catch (err) {
-        log.warn('Task Editor settings acquisition failed; using default language:', err);
+        log.warn('BOOTSTRAP: Task Editor settings acquisition failed; using default language:', err);
       }
     } else {
       log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
