@@ -1,10 +1,22 @@
 // public/task_editor.js
 'use strict';
 
-// A required dependency can fail before the Task Editor's normal coordinator
-// exists. Report the no-draft terminal state through the already-exposed
-// lifecycle bridge when it is available; no renderer draft has been admitted
-// at this point.
+// =============================================================================
+// Overview
+// =============================================================================
+// Task Editor renderer.
+// Responsibilities:
+// - Establish required renderer dependencies and report no-draft terminal bootstrap failures.
+// - Maintain editable task rows, duration summaries, and dirty-state synchronization.
+// - Coordinate task persistence, library entries, linked files, and snapshots through taskEditorAPI.
+// - Keep the table and modal UI translated and accessible.
+// - Resolve Task Editor startup, settings, and close lifecycle events.
+
+// =============================================================================
+// Bootstrap terminal reporting
+// =============================================================================
+// A required dependency can fail before the Task Editor's normal coordinator exists.
+// Report the no-draft terminal state through the already-exposed lifecycle bridge when it is available; no renderer draft has been admitted at this point.
 function reportNoDraftTaskBootstrapFailure(kind) {
   const api = typeof window !== 'undefined' ? window.taskEditorAPI : null;
   if (!api || typeof api.reportTerminalState !== 'function') return false;
@@ -23,17 +35,7 @@ function reportNoDraftTaskBootstrapFailure(kind) {
 }
 
 // =============================================================================
-// Overview
-// =============================================================================
-// Task Editor renderer.
-// - Render and edit task rows.
-// - Compute per-row and total durations.
-// - Persist task lists and column widths via taskEditorAPI.
-// - Manage library load/save/delete and link opening.
-// - Track dirty state, close confirmations, and translations/settings updates.
-
-// =============================================================================
-// Logger / constants
+// Renderer dependencies and constants
 // =============================================================================
 if (typeof window.getLogger !== 'function') {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
@@ -97,7 +99,7 @@ const EMPTY_TASK_ROW = Object.freeze({
 const taskEditorRoot = document.querySelector('.task-editor');
 
 // =============================================================================
-// i18n
+// Shared startup and lifecycle state
 // =============================================================================
 let idiomaActual = DEFAULT_LANG;
 let taskEditorSemanticQueue = Promise.resolve();
@@ -109,6 +111,9 @@ let taskEditorCurrentInitId = null;
 let taskEditorLatestInitId = null;
 const pendingTaskInitPayloads = [];
 
+// =============================================================================
+// Translation and layout dependencies
+// =============================================================================
 const {
   transitionRendererTranslations,
   tRenderer,
@@ -244,6 +249,9 @@ let pendingLibraryRowId = null;
 let libraryItemsCache = [];
 let renderedRowFields = new Map();
 
+// =============================================================================
+// Column layout controller
+// =============================================================================
 let columnLayoutController = null;
 try {
   columnLayoutController = taskEditorColumnLayout.createController({
@@ -427,6 +435,9 @@ function validateCandidateTaskRows(candidateRows) {
   throw new Error(`[task-editor] candidate deriveTaskSummary failed: ${summaryResult.code}`);
 }
 
+// =============================================================================
+// Modal and bridge helpers
+// =============================================================================
 function openModal(modalEl, initialFocusEl) {
   if (!modalEl) return;
   modalEl.setAttribute('aria-hidden', 'false');
@@ -469,7 +480,7 @@ function handleTaskEditorModalEscape(event) {
   entry.close();
 }
 
-// Shared guard for taskEditorAPI methods; emits a user notice and warnOnce on missing APIs.
+// Shared guard for taskEditorAPI methods; emits a user notice and warning on missing APIs.
 function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
   const api = window.taskEditorAPI;
   if (!api || typeof api[methodName] !== 'function') {
@@ -507,6 +518,9 @@ function setCommentSaveInFlight(inFlight) {
   });
 }
 
+// =============================================================================
+// Snapshot comment workflow
+// =============================================================================
 function getSnapshotDetailsConfirmationState(confirmation) {
   const hasTextChange = !!confirmation && typeof confirmation.texto === 'string';
   const hasTimeChange = !!(confirmation && confirmation.reading);
