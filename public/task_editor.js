@@ -2232,6 +2232,8 @@ function sendTaskEditorCloseResponse(payload) {
   try {
     window.taskEditorAPI.respondToClose(payload);
   } catch (err) {
+    // Deliberate current tradeoff: response-send failure stays fail-closed, even if close remains pending.
+    // Safe retry requires correlated IPC; revisit only if stronger close-recovery guarantees are warranted.
     log.warn('taskEditorAPI.respondToClose failed (ignored):', err);
   }
 }
