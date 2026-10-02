@@ -508,13 +508,23 @@ findApi.onInit((payload) => {
 findApi.onState(applyIncomingState);
 
 if (typeof findApi.onFocusTarget === 'function') {
-  findApi.onFocusTarget((payload) => {
-    if (findI18nTerminal) return;
-    const target = payload && payload.target === 'replace' ? 'replace' : 'query';
-    const selectAll = !!(payload && payload.selectAll);
-    pendingFocusIntent = { target, selectAll };
-    applyPendingFocusIntent();
-  });
+  let focusSyncEnabled = true;
+  try {
+    findApi.onFocusTarget((payload) => {
+      if (!focusSyncEnabled || findI18nTerminal) return;
+      const target = payload && payload.target === 'replace' ? 'replace' : 'query';
+      const selectAll = !!(payload && payload.selectAll);
+      pendingFocusIntent = { target, selectAll };
+      applyPendingFocusIntent();
+    });
+  } catch (err) {
+    focusSyncEnabled = false;
+    pendingFocusIntent = null;
+    log.warn(
+      'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget registration failed; focus-sync capability disabled.',
+      err
+    );
+  }
 } else {
   log.warn(
     'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'

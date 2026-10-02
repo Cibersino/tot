@@ -53,6 +53,7 @@ function createHarness({
   holdInitialSettings = false,
   includeRendererI18n = true,
   expectStartupThrow = false,
+  focusListenerMode = 'available',
   settingsListenerMode = 'available',
 } = {}) {
   const notifyCalls = [];
@@ -180,6 +181,10 @@ function createHarness({
         },
         onFocusTarget(cb) {
           subscriptions.focusTarget = cb;
+          if (focusListenerMode === 'throw-after-register') {
+            cb({ target: 'query', selectAll: true });
+            throw new Error('focus listener registration failed');
+          }
           return () => {};
         },
         async getSettings() {
@@ -278,6 +283,19 @@ test('find closes before normal interaction when live settings registration is u
     assert.equal(harness.elements.findQuery.disabled, true, settingsListenerMode);
     assert.equal(harness.elements.findNext.disabled, true, settingsListenerMode);
   }
+});
+
+test('find disables focus sync when focus-listener registration throws after retaining its callback', async () => {
+  const harness = createHarness({ focusListenerMode: 'throw-after-register' });
+
+  await bootstrapReady();
+
+  assert.equal(harness.startupError, null);
+  assert.equal(harness.getReporterCalls(), 0);
+  harness.subscriptions.focusTarget({ target: 'query', selectAll: true });
+  assert.equal(harness.elements.findQuery.focusCount, 0);
+  assert.equal(typeof harness.subscriptions.settingsChanged, 'function');
+  assert.equal(harness.elements.findQuery.disabled, false);
 });
 
 async function bootstrapReady() {
