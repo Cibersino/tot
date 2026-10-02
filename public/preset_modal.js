@@ -147,6 +147,51 @@
       presetTranslationsEstablished = true;
     }
 
+    function enqueuePresetSemanticWork(work) {
+      const run = async () => {
+        // Main-process closure is asynchronous. Do not admit queued semantic
+        // work after this modal has entered terminal i18n failure.
+        if (presetI18nTerminal) return;
+        return work();
+      };
+      presetSemanticQueue = presetSemanticQueue.then(run, run);
+      return presetSemanticQueue;
+    }
+
+    async function getPresetSettingsLanguage() {
+      if (!window.presetAPI || typeof window.presetAPI.getSettings !== 'function') {
+        log.warn('presetAPI.getSettings missing; using default language.');
+        return DEFAULT_LANG;
+      }
+      try {
+        const settings = await window.presetAPI.getSettings();
+        return settings && settings.language ? settings.language : DEFAULT_LANG;
+      } catch (err) {
+        log.warn('presetAPI.getSettings failed; using default language:', err);
+        return DEFAULT_LANG;
+      }
+    }
+
+    function getEffectivePresetLanguage(language) {
+      return normalizeLangTag(language) || DEFAULT_LANG;
+    }
+
+    async function applyPresetTranslationUpdate(language) {
+      try {
+        await transitionPresetTranslations(language);
+        return true;
+      } catch (err) {
+        if (err && err.rendererI18nTransition) {
+          reportPresetI18nFailure(err, {
+            startup: !presetTranslationsEstablished,
+          });
+        } else {
+          log.error('Preset modal semantic update failed:', err);
+        }
+        return false;
+      }
+    }
+
     function reportPresetI18nFailure(err, { startup = false } = {}) {
       const transition = err && err.rendererI18nTransition;
       if (!transition) {
@@ -236,54 +281,6 @@
 
       window.Notify.notifyMain('renderer.presets.alerts.process_error');
       log.error('presetAPI.createPreset missing.');
-    }
-
-    // =============================================================================
-    // Bridge integration
-    // =============================================================================
-    function enqueuePresetSemanticWork(work) {
-      const run = async () => {
-        // Main-process closure is asynchronous. Do not admit queued semantic
-        // work after this modal has entered terminal i18n failure.
-        if (presetI18nTerminal) return;
-        return work();
-      };
-      presetSemanticQueue = presetSemanticQueue.then(run, run);
-      return presetSemanticQueue;
-    }
-
-    async function getPresetSettingsLanguage() {
-      if (!window.presetAPI || typeof window.presetAPI.getSettings !== 'function') {
-        log.warn('presetAPI.getSettings missing; using default language.');
-        return DEFAULT_LANG;
-      }
-      try {
-        const settings = await window.presetAPI.getSettings();
-        return settings && settings.language ? settings.language : DEFAULT_LANG;
-      } catch (err) {
-        log.warn('presetAPI.getSettings failed; using default language:', err);
-        return DEFAULT_LANG;
-      }
-    }
-
-    function getEffectivePresetLanguage(language) {
-      return normalizeLangTag(language) || DEFAULT_LANG;
-    }
-
-    async function applyPresetTranslationUpdate(language) {
-      try {
-        await transitionPresetTranslations(language);
-        return true;
-      } catch (err) {
-        if (err && err.rendererI18nTransition) {
-          reportPresetI18nFailure(err, {
-            startup: !presetTranslationsEstablished,
-          });
-        } else {
-          log.error('Preset modal semantic update failed:', err);
-        }
-        return false;
-      }
     }
 
     // Bootstrap HTML is only a temporary visual shell. Do not admit form
