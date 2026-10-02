@@ -548,8 +548,7 @@ let editorSemanticQueue = Promise.resolve();
 
 function enqueueEditorSemanticWork(work) {
   const run = async () => {
-    // Window closure is coordinated asynchronously through the main process.
-    // Do not admit queued Text Editor semantic work after terminal i18n failure.
+    // Window closure is coordinated asynchronously through the main process. Do not admit queued Text Editor semantic work after terminal i18n failure.
     if (editorI18nTerminal) return;
     return work();
   };
@@ -616,8 +615,7 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
 
 function enqueueEditorSettingsApplication(settings) {
   const run = () => applyEditorSettingsSnapshot(settings);
-  // Preload listeners do not await async callbacks. Admit full settings
-  // snapshots after the preceding root semantic operation has settled.
+  // Preload listeners do not await async callbacks. Admit full settings snapshots after the preceding root semantic operation has settled.
   return enqueueEditorSemanticWork(run);
 }
 
