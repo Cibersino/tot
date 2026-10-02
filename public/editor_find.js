@@ -61,7 +61,6 @@ if (!transitionRendererTranslations || !tRenderer) {
   throw new Error('[editor-find] RendererI18n unavailable; cannot continue.');
 }
 
-const tr = (path) => tRenderer(path);
 const findApi = window.editorFindAPI;
 if (!findApi) {
   throw new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.');
@@ -163,10 +162,10 @@ function normalizeState(payload) {
 
 function resolveStatusText() {
   if (!findState.query) {
-    return tr('renderer.editor.editor_find.status_empty_query');
+    return tRenderer('renderer.editor.editor_find.status_empty_query');
   }
   if (findState.matches <= 0) {
-    return tr('renderer.editor.editor_find.status_no_matches');
+    return tRenderer('renderer.editor.editor_find.status_no_matches');
   }
   const current = Math.max(1, Math.min(findState.activeMatchOrdinal || 1, findState.matches));
   return `${current}/${findState.matches}`;
@@ -208,34 +207,34 @@ function applyUiState() {
   const toggleNameKey = findState.expanded
     ? 'renderer.editor.editor_find.names.hide_replace'
     : 'renderer.editor.editor_find.names.show_replace';
-  const toggleName = tr(toggleNameKey);
+  const toggleName = tRenderer(toggleNameKey);
   toggleEl.setAttribute('aria-label', toggleName);
 }
 
 async function applyTranslations() {
-  const title = tr('renderer.editor.editor_find.input_aria');
+  const title = tRenderer('renderer.editor.editor_find.input_aria');
   document.title = title;
   wrapEl.setAttribute('aria-label', title);
 
-  inputEl.placeholder = tr('renderer.editor.editor_find.input_placeholder');
-  inputEl.setAttribute('aria-label', tr('renderer.editor.editor_find.input_aria'));
-  replaceInputEl.placeholder = tr('renderer.editor.editor_find.replace_placeholder');
-  replaceInputEl.setAttribute('aria-label', tr('renderer.editor.editor_find.replace_aria'));
+  inputEl.placeholder = tRenderer('renderer.editor.editor_find.input_placeholder');
+  inputEl.setAttribute('aria-label', tRenderer('renderer.editor.editor_find.input_aria'));
+  replaceInputEl.placeholder = tRenderer('renderer.editor.editor_find.replace_placeholder');
+  replaceInputEl.setAttribute('aria-label', tRenderer('renderer.editor.editor_find.replace_aria'));
 
-  replaceOneEl.textContent = tr('renderer.editor.editor_find.replace');
-  replaceAllEl.textContent = tr('renderer.editor.editor_find.replace_all');
+  replaceOneEl.textContent = tRenderer('renderer.editor.editor_find.replace');
+  replaceAllEl.textContent = tRenderer('renderer.editor.editor_find.replace_all');
 
   [
     [prevEl, 'renderer.editor.editor_find.names.previous_match'],
     [nextEl, 'renderer.editor.editor_find.names.next_match'],
     [closeEl, 'renderer.editor.editor_find.names.close'],
   ].forEach(([element, key]) => {
-    const name = tr(key);
+    const name = tRenderer(key);
     element.setAttribute('aria-label', name);
   });
-  const replaceCurrentHelp = tr('renderer.editor.editor_find.help.replace_current');
+  const replaceCurrentHelp = tRenderer('renderer.editor.editor_find.help.replace_current');
   replaceOneDescriptionEl.textContent = replaceCurrentHelp;
-  const replaceAllHelp = tr('renderer.editor.editor_find.help.replace_all');
+  const replaceAllHelp = tRenderer('renderer.editor.editor_find.help.replace_all');
   replaceAllDescriptionEl.textContent = replaceAllHelp;
 
   findSemanticReady = true;
