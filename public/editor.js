@@ -246,6 +246,8 @@ function validateEditorBootstrapRequirements() {
   requireBootstrapMethod(ctx.editorAPI, 'setCurrentText', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'getInitialCurrentTextSnapshot', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'onExternalUpdate', 'editorAPI');
+  // Replace is not negotiated as an optional capability in the current bridge contract.
+  // Relax these checks only with an owner-visible availability contract that disables Replace admission coherently.
   requireBootstrapMethod(ctx.editorAPI, 'onReplaceRequest', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'sendReplaceResponse', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'getWindowState', 'editorAPI');
