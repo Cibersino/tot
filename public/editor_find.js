@@ -28,14 +28,14 @@ function reportEarlyTerminalFindI18nFailure(kind) {
   // stable preload surface rather than entering the regular terminal helper.
   const api = window.editorFindAPI;
   if (!api || typeof api.reportRendererI18nFailure !== 'function') {
-    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    log.warn('BOOTSTRAP: editorFindAPI.reportRendererI18nFailure unavailable; report failed (ignored): closing failed renderer locally.');
     if (typeof window.close === 'function') window.close();
     return;
   }
   try {
     api.reportRendererI18nFailure({ kind });
   } catch (err) {
-    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', err);
+    log.warn('BOOTSTRAP: editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', err);
     if (typeof window.close === 'function') window.close();
   }
 }
@@ -277,14 +277,14 @@ function reportTerminalFindI18nFailure(kind) {
   toggleEl.disabled = true;
   closeEl.disabled = false;
   if (!window.editorFindAPI || typeof window.editorFindAPI.reportRendererI18nFailure !== 'function') {
-    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    log.warn('editorFindAPI.reportRendererI18nFailure unavailable; report failed (ignored): closing failed renderer locally.');
     if (typeof window.close === 'function') window.close();
     return;
   }
   try {
     window.editorFindAPI.reportRendererI18nFailure({ kind });
   } catch (reportErr) {
-    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', reportErr);
     if (typeof window.close === 'function') window.close();
   }
 }
@@ -302,11 +302,7 @@ function focusRequestedTarget(target, selectAll = false) {
       targetEl.select();
     }
   } catch (err) {
-    log.warnOnce(
-      'editor-find.focusTarget.failed',
-      'Unable to focus requested editor-find target (ignored):',
-      err
-    );
+    log.warn('Unable to focus requested editor-find target (ignored):', err);
   }
 }
 
@@ -338,7 +334,7 @@ function notifyReplaceTimeout() {
       duration: 5000,
     });
   } catch (err) {
-    log.warn('editor-find: failed to show replace-timeout toast:', err);
+    log.warn('editor-find: replace-timeout toast failed (ignored):', err);
   }
 }
 
@@ -354,11 +350,7 @@ async function pushQuery() {
   try {
     await findApi.setQuery(inputEl.value || '');
   } catch (err) {
-    log.errorOnce(
-      'editor-find.setQuery.failed',
-      'Error sending find query to main process:',
-      err
-    );
+    log.error('Error sending find query to main process:', err);
   }
 }
 
