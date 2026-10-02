@@ -20,6 +20,26 @@ if (typeof window.getLogger !== 'function') {
 
 const log = window.getLogger('editor-find');
 log.debug('Editor find window starting...');
+
+function reportEarlyTerminalFindI18nFailure(kind) {
+  // The static shell already disables normal Find controls while the required
+  // translation surface is being established. At this boundary, the dynamic
+  // DOM references below do not exist yet, so report directly through the
+  // stable preload surface rather than entering the regular terminal helper.
+  const api = window.editorFindAPI;
+  if (!api || typeof api.reportRendererI18nFailure !== 'function') {
+    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
+    return;
+  }
+  try {
+    api.reportRendererI18nFailure({ kind });
+  } catch (err) {
+    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', err);
+    if (typeof window.close === 'function') window.close();
+  }
+}
+
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
   throw new Error('[editor-find] RendererIcons.applyIconToElement unavailable; cannot continue.');
@@ -114,25 +134,6 @@ const findState = {
 };
 
 let pendingFocusIntent = null;
-
-function reportEarlyTerminalFindI18nFailure(kind) {
-  // The static shell already disables normal Find controls while the required
-  // translation surface is being established. At this boundary, the dynamic
-  // DOM references below do not exist yet, so report directly through the
-  // stable preload surface rather than entering the regular terminal helper.
-  const api = window.editorFindAPI;
-  if (!api || typeof api.reportRendererI18nFailure !== 'function') {
-    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
-    if (typeof window.close === 'function') window.close();
-    return;
-  }
-  try {
-    api.reportRendererI18nFailure({ kind });
-  } catch (err) {
-    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', err);
-    if (typeof window.close === 'function') window.close();
-  }
-}
 
 // =============================================================================
 // State and UI helpers
@@ -464,28 +465,8 @@ window.addEventListener('keydown', (event) => {
 });
 
 // =============================================================================
-// Bridge subscriptions
+// Language transition serialization
 // =============================================================================
-findApi.onInit((payload) => {
-  applyIncomingState(payload);
-});
-
-findApi.onState(applyIncomingState);
-
-if (typeof findApi.onFocusTarget === 'function') {
-  findApi.onFocusTarget((payload) => {
-    if (findI18nTerminal) return;
-    const target = payload && payload.target === 'replace' ? 'replace' : 'query';
-    const selectAll = !!(payload && payload.selectAll);
-    pendingFocusIntent = { target, selectAll };
-    applyPendingFocusIntent();
-  });
-} else {
-  log.warn(
-    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'
-  );
-}
-
 function enqueueFindSemanticWork(work) {
   const run = async () => {
     // Window closure is coordinated asynchronously through the main process.
@@ -516,6 +497,29 @@ function enqueueFindSettingsApplication(settings) {
   // Preload listeners do not await async callbacks. Admit full settings
   // snapshots after the preceding root semantic operation has settled.
   return enqueueFindSemanticWork(run);
+}
+
+// =============================================================================
+// Bridge subscriptions
+// =============================================================================
+findApi.onInit((payload) => {
+  applyIncomingState(payload);
+});
+
+findApi.onState(applyIncomingState);
+
+if (typeof findApi.onFocusTarget === 'function') {
+  findApi.onFocusTarget((payload) => {
+    if (findI18nTerminal) return;
+    const target = payload && payload.target === 'replace' ? 'replace' : 'query';
+    const selectAll = !!(payload && payload.selectAll);
+    pendingFocusIntent = { target, selectAll };
+    applyPendingFocusIntent();
+  });
+} else {
+  log.warn(
+    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'
+  );
 }
 
 if (typeof findApi.onSettingsChanged !== 'function') {
