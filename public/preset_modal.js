@@ -52,12 +52,10 @@
 
     const descMaxLength = PRESET_DESC_MAX;
     const nameMaxLength = PRESET_NAME_MAX;
-    if (wpmEl) {
-      wpmEl.min = String(WPM_MIN);
-      wpmEl.max = String(WPM_MAX);
-    }
-    if (nameEl) nameEl.maxLength = nameMaxLength;
-    if (descEl) descEl.maxLength = descMaxLength;
+    wpmEl.min = String(WPM_MIN);
+    wpmEl.max = String(WPM_MAX);
+    nameEl.maxLength = nameMaxLength;
+    descEl.maxLength = descMaxLength;
 
     // =============================================================================
     // Local state
