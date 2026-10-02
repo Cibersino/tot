@@ -39,17 +39,12 @@ if (typeof window.getLogger !== 'function') {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw new Error('[task-editor] window.getLogger unavailable; cannot continue');
 }
-let log = null;
+let log;
 try {
   log = window.getLogger('task-editor');
 } catch (err) {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw err;
-}
-if (!log || typeof log.debug !== 'function' || typeof log.warn !== 'function'
-  || typeof log.warnOnce !== 'function' || typeof log.error !== 'function') {
-  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
-  throw new Error('[task-editor] task editor logger unavailable; cannot continue');
 }
 log.debug('Task Editor starting...');
 const rendererIcons = window.RendererIcons || null;

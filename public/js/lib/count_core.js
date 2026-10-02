@@ -28,10 +28,6 @@
     if (!defaultLang) {
       throw new Error('[count_core] DEFAULT_LANG is required');
     }
-    if (!log || typeof log.warn !== 'function') {
-      throw new Error('[count_core] log.warn() is required');
-    }
-
     const HYPHEN_JOINERS = new Set([
       '-',
       '\u2010',

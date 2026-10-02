@@ -21,9 +21,6 @@ function createSession({
   resolveEditorWindow,
   publishState,
 } = {}) {
-  if (!log) {
-    throw new Error('[editor-find-session] createSession requires log');
-  }
   if (!state || typeof state !== 'object') {
     throw new Error('[editor-find-session] createSession requires state');
   }

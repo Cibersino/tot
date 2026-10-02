@@ -186,10 +186,3 @@ test('createCountUtils requires DEFAULT_LANG to be injected', () => {
     /\[count_core\] DEFAULT_LANG is required/
   );
 });
-
-test('createCountUtils requires injected warn logging', () => {
-  assert.throws(
-    () => createCountUtils({ DEFAULT_LANG: TEST_DEFAULT_LANG }),
-    /\[count_core\] log\.warn\(\) is required/
-  );
-});

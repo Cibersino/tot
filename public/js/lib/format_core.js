@@ -28,9 +28,6 @@
     if (!defaultLang) {
       throw new Error('[format_core] DEFAULT_LANG is required');
     }
-    if (!log || typeof log.warnOnce !== 'function') {
-      throw new Error('[format_core] log.warnOnce() is required');
-    }
     const resolveLangBase = typeof getLangBase === 'function'
       ? getLangBase
       : (lang) => String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || defaultLang;

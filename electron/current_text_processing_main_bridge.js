@@ -30,10 +30,6 @@ function createBridge({
   if (typeof hasLiveWebContents !== 'function') {
     throw new Error('[current_text_processing_main_bridge] createBridge requires hasLiveWebContents()');
   }
-  if (!log || typeof log.warn !== 'function') {
-    throw new Error('[current_text_processing_main_bridge] createBridge requires log.warn()');
-  }
-
   // Live broadcasts are optional until the main window exists.
   function handleStateChanged(state) {
     try {
