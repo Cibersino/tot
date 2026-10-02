@@ -303,7 +303,7 @@ function syncDirtyState() {
   if (!taskEditorHasInitializedDraft || !Number.isInteger(taskEditorCurrentInitId)) return;
   const api = window.taskEditorAPI;
   if (!api || typeof api.setDirtyState !== 'function') {
-    log.warnOnce('task_editor.setDirtyState.missing', 'taskEditorAPI.setDirtyState unavailable; dirty state sync failed (ignored).');
+    log.warn('taskEditorAPI.setDirtyState unavailable; dirty state sync failed (ignored).');
     return;
   }
   try {
@@ -312,7 +312,7 @@ function syncDirtyState() {
       initId: taskEditorCurrentInitId,
     });
   } catch (err) {
-    log.warnOnce('task_editor.setDirtyState.failed', 'taskEditorAPI.setDirtyState failed (ignored):', err);
+    log.warn('taskEditorAPI.setDirtyState failed (ignored):', err);
   }
 }
 
@@ -478,7 +478,7 @@ function handleTaskEditorModalEscape(event) {
 function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
   const api = window.taskEditorAPI;
   if (!api || typeof api[methodName] !== 'function') {
-    log.warnOnce(`task_editor.api.missing.${methodName}`, 'taskEditorAPI missing method (ignored):', methodName);
+    log.warn('taskEditorAPI missing method (ignored):', methodName);
     if (missingNoticeKey) window.Notify.notifyEditor(missingNoticeKey);
     return null;
   }
@@ -2267,7 +2267,7 @@ async function bootstrapTaskEditor() {
         log.warn('BOOTSTRAP: Task Editor settings acquisition failed; using default language:', err);
       }
     } else {
-      log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
+      log.warn('BOOTSTRAP: taskEditorAPI.getSettings unavailable; using default language.');
     }
     try {
       await transitionTaskEditorTranslations(bootstrapLanguage);
