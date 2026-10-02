@@ -4,13 +4,19 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Text Editor renderer entry point.
 // Responsibilities:
-// - Validate required renderer surfaces before Text Editor startup continues.
+// - Validate required renderer surfaces and configure the Text Editor bootstrap.
+// - Report base-presentation readiness or failure to the existing Main lifecycle boundary.
 // - Build the shared editor context consumed by the UI and engine modules.
 // - Apply bootstrap config, settings, translations, and initial text state.
 // - Keep editor window state and settings-driven UI in sync with bridge updates.
 // - Route local editor interactions back through the main-process text bridge.
 
+// =============================================================================
+// Required bootstrap surfaces and early lifecycle reporting
+// =============================================================================
+// This report path is attempted before scoped logger acquisition for early startup failure.
 const editorBridge = window.editorAPI;
 if (!editorBridge || typeof editorBridge.reportBasePresentationState !== 'function') {
   throw new Error('[editor] editorAPI.reportBasePresentationState unavailable; cannot continue');
@@ -57,6 +63,9 @@ function reportBasePresentationState(payload) {
   }
 }
 
+// =============================================================================
+// Bootstrap dependencies and configuration
+// =============================================================================
 let editorStartupPresentation = null;
 let startupPresentation = null;
 
@@ -269,6 +278,9 @@ function createEditorContext() {
   };
 }
 
+// =============================================================================
+// Bootstrap assembly
+// =============================================================================
 function requireBootstrapMethod(owner, methodName, ownerName) {
   if (!owner || typeof owner[methodName] !== 'function') {
     throw new Error(`[editor] ${ownerName}.${methodName} unavailable; cannot continue`);
@@ -357,7 +369,7 @@ function initializeEditorBootstrap() {
 }
 
 // =============================================================================
-// Helpers
+// Startup presentation and local UI helpers
 // =============================================================================
 function applyActualWindowState(windowState) {
   ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
@@ -421,6 +433,9 @@ function applyInitialLocalUiState() {
   ctx.ui.updateReadProgressUi();
 }
 
+// =============================================================================
+// Renderer i18n coordination
+// =============================================================================
 async function transitionEditorTranslations(language) {
   const target = language || defaultLang;
   await ctx.rendererI18n.transitionRendererTranslations(target, {
@@ -466,6 +481,9 @@ function reportTerminalEditorI18nFailure(kind) {
   }
 }
 
+// =============================================================================
+// Bootstrap data and local editor setup
+// =============================================================================
 async function bootstrapEditorEnvironment() {
   return enqueueEditorSemanticWork(async () => {
     try {
@@ -543,6 +561,7 @@ async function bootstrapInitialEditorText() {
 function registerEditorMarginGutter(gutter, side) {
   if (!gutter) return;
 
+  // Both gutters use the same pointer and reset wiring; side identifies the active gutter.
   gutter.addEventListener('pointerdown', (event) => {
     ctx.ui.handleEditorMarginPointerDown(event, side);
   });
@@ -560,7 +579,7 @@ let editorSemanticQueue = Promise.resolve();
 
 function enqueueEditorSemanticWork(work) {
   const run = async () => {
-    // Window closure is coordinated asynchronously through the main process. Do not admit queued Text Editor semantic work after terminal i18n failure.
+    // Do not admit queued Text Editor semantic work after terminal i18n failure.
     if (editorI18nTerminal) return;
     return work();
   };
@@ -627,7 +646,7 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
 
 function enqueueEditorSettingsApplication(settings) {
   const run = () => applyEditorSettingsSnapshot(settings);
-  // Preload listeners do not await async callbacks. Admit full settings snapshots after the preceding root semantic operation has settled.
+  // Admit full settings snapshots after the preceding root semantic operation has settled.
   return enqueueEditorSemanticWork(run);
 }
 
