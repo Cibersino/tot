@@ -47,6 +47,8 @@ function createHarness({
   const setRangeTextCalls = [];
   const dispatchedEvents = [];
   const setCurrentTextCalls = [];
+  const warnLogs = [];
+  const warnOnceLogs = [];
   const style = createVisibilityStyleRecorder();
 
   const editor = {
@@ -123,8 +125,12 @@ function createHarness({
     window: {
       getLogger() {
         return {
-          warn() {},
-          warnOnce() {},
+          warn(...args) {
+            warnLogs.push(args);
+          },
+          warnOnce(...args) {
+            warnOnceLogs.push(args);
+          },
           error() {},
           debug() {},
         };
@@ -175,6 +181,8 @@ function createHarness({
     execCalls,
     setRangeTextCalls,
     setCurrentTextCalls,
+    warnLogs,
+    warnOnceLogs,
     dispatchedEvents,
     previousActiveElement,
     visibilityHistory: style.history,
@@ -396,8 +404,13 @@ test('drop transfer stays local when auto is off', () => {
   assert.equal(setCurrentTextCalls.length, 0);
 });
 
-test('set-current-text sync does not fallback to legacy string payloads after a synchronous bridge failure', () => {
-  const { engine, setCurrentTextCalls } = createHarness({
+test('set-current-text sync does not fallback to legacy string payloads after synchronous bridge failures', () => {
+  const {
+    engine,
+    setCurrentTextCalls,
+    warnLogs,
+    warnOnceLogs,
+  } = createHarness({
     setCurrentTextImpl(payload, calls) {
       calls.push(payload);
       throw new Error('bridge unavailable');
@@ -407,12 +420,19 @@ test('set-current-text sync does not fallback to legacy string payloads after a 
   const didSend = engine.sendCurrentTextToMain('overwrite', {
     text: 'abc',
   });
+  const didSendAgain = engine.sendCurrentTextToMain('overwrite', {
+    text: 'def',
+  });
 
   assert.equal(didSend, false);
-  assert.equal(setCurrentTextCalls.length, 1);
+  assert.equal(didSendAgain, false);
+  assert.equal(setCurrentTextCalls.length, 2);
   assert.equal(setCurrentTextCalls[0].text, 'abc');
   assert.equal(setCurrentTextCalls[0].meta.source, 'editor');
   assert.equal(setCurrentTextCalls[0].meta.action, 'overwrite');
+  assert.equal(setCurrentTextCalls[1].text, 'def');
+  assert.equal(warnLogs.length, 2);
+  assert.equal(warnOnceLogs.length, 0);
 });
 
 test('replace-current setRangeText fallback dispatches input after text mutation', () => {

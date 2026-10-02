@@ -438,8 +438,7 @@
         onError(err);
         return;
       }
-      log.warnOnce(
-        'editor.setCurrentText.failed',
+      log.warn(
         'editorAPI.setCurrentText failed (ignored):',
         err
       );

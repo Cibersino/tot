@@ -30,6 +30,33 @@ function getBasePresentationGeneration(search) {
 const basePresentationGeneration = getBasePresentationGeneration(
   window.location && window.location.search
 );
+
+function reportBasePresentationState(payload) {
+  if (!Number.isInteger(basePresentationGeneration) || basePresentationGeneration <= 0) {
+    if (log) {
+      log.warn('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped.');
+    } else {
+      console.error('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped before logger initialization.');
+    }
+    return;
+  }
+  try {
+    editorBridge.reportBasePresentationState({
+      generation: basePresentationGeneration,
+      status: payload && payload.status === 'failed' ? 'failed' : 'ready',
+      ...(payload && typeof payload.reason === 'string' && payload.reason.trim()
+        ? { reason: payload.reason.trim() }
+        : {}),
+    });
+  } catch (err) {
+    if (log) {
+      log.error('BOOTSTRAP: reportBasePresentationState call failed:', err);
+    } else {
+      console.error('BOOTSTRAP: reportBasePresentationState call failed before logger initialization:', err);
+    }
+  }
+}
+
 let editorStartupPresentation = null;
 let startupPresentation = null;
 
@@ -97,11 +124,17 @@ function validateRequiredAppConstants(constants) {
   }
 }
 
+if (typeof window.getLogger !== 'function') {
+  reportBasePresentationState({ status: 'failed', reason: 'bootstrap-failed' });
+  throw new Error('[editor] window.getLogger unavailable; cannot continue');
+}
 try {
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[editor] window.getLogger unavailable; cannot continue');
-  }
   log = window.getLogger('editor');
+} catch (err) {
+  reportBasePresentationState({ status: 'failed', reason: 'bootstrap-failed' });
+  throw err;
+}
+try {
   log.debug('Text Editor starting...');
 
   appConstants = window.AppConstants;
@@ -372,29 +405,6 @@ function nextAnimationFrame() {
   return new Promise((resolve) => {
     window.requestAnimationFrame(() => resolve());
   });
-}
-
-function reportBasePresentationState(payload) {
-  const generation = basePresentationGeneration;
-  if (!Number.isInteger(generation) || generation <= 0) {
-    if (log) {
-      log.warn('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped.');
-    }
-    return;
-  }
-  try {
-    editorBridge.reportBasePresentationState({
-      generation,
-      status: payload && payload.status === 'failed' ? 'failed' : 'ready',
-      ...(payload && typeof payload.reason === 'string' && payload.reason.trim()
-        ? { reason: payload.reason.trim() }
-        : {}),
-    });
-  } catch (err) {
-    if (log) {
-      log.error('BOOTSTRAP: reportBasePresentationState call failed:', err);
-    }
-  }
 }
 
 function applyInitialLocalUiState() {
@@ -838,8 +848,7 @@ if (!bootstrapSetupError && editor) {
     if (calcWhileTyping && calcWhileTyping.checked) {
       ctx.state.debounceTimer = setTimeout(() => {
         ctx.engine.sendCurrentTextToMain('typing', {
-          onError: (err) => log.warnOnce(
-            'editor.setCurrentText.typing',
+          onError: (err) => log.warn(
             'setCurrentText typing sync failed (ignored):',
             err
           )
