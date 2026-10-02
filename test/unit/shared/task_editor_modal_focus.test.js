@@ -19,6 +19,7 @@ function createTaskMeta(name = 'Task') {
 
 function createHarness(options = {}) {
   const bootstrapProbe = options.bootstrapProbe || null;
+  const focusCalls = Array.isArray(options.focusCalls) ? options.focusCalls : null;
   const failInitialI18nTransition = options.failInitialI18nTransition === true;
   const terminalTransitionLanguage = options.terminalTransitionLanguage || '';
   const terminalReporterThrows = options.terminalReporterThrows === true;
@@ -149,6 +150,7 @@ function createHarness(options = {}) {
         return candidate === this || children.some((child) => child.contains(candidate));
       },
       focus() {
+        if (focusCalls) focusCalls.push(this);
         activeElement = this;
       },
       blur() {
@@ -650,6 +652,62 @@ test('Task Editor materializes replayed init data only after translations and co
   assert.equal(harness.elements.taskTableBody._children.length, 1);
 });
 
+test('Task Editor New and Load initialization make no programmatic DOM focus call', async () => {
+  const cases = [
+    {
+      mode: 'new',
+      expectedName: '',
+      expectedRowCount: 0,
+      payload: {
+        mode: 'new',
+        sourcePath: null,
+        task: {
+          type: 'task',
+          meta: createTaskMeta(''),
+          rows: [],
+        },
+      },
+    },
+    {
+      mode: 'load',
+      expectedName: 'Loaded task',
+      expectedRowCount: 1,
+      payload: {
+        mode: 'load',
+        sourcePath: 'loaded-task.json',
+        task: {
+          type: 'task',
+          meta: createTaskMeta('Loaded task'),
+          summary: {
+            estimatedTotalSeconds: 60,
+            estimatedRemainingSeconds: 60,
+          },
+          rows: [{
+            texto: 'Loaded text',
+            tiempoSeconds: 60,
+            percentComplete: 0,
+            enlace: '',
+            comentario: '',
+            snapshotRelPath: '',
+          }],
+        },
+      },
+    },
+  ];
+
+  for (const { mode, expectedName, expectedRowCount, payload } of cases) {
+    const focusCalls = [];
+    const harness = createHarness({ focusCalls });
+
+    await harness.initializeTask(payload);
+
+    assert.equal(harness.elements.taskNameInput.value, expectedName, `${mode} task name`);
+    assert.equal(harness.elements.taskTableBody._children.length, expectedRowCount, `${mode} row count`);
+    assert.deepEqual(focusCalls, [], `${mode} initialization must not call focus()`);
+    assert.equal(harness.getActiveElement(), null, `${mode} initialization must leave DOM focus untouched`);
+  }
+});
+
 test('Task Editor stops its buffered bootstrap FIFO after initial payload failure terminalizes it', async () => {
   const harness = createHarness();
   harness.queueTaskInit({
@@ -870,7 +928,7 @@ test('Task Editor localizes native field prompts and limits the comment field', 
   assert.equal(harness.elements.commentInput.maxLength, 1200);
 });
 
-test('Task Editor places comment and snapshot controls in the second table column', async () => {
+test('Task Editor displays a canonical Snapshot path in the second table column', async () => {
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.html'), 'utf8');
   const styles = fs.readFileSync(path.resolve(__dirname, '../../../public/task_editor.css'), 'utf8');
   const colGroup = markup.match(/<colgroup id="taskColGroup">([\s\S]*?)<\/colgroup>/);
@@ -888,7 +946,7 @@ test('Task Editor places comment and snapshot controls in the second table colum
   );
 
   const harness = createHarness();
-  await harness.initializeRow({ snapshotRelPath: '/chapter.json' });
+  await harness.initializeRow({ snapshotRelPath: '/canonical-target.txt' });
   const cells = harness.elements.taskTableBody._children[0]._children;
 
   assert.equal(cells[1].className, 'task-cell--comment');
@@ -904,10 +962,10 @@ test('Task Editor places comment and snapshot controls in the second table colum
   assert.equal(snapshotDescription.className, 'task-editor-accessible-description');
   assert.equal(snapshotDescription._children[1].tagName, 'bdi');
   assert.equal(snapshotDescription._children[1].getAttribute('dir'), 'ltr');
-  assert.equal(snapshotDescription._children[1].textContent, '/chapter.json');
+  assert.equal(snapshotDescription._children[1].textContent, '/canonical-target.txt');
   assert.equal(
     snapshotButton.getAttribute('data-tot-tooltip'),
-    'Load text snapshot as current text · Associated path: \u2068/chapter.json\u2069'
+    'Load text snapshot as current text · Associated path: \u2068/canonical-target.txt\u2069'
   );
   assert.equal(cells[2]._children[0].getAttribute('aria-labelledby'), 'thTiempo');
   assert.match(styles, /\.task-table \.task-cell--comment > \.cell-actions\s*\{\s*justify-content: center;\s*\}/);
@@ -1212,7 +1270,7 @@ test('Task Editor selects a local file directly when snapshot-source inspection 
 test('Task Editor applies the changed snapshot estimate only after confirmation', async () => {
   const harness = createHarness();
   await harness.initializeRow();
-  harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.json' });
+  harness.setSelectedTaskRowSnapshotResult({ ok: true, snapshotRelPath: '/estimated.txt' });
   harness.setTaskRowSnapshotInspectionResult({
     ok: true,
     name: null,
@@ -1227,7 +1285,7 @@ test('Task Editor applies the changed snapshot estimate only after confirmation'
   harness.elements.commentSave.dispatch('click');
   await new Promise((resolve) => setImmediate(resolve));
 
-  assert.deepEqual(harness.snapshotInspectionCalls, ['/estimated.json']);
+  assert.deepEqual(harness.snapshotInspectionCalls, ['/estimated.txt']);
   assert.equal(harness.elements.snapshotDetailsConfirmModal.getAttribute('aria-hidden'), 'false');
   assert.equal(harness.elements.snapshotDetailsConfirmTextSection.hidden, true);
   assert.equal(harness.elements.snapshotDetailsConfirmTimeSection.hidden, false);

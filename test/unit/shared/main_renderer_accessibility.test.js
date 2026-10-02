@@ -33,11 +33,11 @@ function createClassList() {
   };
 }
 
-function createElement(id = '') {
+function createMockElement(id = '', onFocus = null) {
   const attributes = {};
   const listeners = new Map();
   const children = [];
-  return {
+  const element = {
     id,
     checked: false,
     classList: createClassList(),
@@ -75,6 +75,10 @@ function createElement(id = '') {
     removeAttribute(name) { delete attributes[name]; },
     setAttribute(name, value) { attributes[name] = String(value); },
   };
+  if (typeof onFocus === 'function') {
+    element.focus = (...args) => onFocus({ args, id });
+  }
+  return element;
 }
 
 function createNoopSurface(overrides = {}) {
@@ -88,22 +92,32 @@ function createNoopSurface(overrides = {}) {
 }
 
 async function createRendererHarness({
+  absentElectronMethods = [],
   currentTextRuntimeOverrides = {},
   deferStartupReady = false,
   electronMethodOverrides = {},
   expectStartupError = false,
+  focusCalls = null,
   loadLocalizedDocument = null,
   browserExtensionModalOverrides = {},
   mainLogoLinksAvailable = true,
   mainLogoLinksOverride = null,
+  statusUiOverrides = {},
   transitionFailureLanguage = '',
   transitionFailure = null,
 } = {}) {
+  const absentElectronMethodSet = new Set(absentElectronMethods);
+  const createElement = Array.isArray(focusCalls)
+    ? (id = '') => createMockElement(id, (focusCall) => focusCalls.push(focusCall))
+    : createMockElement;
   let activeLanguage = 'en';
   const errors = [];
   const notifications = [];
   const pendingStates = [];
   const subscriptions = {};
+  const textExtractionDragDropConfigs = [];
+  const warnings = [];
+  const warningOnceKeys = new Set();
   const currentTextRuntimeCalls = {
     bootstrapStates: [],
     copiedProcessingStates: [],
@@ -176,17 +190,30 @@ async function createRendererHarness({
   infoModalPanel.scrollTop = 0;
   infoModal.querySelector = (selector) => (selector === '.info-modal-panel' ? infoModalPanel : null);
   infoModalContent.contains = (node) => node === infoContentFocusTarget;
-  infoModalClose.focus = () => {
-    infoModalClose.focusCount = (infoModalClose.focusCount || 0) + 1;
-    document.activeElement = infoModalClose;
-  };
+  if (Array.isArray(focusCalls)) {
+    const focusInfoModalClose = infoModalClose.focus;
+    infoModalClose.focus = (...args) => {
+      focusInfoModalClose(...args);
+      infoModalClose.focusCount = (infoModalClose.focusCount || 0) + 1;
+      document.activeElement = infoModalClose;
+    };
+  } else {
+    infoModalClose.focus = () => {
+      infoModalClose.focusCount = (infoModalClose.focusCount || 0) + 1;
+      document.activeElement = infoModalClose;
+    };
+  }
 
   const logger = {
     debug() {},
     error(...args) { errors.push(args); },
     errorOnce(...args) { errors.push(args); },
-    warn() {},
-    warnOnce() {},
+    warn(...args) { warnings.push(args); },
+    warnOnce(key, ...args) {
+      if (warningOnceKeys.has(key)) return;
+      warningOnceKeys.add(key);
+      warnings.push(args);
+    },
   };
   const statusUi = createNoopSurface({
     applyCurrentTextProcessingState(state) {
@@ -201,6 +228,7 @@ async function createRendererHarness({
     isCurrentTextProcessingActive() { return false; },
     isProcessingModeActive() { return false; },
     isStandaloneFullRefreshPendingActive() { return false; },
+    ...statusUiOverrides,
   });
   const currentTextSelectorSection = createNoopSurface({
     bindActions(actions) { selectorActions = actions; },
@@ -291,7 +319,10 @@ async function createRendererHarness({
         state: { active: false, requestId: 0, sinceEpochMs: null, source: '', action: '' },
       };
     },
+    getPathForFile() { return ''; },
     async getSettings() { return { language: 'en', modeConteo: 'preciso' }; },
+    async setModeConteo(mode) { return { ok: true, mode }; },
+    async setPreviewSpoilerEnabled(enabled) { return { ok: true, enabled }; },
     onEditorFirstShowState(callback) { subscriptions.editorFirstShowState = callback; },
     onCurrentTextProcessingStateChanged(callback) {
       subscriptions.currentTextProcessingStateChanged = callback;
@@ -302,6 +333,7 @@ async function createRendererHarness({
     onCurrentTextUpdated(callback) { subscriptions.currentTextUpdated = callback; },
     onPresetCreated(callback) { subscriptions.presetCreated = callback; },
     onSettingsChanged(callback) { subscriptions.settingsChanged = callback; },
+    onPreciseCountingFallback(callback) { subscriptions.preciseCountingFallback = callback; },
     onStartupReady(callback) { subscriptions.startupReady = callback; },
     async openEditor() { return { ok: true, launchDisposition: 'first-show-pending' }; },
     resolveCurrentTextProcessing() {},
@@ -316,6 +348,7 @@ async function createRendererHarness({
   };
   const electronAPI = new Proxy(electronMethods, {
     get(target, property) {
+      if (absentElectronMethodSet.has(property)) return undefined;
       if (Object.prototype.hasOwnProperty.call(target, property)) return target[property];
       return () => undefined;
     },
@@ -354,7 +387,10 @@ async function createRendererHarness({
       applyConfig() { return 100000; },
     },
     BrowserExtensionModal: browserExtensionModal,
-    CountUtils: { contarTexto() { return { palabras: 0, caracteres: 0, caracteresSinEspacios: 0 }; } },
+    CountUtils: {
+      contarTexto() { return { palabras: 0, caracteres: 0, caracteresSinEspacios: 0 }; },
+      isPreciseCountFailure() { return false; },
+    },
     CurrentTextRefreshPolicy: {
       createController() { return createNoopSurface(); },
     },
@@ -375,6 +411,7 @@ async function createRendererHarness({
       },
       deactivateModalFocus() {},
       notifyMain(key) { notifications.push(key); },
+      toastMain(key) { notifications.push(key); },
     }),
     ReadingSpeedTestUi: readingSpeedTestUi,
     RendererCombobox: { create() { return presetsCombobox; } },
@@ -395,7 +432,9 @@ async function createRendererHarness({
     TextExtractionBatchPlanningModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionBatchPlanningModal'); },
     },
-    TextExtractionDragDrop: createNoopSurface(),
+    TextExtractionDragDrop: createNoopSurface({
+      configure(config) { textExtractionDragDropConfigs.push(config); },
+    }),
     TextExtractionEntry: createNoopSurface(),
     TextExtractionOcrActivationDisclosureModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionOcrActivationDisclosureModal'); },
@@ -493,6 +532,10 @@ async function createRendererHarness({
     },
     pendingStates,
     presetComboboxUpdates,
+    getTextExtractionDragDropConfig() {
+      assert.equal(textExtractionDragDropConfigs.length, 1);
+      return textExtractionDragDropConfigs[0];
+    },
     getPresetCreatedCalls() {
       return presetCreatedCalls;
     },
@@ -505,10 +548,19 @@ async function createRendererHarness({
     },
     subscriptions,
     notifications,
+    warnings,
     textApplyCalls,
     getElement,
   };
 }
+
+test('Main startup has no programmatic initial DOM focus', async () => {
+  const focusCalls = [];
+
+  await createRendererHarness({ focusCalls });
+
+  assert.deepEqual(focusCalls, []);
+});
 
 test('main renderer settings lifecycle updates precise-mode description and visual help together', async () => {
   const harness = await createRendererHarness();
@@ -526,6 +578,236 @@ test('main renderer settings lifecycle updates precise-mode description and visu
   assert.equal(harness.preciseWrapper.getAttribute('data-tot-tooltip'), 'Basado en Intl.Segmenter');
   assert.equal(harness.preciseLabel.getAttribute('aria-label'), null);
   assert.equal(harness.errors.length, 0);
+});
+
+test('main renderer keeps the Precise toggle disabled while persistence is pending and a global lock is active', async () => {
+  let processingActive = false;
+  let resolveModePersistence = null;
+  const modePersistence = new Promise((resolve) => {
+    resolveModePersistence = resolve;
+  });
+  const harness = await createRendererHarness({
+    statusUiOverrides: {
+      isProcessingModeActive() { return processingActive; },
+    },
+    electronMethodOverrides: {
+      setModeConteo() { return modePersistence; },
+    },
+  });
+  const toggle = harness.getElement('toggleModoPreciso');
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+  processingActive = true;
+  harness.subscriptions.textExtractionProcessingModeChanged({ active: true });
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+  resolveModePersistence({ ok: true, mode: 'simple' });
+  await flushAsyncWork();
+
+  assert.equal(toggle.disabled, true);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+  processingActive = false;
+  harness.subscriptions.textExtractionProcessingModeChanged({ active: false });
+  assert.equal(toggle.disabled, false);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+});
+
+test('main renderer disables Precise persistence when its bridge capability is absent or invalid', async () => {
+  const unavailableCapabilityCases = [
+    {
+      name: 'absent',
+      options: { absentElectronMethods: ['setModeConteo'] },
+    },
+    {
+      name: 'non-function',
+      options: { electronMethodOverrides: { setModeConteo: null } },
+    },
+  ];
+
+  for (const { name, options } of unavailableCapabilityCases) {
+    const harness = await createRendererHarness(options);
+    const toggle = harness.getElement('toggleModoPreciso');
+
+    assert.equal(toggle.checked, true, `${name} capability should preserve the established mode`);
+    assert.equal(toggle.disabled, true, `${name} capability should disable persistence`);
+    assert.equal(toggle.getAttribute('aria-disabled'), 'true');
+
+    toggle.checked = false;
+    toggle.dispatch('change');
+    await flushAsyncWork();
+
+    assert.equal(toggle.checked, true, `${name} capability should not admit a persistence attempt`);
+    assert.equal(toggle.disabled, true, `${name} capability should remain disabled`);
+
+    await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'simple' });
+
+    assert.equal(toggle.checked, false, `${name} capability should still reflect external settings`);
+    assert.equal(toggle.disabled, true, `${name} capability should remain unavailable after settings changes`);
+  }
+});
+
+test('main renderer keeps Precise persistence retryable after a present bridge invocation fails', async () => {
+  let persistCalls = 0;
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      async setModeConteo() {
+        persistCalls += 1;
+        throw new Error('disk full');
+      },
+    },
+  });
+  const toggle = harness.getElement('toggleModoPreciso');
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+
+  assert.equal(persistCalls, 1);
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  assert.equal(toggle.disabled, false);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+
+  assert.equal(persistCalls, 2);
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  assert.equal(toggle.disabled, false);
+  assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+});
+
+test('main renderer wires unavailable Spoiler persistence as a disabled capability', async () => {
+  const unavailableCapabilityCases = [
+    {
+      name: 'absent',
+      options: { absentElectronMethods: ['setPreviewSpoilerEnabled'] },
+    },
+    {
+      name: 'non-function',
+      options: { electronMethodOverrides: { setPreviewSpoilerEnabled: null } },
+    },
+  ];
+
+  for (const { name, options } of unavailableCapabilityCases) {
+    const harness = await createRendererHarness(options);
+
+    assert.equal(
+      harness.selectorActions.onPreviewSpoilerEnabledChange,
+      null,
+      `${name} capability should be passed to the selector as unavailable`,
+    );
+  }
+});
+
+test('main renderer Spoiler persistence adapter rejects non-ok bridge results', async () => {
+  let persistCalls = 0;
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      async setPreviewSpoilerEnabled(enabled) {
+        persistCalls += 1;
+        return { ok: false, error: `cannot save ${enabled}` };
+      },
+    },
+  });
+
+  await assert.rejects(
+    harness.selectorActions.onPreviewSpoilerEnabledChange(false),
+    /setPreviewSpoilerEnabled failed/,
+  );
+  assert.equal(persistCalls, 1);
+});
+
+test('main renderer resolves dropped file paths only through getPathForFile', async () => {
+  const droppedFile = { path: 'C:\\legacy\\drop.txt' };
+  let receivedFile = null;
+  const validHarness = await createRendererHarness({
+    electronMethodOverrides: {
+      getPathForFile(file) {
+        receivedFile = file;
+        return '  C:\\current\\drop.txt  ';
+      },
+    },
+  });
+  const validResolver = validHarness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+
+  assert.equal(await validResolver(droppedFile), 'C:\\current\\drop.txt');
+  assert.equal(receivedFile, droppedFile);
+
+  const unresolvedCases = [
+    {
+      name: 'unavailable',
+      options: { absentElectronMethods: ['getPathForFile'] },
+      diagnostic: 'getPathForFile unavailable; dropped file path cannot be resolved.',
+    },
+    {
+      name: 'throwing',
+      options: {
+        electronMethodOverrides: {
+          getPathForFile() {
+            throw new Error('bridge failure');
+          },
+        },
+      },
+      diagnostic: 'getPathForFile failed; dropped file path unresolved:',
+    },
+    {
+      name: 'empty',
+      options: { electronMethodOverrides: { getPathForFile() { return ''; } } },
+      diagnostic: 'getPathForFile returned empty/invalid; dropped file path unresolved.',
+    },
+    {
+      name: 'invalid',
+      options: { electronMethodOverrides: { getPathForFile() { return {}; } } },
+      diagnostic: 'getPathForFile returned empty/invalid; dropped file path unresolved.',
+    },
+  ];
+
+  for (const { name, options, diagnostic } of unresolvedCases) {
+    const harness = await createRendererHarness(options);
+    const resolver = harness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+
+    assert.equal(await resolver(droppedFile), '', `${name} result should leave the file unresolved`);
+    assert.ok(
+      harness.warnings.some((args) => args.includes(diagnostic)),
+      `${name} result should produce its resolver diagnostic`,
+    );
+    if (name === 'unavailable') {
+      assert.equal(await resolver(droppedFile), '');
+      assert.equal(
+        harness.warnings.filter((args) => args.includes(diagnostic)).length,
+        1,
+        'per-file dropped-path resolution should deduplicate the same unavailable bridge diagnostic',
+      );
+    }
+  }
+});
+
+test('main renderer reports non-hot optional bridge unavailability for each admitted action', async () => {
+  const diagnostic = 'setCurrentText unavailable; clear-text action skipped.';
+  const harness = await createRendererHarness({
+    absentElectronMethods: ['setCurrentText'],
+  });
+
+  await harness.selectorActions.onClearText();
+  await harness.selectorActions.onClearText();
+
+  assert.equal(
+    harness.warnings.filter((args) => args.includes(diagnostic)).length,
+    2,
+  );
 });
 
 test('main renderer applies independent settings after a recoverable language transition failure', async () => {

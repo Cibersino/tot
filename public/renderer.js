@@ -6,11 +6,11 @@
 // =============================================================================
 // Main renderer entry point for the primary window UI.
 // Responsibilities:
-// - Bootstrap renderer-owned UI state from main-owned config, settings, and READY signals.
-// - Consume required renderer surfaces that must be loaded before renderer.js runs.
-// - Keep current-text preview, counts, and timing displays in sync with main-owned updates.
-// - Coordinate clipboard, presets, text extraction, Text Editor, Task Editor, and reading-test entry flows.
-// - Host window-level integrations such as menu actions and the stopwatch controller.
+// - Validate and compose required renderer feature surfaces before interaction is admitted.
+// - Bootstrap UI state from main-owned config and settings, then coordinate the READY handshake.
+// - Route main-to-renderer updates and synchronize interaction locks across feature owners.
+// - Wire main-window actions to current-text, preset, extraction, editor, and reading-test owners.
+// - Host cross-feature renderer orchestration, including menu actions and stopwatch state.
 
 // =============================================================================
 // Logger and startup constants
@@ -201,9 +201,9 @@ const toggleVF = document.getElementById('toggleVF');
 const editorLoader = document.getElementById('editorLoader');
 const editorLoaderStatus = document.getElementById('editorLoaderStatus');
 const startupSplash = document.getElementById('startupSplash');
-const cronoDisplayInput = document.getElementById('cronoDisplay');
-const cronoToggleBtnMain = document.getElementById('cronoToggle');
-const cronoResetBtnMain = document.getElementById('cronoReset');
+const cronoDisplay = document.getElementById('cronoDisplay');
+const cronoToggleButton = document.getElementById('cronoToggle');
+const cronoResetButton = document.getElementById('cronoReset');
 
 const presetsHost = document.getElementById('presets');
 const btnNewPreset = document.getElementById('btnNewPreset');
@@ -223,6 +223,8 @@ const presetDescription = document.getElementById('presetDescription');
 let maxTextChars = AppConstants.MAX_TEXT_CHARS;
 let maxIpcChars = AppConstants.MAX_TEXT_CHARS * 4;
 let modoConteo = 'preciso';
+let persistModeConteo = null;
+let isModeConteoPersistencePending = false;
 let idiomaActual = DEFAULT_LANG;
 let settingsCache = null;
 let settingsApplicationQueue = Promise.resolve();
@@ -284,6 +286,7 @@ if (!window.electronAPI || typeof window.electronAPI.resolveCurrentTextProcessin
 currentTextRuntime.configure({
   currentTextSelectorSection,
   resultsTimeMultiplier,
+  countText: contarTexto,
   getCountContext: () => ({
     modoConteo,
     idioma: idiomaActual,
@@ -335,10 +338,25 @@ function isStandaloneFullRefreshPendingActive() {
   return textExtractionStatusUi.isStandaloneFullRefreshPendingActive();
 }
 
+function isMainInteractionLocked() {
+  return !isRendererReady()
+    || isProcessingModeActive()
+    || isCurrentTextAreaPendingActive()
+    || isAbortFinalizationActive()
+    || isReadingTestInteractionLocked();
+}
+
 function setControlInteractionLocked(element, locked) {
   if (!element) return;
   element.disabled = locked;
   element.setAttribute('aria-disabled', locked ? 'true' : 'false');
+}
+
+function syncToggleModoPrecisoInteractionState() {
+  setControlInteractionLocked(
+    toggleModoPreciso,
+    !persistModeConteo || isModeConteoPersistencePending || isMainInteractionLocked()
+  );
 }
 
 function hasSelectedPreset() {
@@ -377,19 +395,25 @@ function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
     log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, err || '');
     return;
   }
-  log.warnOnce(
-    'renderer.mainLogoLinks.unavailable',
+  log.warn(
     `Main logo links unavailable for this renderer lifetime: ${reason}`,
     err || ''
   );
 }
 
+function disableBrowserExtensionCapability() {
+  browserExtensionCapabilityAvailable = false;
+  if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
+    browserExtensionModal.setInteractionLocked(true);
+    return;
+  }
+
+  const element = document.getElementById('browserExtensionLogoLink');
+  if (element) setControlInteractionLocked(element, true);
+}
+
 function syncMainInteractionLockUi() {
-  const locked = !isRendererReady()
-    || isProcessingModeActive()
-    || isCurrentTextAreaPendingActive()
-    || isAbortFinalizationActive()
-    || isReadingTestInteractionLocked();
+  const locked = isMainInteractionLocked();
 
   currentTextSelectorSection.setInteractionLocked(locked);
   textTimeCalculatorLauncher.setInteractionLocked(locked);
@@ -401,11 +425,11 @@ function syncMainInteractionLockUi() {
   syncPresetActionButtons({ interactionLocked: locked });
   setControlInteractionLocked(btnResetDefaultPresets, locked);
   setControlInteractionLocked(resultsTimeMultiplierInput, locked);
-  setControlInteractionLocked(toggleModoPreciso, locked);
+  syncToggleModoPrecisoInteractionState();
   setControlInteractionLocked(toggleVF, locked);
-  setControlInteractionLocked(cronoDisplayInput, locked);
-  setControlInteractionLocked(cronoToggleBtnMain, locked);
-  setControlInteractionLocked(cronoResetBtnMain, locked);
+  setControlInteractionLocked(cronoDisplay, locked);
+  setControlInteractionLocked(cronoToggleButton, locked);
+  setControlInteractionLocked(cronoResetButton, locked);
   if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
     browserExtensionModal.setInteractionLocked(locked || !browserExtensionCapabilityAvailable);
   } else {
@@ -589,6 +613,7 @@ function scheduleDeferredBootstrapSettleAfterUnlock() {
     return;
   }
 
+  log.warn('requestAnimationFrame unavailable after READY; scheduling post-unlock deferred settle with setTimeout.');
   setTimeout(() => {
     currentTextRuntime.startDeferredBootstrapSettle();
   }, 0);
@@ -610,6 +635,7 @@ function maybeUnblockReady() {
   syncMainInteractionLockUi();
   // Keep the bootstrap current-text settle behind the READY/splash unlock because its synchronous recount work can delay the first useful paint.
   // Current-text derived results may remain pending at READY and settle immediately afterward.
+  // Main intentionally has no programmatic initial DOM focus.
   scheduleDeferredBootstrapSettleAfterUnlock();
 }
 
@@ -626,13 +652,15 @@ function markRendererInvariantsReady() {
   maybeUnblockReady();
 }
 
-function getOptionalElectronMethod(methodName, { dedupeKey, unavailableMessage } = {}) {
+function getOptionalElectronMethod(methodName, { unavailableMessage, unavailableWarningKey } = {}) {
   const api = window.electronAPI;
   if (!api || typeof api[methodName] !== 'function') {
-    log.warnOnce(
-      dedupeKey || `renderer.ipc.${methodName}.unavailable`,
-      unavailableMessage || `${methodName} unavailable; optional action skipped.`
-    );
+    const message = unavailableMessage || `${methodName} unavailable; optional action skipped.`;
+    if (unavailableWarningKey) {
+      log.warnOnce(unavailableWarningKey, message);
+    } else {
+      log.warn(message);
+    }
     return null;
   }
   return api[methodName].bind(api);
@@ -709,23 +737,11 @@ function applyTranslations() {
       browserExtensionModal.applyTranslations();
     } catch (err) {
       log.warn('BrowserExtensionModal translation application failed; browser extension entry disabled.', err);
-      browserExtensionCapabilityAvailable = false;
-      if (typeof browserExtensionModal.setInteractionLocked === 'function') {
-        browserExtensionModal.setInteractionLocked(true);
-      } else {
-        const element = document.getElementById('browserExtensionLogoLink');
-        if (element) setControlInteractionLocked(element, true);
-      }
+      disableBrowserExtensionCapability();
     }
   } else {
     log.warn('BrowserExtensionModal.applyTranslations unavailable; browser extension entry disabled.');
-    browserExtensionCapabilityAvailable = false;
-    if (browserExtensionModal && typeof browserExtensionModal.setInteractionLocked === 'function') {
-      browserExtensionModal.setInteractionLocked(true);
-    } else {
-      const element = document.getElementById('browserExtensionLogoLink');
-      if (element) setControlInteractionLocked(element, true);
-    }
+    disableBrowserExtensionCapability();
   }
   infoModal.applyTranslations();
   activeCustomPromptTranslationOwners.forEach((owner) => {
@@ -865,8 +881,11 @@ function reportTerminalRendererI18nFailure(kind) {
 // =============================================================================
 // Text counting
 // =============================================================================
-const { contarTexto: contarTextoModulo } = window.CountUtils || {};
-if (typeof contarTextoModulo !== 'function') {
+const {
+  contarTexto: contarTextoModulo,
+  isPreciseCountFailure,
+} = window.CountUtils || {};
+if (typeof contarTextoModulo !== 'function' || typeof isPreciseCountFailure !== 'function') {
   throw new Error('[renderer] CountUtils unavailable; cannot continue');
 }
 const { obtenerSeparadoresDeNumeros, formatearNumero } = window.FormatUtils || {};
@@ -874,13 +893,33 @@ if (!obtenerSeparadoresDeNumeros || !formatearNumero) {
   throw new Error('[renderer] FormatUtils unavailable; cannot continue');
 }
 
-function contarTexto(texto) {
-  return contarTextoModulo(texto, { modoConteo, idioma: idiomaActual });
+function reportPreciseCountingFailure(error) {
+  const api = window.electronAPI;
+  if (!api || typeof api.reportPreciseCountingFailure !== 'function') {
+    log.error('Precise-counting failure could not be reported to main:', error);
+    return;
+  }
+  void api.reportPreciseCountingFailure({
+    code: error.code,
+    stage: error.stage,
+  }).then((result) => {
+    if (!result || result.ok !== true) {
+      log.error('Precise-counting failure report was not committed:', result);
+    }
+  }).catch((reportErr) => {
+    log.error('Precise-counting failure report failed:', reportErr);
+  });
 }
 
-function setModoConteo(nuevoModo) {
-  if (nuevoModo === 'simple' || nuevoModo === 'preciso') {
-    modoConteo = nuevoModo;
+function contarTexto(texto, countContext = null) {
+  const options = countContext || { modoConteo, idioma: idiomaActual };
+  try {
+    return contarTextoModulo(texto, options);
+  } catch (err) {
+    if (isPreciseCountFailure(err)) {
+      reportPreciseCountingFailure(err);
+    }
+    throw err;
   }
 }
 
@@ -889,13 +928,6 @@ function setModoConteo(nuevoModo) {
 // =============================================================================
 function getCurrentTextValue() {
   return currentTextRuntime.getCurrentText();
-}
-
-function startPreviewAndResultsUpdate(textOrReason, maybeReason) {
-  const reason = typeof maybeReason === 'string'
-    ? maybeReason
-    : (typeof textOrReason === 'string' ? textOrReason : 'current-text refresh');
-  currentTextRuntime.requestDerivedRefresh(reason);
 }
 
 function updateTimeOnlyFromStats() {
@@ -976,8 +1008,7 @@ async function applySettingsChange(newSettings) {
         if (!transition || !transition.hadEstablishedState || transition.restorationFailed) {
           return;
         }
-        // The failed language is not part of this renderer's established state,
-        // but independent settings from the same full payload still apply.
+        // The failed language is not part of this renderer's established state, but independent settings from the same full payload still apply.
         settingsCache = { ...nextSettings, language: idiomaActual };
         recoveredLanguageFailure = true;
       }
@@ -1037,8 +1068,7 @@ function enqueueMainSemanticWork(work) {
 
 function settingsChangeHandler(newSettings) {
   const run = () => applySettingsChange(newSettings);
-  // Preload listeners do not await async callbacks. Admit live settings after
-  // the preceding bootstrap or settings semantic operation has settled.
+  // Preload listeners do not await async callbacks. Admit live settings after the preceding bootstrap or settings semantic operation has settled.
   return enqueueMainSemanticWork(run);
 }
 
@@ -1060,7 +1090,7 @@ function armCurrentTextSubscription() {
 
 function armIpcSubscriptions() {
 
-  // Subscribe to preset create/update notifications from main
+  // preset-created is accepted only after READY, when its dependent controls and settings are established.
   if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
     window.electronAPI.onPresetCreated(async (preset) => {
       if (!isRendererReady()) {
@@ -1093,10 +1123,7 @@ function armIpcSubscriptions() {
       window.electronAPI.onStartupReady(() => {
         if (mainRendererI18nTerminal) return;
         if (startupReadyReceived) {
-          log.warnOnce(
-            'renderer.startup.ready.duplicate',
-            'startup:ready received more than once (ignored).'
-          );
+          log.warn('startup:ready received more than once (ignored).');
           return;
         }
         startupReadyReceived = true;
@@ -1106,10 +1133,17 @@ function armIpcSubscriptions() {
       throw new Error('[renderer] electronAPI.onStartupReady unavailable; cannot bootstrap renderer readiness');
     }
 
-    if (typeof window.electronAPI.onSettingsChanged === 'function') {
-      window.electronAPI.onSettingsChanged(settingsChangeHandler);
+    if (typeof window.electronAPI.onSettingsChanged !== 'function') {
+      throw new Error('[renderer] electronAPI.onSettingsChanged unavailable; cannot maintain settings synchronization');
+    }
+    window.electronAPI.onSettingsChanged(settingsChangeHandler);
+
+    if (typeof window.electronAPI.onPreciseCountingFallback === 'function') {
+      window.electronAPI.onPreciseCountingFallback(() => {
+        window.Notify.toastMain('renderer.main.alerts.precise_counting_fallback', { type: 'warn' });
+      });
     } else {
-      log.warn('onSettingsChanged unavailable; settings updates will not sync.');
+      throw new Error('[renderer] electronAPI.onPreciseCountingFallback unavailable; cannot present Precise fallback notice');
     }
 
     if (typeof window.electronAPI.onTextExtractionProcessingModeChanged === 'function') {
@@ -1157,83 +1191,69 @@ function setupToggleModoPreciso() {
   try {
     if (!toggleModoPreciso) return;
 
-    // Ensure initial switch state according to the in-memory mode
-    toggleModoPreciso.checked = (modoConteo === 'preciso');
+    // Renderer lifecycle has no bridge-update path, so resolve this optional capability during setup.
+    const api = window.electronAPI;
+    persistModeConteo = api && typeof api.setModeConteo === 'function'
+      ? api.setModeConteo.bind(api)
+      : null;
+    if (!persistModeConteo) {
+      log.warn('setModeConteo unavailable; Precise mode persistence disabled.');
+    }
 
-    // When the user changes the switch:
+    toggleModoPreciso.checked = (modoConteo === 'preciso');
+    toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
+
     toggleModoPreciso.addEventListener('change', async () => {
+      if (!persistModeConteo) {
+        syncToggleFromSettings(settingsCache || {});
+        syncToggleModoPrecisoInteractionState();
+        return;
+      }
       if (!guardUserAction('toggle-modo-preciso')) {
         toggleModoPreciso.checked = (modoConteo === 'preciso');
+        toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
         return;
       }
       try {
-        const previousModo = modoConteo;
         const nuevoModo = toggleModoPreciso.checked ? 'preciso' : 'simple';
-
-        // Update state in memory (immediately)
-        setModoConteo(nuevoModo);
-
+        toggleModoPreciso.checked = (modoConteo === 'preciso');
         toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
-
-        // Immediate recount of the current text
-        startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle');
-        if (cronoController && typeof cronoController.handleTextChange === 'function') {
-          cronoController.handleTextChange(null, getCurrentTextValue());
-        }
-
-        // Attempt to persist settings via IPC (if preload/main implemented setModeConteo)
-        if (window.electronAPI && typeof window.electronAPI.setModeConteo === 'function') {
-          try {
-            const persistResult = await window.electronAPI.setModeConteo(nuevoModo);
-            if (
-              persistResult
-              && typeof persistResult.ok === 'boolean'
-              && persistResult.ok !== true
-            ) {
-              throw new Error(
-                persistResult.error
-                  ? String(persistResult.error)
-                  : 'setModeConteo returned non-ok result.'
-              );
-            }
-          } catch (err) {
-            log.error('Error persisting modeConteo using setModeConteo:', err);
-            setModoConteo(previousModo);
-            toggleModoPreciso.checked = (previousModo === 'preciso');
-            toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
-            startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle rollback');
-            if (cronoController && typeof cronoController.handleTextChange === 'function') {
-              cronoController.handleTextChange(null, getCurrentTextValue());
-            }
+        isModeConteoPersistencePending = true;
+        syncToggleModoPrecisoInteractionState();
+        try {
+          const persistResult = await persistModeConteo(nuevoModo);
+          if (!persistResult || persistResult.ok !== true) {
+            throw new Error(
+              persistResult && persistResult.error
+                ? String(persistResult.error)
+                : 'setModeConteo returned non-ok result.'
+            );
           }
-        } else if (window.electronAPI) {
-          log.warn('setModeConteo unavailable; mode persistence skipped.');
-          setModoConteo(previousModo);
-          toggleModoPreciso.checked = (previousModo === 'preciso');
-          toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
-          startPreviewAndResultsUpdate(getCurrentTextValue(), 'mode toggle rollback');
-          if (cronoController && typeof cronoController.handleTextChange === 'function') {
-            cronoController.handleTextChange(null, getCurrentTextValue());
-          }
+        } catch (err) {
+          log.error('Error persisting modeConteo using setModeConteo:', err);
+          syncToggleFromSettings(settingsCache || {});
+        } finally {
+          isModeConteoPersistencePending = false;
+          syncToggleModoPrecisoInteractionState();
         }
       } catch (err) {
         log.error('Error handling change of toggleModoPreciso:', err);
       }
     });
 
-    // If settings change from main, keep the toggle in sync.
-    // This complements settingsChangeHandler for local safety.
+    // If settings change from main, keep the toggle in sync. This complements settingsChangeHandler for local safety.
     syncToggleFromSettings = (s) => {
       try {
         if (!toggleModoPreciso) return;
         const modo = (s && s.modeConteo) ? s.modeConteo : modoConteo;
         toggleModoPreciso.checked = (modo === 'preciso');
+        toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
       } catch (err) {
         log.error('Error syncing toggle from settings:', err);
       }
     };
 
-    // Perform immediate synchronization with settingsCache (already loaded)
+    // Use the current in-memory mode now; runMainStartup resynchronizes from the startup settings snapshot before READY.
     try {
       syncToggleFromSettings(settingsCache || {});
     } catch (err) {
@@ -1247,8 +1267,7 @@ function setupToggleModoPreciso() {
 async function runMainStartup() {
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getAppConfig.unavailable',
-      unavailableMessage: 'getAppConfig unavailable; bootstrap will use default limits.'
+      unavailableMessage: 'BOOTSTRAP: getAppConfig unavailable; bootstrap will use default limits.'
     });
     if (getAppConfig) {
       try {
@@ -1271,8 +1290,7 @@ async function runMainStartup() {
     let settingsSnapshot = {};
     // Load user settings once at renderer startup
     const getSettings = getOptionalElectronMethod('getSettings', {
-      dedupeKey: 'BOOTSTRAP:renderer.ipc.getSettings.unavailable',
-      unavailableMessage: 'getSettings unavailable; bootstrap will use default settings.'
+      unavailableMessage: 'BOOTSTRAP: getSettings unavailable; bootstrap will use default settings.'
     });
     if (getSettings) {
       try {
@@ -1338,7 +1356,7 @@ async function runMainStartup() {
 
     syncMainInteractionLockUi();
 
-    // Load presets and save them to the cache
+    // Resolve presets before marking renderer invariants ready so startup controls use the effective selection.
     const presetLoadResult = await loadPresets({ settingsSnapshot });
     currentTextRefreshPolicy.dispatchPresetOutcome(
       presetLoadResult && presetLoadResult.selectionOutcome
@@ -1408,12 +1426,11 @@ function registerMenuActions() {
 
         const res = await window.electronAPI.openDefaultPresetsFolder();
         if (res && res.ok) {
-          // Folder opened successfully; do not show intrusive notifications
+          // Successful native folder opening is intentionally silent in the main window.
           log.debug('config/presets_defaults folder opened in explorer.');
           return;
         }
 
-        // In case of failure, inform the user
         const errMsg = res && res.error ? String(res.error) : 'Unknown';
         log.error('default presets folder failed to open:', errMsg);
         window.Notify.notifyMain('renderer.presets.alerts.open_default_folder_failed');
@@ -1448,7 +1465,6 @@ function registerMenuActions() {
     registerMenuActionGuarded('actualizar_version', async () => {
       try {
         const checkForUpdates = getOptionalElectronMethod('checkForUpdates', {
-          dedupeKey: 'renderer.ipc.checkForUpdates.unavailable',
           unavailableMessage: 'checkForUpdates unavailable; update check action skipped.'
         });
         if (!checkForUpdates) return;
@@ -1508,7 +1524,6 @@ function bindSpeedControls() {
 // =============================================================================
 async function readClipboardText({ tooLargeKey, unavailableKey }) {
   const readClipboard = getOptionalElectronMethod('readClipboard', {
-    dedupeKey: 'renderer.ipc.readClipboard.unavailable',
     unavailableMessage: 'readClipboard unavailable; clipboard action skipped.'
   });
   if (!readClipboard) {
@@ -1539,10 +1554,7 @@ async function readClipboardText({ tooLargeKey, unavailableKey }) {
 function getTextApplyCanonicalApi() {
   const api = window.TextApplyCanonical;
   if (!api || typeof api.applyTextWithMode !== 'function') {
-    log.warnOnce(
-      'renderer.textApplyCanonical.unavailable',
-      'TextApplyCanonical.applyTextWithMode unavailable; canonical apply flow cannot continue.'
-    );
+    log.warn('TextApplyCanonical.applyTextWithMode unavailable; canonical apply flow cannot continue.');
     return null;
   }
   return api;
@@ -1553,7 +1565,6 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   if (!textApplyApi) return { ok: false, code: 'APPLY_API_UNAVAILABLE' };
 
   const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-    dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
     unavailableMessage: 'setCurrentText unavailable; text apply skipped.'
   });
   if (!setCurrentText) return { ok: false, code: 'SET_CURRENT_TEXT_UNAVAILABLE' };
@@ -1561,7 +1572,6 @@ async function applyTextViaCanonicalPath({ mode, textToApply, repeatCount }) {
   let getCurrentText = null;
   if (mode === 'append') {
     getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
       unavailableMessage: 'getCurrentText unavailable; append apply skipped.'
     });
     if (!getCurrentText) return { ok: false, code: 'GET_CURRENT_TEXT_UNAVAILABLE' };
@@ -1597,10 +1607,7 @@ async function maybeRecoverTextExtractionOcrSetupAndRetry({
 }) {
   const recoveryApi = textExtractionOcrActivationRecovery;
   if (!recoveryApi || typeof recoveryApi.recoverAfterSetupFailure !== 'function') {
-    log.warnOnce(
-      'renderer.textExtraction.ocrActivationRecovery.unavailable',
-      'TextExtractionOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.'
-    );
+    log.warn('TextExtractionOcrActivationRecovery.recoverAfterSetupFailure unavailable; OCR setup auto-recovery disabled.');
     return { preparation, handled: false };
   }
 
@@ -1624,7 +1631,7 @@ async function maybeRecoverTextExtractionOcrSetupAndRetry({
 
 async function resolveDroppedFilePath(file) {
   const getPathForFile = getOptionalElectronMethod('getPathForFile', {
-    dedupeKey: 'renderer.ipc.getPathForFile.unavailable',
+    unavailableWarningKey: 'renderer.ipc.getPathForFile.unavailable',
     unavailableMessage: 'getPathForFile unavailable; dropped file path cannot be resolved.'
   });
   if (getPathForFile) {
@@ -1633,19 +1640,12 @@ async function resolveDroppedFilePath(file) {
       if (typeof resolvedPath === 'string' && resolvedPath.trim()) {
         return resolvedPath.trim();
       }
-      log.warn('getPathForFile returned empty/invalid; falling back to File.path.');
+      log.warn('getPathForFile returned empty/invalid; dropped file path unresolved.');
     } catch (err) {
-      log.warn('getPathForFile failed; falling back to File.path:', err);
+      log.warn('getPathForFile failed; dropped file path unresolved:', err);
     }
   }
-
-  const fallbackPath = file && typeof file.path === 'string'
-    ? file.path.trim()
-    : '';
-  if (!fallbackPath) {
-    log.warn('Dropped file path unresolved; returning empty path.');
-  }
-  return fallbackPath;
+  return '';
 }
 
 // renderer.js keeps only app-level wiring here.
@@ -1791,8 +1791,7 @@ function handleEditorFirstShowState(payload) {
     return;
   }
 
-  // Lifecycle-owned Editor startup failures are disclosed once through Main's
-  // native surface. The main renderer only clears its pending launch state.
+  // This handler only clears renderer launch state; it does not emit failure UI.
 }
 
 // =============================================================================
@@ -1806,7 +1805,6 @@ async function handleTextExtractionAbort() {
   if (!guardUserAction('text-extraction-abort', { allowDuringProcessing: true })) return;
   try {
     const requestTextExtractionAbort = getOptionalElectronMethod('requestTextExtractionAbort', {
-      dedupeKey: 'renderer.ipc.requestTextExtractionAbort.unavailable',
       unavailableMessage: 'requestTextExtractionAbort unavailable; abort action skipped.'
     });
     if (!requestTextExtractionAbort) {
@@ -1843,8 +1841,7 @@ async function handleTextExtractionAbort() {
 // =============================================================================
 // Current text actions
 // =============================================================================
-// Clipboard overwrite/append use the canonical apply path so truncation,
-// persistence, and shared notifications stay consistent across entry points.
+// Clipboard overwrite/append use the canonical apply path so truncation, persistence, and shared notifications stay consistent across entry points.
 async function handleClipboardOverwrite() {
   if (!guardUserAction('clipboard-overwrite')) return;
   try {
@@ -1918,7 +1915,6 @@ async function handleOpenEditor() {
   showEditorLoader();
   try {
     const openEditor = getOptionalElectronMethod('openEditor', {
-      dedupeKey: 'renderer.ipc.openEditor.unavailable',
       unavailableMessage: 'openEditor unavailable; Text Editor launch skipped.'
     });
     if (!openEditor) {
@@ -1954,7 +1950,6 @@ async function handleOpenTextTimeCalculator() {
   if (!guardUserAction('text-time-calculator')) return;
   try {
     const openTextTimeCalculator = getOptionalElectronMethod('openTextTimeCalculator', {
-      dedupeKey: 'renderer.ipc.openTextTimeCalculator.unavailable',
       unavailableMessage: 'openTextTimeCalculator unavailable; calculator launch skipped.',
     });
     if (!openTextTimeCalculator) return;
@@ -1972,7 +1967,6 @@ async function handleClearText() {
   if (!guardUserAction('clear-text')) return;
   try {
     const setCurrentText = getOptionalElectronMethod('setCurrentText', {
-      dedupeKey: 'renderer.ipc.setCurrentText.unavailable',
       unavailableMessage: 'setCurrentText unavailable; clear-text action skipped.'
     });
     if (!setCurrentText) {
@@ -2046,7 +2040,6 @@ function handleTaskOpenResult(res, { mode } = {}) {
 
 async function openTaskEditorForMode(mode, { unavailableMessage } = {}) {
   const openTaskEditor = getOptionalElectronMethod('openTaskEditor', {
-    dedupeKey: 'renderer.ipc.openTaskEditor.unavailable',
     unavailableMessage,
   });
   if (!openTaskEditor) {
@@ -2133,8 +2126,7 @@ async function handleOpenReadingSpeedTest() {
 // =============================================================================
 // Preset actions
 // =============================================================================
-// Preset buttons are wired here; preset modals and native confirmation
-// dialogs are handled by main.
+// Renderer actions request modal or dialog work through electronAPI; this file handles returned outcomes.
 async function openPresetModalFromMain(payload) {
   if (!window.electronAPI || typeof window.electronAPI.openPresetModal !== 'function') {
     log.warn('openPresetModal unavailable in electronAPI; preset-modal action skipped.');
@@ -2160,7 +2152,6 @@ function bindPresetActions() {
     await openPresetModalFromMain(wpmControls.getWpm());
   });
 
-  // Edit preset
   btnEditPreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-edit')) return;
     try {
@@ -2171,14 +2162,12 @@ function bindPresetActions() {
         return;
       }
 
-      // Find preset data from cache
       const preset = wpmControls.getAllPresets().find(p => p.name === selectedName);
       if (!preset) {
         window.Notify.notifyMain('renderer.presets.alerts.not_found');
         return;
       }
 
-      // Open modal in edit mode and pass preset data.
       const payload = { wpm: wpmControls.getWpm(), mode: 'edit', preset: preset };
       log.debug('openPresetModal payload:', payload);
       await openPresetModalFromMain(payload);
@@ -2188,7 +2177,6 @@ function bindPresetActions() {
     }
   });
 
-  // Delete preset
   btnDeletePreset.addEventListener('click', async () => {
     if (!guardUserAction('preset-delete')) return;
     try {
@@ -2199,18 +2187,15 @@ function bindPresetActions() {
         return;
       }
       const requestDeletePreset = getOptionalElectronMethod('requestDeletePreset', {
-        dedupeKey: 'renderer.ipc.requestDeletePreset.unavailable',
         unavailableMessage: 'requestDeletePreset unavailable; preset-delete action skipped.'
       });
       if (!requestDeletePreset) {
         window.Notify.notifyMain('renderer.presets.alerts.delete_error');
         return;
       }
-      // Call main to request deletion; main shows native dialogs as needed
       const res = await requestDeletePreset(name);
 
       if (res && res.ok) {
-        // On success, reload presets and apply fallback selection if needed.
         const presetDeleteResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
         currentTextRefreshPolicy.dispatchPresetOutcome(
           presetDeleteResult && presetDeleteResult.selectionOutcome
@@ -2218,15 +2203,11 @@ function bindPresetActions() {
             : null,
           'preset delete'
         );
-        // No further UI dialog required; main already showed confirmation.
         return;
       } else {
-        // res.ok === false -> handle known codes
         if (res && res.code === 'CANCELLED') {
-          // User cancelled; nothing to do
           return;
         }
-        // Unexpected error: log and show a simple alert
         log.error('Error deleting preset:', res && res.error ? res.error : res);
         window.Notify.notifyMain('renderer.presets.alerts.delete_error');
       }
@@ -2236,23 +2217,19 @@ function bindPresetActions() {
     }
   });
 
-  // Restore default presets
   btnResetDefaultPresets.addEventListener('click', async () => {
     if (!guardUserAction('preset-reset-defaults')) return;
     try {
       const requestRestoreDefaults = getOptionalElectronMethod('requestRestoreDefaults', {
-        dedupeKey: 'renderer.ipc.requestRestoreDefaults.unavailable',
         unavailableMessage: 'requestRestoreDefaults unavailable; presets restore action skipped.'
       });
       if (!requestRestoreDefaults) {
         window.Notify.notifyMain('renderer.presets.alerts.restore_error');
         return;
       }
-      // Call main to request restore. Main will show a native confirmation dialog.
       const res = await requestRestoreDefaults();
 
       if (res && res.ok) {
-        // Reload presets to reflect restored defaults
         const presetRestoreResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
         currentTextRefreshPolicy.dispatchPresetOutcome(
           presetRestoreResult && presetRestoreResult.selectionOutcome
@@ -2263,7 +2240,6 @@ function bindPresetActions() {
         return;
       } else {
         if (res && res.code === 'CANCELLED') {
-          // User cancelled in native dialog; nothing to do
           return;
         }
         log.error('Error restoring presets:', res && res.error ? res.error : res);
@@ -2279,10 +2255,6 @@ function bindPresetActions() {
 // =============================================================================
 // Stopwatch
 // =============================================================================
-const cronoDisplay = document.getElementById('cronoDisplay');
-const tToggle = document.getElementById('cronoToggle');
-const tReset = document.getElementById('cronoReset');
-
 const cronoModule = (typeof window !== 'undefined') ? window.RendererCrono : null;
 
 const initCronoController = () => {
@@ -2292,7 +2264,13 @@ const initCronoController = () => {
   }
   const icons = getCronoIcons();
   cronoController = cronoModule.createController({
-    elements: { cronoDisplay, tToggle, tReset, realWpmDisplay, toggleVF },
+    elements: {
+      cronoDisplay,
+      tToggle: cronoToggleButton,
+      tReset: cronoResetButton,
+      realWpmDisplay,
+      toggleVF,
+    },
     electronAPI: window.electronAPI,
     contarTexto,
     obtenerSeparadoresDeNumeros,
@@ -2315,14 +2293,25 @@ const initCronoController = () => {
 // Renderer bootstrap entrypoint
 // =============================================================================
 // Core listener and UI wiring must happen before runStartupOrchestrator().
-// The current-text stream is armed by runMainStartup() after its authoritative
-// bootstrap snapshot is synchronized and before READY can unblock.
+// The current-text stream is armed by runMainStartup() after its authoritative bootstrap snapshot is synchronized and before READY can unblock.
 function startRendererBootstrap() {
   infoModal.init({
     getCurrentLanguage: () => (settingsCache && settingsCache.language) || idiomaActual || DEFAULT_LANG,
   });
   armIpcSubscriptions();
   setupToggleModoPreciso();
+  const api = window.electronAPI;
+  const persistPreviewSpoilerEnabled = api && typeof api.setPreviewSpoilerEnabled === 'function'
+    ? async (enabled) => {
+      const result = await api.setPreviewSpoilerEnabled(enabled);
+      if (!result || result.ok !== true) {
+        throw new Error('setPreviewSpoilerEnabled failed.');
+      }
+    }
+    : null;
+  if (!persistPreviewSpoilerEnabled) {
+    log.warn('setPreviewSpoilerEnabled unavailable; preview Spoiler persistence disabled.');
+  }
   currentTextSelectorSection.bindActions({
     onTextExtraction: handleTextExtractionPicker,
     onTextExtractionAbort: handleTextExtractionAbort,
@@ -2335,12 +2324,7 @@ function startRendererBootstrap() {
     onNewTask: handleNewTask,
     onLoadTask: handleLoadTask,
     onReadingSpeedTest: handleOpenReadingSpeedTest,
-    onPreviewSpoilerEnabledChange: async (enabled) => {
-      const result = await window.electronAPI.setPreviewSpoilerEnabled(enabled);
-      if (!result || result.ok !== true) {
-        throw new Error('setPreviewSpoilerEnabled failed.');
-      }
-    },
+    onPreviewSpoilerEnabledChange: persistPreviewSpoilerEnabled,
   });
   textTimeCalculatorLauncher.bindActions({
     onOpenCalculator: handleOpenTextTimeCalculator,

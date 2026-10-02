@@ -10,9 +10,9 @@ const {
 } = require('./common');
 
 function resolveDefaultPickerPath({ app, cwd, log }) {
-  const documents = safeGetSystemPath(app, 'documents', log, 'text_extraction_picker.default.win.documents');
-  const home = safeGetSystemPath(app, 'home', log, 'text_extraction_picker.default.win.home');
-  return resolveExistingDirectory([documents, home], cwd, log, 'text_extraction_picker.default.win');
+  const documents = safeGetSystemPath(app, 'documents', log);
+  const home = safeGetSystemPath(app, 'home', log);
+  return resolveExistingDirectory([documents, home], cwd, log);
 }
 
 function normalizePersistedDirectory(rawDirectory) {
@@ -34,4 +34,3 @@ module.exports = {
   normalizeSelectedFilePath,
   normalizeSelectedDirectory,
 };
-

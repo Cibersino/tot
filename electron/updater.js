@@ -43,8 +43,7 @@ let updateCheckDone = false;
 // =============================================================================
 const resolveDialogText = (dialogTexts, key, fallback) =>
   menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
-    log,
-    warnPrefix: 'updater.dialog.missing'
+    log
   });
 
 const SEMVER_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+.*)?$/;

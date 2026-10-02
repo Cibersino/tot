@@ -95,6 +95,7 @@
         "append_clipboard_error": "Đã xảy ra lỗi khi thêm văn bản từ clipboard.",
         "clear_error": "Đã xảy ra lỗi khi xóa văn bản. Hãy kiểm tra console.",
         "current_text_processing_locked": "Văn bản hiện tại vẫn đang được cập nhật. Tương tác với cửa sổ chính bị khóa cho đến khi văn bản mới nhất ổn định.",
+        "precise_counting_fallback": "Không thể sử dụng Chế độ chính xác. toT đã chuyển sang chế độ đơn giản.",
         "current_text_recount_locked": "Kết quả của văn bản hiện tại vẫn đang được tính lại. Tương tác với cửa sổ chính bị khóa cho đến khi lần tính lại mới nhất ổn định.",
         "wip": {
           "design_skins": "WIP: Bộ chọn giao diện sẽ mở tại đây trong phiên bản tương lai.",

@@ -5,11 +5,9 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Recover text extraction OCR flow when setup/activation blocks prepare-stage OCR routing
-//   or a user-selected OCR route.
+// - Recover text extraction OCR flow when setup/activation blocks prepare-stage OCR routing or a user-selected OCR route.
 // - Prepare credentials readiness, show disclosure consent, and then launch OCR activation.
 // - Retry preparation after successful OCR activation without bloating renderer orchestration.
-// =============================================================================
 
 (() => {
   // =============================================================================

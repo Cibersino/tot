@@ -4,11 +4,11 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process controller for Text Editor textarea font size.
+// Main-process controller for Text Editor font size.
 // Responsibilities:
-// - Read and persist editorFontSizePx through shared settings.
-// - Broadcast settings-updated after changes.
-// - Expose feature-level actions for UI controls and Text Editor shortcuts.
+// - Own Text Editor font-size actions and their IPC boundary.
+// - Persist and publish through the shared settings contract.
+// - Expose actions for native Text Editor shortcuts.
 
 // =============================================================================
 // Imports / logger
@@ -25,52 +25,51 @@ log.debug('Text Editor text-size controller starting...');
 // =============================================================================
 // Controller factory
 // =============================================================================
-function createController({ settingsState, getWindows } = {}) {
-  if (!settingsState || typeof settingsState.getSettings !== 'function' || typeof settingsState.saveSettings !== 'function') {
-    throw new Error('[editor-text-size] createController requires settingsState with getSettings/saveSettings');
+function createController({ settingsState } = {}) {
+  if (!settingsState || typeof settingsState.getSettings !== 'function' || typeof settingsState.saveSettingsStrict !== 'function') {
+    throw new Error('[editor-text-size] createController requires settingsState with getSettings/saveSettingsStrict');
   }
-  if (typeof settingsState.broadcastSettingsUpdated !== 'function') {
-    throw new Error('[editor-text-size] createController requires settingsState.broadcastSettingsUpdated');
+  if (typeof settingsState.normalizeEditorFontSizePx !== 'function') {
+    throw new Error('[editor-text-size] createController requires settingsState.normalizeEditorFontSizePx');
   }
-  if (typeof getWindows !== 'function') {
-    throw new Error('[editor-text-size] createController requires getWindows');
+  if (typeof settingsState.publishSettingsUpdated !== 'function') {
+    throw new Error('[editor-text-size] createController requires settingsState.publishSettingsUpdated');
   }
 
-  function broadcastSettings(settings) {
-    try {
-      settingsState.broadcastSettingsUpdated(settings, getWindows());
-    } catch (err) {
-      log.warnOnce(
-        'editor_text_size.broadcast',
-        'Editor text-size broadcast failed (ignored):',
-        err
+  function applyFontSize(fontSizePx, settings) {
+    const parsed = Number(fontSizePx);
+    if (!Number.isFinite(parsed)) {
+      log.warn(
+        'Text Editor font-size action received a non-finite value (ignored):',
+        { value: fontSizePx }
       );
+      return { ok: false, error: 'invalid' };
     }
+
+    const currentSettings = settings || settingsState.getSettings();
+    const nextEditorFontSizePx = settingsState.normalizeEditorFontSizePx(parsed);
+    if (currentSettings.editorFontSizePx === nextEditorFontSizePx) {
+      return { ok: true, editorFontSizePx: nextEditorFontSizePx };
+    }
+
+    const nextSettings = {
+      ...currentSettings,
+      editorFontSizePx: nextEditorFontSizePx,
+    };
+    const savedSettings = settingsState.saveSettingsStrict(nextSettings);
+    settingsState.publishSettingsUpdated(savedSettings);
+    return { ok: true, editorFontSizePx: savedSettings.editorFontSizePx };
   }
 
   function set(fontSizePx) {
-    try {
-      let settings = settingsState.getSettings();
-      settings.editorFontSizePx = fontSizePx;
-      settings = settingsState.saveSettings(settings);
-      broadcastSettings(settings);
-      return { ok: true, editorFontSizePx: settings.editorFontSizePx };
-    } catch (err) {
-      log.error('Error setting editor font size:', err);
-      return { ok: false, error: String(err) };
-    }
+    return applyFontSize(fontSizePx);
   }
 
   function adjust(stepDeltaPx) {
-    try {
-      const settings = settingsState.getSettings();
-      const current = Number(settings && settings.editorFontSizePx);
-      const base = Number.isFinite(current) ? current : EDITOR_FONT_SIZE_DEFAULT_PX;
-      return set(base + stepDeltaPx);
-    } catch (err) {
-      log.error('Error adjusting editor font size:', err);
-      return { ok: false, error: String(err) };
-    }
+    const settings = settingsState.getSettings();
+    const current = Number(settings && settings.editorFontSizePx);
+    const base = Number.isFinite(current) ? current : EDITOR_FONT_SIZE_DEFAULT_PX;
+    return applyFontSize(base + stepDeltaPx, settings);
   }
 
   function increase() {
@@ -93,12 +92,26 @@ function createController({ settingsState, getWindows } = {}) {
     };
   }
 
+  // =============================================================================
+  // IPC registration
+  // =============================================================================
+  function registerIpc(ipcMain) {
+    if (!ipcMain || typeof ipcMain.handle !== 'function') {
+      throw new Error('[editor-text-size] registerIpc requires ipcMain');
+    }
+
+    ipcMain.handle('set-editor-font-size-px', async (_event, fontSizePx) => {
+      try {
+        return set(fontSizePx);
+      } catch (err) {
+        log.error('IPC set-editor-font-size-px failed:', err);
+        throw err;
+      }
+    });
+  }
+
   return {
-    set,
-    adjust,
-    increase,
-    decrease,
-    reset,
+    registerIpc,
     getShortcutActions,
   };
 }

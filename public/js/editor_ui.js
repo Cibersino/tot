@@ -310,6 +310,10 @@
       if (state.readProgressFramePending) return;
 
       if (typeof window.requestAnimationFrame !== 'function') {
+        log.warnOnce(
+          'editor-ui.read-progress.request-animation-frame-unavailable',
+          'Read-progress update: requestAnimationFrame unavailable; updating immediately.'
+        );
         updateReadProgressUi();
         return;
       }
@@ -362,6 +366,18 @@
       }
 
       scheduleReadProgressUiUpdate();
+    }
+
+    function focusEditorAtTop() {
+      if (!editor) return;
+
+      try {
+        editor.focus();
+      } catch (err) {
+        log.warn('Failed to focus Text Editor at startup (ignored):', err);
+      }
+
+      positionEditorAtTop();
     }
 
     function setReadingTestPrestartVisible(visible) {
@@ -629,6 +645,7 @@
       setNormalInteractionAvailable,
       applyEditorTranslations,
       restoreFocusToEditor,
+      focusEditorAtTop,
       applyReadingTestPrestartState,
       applyTextareaDefaults,
       persistEditorFontSizePx,

@@ -113,6 +113,8 @@ const findState = {
   busy: false,
 };
 
+let pendingFocusIntent = null;
+
 function reportEarlyTerminalFindI18nFailure(kind) {
   // The static shell already disables normal Find controls while the required
   // translation surface is being established. At this boundary, the dynamic
@@ -139,8 +141,8 @@ function applyIncomingState(payload) {
   if (findI18nTerminal) return;
   normalizeState(payload);
   if (!translationsLoadedFor) return;
-  synchronizeQueryInputFromMainState();
-  applyUiState();
+  projectMainStateIntoUi();
+  applyPendingFocusIntent();
 }
 
 function normalizeState(payload) {
@@ -175,6 +177,11 @@ function synchronizeQueryInputFromMainState() {
   if (inputEl.value !== findState.query) {
     inputEl.value = findState.query;
   }
+}
+
+function projectMainStateIntoUi() {
+  synchronizeQueryInputFromMainState();
+  applyUiState();
 }
 
 function applyUiState() {
@@ -260,6 +267,7 @@ function reportFindI18nFailure(err, { startup = false } = {}) {
 function reportTerminalFindI18nFailure(kind) {
   if (findI18nTerminal) return;
   findI18nTerminal = true;
+  pendingFocusIntent = null;
   inputEl.disabled = true;
   replaceInputEl.disabled = true;
   prevEl.disabled = true;
@@ -300,6 +308,26 @@ function focusRequestedTarget(target, selectAll = false) {
       err
     );
   }
+}
+
+function isFocusTargetUsable(target) {
+  const targetEl = target === 'replace' ? replaceInputEl : inputEl;
+  if (!targetEl || targetEl.disabled || targetEl.hidden) return false;
+  if (target === 'replace' && (!findState.expanded || replaceRowEl.hidden)) {
+    return false;
+  }
+  return true;
+}
+
+function applyPendingFocusIntent() {
+  if (!pendingFocusIntent) return;
+  if (!translationsLoadedFor || !findSemanticReady || findI18nTerminal) return;
+
+  const { target, selectAll } = pendingFocusIntent;
+  if (!isFocusTargetUsable(target)) return;
+
+  pendingFocusIntent = null;
+  focusRequestedTarget(target, selectAll);
 }
 
 function notifyReplaceTimeout() {
@@ -446,10 +474,11 @@ findApi.onState(applyIncomingState);
 
 if (typeof findApi.onFocusTarget === 'function') {
   findApi.onFocusTarget((payload) => {
-    if (findI18nTerminal || !findSemanticReady) return;
+    if (findI18nTerminal) return;
     const target = payload && payload.target === 'replace' ? 'replace' : 'query';
     const selectAll = !!(payload && payload.selectAll);
-    focusRequestedTarget(target, selectAll);
+    pendingFocusIntent = { target, selectAll };
+    applyPendingFocusIntent();
   });
 } else {
   log.warn(
@@ -489,12 +518,16 @@ function enqueueFindSettingsApplication(settings) {
   return enqueueFindSemanticWork(run);
 }
 
-if (typeof findApi.onSettingsChanged === 'function') {
-  findApi.onSettingsChanged((settings) => enqueueFindSettingsApplication(settings));
+if (typeof findApi.onSettingsChanged !== 'function') {
+  log.error('BOOTSTRAP: editorFindAPI.onSettingsChanged unavailable; closing window before normal interaction.');
+  reportTerminalFindI18nFailure('settings-listener');
 } else {
-  log.warn(
-    'BOOTSTRAP: [editor-find] editorFindAPI.onSettingsChanged missing; live language updates disabled.'
-  );
+  try {
+    findApi.onSettingsChanged((settings) => enqueueFindSettingsApplication(settings));
+  } catch (err) {
+    log.error('BOOTSTRAP: editorFindAPI.onSettingsChanged registration failed; closing window before normal interaction:', err);
+    reportTerminalFindI18nFailure('settings-listener');
+  }
 }
 
 // =============================================================================
@@ -506,6 +539,8 @@ if (typeof findApi.onSettingsChanged === 'function') {
     if (!await applyFindLanguage(language, { startup: true })) {
       throw new Error('[editor-find] required renderer translation state could not be established during bootstrap');
     }
+    projectMainStateIntoUi();
+    applyPendingFocusIntent();
   });
 })().catch((err) => {
   log.error('editor-find bootstrap failed:', err);

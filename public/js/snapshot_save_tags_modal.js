@@ -10,7 +10,6 @@
 // - Provide inline custom-tag creation inside the searchable selectors.
 // - Host the shared snapshot-tag manager modal through window.Notify.
 // - Return normalized optional snapshot tags or null on cancel.
-// =============================================================================
 
 (() => {
   // =============================================================================

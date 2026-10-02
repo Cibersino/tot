@@ -8,7 +8,6 @@
 // - Host text extraction route-choice modal behavior.
 // - Prompt only when both `native` and `ocr` routes are available for the prepared file.
 // - Resolve user route selection (`native` / `ocr`) without renderer orchestration bloat.
-// =============================================================================
 
 (() => {
   // =============================================================================

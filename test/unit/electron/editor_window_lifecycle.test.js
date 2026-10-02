@@ -3,20 +3,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+const Log = require('../../../electron/log');
 const editorWindowLifecycle = require('../../../electron/editor_window_lifecycle');
 
-function createLogDouble() {
-  return {
-    warnings: [],
-    errors: [],
-    warn(...args) {
-      this.warnings.push(args);
-    },
-    error(...args) {
-      this.errors.push(args);
-    },
-  };
-}
+const originalLogLevel = Log.getLevel();
+Log.setLevel('silent');
+test.after(() => Log.setLevel(originalLogLevel));
 
 function createEditorWindowDouble({
   visible = false,
@@ -116,10 +108,8 @@ function createMainWindowDouble() {
 }
 
 function createController({ showStartupFailureDisclosure = null } = {}) {
-  const log = createLogDouble();
   const notifyWindowStateCalls = [];
   const controller = editorWindowLifecycle.createController({
-    log,
     editorState: {
       notifyWindowState(win, source) {
         notifyWindowStateCalls.push({ win, source });
@@ -128,7 +118,7 @@ function createController({ showStartupFailureDisclosure = null } = {}) {
     showStartupFailureDisclosure,
   });
 
-  return { controller, log, notifyWindowStateCalls };
+  return { controller, notifyWindowStateCalls };
 }
 
 function createFreshOrdinaryStartup(controller, mainWin, editorWin, options = {}) {
@@ -349,7 +339,7 @@ test('accepted ordinary base readiness shows the window and emits editor-first-s
 });
 
 test('ordinary base readiness ignores unauthorized and stale reports', () => {
-  const { controller, log } = createController();
+  const { controller } = createController();
   const { mainWin, sends } = createMainWindowDouble();
   const { editorWin, calls } = createEditorWindowDouble({ visible: false });
 
@@ -381,7 +371,6 @@ test('ordinary base readiness ignores unauthorized and stale reports', () => {
   assert.equal(stale, false);
   assert.deepEqual(calls, []);
   assert.deepEqual(sends, []);
-  assert.equal(log.warnings.length, 2);
   controller.handleEditorWindowClosed({
     mainWin,
     logContext: 'test.cleanup.ignoreUnauthorizedAndStale',
@@ -600,7 +589,7 @@ test('ordinary startup timeout emits failed/startup-timeout, destroys the hidden
   global.clearTimeout = () => {};
 
   try {
-    const { controller, log } = createController();
+    const { controller } = createController();
     const { mainWin, sends } = createMainWindowDouble();
     const { editorWin, calls } = createEditorWindowDouble({ visible: false });
 
@@ -620,8 +609,6 @@ test('ordinary startup timeout emits failed/startup-timeout, destroys the hidden
         },
       },
     ]);
-    assert.equal(log.errors.length, 1);
-
     const lateReportAccepted = controller.handleBasePresentationStateReport({
       event: { sender: editorWin.webContents },
       editorWin,

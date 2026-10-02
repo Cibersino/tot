@@ -8,7 +8,6 @@
 // - Display explicit, already-localized visual-tooltip values.
 // - Position the shared visual bubble for pointer and keyboard interactions.
 // - Own tooltip dismissal semantics, including Escape priority while a tooltip is visible.
-// =============================================================================
 
 (() => {
   // =============================================================================

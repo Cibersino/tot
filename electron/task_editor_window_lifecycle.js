@@ -10,6 +10,9 @@
 // - Resolve terminal disposal through Main-native disclosure or explicit discard authorization.
 // - Coalesce pending native close requests while one terminal outcome is being resolved.
 // - Preserve Task-first parent/application-close ordering through the controller contract.
+
+// =============================================================================
+// Imports and logger
 // =============================================================================
 
 const Log = require('./log');
@@ -71,6 +74,15 @@ function createController({ dialog, getDialogTexts }) {
   // Main evidence is valid only for the initialization identity it accepted.
   function resetEvidence() {
     dirtyEvidence = { state: 'unknown', initId: currentInitId };
+  }
+
+  function resetWindowLifecycleState() {
+    currentInitId = 0;
+    terminalOutcome = null;
+    terminalResolutionPromise = null;
+    forceCloseAuthorized = false;
+    closeRequestPending = false;
+    resetEvidence();
   }
 
   function isCurrentWindow(win) {
@@ -212,24 +224,14 @@ function createController({ dialog, getDialogTexts }) {
 
   function attachWindow(win) {
     taskWindow = win;
-    currentInitId = 0;
-    terminalOutcome = null;
-    terminalResolutionPromise = null;
-    forceCloseAuthorized = false;
-    closeRequestPending = false;
-    resetEvidence();
+    resetWindowLifecycleState();
   }
 
   function handleWindowClosed(win) {
     if (taskWindow !== win) return;
     settleCloseRequest(forceCloseAuthorized);
     taskWindow = null;
-    terminalOutcome = null;
-    terminalResolutionPromise = null;
-    forceCloseAuthorized = false;
-    closeRequestPending = false;
-    currentInitId = 0;
-    resetEvidence();
+    resetWindowLifecycleState();
   }
 
   function prepareInitialization(win, payload) {
@@ -247,7 +249,7 @@ function createController({ dialog, getDialogTexts }) {
       || terminalResolutionPromise
       || !Number.isInteger(initId)
       || initId !== currentInitId + 1) {
-      log.warn('Task Editor initialization issue could not be accepted (ignored):', { initId });
+      log.error('Task Editor initialization issue could not be accepted:', { initId });
       return false;
     }
     currentInitId = initId;
@@ -349,6 +351,9 @@ function createController({ dialog, getDialogTexts }) {
     if (payload.kind === 'terminal') {
       return acceptTerminalOutcome(event, payload);
     }
+    if (payload.kind !== 'normal') {
+      log.warn('task-editor-close-response unsupported payload (ignored):', payload);
+    }
     settleCloseRequest(false);
     return false;
   }
@@ -357,15 +362,19 @@ function createController({ dialog, getDialogTexts }) {
     if (!isCurrentWindow(taskWindow)) return Promise.resolve(true);
     if (forceCloseAuthorized) return Promise.resolve(true);
     if (terminalResolutionPromise) return terminalResolutionPromise;
-    if (closeRequestPending) return closeRequestResolver
-      ? new Promise((resolve) => {
+    if (closeRequestPending) {
+      if (!closeRequestResolver) {
+        log.error('Task Editor close request is pending without a resolver.');
+        return Promise.resolve(false);
+      }
+      return new Promise((resolve) => {
         const priorResolve = closeRequestResolver;
         closeRequestResolver = (authorized) => {
           priorResolve(authorized);
           resolve(authorized);
         };
-      })
-      : Promise.resolve(false);
+      });
+    }
     closeRequestPending = true;
 
     if (terminalOutcome) {
@@ -455,6 +464,10 @@ function createController({ dialog, getDialogTexts }) {
     },
   };
 }
+
+// =============================================================================
+// Module exports
+// =============================================================================
 
 module.exports = {
   createController,

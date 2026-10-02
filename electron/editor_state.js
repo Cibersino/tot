@@ -171,7 +171,7 @@ function getWindowState(editorWin) {
 
 function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowState') {
   if (!hasLiveWebContents(editorWin)) {
-    log.warn('editor-window-state skipped (ignored): Text Editor window unavailable.', logContext);
+    log.warn('editor-window-state notification failed (ignored): Text Editor window unavailable.', logContext);
     return false;
   }
 
@@ -179,7 +179,7 @@ function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowStat
     editorWin.webContents.send('editor-window-state-changed', getWindowState(editorWin));
     return true;
   } catch (err) {
-    log.warn(`Unable to notify editor-window-state from ${logContext}:`, err);
+    log.warn(`editor-window-state notification failed (ignored) from ${logContext}:`, err);
     return false;
   }
 }
@@ -272,10 +272,9 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
           y: state.reduced.y
         });
       } else {
-        log.warnOnce(
+        log.warn(
           'editor-state.unmaximize.fallback-reduced',
-          'unmaximize: reduced bounds missing; using fallback placement (ignored).',
-          'note: may be normal until the Text Editor window is first resized/moved while not maximized.'
+          'unmaximize: reduced bounds missing; using fallback placement (ignored). (NOTE: may be normal; reduced bounds are first persisted when the Text Editor is resized or moved while not maximized)'
         );
         // Fallback: place at upper-right half of the current monitor work area.
         const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());

@@ -14,7 +14,7 @@
 // - Orchestrate app lifecycle paths including first run, activate, quit, and smoke-test startup.
 
 // =============================================================================
-// Imports (external + internal modules)
+// Imports
 // =============================================================================
 
 const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell, dialog } = require('electron');
@@ -80,6 +80,10 @@ const {
   materializeBundledCredentials,
 } = require('./text_extraction_platform/ocr_google_drive_bundled_credentials');
 
+// =============================================================================
+// Logger and early dependency wiring
+// =============================================================================
+
 const log = Log.get('main');
 log.debug('Main process starting...');
 const { formatStopwatchMs } = stopwatchTimeCore.createStopwatchTimeUtils();
@@ -88,7 +92,6 @@ const spellcheckController = spellcheck.createController({
   settingsState,
 });
 const editorWindowLifecycleController = editorWindowLifecycle.createController({
-  log,
   editorState,
   showStartupFailureDisclosure: showEditorStartupFailureDisclosure,
 });
@@ -98,86 +101,24 @@ const taskEditorWindowLifecycleController = taskEditorWindowLifecycle.createCont
 });
 const editorTextSizeController = editorTextSize.createController({
   settingsState,
-  getWindows: () => getSettingsBroadcastWindows(),
 });
 
-const IS_SMOKE_TEST = process.env.TOT_SMOKE_TEST === '1';
-const SMOKE_USER_DATA_DIR = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
+// =============================================================================
+// Smoke-test configuration
+// =============================================================================
+
+const isSmokeTest = process.env.TOT_SMOKE_TEST === '1';
+const smokeUserDataDir = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
   ? process.env.TOT_SMOKE_USER_DATA_DIR.trim()
   : '';
 
-if (IS_SMOKE_TEST && SMOKE_USER_DATA_DIR) {
+if (isSmokeTest && smokeUserDataDir) {
   try {
-    app.setPath('userData', path.resolve(SMOKE_USER_DATA_DIR));
+    app.setPath('userData', path.resolve(smokeUserDataDir));
   } catch (err) {
     log.error('Failed to override userData path for smoke test mode:', err);
   }
 }
-
-// =============================================================================
-// Text extraction orchestration (shared controller)
-// =============================================================================
-// main.js owns only the cross-window coordination for processing mode:
-// - broadcast state changes to the main renderer,
-// - block main-window interaction while processing is active,
-// - complete a deferred main-window close after an abort finishes.
-// Domain IPC and feature logic stay in the delegated text_extraction_platform modules.
-const textExtractionProcessingModeController = textExtractionProcessingModeIpc.createController({
-  onStateChanged: (state) => {
-    try {
-      const targetWin = resolveMainWindow();
-      if (hasLiveWebContents(targetWin)) {
-        targetWin.webContents.send('text-extraction-processing-mode-changed', state);
-      } else {
-        log.warn('text-extraction-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
-      }
-      if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
-        pendingMainWindowCloseAfterProcessingAbort = false;
-        if (targetWin && !targetWin.isDestroyed()) {
-          setTimeout(() => {
-            try {
-              if (targetWin && !targetWin.isDestroyed()) {
-                targetWin.close();
-              }
-            } catch (err) {
-              log.warn('Failed to close main window after processing cancellation (ignored):', err);
-            }
-          }, 0);
-        }
-      }
-    } catch (err) {
-      log.warn('Failed to broadcast processing-mode state (ignored):', err);
-    }
-  },
-});
-
-let currentTextProcessingStateMainBridge = null;
-let pendingMainWindowCloseAfterCurrentTextProcessing = false;
-const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
-  onStateChanged: (state) => {
-    currentTextProcessingStateMainBridge.handleStateChanged(state);
-    if (state && state.active === false && pendingMainWindowCloseAfterCurrentTextProcessing) {
-      pendingMainWindowCloseAfterCurrentTextProcessing = false;
-      const targetWin = resolveMainWindow();
-      if (targetWin && !targetWin.isDestroyed()) {
-        setTimeout(() => {
-          try {
-            if (targetWin && !targetWin.isDestroyed()) {
-              targetWin.close();
-            }
-          } catch (err) {
-            log.warn('Failed to close main window after current-text processing settled (ignored):', err);
-          }
-        }, 0);
-      }
-    }
-  },
-});
-currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBridge({
-  resolveMainWindow,
-  hasLiveWebContents,
-  log,
-});
 
 // =============================================================================
 // Constants / config (paths, defaults, limits)
@@ -195,7 +136,7 @@ const FALLBACK_LANGUAGES = [
 ];
 
 // =============================================================================
-// Helpers (guards + validation)
+// Shared helpers and cross-window coordination
 // =============================================================================
 
 function isPlainObject(x) {
@@ -407,11 +348,14 @@ let taskEditorWin = null; // Task Editor window (task_editor.html)
 let textTimeCalculatorWin = null; // Quick text/time calculator window
 let pendingMainWindowCloseAfterProcessingAbort = false;
 let pendingMainWindowCloseAfterTaskResolution = false;
+let currentTextProcessingStateMainBridge = null;
+let pendingMainWindowCloseAfterCurrentTextProcessing = false;
 let readingTestSessionController = null;
 
 // =============================================================================
 // Startup readiness gates + handshake state
 // =============================================================================
+// READY requires both main-side invariants and the renderer readiness signal.
 let mainReadyState = 'PRE_READY';
 let menuEnabled = false;
 let mainInvariantsReady = false;
@@ -424,7 +368,70 @@ let mainWindowCreated = false;
 let languageSelectionHandler = null;
 
 // =============================================================================
-// Menu + development utilities
+// Text extraction orchestration (shared controller)
+// =============================================================================
+// main.js owns only the cross-window coordination for processing mode:
+// - broadcast state changes to the main renderer,
+// - block main-window interaction while processing is active,
+// - complete a deferred main-window close after an abort finishes.
+// Domain IPC and feature logic stay in the delegated text_extraction_platform modules.
+const textExtractionProcessingModeController = textExtractionProcessingModeIpc.createController({
+  onStateChanged: (state) => {
+    try {
+      const targetWin = resolveMainWindow();
+      if (hasLiveWebContents(targetWin)) {
+        targetWin.webContents.send('text-extraction-processing-mode-changed', state);
+      } else {
+        log.warn('text-extraction-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
+      }
+      if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
+        pendingMainWindowCloseAfterProcessingAbort = false;
+        if (targetWin && !targetWin.isDestroyed()) {
+          setTimeout(() => {
+            try {
+              if (targetWin && !targetWin.isDestroyed()) {
+                targetWin.close();
+              }
+            } catch (err) {
+              log.warn('Failed to close main window after processing cancellation (ignored):', err);
+            }
+          }, 0);
+        }
+      }
+    } catch (err) {
+      log.warn('Failed to broadcast processing-mode state (ignored):', err);
+    }
+  },
+});
+
+const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
+  onStateChanged: (state) => {
+    currentTextProcessingStateMainBridge.handleStateChanged(state);
+    if (state && state.active === false && pendingMainWindowCloseAfterCurrentTextProcessing) {
+      pendingMainWindowCloseAfterCurrentTextProcessing = false;
+      const targetWin = resolveMainWindow();
+      if (targetWin && !targetWin.isDestroyed()) {
+        setTimeout(() => {
+          try {
+            if (targetWin && !targetWin.isDestroyed()) {
+              targetWin.close();
+            }
+          } catch (err) {
+            log.warn('Failed to close main window after current-text processing settled (ignored):', err);
+          }
+        }, 0);
+      }
+    }
+  },
+});
+currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBridge({
+  resolveMainWindow,
+  hasLiveWebContents,
+  log,
+});
+
+// =============================================================================
+// Language, menu, and development utilities
 // =============================================================================
 
 function getSelectedLanguage() {
@@ -434,13 +441,13 @@ function getSelectedLanguage() {
     if (!lang) {
       log.warnOnce(
         'main.menu.language.empty',
-        `Settings language is empty; falling back to "${DEFAULT_LANG}" for menu.`
+        `Settings language is empty; falling back to "${DEFAULT_LANG}".`
       );
       return DEFAULT_LANG;
     }
     return lang;
   } catch (err) {
-    log.error(`Failed to read settings language for menu; falling back to "${DEFAULT_LANG}":`, err);
+    log.warn(`Settings language read failed; using "${DEFAULT_LANG}".`, err);
     return DEFAULT_LANG;
   }
 }
@@ -739,7 +746,7 @@ function createEditorWindow(options = {}) {
   try {
     editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
   } catch (err) {
-    log.error('Error attaching Text Editor find listeners:', err);
+    log.warn('Text Editor find listener attachment failed (ignored):', err);
   }
 
   // Keep the editor hidden here when startup presentation must be finalized later.
@@ -906,7 +913,7 @@ function createPresetWindow(initialData) {
       presetWin.focus();
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
-      log.error('Error sending init to presetWin already open:', err);
+      log.warn('Preset window refresh failed (ignored):', err);
     }
     return presetWin;
   }
@@ -931,13 +938,18 @@ function createPresetWindow(initialData) {
   presetWin.setMenu(null);
   presetWin.loadFile(path.join(__dirname, '../public/preset_modal.html'));
 
-  // Show and send initial payload only when ready.
+  // A usable preset modal requires its initial payload; close it if delivery fails.
   presetWin.once('ready-to-show', () => {
     presetWin.show();
     try {
       presetWin.webContents.send('preset-init', initialData || {});
     } catch (err) {
       log.error('Error sending preset-init:', err);
+      try {
+        if (isAliveWindow(presetWin)) presetWin.close();
+      } catch (closeErr) {
+        log.error('Error closing presetWin after failed preset-init:', closeErr);
+      }
     }
   });
 
@@ -949,8 +961,8 @@ function createPresetWindow(initialData) {
 }
 
 /**
- * Create the language selection window (first launch).
- * This is a small window used only to select the UI language on first run.
+ * Create the language selection window.
+ * It supports both first-run selection and later language changes.
  * It is not modal relative to mainWin because it can be opened before mainWin exists.
  */
 function createLanguageWindow() {
@@ -989,7 +1001,7 @@ function createLanguageWindow() {
     langWin.show();
   });
 
-  // If the user closes the language window without choosing, persist a safe fallback and continue startup.
+  // Before startup language resolution, closing this window persists the safe fallback and continues startup.
   langWin.on('closed', () => {
     try {
       if (!languageResolved) {
@@ -1054,7 +1066,7 @@ function handleSplashRemoved() {
   splashRemoved = true;
   menuEnabled = true;
 
-  if (IS_SMOKE_TEST) {
+  if (isSmokeTest) {
     try {
       console.log('TOT_SMOKE_READY');
     } catch (err) {
@@ -1074,7 +1086,7 @@ function handleSplashRemoved() {
   try {
     updater.scheduleInitialCheck();
   } catch (err) {
-    log.error('Error scheduling updater initial check post-READY:', err);
+    log.warn('Updater initial-check scheduling failed (ignored):', err);
   }
 }
 
@@ -1143,8 +1155,13 @@ function closeRendererAfterI18nFailure(event, payload) {
     log.error('Renderer i18n failure native dialog translations unavailable:', err);
   }
 
-  const title = dialogTexts && dialogTexts.renderer_i18n_failure_title;
-  const message = dialogTexts && dialogTexts.renderer_i18n_failure_message;
+  const isSettingsListenerFailure = failureKind === 'settings-listener';
+  const title = dialogTexts && (isSettingsListenerFailure
+    ? dialogTexts.renderer_settings_listener_failure_title
+    : dialogTexts.renderer_i18n_failure_title);
+  const message = dialogTexts && (isSettingsListenerFailure
+    ? dialogTexts.renderer_settings_listener_failure_message
+    : dialogTexts.renderer_i18n_failure_message);
   const ok = dialogTexts && dialogTexts.ok;
   if (typeof title === 'string' && title.trim()
     && typeof message === 'string' && message.trim()
@@ -1645,7 +1662,7 @@ ipcMain.handle('get-available-languages', async () => {
 
     return filtered;
   } catch (err) {
-    log.error('Error loading language manifest. Using fallback:', err);
+    log.warn('Language manifest load failed; using fallback:', err);
     return FALLBACK_LANGUAGES;
   }
 });
@@ -1950,7 +1967,7 @@ ipcMain.on('startup:splash-removed', () => {
 ipcMain.on('renderer-i18n-failed', closeRendererAfterI18nFailure);
 
 // =============================================================================
-// App lifecycle (startup, activate, quit)
+// App lifecycle and startup bootstrap
 // =============================================================================
 
 app.whenReady().then(() => {
@@ -1969,17 +1986,17 @@ app.whenReady().then(() => {
     log.warn('Reading-test bundled pool startup sync failed (ignored):', readingTestPoolSync);
   }
 
-  const SETTINGS_FILE = getSettingsFile();
-  const SNAPSHOT_TAGS_FILE = getSnapshotTagsFile();
-  const CURRENT_TEXT_FILE = getCurrentTextFile();
+  const settingsFile = getSettingsFile();
+  const snapshotTagsFile = getSnapshotTagsFile();
+  const currentTextFile = getCurrentTextFile();
 
   // Initialize shared text state early (current text file).
   // This module owns loading/saving current text and its IPC surface.
   textState.init({
     loadJson,
     saveJson,
-    currentTextFile: CURRENT_TEXT_FILE,
-    settingsFile: SETTINGS_FILE,
+    currentTextFile,
+    settingsFile,
     app,
     maxTextChars: MAX_TEXT_CHARS,
     currentTextProcessingController: currentTextProcessingStateController,
@@ -1993,17 +2010,25 @@ app.whenReady().then(() => {
     loadJson,
     saveJson,
     saveJsonStrict,
-    settingsFile: SETTINGS_FILE,
+    settingsFile,
   });
 
   snapshotTagSettings.init({
     loadJson,
     saveJson,
     saveJsonStrict,
-    snapshotTagsFile: SNAPSHOT_TAGS_FILE,
+    snapshotTagsFile,
   });
 
   spellcheckController.apply(settings);
+
+  settingsState.configurePublication({
+    getWindows: () => getSettingsBroadcastWindows(),
+    onSettingsUpdated: (nextSettings) => {
+      spellcheckController.apply(nextSettings);
+    },
+    decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
+  });
 
   // Delegated IPC registration (feature modules).
   // main.js owns windows; feature modules own their IPC contract and internal logic.
@@ -2025,17 +2050,11 @@ app.whenReady().then(() => {
 
   editorFindMain.registerIpc(ipcMain);
 
-  const settingsIpc = settingsState.registerIpc(ipcMain, {
-    getWindows: () => getSettingsBroadcastWindows(),
-    buildAppMenu,
-    onSettingsUpdated: (nextSettings) => {
-      spellcheckController.apply(nextSettings);
-    },
-    decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
-  });
+  settingsState.registerIpc(ipcMain, { buildAppMenu });
+  editorTextSizeController.registerIpc(ipcMain);
 
   snapshotTagSettings.registerIpc(ipcMain, {
-    publishSettingsUpdate: () => settingsIpc.publishCurrentSettings(),
+    publishSettingsUpdate: () => settingsState.publishCurrentSettings(),
   });
 
   presetsMain.registerIpc(ipcMain, {

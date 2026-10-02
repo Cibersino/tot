@@ -479,6 +479,19 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Confirmación al cargar un snapshot y reemplazar el texto actual de la app.
         // [CONCEPTO_APP] snapshot de texto; texto actual; reemplazar texto actual
       },
+      "snapshot_invalid_filename": {
+        "es": "Usa un nombre de archivo que termine en .json y tenga texto antes de la extensión.",
+        "en": "Use a filename ending in .json, with text before the extension."
+        // [PROPÓSITO] Aviso nativo tras un nombre inválido en el selector de guardado de snapshot; el archivo no se guarda y el selector se reabre.
+        // [CONCEPTO_APP] snapshot de texto
+        // [PROTEGIDO] .json
+      },
+      "task_list_invalid_filename": {
+        "es": "Usa un nombre de archivo que termine en .json y tenga texto antes de la extensión.",
+        "en": "Use a filename ending in .json, with text before the extension."
+        // [CONCEPTO_APP] tarea
+        // [PROTEGIDO] `.json`
+      },
       "task_delete_confirm": {
         "es": "¿Eliminar la tarea \"{name}\"?",
         "en": "Delete the task \"{name}\"?"
@@ -630,6 +643,14 @@ Estados de revisión recomendados:
         "es": "La interfaz no pudo cargar sus recursos de idioma necesarios. La ventana se cerrará.",
         "en": "The interface could not load its required language resources. The window will close."
         // [PROPÓSITO] Mensaje nativo de cierre para un fallo terminal de recursos de idioma del renderer.
+      },
+      "renderer_settings_listener_failure_title": {
+        "es": "No se pudo iniciar la interfaz",
+        "en": "The interface could not start"
+      },
+      "renderer_settings_listener_failure_message": {
+        "es": "La interfaz no pudo establecer la sincronización necesaria con la configuración. La ventana se cerrará.",
+        "en": "The interface could not establish the required settings synchronization. The window will close."
       },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
@@ -1110,6 +1131,11 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Alerta cuando una actualización del texto actual bloquea temporalmente interacciones de la ventana principal.
           // [CONCEPTO_APP] texto actual
           // [NO_CONFUNDIR] No indica una extracción de texto en curso; indica que el texto actual aún no se estabiliza.
+        },
+        "precise_counting_fallback": {
+          "es": "No se pudo usar el modo Preciso. toT cambió al modo Simple.",
+          "en": "Precise mode could not be used. toT switched to Simple mode."
+          // [CONCEPTO_APP] modo preciso/simple;
         },
         "current_text_recount_locked": {
           "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",

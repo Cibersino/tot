@@ -95,6 +95,7 @@
         "append_clipboard_error": "从剪贴板追加文本时发生错误。",
         "clear_error": "清空文本时发生错误。请检查控制台。",
         "current_text_processing_locked": "当前文本仍在更新。在最新文本稳定之前，主窗口交互将被锁定。",
+        "precise_counting_fallback": "无法使用精确模式。toT 已切换到简单模式。",
         "current_text_recount_locked": "当前文本结果仍在重新计算。在最新重新计数稳定之前，主窗口交互将被锁定。",
         "wip": {
           "design_skins": "WIP：皮肤选择器将在未来版本中从这里打开。",

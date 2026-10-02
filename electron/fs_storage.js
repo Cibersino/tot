@@ -239,19 +239,31 @@ function ensureOcrGoogleDriveDir() {
 
 const LOAD_JSON_FILE_METADATA = Object.freeze({
   'current_text.json': {
-    missingNote: ' (note: may be normal on first run; file is created on quit)',
+    missingNote: ' (NOTE: may be normal; file is created on quit)',
   },
   'user_settings.json': {
-    missingNote: ' (note: may be normal on first run; file is created during startup)',
+    missingNote: ' (NOTE: may be normal; file is created during startup)',
   },
   'snapshot_tags.json': {
-    missingNote: ' (note: may be normal on first run; file is created during startup)',
+    missingNote: ' (NOTE: may be normal; file is created during startup)',
   },
   'editor_state.json': {
-    missingNote: ' (note: may be normal on first run; file is created when Text Editor window is opened for the first time)',
+    missingNote: ' (NOTE: may be normal; file is created when the Text Editor window is first opened)',
   },
   'task_editor_state.json': {
-    missingNote: ' (note: may be normal on first run; file is created after the Task Editor window is opened and window state is saved)',
+    missingNote: ' (NOTE: may be normal; file is created after the Task Editor window is opened and window state is saved)',
+  },
+  'task_file_picker_state.json': {
+    missingNote: ' (NOTE: may be normal; file is created after the first Task Editor file selection)',
+  },
+  'text_extraction_state.json': {
+    missingNote: ' (NOTE: may be normal; file is created after the first text-extraction file selection)',
+  },
+  'reading_test_pool_import_state.json': {
+    missingNote: ' (NOTE: may be normal; file is created after the first reading-test import file selection)',
+  },
+  'reading_test_pool_state.json': {
+    missingNote: ' (NOTE: may be normal; file is initialized during the first reading-test pool synchronization)',
   },
 });
 
@@ -288,7 +300,6 @@ function loadJson(filePath, fallback = {}) {
 
     return JSON.parse(raw);
   } catch (err) {
-    // Invalid JSON is recoverable: return fallback and continue running.
     log.warn(
       'loadJson failed (using fallback):',
       filePath,
@@ -310,7 +321,7 @@ function saveJson(filePath, obj) {
 
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
   } catch (err) {
-    log.error('saveJson failed:', filePath, err);
+    log.warn('saveJson failed (ignored):', filePath, err);
   }
 }
 
@@ -322,6 +333,16 @@ function saveJsonStrict(filePath, obj) {
   const parentDir = path.dirname(filePath);
   ensureDirExists(parentDir);
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
+}
+
+// Strict JSON creation for flows that must never replace an entry that appeared
+// after their preflight. Unlike saveJsonStrict(...), this does not create the
+// parent directory and requests exclusive filesystem creation.
+function createJsonStrict(filePath, obj) {
+  fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), {
+    encoding: 'utf8',
+    flag: 'wx',
+  });
 }
 
 // =============================================================================
@@ -365,6 +386,7 @@ module.exports = {
   loadJson,
   saveJson,
   saveJsonStrict,
+  createJsonStrict,
 };
 
 // =============================================================================

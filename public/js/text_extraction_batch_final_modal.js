@@ -9,7 +9,6 @@
 // - Render retained generated-artifact reveal actions through window.Notify.
 // - Expose a copy-report and open-snapshots-folder action without creating a
 //   second reporting surface.
-// =============================================================================
 
 (() => {
   // =============================================================================
@@ -324,6 +323,10 @@
       body.replaceChildren(...unitNodes);
       return;
     }
+    log.warnOnce(
+      'text-extraction.batch-final.replace-children-body-unavailable',
+      'Batch final report: replaceChildren unavailable; using DOM fallback.'
+    );
     while (body.firstChild) {
       body.removeChild(body.firstChild);
     }

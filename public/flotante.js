@@ -68,10 +68,6 @@ if (typeof window.flotanteAPI.sendCommand !== 'function') {
 if (typeof window.flotanteAPI.getSettings !== 'function') {
   log.warn('flotanteAPI.getSettings missing; using default language (ignored).');
 }
-if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
-  log.warn('flotanteAPI.onSettingsChanged missing; live updates disabled (ignored).');
-}
-
 // =============================================================================
 // Shared state
 // =============================================================================
@@ -229,13 +225,22 @@ function enqueueFlotanteSettingsApplication(settings) {
   return enqueueFlotanteSemanticWork(run);
 }
 
-if (typeof window.flotanteAPI.onSettingsChanged === 'function') {
-  window.flotanteAPI.onSettingsChanged((settings) => enqueueFlotanteSettingsApplication(settings));
+if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
+  log.error('BOOTSTRAP: flotanteAPI.onSettingsChanged unavailable; closing window before normal interaction.');
+  reportTerminalFlotanteI18nFailure('settings-listener');
+} else {
+  try {
+    window.flotanteAPI.onSettingsChanged((settings) => enqueueFlotanteSettingsApplication(settings));
+  } catch (err) {
+    log.error('BOOTSTRAP: flotanteAPI.onSettingsChanged registration failed; closing window before normal interaction:', err);
+    reportTerminalFlotanteI18nFailure('settings-listener');
+  }
 }
 
 // Start state and settings delivery before the initial transition so the
 // main-owned stopwatch state remains current. Bind commands only after the
 // first required semantic presentation has completed successfully.
+// Floating Stopwatch intentionally has no programmatic initial DOM focus.
 enqueueFlotanteSemanticWork(async () => {
   let lang = DEFAULT_LANG;
   if (typeof window.flotanteAPI.getSettings === 'function') {

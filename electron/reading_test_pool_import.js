@@ -11,7 +11,6 @@
 // - Flatten valid zip entries into pool-file candidates.
 // - Handle destination-filename duplicates explicitly before writing.
 // - Install validated files into the local reading-test pool directory.
-// =============================================================================
 
 // =============================================================================
 // Imports / logger
@@ -44,7 +43,7 @@ const IMPORT_CONFLICT_STRATEGY = Object.freeze({
   REPLACE: 'replace',
   CANCEL: 'cancel',
 });
-const PICKER_STATE_FALLBACK = Object.freeze({
+const DEFAULT_PICKER_STATE = Object.freeze({
   lastDirectory: '',
 });
 
@@ -102,7 +101,10 @@ function collectJsonFileCandidate(filePath) {
   if (!destinationName) return { ok: false, code: 'INVALID_DESTINATION_NAME' };
 
   const textInfo = readJsonTextWithBomStrip(filePath);
-  if (!textInfo.ok) return { ok: false, code: textInfo.code };
+  if (!textInfo.ok) {
+    log.warn('Reading-test JSON file read failed:', filePath, textInfo.error);
+    return { ok: false, code: textInfo.code };
+  }
 
   return buildCandidateFromJsonSource({
     destinationName,
@@ -199,25 +201,33 @@ function scanImportCandidates(selectedPaths) {
   };
 }
 
-function isPathInsideRoot(rootPath, candidatePath) {
-  const rel = path.relative(rootPath, candidatePath);
-  if (rel === '') return true;
-  return !rel.startsWith('..') && !path.isAbsolute(rel);
+function countUniqueDestinationNames(candidates) {
+  const destinationNames = new Set();
+  for (const candidate of Array.isArray(candidates) ? candidates : []) {
+    if (candidate && typeof candidate.destinationName === 'string' && candidate.destinationName) {
+      destinationNames.add(candidate.destinationName);
+    }
+  }
+  return destinationNames.size;
 }
 
-function writeCandidateToPool(poolDir, candidate) {
-  const destinationPath = path.resolve(path.join(poolDir, candidate.destinationName));
-  if (!isPathInsideRoot(path.resolve(poolDir), destinationPath)) {
-    return { ok: false, code: 'PATH_OUTSIDE_POOL' };
-  }
-
-  try {
-    fs.writeFileSync(destinationPath, JSON.stringify(candidate.payload, null, 2), 'utf8');
-    return { ok: true };
-  } catch (err) {
-    log.error('Reading-test imported candidate write failed:', { destinationPath }, err);
-    return { ok: false, code: 'WRITE_FAILED' };
-  }
+function buildImportResult(scanInfo, {
+  canceled = false,
+  imported = 0,
+  skippedDuplicates = 0,
+  failedWrites = 0,
+  writtenDestinationNames = [],
+} = {}) {
+  return {
+    ok: true,
+    canceled,
+    imported,
+    skippedDuplicates,
+    failedValidation: scanInfo.failedValidation,
+    failedArchiveEntries: scanInfo.failedArchiveEntries,
+    failedWrites,
+    writtenDestinationNames,
+  };
 }
 
 async function importSelectedFiles({
@@ -225,17 +235,36 @@ async function importSelectedFiles({
   poolDir,
   resolveConflictStrategy,
 } = {}) {
-  const destinationDir = typeof poolDir === 'string' && poolDir.trim()
-    ? path.resolve(poolDir)
-    : path.resolve(readingTestPool.ensurePoolDir());
-
   const scanInfo = scanImportCandidates(selectedPaths);
+  const requestedPoolDir = typeof poolDir === 'string' && poolDir.trim()
+    ? path.resolve(poolDir)
+    : '';
+  const poolContext = readingTestPool.resolvePoolContext(
+    requestedPoolDir ? { poolDir: requestedPoolDir } : {}
+  );
+  if (!poolContext.ok) {
+    if (poolContext.error) {
+      log.error('Reading-test import failed to resolve the pool context:', poolContext.code, poolContext.error);
+    } else {
+      log.error('Reading-test import failed to resolve the pool context:', poolContext.code);
+    }
+    return buildImportResult(scanInfo, {
+      failedWrites: countUniqueDestinationNames(scanInfo.candidates),
+    });
+  }
+
   const candidates = scanInfo.candidates;
 
   const existingDestinations = new Set();
   for (const candidate of candidates) {
-    const destinationPath = path.join(destinationDir, candidate.destinationName);
-    if (fs.existsSync(destinationPath)) {
+    const destinationInfo = readingTestPool.resolvePoolDestination(
+      poolContext,
+      candidate.destinationName
+    );
+    if (!destinationInfo.ok) {
+      continue;
+    }
+    if (destinationInfo.entry.exists) {
       existingDestinations.add(candidate.destinationName);
     }
   }
@@ -250,16 +279,13 @@ async function importSelectedFiles({
       : IMPORT_CONFLICT_STRATEGY.SKIP;
 
     if (conflictStrategy === IMPORT_CONFLICT_STRATEGY.CANCEL) {
-      return {
-        ok: true,
+      return buildImportResult(scanInfo, {
         canceled: true,
         imported: 0,
         skippedDuplicates: 0,
-        failedValidation: scanInfo.failedValidation,
-        failedArchiveEntries: scanInfo.failedArchiveEntries,
         failedWrites: 0,
         writtenDestinationNames: [],
-      };
+      });
     }
   }
 
@@ -276,33 +302,66 @@ async function importSelectedFiles({
     }
     seenDestinationNames.add(candidate.destinationName);
 
-    const destinationPath = path.join(destinationDir, candidate.destinationName);
-    const destinationExists = fs.existsSync(destinationPath);
+    const destinationInfo = readingTestPool.resolvePoolDestination(
+      poolContext,
+      candidate.destinationName
+    );
+    if (!destinationInfo.ok) {
+      failedWrites += 1;
+      log.error('Reading-test imported candidate destination inspection failed:', candidate.destinationName, destinationInfo.code);
+      continue;
+    }
+    const destinationExists = destinationInfo.entry.exists;
 
     if (destinationExists && conflictStrategy === IMPORT_CONFLICT_STRATEGY.SKIP) {
       skippedDuplicates += 1;
       continue;
     }
 
-    const writeInfo = writeCandidateToPool(destinationDir, candidate);
+    let writeInfo = readingTestPool.writePoolJsonEntry(
+      poolContext,
+      candidate.destinationName,
+      candidate.payload,
+      { replace: destinationExists && conflictStrategy === IMPORT_CONFLICT_STRATEGY.REPLACE }
+    );
+    if (!writeInfo.ok
+      && writeInfo.code === 'DESTINATION_EXISTS'
+      && conflictStrategy === IMPORT_CONFLICT_STRATEGY.REPLACE) {
+      writeInfo = readingTestPool.writePoolJsonEntry(
+        poolContext,
+        candidate.destinationName,
+        candidate.payload,
+        { replace: true }
+      );
+    }
+    if (!writeInfo.ok && writeInfo.code === 'DESTINATION_EXISTS') {
+      skippedDuplicates += 1;
+      continue;
+    }
     if (writeInfo.ok) {
       imported += 1;
       writtenDestinationNames.push(candidate.destinationName);
     } else {
       failedWrites += 1;
+      const diagnostic = {
+        destinationName: candidate.destinationName,
+        code: writeInfo.code,
+      };
+      if (writeInfo.error) {
+        log.error('Reading-test imported candidate write failed:', diagnostic, writeInfo.error);
+      } else {
+        log.error('Reading-test imported candidate write failed:', diagnostic);
+      }
     }
   }
 
-  return {
-    ok: true,
+  return buildImportResult(scanInfo, {
     canceled: false,
     imported,
     skippedDuplicates,
-    failedValidation: scanInfo.failedValidation,
-    failedArchiveEntries: scanInfo.failedArchiveEntries,
     failedWrites,
     writtenDestinationNames,
-  };
+  });
 }
 
 // =============================================================================
@@ -317,8 +376,7 @@ function getDialogTexts() {
       language = settings.language;
     }
   } catch (err) {
-    log.warnOnce(
-      'reading_test_pool_import.dialogTexts',
+    log.warn(
       'Reading-test import dialog settings unavailable; using DEFAULT_LANG dialog texts:',
       err
     );
@@ -329,7 +387,6 @@ function getDialogTexts() {
 function resolveDialogText(dialogTexts, key) {
   return menuBuilder.resolveDialogText(dialogTexts, key, undefined, {
     log,
-    warnPrefix: 'reading_test_pool_import.dialog.missing',
   });
 }
 
@@ -346,7 +403,7 @@ function normalizePickerState(rawState) {
 function readPickerState() {
   try {
     const statePath = getReadingTestPoolImportStateFile();
-    const raw = loadJson(statePath, PICKER_STATE_FALLBACK);
+    const raw = loadJson(statePath, DEFAULT_PICKER_STATE);
     return {
       statePath,
       state: normalizePickerState(raw),
@@ -355,7 +412,7 @@ function readPickerState() {
     log.warn('Failed to read reading-test pool import picker state (using defaults):', err);
     return {
       statePath: null,
-      state: { ...PICKER_STATE_FALLBACK },
+      state: { ...DEFAULT_PICKER_STATE },
     };
   }
 }
@@ -408,8 +465,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         ? BrowserWindow.fromWebContents(event.sender)
         : null;
       if (!mainWin || senderWin !== mainWin) {
-        log.warnOnce(
-          'reading_test_pool_import.unauthorized',
+        log.warn(
           'reading-test-import-pool-files unauthorized or mainWin unavailable (ignored).'
         );
         return false;
@@ -469,8 +525,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         };
       }
       if (!dialogResult.filePaths.length) {
-        log.warnOnce(
-          'reading_test_pool_import.empty_selection',
+        log.warn(
           'reading-test-import-pool-files returned empty selection (treated as cancelled).'
         );
         return { ok: true, canceled: true };
@@ -480,8 +535,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         .map((filePath) => platformAdapter.normalizeSelectedFilePath(filePath))
         .filter(Boolean);
       if (!normalizedSelectedPaths.length) {
-        log.warnOnce(
-          'reading_test_pool_import.empty_normalized_selection',
+        log.warn(
           'reading-test-import-pool-files returned empty normalized selection (treated as cancelled).'
         );
         return { ok: true, canceled: true };
@@ -495,7 +549,6 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
 
       const result = await importSelectedFiles({
         selectedPaths: normalizedSelectedPaths,
-        poolDir: readingTestPool.ensurePoolDir(),
         resolveConflictStrategy: async ({ duplicateCount }) => {
           const conflictResult = await dialog.showMessageBox(mainWin, {
             type: 'question',
@@ -529,10 +582,7 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
       });
 
       if (result && result.ok === true && result.canceled !== true && Array.isArray(result.writtenDestinationNames)) {
-        const importedSnapshotRelPaths = result.writtenDestinationNames
-          .map((destinationName) => readingTestPool.buildPoolSnapshotRelPath(destinationName))
-          .filter(Boolean);
-        const stateUpdate = readingTestPool.clearImportedPoolEntriesState(importedSnapshotRelPaths);
+        const stateUpdate = readingTestPool.clearImportedPoolEntriesState(result.writtenDestinationNames);
         if (!stateUpdate || stateUpdate.ok !== true) {
           log.warn('Reading-test import state update failed after file import:', stateUpdate);
           return {

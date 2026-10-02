@@ -234,7 +234,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
     settingsFile: 'C:\\fake\\settings.json',
   });
 
-  const settingsIpc = settings.registerIpc(ipcMain, {
+  settings.configurePublication({
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -257,6 +257,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
       };
     },
   });
+  settings.registerIpc(ipcMain);
 
   const initialSettings = await ipcMain.invoke('get-settings');
   assert.equal(initialSettings.language, 'ar');
@@ -277,24 +278,34 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(sentPayloads[0].payload.spellcheckAvailable, false);
   assert.equal(settings.getSettings().spellcheckEnabled, false);
   assert.equal(Object.hasOwn(settings.getSettings(), 'spellcheckAvailable'), false);
-  assert.equal(typeof settingsIpc.publishCurrentSettings, 'function');
+  assert.equal(typeof settings.publishCurrentSettings, 'function');
 
-  settingsIpc.publishCurrentSettings();
+  settings.publishCurrentSettings();
 
   assert.equal(onSettingsUpdatedCalls.length, 2);
   assert.equal(sentPayloads.length, 2);
   assert.equal(sentPayloads[1].channel, 'settings-updated');
   assert.equal(sentPayloads[1].payload.spellcheckEnabled, false);
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
+
+  const externallyProducedSettings = {
+    language: 'ar',
+    spellcheckEnabled: true,
+  };
+  settings.publishSettingsUpdated(externallyProducedSettings);
+
+  assert.equal(onSettingsUpdatedCalls.length, 3);
+  assert.equal(sentPayloads.length, 3);
+  assert.equal(sentPayloads[2].payload.spellcheckAvailable, false);
+  assert.equal(Object.hasOwn(externallyProducedSettings, 'spellcheckAvailable'), false);
 });
 
-test('broadcastSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
+test('publishSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
   const settings = loadFreshSettingsModule();
   const sentPayloads = [];
 
-  settings.broadcastSettingsUpdated(
-    { language: 'en' },
-    {
+  settings.configurePublication({
+    getWindows: () => ({
       textTimeCalculatorWin: {
         isDestroyed() {
           return false;
@@ -325,8 +336,13 @@ test('broadcastSettingsUpdated includes calculator and reading-test window roles
           },
         },
       },
-    }
-  );
+    }),
+    onSettingsUpdated() {},
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.publishSettingsUpdated({ language: 'en' });
 
   assert.deepEqual(sentPayloads, [
     {
@@ -344,9 +360,18 @@ test('broadcastSettingsUpdated includes calculator and reading-test window roles
   ]);
 });
 
-test('set-preview-spoiler-enabled strictly saves the main-window preference without broadcasting', async () => {
+test('configurePublication requires the renderer settings decorator', () => {
   const settings = loadFreshSettingsModule();
-  const harness = createSettingsHarness();
+
+  assert.throws(
+    () => settings.configurePublication({ getWindows: () => ({}) }),
+    /configurePublication requires decorateSettings/
+  );
+});
+
+test('invalid renderer decoration drops live updates and rejects get-settings', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({ language: 'en' });
   const ipcMain = createIpcMainDouble();
   const sentPayloads = [];
 
@@ -356,7 +381,7 @@ test('set-preview-spoiler-enabled strictly saves the main-window preference with
     saveJsonStrict: harness.saveJsonStrict,
     settingsFile: 'C:\\fake\\settings.json',
   });
-  settings.registerIpc(ipcMain, {
+  settings.configurePublication({
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -369,7 +394,78 @@ test('set-preview-spoiler-enabled strictly saves the main-window preference with
         },
       },
     }),
+    decorateSettings() {
+      return null;
+    },
   });
+  settings.registerIpc(ipcMain);
+
+  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+
+  assert.deepEqual(sentPayloads, []);
+  await assert.rejects(
+    ipcMain.invoke('get-settings'),
+    /renderer settings payload unavailable/
+  );
+});
+
+test('throwing renderer decoration drops live updates', () => {
+  const settings = loadFreshSettingsModule();
+  const sentPayloads = [];
+
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+    decorateSettings() {
+      throw new Error('decorator failed');
+    },
+  });
+
+  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+
+  assert.deepEqual(sentPayloads, []);
+});
+
+test('set-preview-spoiler-enabled strictly saves the main-window preference without broadcasting', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness();
+  const ipcMain = createIpcMainDouble();
+  const sentPayloads = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed() {
+          return false;
+        },
+        webContents: {
+          send(channel, payload) {
+            sentPayloads.push({ channel, payload });
+          },
+        },
+      },
+    }),
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.registerIpc(ipcMain);
 
   const result = await ipcMain.invoke('set-preview-spoiler-enabled', false);
 
@@ -411,7 +507,7 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
     settingsFile: 'C:\\fake\\settings.json',
   });
 
-  settings.registerIpc(ipcMain, {
+  settings.configurePublication({
     getWindows: () => ({
       mainWin: {
         isDestroyed() {
@@ -427,7 +523,11 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
     onSettingsUpdated(nextSettings) {
       onSettingsUpdatedCalls.push(nextSettings);
     },
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
   });
+  settings.registerIpc(ipcMain);
 
   await assert.rejects(
     ipcMain.invoke('set-spellcheck-enabled', false),
@@ -438,6 +538,164 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
   assert.equal(sentPayloads.length, 0);
   assert.equal(harness.getStoredValue().spellcheckEnabled, true);
   assert.equal(settings.getSettings().spellcheckEnabled, true);
+});
+
+test('Precise-counting fallback strictly persists Simple once, then publishes and notifies the main window', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presets_by_language: {},
+    selected_preset_by_language: {},
+    disabled_default_presets: {},
+    numberFormatting: {},
+    modeConteo: 'preciso',
+  });
+  const ipcMain = createIpcMainDouble();
+  const sent = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed: () => false,
+        webContents: { send: (channel, payload) => sent.push({ channel, payload }) },
+      },
+    }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+  settings.registerIpc(ipcMain);
+
+  const first = await ipcMain.invoke('precise-counting-failed', {
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+  const second = await ipcMain.invoke('precise-counting-failed', {
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+
+  assert.deepEqual(first, { ok: true, changed: true, mode: 'simple' });
+  assert.deepEqual(second, { ok: true, changed: false, mode: 'simple' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
+  assert.deepEqual(sent.map(({ channel }) => channel), [
+    'settings-updated',
+    'precise-counting-fallback',
+  ]);
+
+  const invalid = await ipcMain.invoke('precise-counting-failed', {
+    code: 'not-a-precise-failure',
+    stage: 'availability',
+  });
+  assert.deepEqual(invalid, { ok: false, code: 'INVALID_PRECISE_FAILURE_REPORT' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
+});
+
+test('Precise-counting fallback accepts a Unicode-property capability failure report', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presets_by_language: {},
+    selected_preset_by_language: {},
+    disabled_default_presets: {},
+    numberFormatting: {},
+    modeConteo: 'preciso',
+  });
+  const ipcMain = createIpcMainDouble();
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({ mainWin: null }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+  settings.registerIpc(ipcMain);
+
+  const result = await ipcMain.invoke('precise-counting-failed', {
+    code: 'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE',
+    stage: 'unicode-properties',
+  });
+
+  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
+});
+
+test('Precise-counting fallback does not publish or notify when strict persistence fails', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({ modeConteo: 'preciso' }, {
+    saveJsonStrictImpl() {
+      throw new Error('disk full');
+    },
+  });
+  const sent = [];
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed: () => false,
+        webContents: { send: (channel) => sent.push(channel) },
+      },
+    }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+
+  const result = settings.fallbackPreciseCountingToSimple({
+    source: 'test',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+
+  assert.deepEqual(result, { ok: false, code: 'PERSIST_FAILED' });
+  assert.equal(harness.getStoredValue().modeConteo, 'preciso');
+  assert.deepEqual(sent, []);
+});
+
+test('Precise-counting fallback remains committed when settings or notice delivery fails', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({ modeConteo: 'preciso' });
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({
+      mainWin: {
+        isDestroyed: () => false,
+        webContents: {
+          send() {
+            throw new Error('window closing');
+          },
+        },
+      },
+    }),
+    decorateSettings: (nextSettings) => nextSettings,
+  });
+
+  const result = settings.fallbackPreciseCountingToSimple({
+    source: 'test',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+
+  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple' });
+  assert.equal(harness.getStoredValue().modeConteo, 'simple');
 });
 
 test('set-selected-preset rejects on strict save failure and keeps persisted selection unchanged', async () => {

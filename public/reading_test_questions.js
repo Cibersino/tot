@@ -11,7 +11,6 @@
 // - Render single-choice comprehension questions plus local scoring feedback.
 // - Keep validation and scoring delegated to ReadingTestQuestionsCore.
 // - Keep this step informative only; Continue always resumes the main flow.
-// =============================================================================
 
 (() => {
   // =============================================================================

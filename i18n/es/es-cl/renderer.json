@@ -95,6 +95,7 @@
         "append_clipboard_error": "Cagó agregar lo del portapapeles.",
         "clear_error": "No te lo pudiste pitiar. Lorea la consola.",
         "current_text_processing_locked": "El texto actual todavía se está actualizando. La ventana principal queda bloqueada hasta que el texto más reciente se asiente.",
+        "precise_counting_fallback": "No se pudo usar el Modo fino. toT se cambió al modo simple.",
         "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. La ventana principal queda bloqueada hasta que el último reconteo se asiente.",
         "wip": {
           "design_skins": "WIP: Aquí vamos a cambiar las pilchas.",

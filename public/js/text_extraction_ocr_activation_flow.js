@@ -8,7 +8,6 @@
 // - Own the shared main-window Google OCR activation sequence.
 // - Resolve the activation IPC bridges and drive the disclosure + OAuth flow.
 // - Return structured outcomes without hardcoding caller-specific alert policy.
-// =============================================================================
 
 (() => {
   // =============================================================================

@@ -119,10 +119,3 @@ test('createFormatUtils requires DEFAULT_LANG to be injected', () => {
     /\[format_core\] DEFAULT_LANG is required/
   );
 });
-
-test('createFormatUtils requires injected warnOnce logging', () => {
-  assert.throws(
-    () => createFormatUtils({ DEFAULT_LANG: TEST_DEFAULT_LANG }),
-    /\[format_core\] log\.warnOnce\(\) is required/
-  );
-});

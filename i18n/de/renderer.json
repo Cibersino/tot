@@ -95,6 +95,7 @@
         "append_clipboard_error": "Beim Anhängen von Text aus der Zwischenablage ist ein Fehler aufgetreten.",
         "clear_error": "Beim Löschen des Textes ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
         "current_text_processing_locked": "Der aktuelle Text wird noch aktualisiert. Interaktionen im Hauptfenster bleiben gesperrt, bis der neueste Text stabil ist.",
+        "precise_counting_fallback": "Präziser Modus konnte nicht verwendet werden. toT ist in den einfachen Modus gewechselt.",
         "current_text_recount_locked": "Die Ergebnisse des aktuellen Texts werden noch neu berechnet. Interaktionen im Hauptfenster bleiben gesperrt, bis die neueste Neuberechnung stabil ist.",
         "wip": {
           "design_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",

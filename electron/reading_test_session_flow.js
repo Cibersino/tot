@@ -6,14 +6,14 @@
 // =============================================================================
 // Reading-test session flow helpers.
 // Responsibilities:
-// - Orchestrate arming/running/result/questions/preset stages.
-// - Compute authoritative WPM and preset payloads.
-// - Start/cancel/finish sessions.
-// - Reinterpret floating-window commands and close events.
-// =============================================================================
+// - Start sessions and orchestrate arming/running/result/questions/preset stages.
+// - Calculate WPM and construct prefilled preset payloads.
+// - Cancel and clean up sessions after failed transitions or window events.
+// - Route Floating Stopwatch commands within active session stages.
+// - Use injected collaborators for state, windows, notices, and persistence.
 
 // =============================================================================
-// Session state helpers
+// Session state and lifecycle helpers
 // =============================================================================
 
 function clearSessionTextIfNeeded(selectedEntry, tryClearCurrentText) {
@@ -37,8 +37,81 @@ function isLifecycleOwnedEditorStartupFailure(err) {
 }
 
 // =============================================================================
-// Session flow helpers
+// Session entry and arming
 // =============================================================================
+
+async function startPoolSession(selection, options = {}) {
+  const {
+    state,
+    ensureEligibleSelection,
+    chooseRandomEntry,
+    applyCurrentText,
+    buildSessionEntry,
+    setStage,
+    continueArmingSession,
+    log,
+  } = options;
+
+  try {
+    if (state.active) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
+    }
+
+    const selectionInfo = ensureEligibleSelection(selection);
+    if (!selectionInfo.ok) return selectionInfo;
+
+    const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
+    if (!selectedEntry) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.no_matching_files', code: 'NO_MATCHING_FILES' };
+    }
+
+    const applyResult = applyCurrentText(selectedEntry.text, {
+      source: 'main-window',
+      action: 'overwrite',
+    });
+    if (!applyResult || applyResult.ok !== true) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.start_failed', code: 'TEXT_APPLY_FAILED' };
+    }
+
+    const sessionEntry = buildSessionEntry('pool', selectedEntry);
+    setStage('arming', { selectedEntry: sessionEntry });
+    void continueArmingSession(sessionEntry);
+    return { ok: true };
+  } catch (err) {
+    log.error('Reading-test pool session start failed:', err);
+    throw err;
+  }
+}
+
+async function startCurrentTextSession(options = {}) {
+  const {
+    state,
+    hasCurrentText,
+    buildSessionEntry,
+    setStage,
+    continueArmingSession,
+    log,
+  } = options;
+
+  try {
+    if (state.active) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
+    }
+    if (!hasCurrentText()) {
+      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
+    }
+
+    const sessionEntry = buildSessionEntry('current_text');
+    setStage('arming', {
+      selectedEntry: sessionEntry,
+    });
+    void continueArmingSession(sessionEntry);
+    return { ok: true };
+  } catch (err) {
+    log.error('Reading-test current-text session start failed:', err);
+    throw err;
+  }
+}
 
 function failArmingSession(selectedEntry, noticeKey, options = {}) {
   const {
@@ -152,12 +225,17 @@ function startArmedSession(options = {}) {
   }
 }
 
+// =============================================================================
+// Result calculation and preset preparation
+// =============================================================================
+
 function computeCurrentWpm(options = {}) {
   const {
     getCronoState,
     getCurrentText,
     getSettingsSnapshot,
     countUtils,
+    fallbackPreciseCountingToSimple,
     DEFAULT_LANG,
     PRESET_WPM_MIN,
     PRESET_WPM_MAX,
@@ -174,10 +252,32 @@ function computeCurrentWpm(options = {}) {
 
   const currentText = String(getCurrentText() || '');
   const settings = getSettingsSnapshot();
-  const stats = countUtils.contarTexto(currentText, {
+  const countOptions = {
     modoConteo: settings.modeConteo === 'simple' ? 'simple' : 'preciso',
     idioma: settings.language || DEFAULT_LANG,
-  });
+  };
+  let stats;
+  try {
+    stats = countUtils.contarTexto(currentText, countOptions);
+  } catch (err) {
+    if (!countUtils.isPreciseCountFailure(err)) throw err;
+    if (typeof fallbackPreciseCountingToSimple !== 'function') {
+      throw new Error('Reading-test Precise fallback owner unavailable');
+    }
+    const fallbackInfo = fallbackPreciseCountingToSimple({
+      source: 'reading-test',
+      code: err.code,
+      stage: err.stage,
+    });
+    if (!fallbackInfo || fallbackInfo.ok !== true) {
+      return {
+        ok: false,
+        guidanceKey: 'renderer.reading_test.alerts.result_invalid',
+        code: 'PRECISE_FALLBACK_FAILED',
+      };
+    }
+    stats = countUtils.contarTexto(currentText, { modoConteo: 'simple' });
+  }
   const wordCount = stats && typeof stats.palabras === 'number' ? stats.palabras : 0;
   if (!(wordCount > 0)) {
     return { ok: false, guidanceKey: 'renderer.reading_test.alerts.result_invalid', code: 'WORD_COUNT_INVALID' };
@@ -289,6 +389,10 @@ function beginPresetStep(wpm, options = {}) {
   presetWin.on('closed', onClosed);
 }
 
+// =============================================================================
+// Session completion
+// =============================================================================
+
 async function finishRunningSession(options = {}) {
   const {
     state,
@@ -347,6 +451,10 @@ async function finishRunningSession(options = {}) {
   }
 }
 
+// =============================================================================
+// Session cancellation and external events
+// =============================================================================
+
 function resetAndCloseActiveSession(selectedEntry, resetWarningMessage, options = {}) {
   const {
     tryResetCrono,
@@ -394,79 +502,6 @@ function handleUnexpectedWindowClosed(flagName, options = {}) {
   cancelActiveSession('renderer.reading_test.alerts.cancelled_window_closed', { type: 'warn' });
 }
 
-async function startPoolSession(selection, options = {}) {
-  const {
-    state,
-    ensureEligibleSelection,
-    chooseRandomEntry,
-    applyCurrentText,
-    buildSessionEntry,
-    setStage,
-    continueArmingSession,
-    log,
-  } = options;
-
-  try {
-    if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
-    }
-
-    const selectionInfo = ensureEligibleSelection(selection);
-    if (!selectionInfo.ok) return selectionInfo;
-
-    const selectedEntry = chooseRandomEntry(selectionInfo.eligibleEntries);
-    if (!selectedEntry) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.no_matching_files', code: 'NO_MATCHING_FILES' };
-    }
-
-    const applyResult = applyCurrentText(selectedEntry.text, {
-      source: 'main-window',
-      action: 'overwrite',
-    });
-    if (!applyResult || applyResult.ok !== true) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.start_failed', code: 'TEXT_APPLY_FAILED' };
-    }
-
-    const sessionEntry = buildSessionEntry('pool', selectedEntry);
-    setStage('arming', { selectedEntry: sessionEntry });
-    void continueArmingSession(sessionEntry);
-    return { ok: true };
-  } catch (err) {
-    log.error('Reading-test pool session start failed:', err);
-    throw err;
-  }
-}
-
-async function startCurrentTextSession(options = {}) {
-  const {
-    state,
-    hasCurrentText,
-    buildSessionEntry,
-    setStage,
-    continueArmingSession,
-    log,
-  } = options;
-
-  try {
-    if (state.active) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.precondition_blocked', code: 'SESSION_ACTIVE' };
-    }
-    if (!hasCurrentText()) {
-      return { ok: false, guidanceKey: 'renderer.reading_test.alerts.current_text_empty', code: 'CURRENT_TEXT_EMPTY' };
-    }
-
-    const sessionEntry = buildSessionEntry('current_text');
-    setStage('arming', {
-      selectedEntry: sessionEntry,
-    });
-    void continueArmingSession(sessionEntry);
-    return { ok: true };
-  } catch (err) {
-    log.error('Reading-test current-text session start failed:', err);
-    throw err;
-  }
-}
-
 function handleFlotanteCommand(cmd, options = {}) {
   const {
     state,
@@ -477,7 +512,12 @@ function handleFlotanteCommand(cmd, options = {}) {
   } = options;
 
   if (!isArmingOrRunningSession(state)) return false;
-  if (!cmd || typeof cmd.cmd !== 'string') return true;
+  if (!cmd || typeof cmd.cmd !== 'string') {
+    log.warn(
+      'Reading-test floating command ignored: payload missing a string cmd (ignored).'
+    );
+    return true;
+  }
 
   if (state.stage === 'arming') {
     if (cmd.cmd === 'toggle') {
@@ -492,6 +532,12 @@ function handleFlotanteCommand(cmd, options = {}) {
       log.warnOnce(
         'reading_test_session.flotante_set_blocked',
         'Reading-test floating set command ignored while session is active.'
+      );
+    }
+    if (cmd.cmd !== 'set') {
+      log.warn(
+        'Reading-test floating command ignored during arming: unknown cmd (ignored):',
+        cmd.cmd
       );
     }
     return true;

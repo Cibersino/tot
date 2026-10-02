@@ -95,6 +95,7 @@
         "append_clipboard_error": "Kwenzeke iphutha ngesikhathi kwengezwa umbhalo ovela ebhodini lokunamathisela.",
         "clear_error": "Kuvele iphutha ngesikhathi kusulwa umbhalo. Hlola ikhonsoli.",
         "current_text_processing_locked": "Umbhalo wamanje usavuselelwa. Ukusebenzisana kwewindi elikhulu kukhiyiwe kuze kuzinze umbhalo wakamuva.",
+        "precise_counting_fallback": "Akukwazekanga ukusebenzisa Imodi enembile. i-toT ishintshele kwimodi elula.",
         "current_text_recount_locked": "Imiphumela yombhalo wamanje isabalwa kabusha. Ukusebenzisana kwewindi elikhulu kukhiyiwe kuze kuzinze ukubalwa kabusha kwakamuva.",
         "wip": {
           "design_skins": "WIP: Isikhethi sezindikimba sizovuleka lapha enguqulweni yesikhathi esizayo.",

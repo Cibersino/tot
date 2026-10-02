@@ -305,6 +305,11 @@
     }
   }
 
+  function focusInitialWordsInput() {
+    if (document.activeElement && document.activeElement !== document.body) return;
+    fields.words.input.focus({ preventScroll: true });
+  }
+
   async function applySettings(settings) {
     const nextSettings = settings && typeof settings === 'object' ? settings : {};
     const previousSettings = settingsCache;
@@ -385,16 +390,17 @@
     setCalculatorNormalInteractionAvailable(false);
     fieldNames.forEach(bindFieldInput);
 
-    if (!textTimeCalculatorApi) {
-      log.warn('BOOTSTRAP: textTimeCalculatorAPI unavailable; using default language and disabling live settings updates.');
-    } else if (!canWatchSettings) {
-      log.warn('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged missing; live settings updates disabled.');
-    } else {
-      try {
-        textTimeCalculatorApi.onSettingsChanged((settings) => enqueueSettingsApplication(settings));
-      } catch (err) {
-        log.warn('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged listener setup failed; live settings updates disabled:', err);
-      }
+    if (!textTimeCalculatorApi || !canWatchSettings) {
+      log.error('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged unavailable; closing calculator before normal interaction.');
+      reportTerminalCalculatorI18nFailure('settings-listener');
+      return;
+    }
+    try {
+      textTimeCalculatorApi.onSettingsChanged((settings) => enqueueSettingsApplication(settings));
+    } catch (err) {
+      log.error('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged registration failed; closing calculator before normal interaction:', err);
+      reportTerminalCalculatorI18nFailure('settings-listener');
+      return;
     }
 
     await enqueueCalculatorSemanticWork(async () => {
@@ -412,6 +418,7 @@
       try {
         await applySettings(initialSettings);
         setCalculatorNormalInteractionAvailable(true);
+        focusInitialWordsInput();
       } catch (err) {
         reportCalculatorI18nFailure(err, { startup: true });
       }

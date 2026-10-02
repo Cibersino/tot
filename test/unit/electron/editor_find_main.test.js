@@ -113,9 +113,9 @@ class FakeFindWindow extends MockWindow {
   loadFile() {
     this.webContents._loading = true;
     setImmediate(() => {
-      this.webContents._loading = false;
       this.emit('ready-to-show');
       this.webContents.emit('did-finish-load');
+      this.webContents._loading = false;
     });
   }
 
@@ -201,6 +201,33 @@ async function setupFindHarness() {
     restore,
   };
 }
+
+test('Find direct post-load delivery sends state before the opening focus target', async () => {
+  const { findWin, restore } = await setupFindHarness();
+
+  try {
+    const findMessages = findWin.webContents.sentMessages.filter(({ channel }) => (
+      channel === 'editor-find-init' ||
+      channel === 'editor-find-state' ||
+      channel === 'editor-find-focus-target'
+    ));
+
+    assert.deepEqual(
+      findMessages.map(({ channel }) => channel),
+      [
+        'editor-find-init',
+        'editor-find-state',
+        'editor-find-focus-target',
+      ]
+    );
+    assert.deepEqual(findMessages[2].payload, {
+      target: 'query',
+      selectAll: true,
+    });
+  } finally {
+    restore();
+  }
+});
 
 test('editor-find-replace-current rejects unauthorized find-window senders', async () => {
   const { ipcMain, restore } = await setupFindHarness();

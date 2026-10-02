@@ -22,11 +22,6 @@
   const log = window.getLogger('current-text-runtime');
   log.debug('Current text runtime starting...');
 
-  const { contarTexto: contarTextoModulo } = window.CountUtils || {};
-  if (typeof contarTextoModulo !== 'function') {
-    throw new Error('[current-text-runtime] CountUtils unavailable; cannot continue');
-  }
-
   const {
     obtenerSeparadoresDeNumeros,
     formatearNumero,
@@ -116,6 +111,7 @@
     deps = {
       currentTextSelectorSection: null,
       resultsTimeMultiplier: null,
+      countText: null,
       getCountContext: null,
       getSettingsCache: null,
       getWpm: null,
@@ -127,6 +123,7 @@
     const {
       currentTextSelectorSection,
       resultsTimeMultiplier,
+      countText,
       getCountContext,
       getSettingsCache,
       getWpm,
@@ -142,6 +139,9 @@
       || typeof resultsTimeMultiplier.clearBaseReadingDuration !== 'function'
       || typeof resultsTimeMultiplier.setBaseReadingDuration !== 'function') {
       throw new Error('[current-text-runtime] resultsTimeMultiplier dependency incomplete');
+    }
+    if (typeof countText !== 'function') {
+      throw new Error('[current-text-runtime] countText dependency missing');
     }
     if (typeof getCountContext !== 'function') {
       throw new Error('[current-text-runtime] getCountContext dependency missing');
@@ -546,7 +546,8 @@
 
   async function buildSettledDerivedState() {
     const countArgs = getCountArgs();
-    const stats = contarTextoModulo(currentText, countArgs);
+    const { countText } = requireDeps();
+    const stats = countText(currentText, countArgs);
     return buildDisplayDerivedStateFromNormalizedStats(stats, countArgs);
   }
 

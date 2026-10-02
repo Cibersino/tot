@@ -53,6 +53,7 @@ function createHarness({
   holdInitialSettings = false,
   includeRendererI18n = true,
   expectStartupThrow = false,
+  settingsListenerMode = 'available',
 } = {}) {
   const notifyCalls = [];
   const replaceCurrentCalls = [];
@@ -188,10 +189,15 @@ function createHarness({
           }
           return { language: 'en' };
         },
-        onSettingsChanged(cb) {
-          subscriptions.settingsChanged = cb;
-          return () => {};
-        },
+        ...(settingsListenerMode === 'missing' ? {} : {
+          onSettingsChanged(cb) {
+            if (settingsListenerMode === 'throw') {
+              throw new Error('settings listener registration failed');
+            }
+            subscriptions.settingsChanged = cb;
+            return () => {};
+          },
+        }),
       },
       Notify: {
         notifyEditor(key, options) {
@@ -261,6 +267,17 @@ test('find reports earliest required i18n failure before dynamic control setup',
 
   assert.match(harness.startupError && harness.startupError.message, /RendererI18n unavailable/);
   assert.equal(harness.getReporterCalls(), 1);
+});
+
+test('find closes before normal interaction when live settings registration is unavailable or throws', () => {
+  for (const settingsListenerMode of ['missing', 'throw']) {
+    const harness = createHarness({ settingsListenerMode });
+
+    assert.equal(harness.getReporterCalls(), 1, settingsListenerMode);
+    assert.equal(harness.subscriptions.settingsChanged, undefined, settingsListenerMode);
+    assert.equal(harness.elements.findQuery.disabled, true, settingsListenerMode);
+    assert.equal(harness.elements.findNext.disabled, true, settingsListenerMode);
+  }
 });
 
 async function bootstrapReady() {
@@ -344,21 +361,93 @@ test('find window admits live language settings after its initial settings snaps
   assert.deepEqual(harness.transitionLanguages, ['en', 'es']);
 });
 
-test('initial translated presentation preserves a query submitted while bootstrap is pending', async () => {
+test('initial Main state is projected before a bootstrap-pending focus intent is applied', async () => {
   const harness = createHarness({ holdInitialSettings: true });
   await harness.waitForInitialSettingsRequest();
 
-  harness.elements.findQuery.value = 'needle';
-  harness.elements.findQuery.listeners.input();
-  await tick();
+  harness.subscriptions.init({
+    query: 'needle',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: false,
+    busy: false,
+  });
+  harness.subscriptions.focusTarget({ target: 'query', selectAll: true });
 
-  assert.deepEqual(harness.queryCalls, []);
+  assert.equal(harness.elements.findQuery.focusCount, 0);
 
   harness.releaseInitialSettings();
   await bootstrapReady();
 
   assert.equal(harness.elements.findQuery.value, 'needle');
-  assert.equal(harness.elements.findQuery.selectCount, 0);
+  assert.equal(harness.elements.findQuery.focusCount, 1);
+  assert.equal(harness.elements.findQuery.selectCount, 1);
+});
+
+test('busy focus requests are latest-wins until the requested input is enabled', async () => {
+  const harness = createHarness();
+  await bootstrapReady();
+
+  harness.subscriptions.state({
+    query: 'needle',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: true,
+    busy: true,
+  });
+  harness.subscriptions.focusTarget({ target: 'query', selectAll: true });
+  harness.subscriptions.focusTarget({ target: 'replace', selectAll: true });
+
+  assert.equal(harness.elements.findQuery.focusCount, 0);
+  assert.equal(harness.elements.findReplace.focusCount, 0);
+  assert.equal(harness.elements.findReplace.disabled, true);
+
+  harness.subscriptions.state({
+    query: 'needle',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: true,
+    busy: false,
+  });
+
+  assert.equal(harness.elements.findQuery.value, 'needle');
+  assert.equal(harness.elements.findQuery.focusCount, 0);
+  assert.equal(harness.elements.findReplace.focusCount, 1);
+  assert.equal(harness.elements.findReplace.selectCount, 1);
+});
+
+test('a hidden Replace target waits for Main expanded state before it is focused', async () => {
+  const harness = createHarness();
+  await bootstrapReady();
+
+  harness.subscriptions.state({
+    query: 'needle',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: false,
+    busy: false,
+  });
+  harness.subscriptions.focusTarget({ target: 'replace', selectAll: true });
+
+  assert.equal(harness.elements.replaceRow.hidden, true);
+  assert.equal(harness.elements.findReplace.focusCount, 0);
+
+  harness.subscriptions.state({
+    query: 'needle',
+    matches: 1,
+    activeMatchOrdinal: 1,
+    finalUpdate: true,
+    expanded: true,
+    busy: false,
+  });
+
+  assert.equal(harness.elements.replaceRow.hidden, false);
+  assert.equal(harness.elements.findReplace.focusCount, 1);
+  assert.equal(harness.elements.findReplace.selectCount, 1);
 });
 
 test('later translation presentation preserves an in-progress query until Main publishes state', async () => {

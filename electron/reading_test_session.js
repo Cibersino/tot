@@ -10,7 +10,6 @@
 // - Own guided reading-test session state across running/questions/preset stages.
 // - Reinterpret floating-window controls while a session is active.
 // - Compute authoritative WPM in main and coordinate preset handoff.
-// =============================================================================
 
 // =============================================================================
 // Imports / logger
@@ -452,6 +451,7 @@ function createController(options = {}) {
       getCurrentText,
       getSettingsSnapshot,
       countUtils,
+      fallbackPreciseCountingToSimple: settingsState.fallbackPreciseCountingToSimple,
       DEFAULT_LANG,
       PRESET_WPM_MIN,
       PRESET_WPM_MAX,
@@ -615,7 +615,11 @@ function createController(options = {}) {
           ? BrowserWindow.fromWebContents(event.sender)
           : null;
         const mainWin = resolveMainWindow();
-        return !!(mainWin && senderWin && senderWin === mainWin);
+        const authorized = !!(mainWin && senderWin && senderWin === mainWin);
+        if (!authorized) {
+          log.warn('Reading-test IPC request rejected: sender is not authorized as the active main window.');
+        }
+        return authorized;
       } catch (err) {
         log.warn('Reading-test sender validation failed:', err);
         return false;
@@ -656,6 +660,7 @@ function createController(options = {}) {
 
       const setInfo = readingTestPool.setShowBundledEntries(nextValue);
       if (!setInfo.ok) {
+        log.warn('Reading-test bundled-entry visibility update rejected:', setInfo);
         return {
           ok: false,
           code: setInfo.code || 'READING_TEST_SET_SHOW_BUNDLED_ENTRIES_FAILED',

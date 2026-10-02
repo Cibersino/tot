@@ -95,6 +95,7 @@
         "append_clipboard_error": "Error happen while appending text from clipboard.",
         "clear_error": "Error happen while clearing text. Check console.",
         "current_text_processing_locked": "Current text still dey update. Main-window interactions dey locked until di latest text settle.",
+        "precise_counting_fallback": "Precise mode no fit work. toT switch go Simple mode.",
         "current_text_recount_locked": "Current-text results still dey recalculate. Main-window interactions dey locked until di latest recount settle.",
         "wip": {
           "design_skins": "WIP: Di skins selector go open here for future version.",

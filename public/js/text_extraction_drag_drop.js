@@ -9,7 +9,6 @@
 // - Show a visible full-window drop target while a valid file drag is active.
 // - Forward accepted one-or-many file drops into the shared text extraction entry flow.
 // - Keep drag/drop availability aligned with renderer-level interaction guards.
-// =============================================================================
 
 (() => {
   // =============================================================================

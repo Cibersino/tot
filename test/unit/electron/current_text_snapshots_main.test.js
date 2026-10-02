@@ -69,7 +69,11 @@ function loadSnapshotsMainWithMocks({
   shellOpenPathResult = '',
   messageBoxResponse = 0,
   saveDialogResult = null,
+  openDialogResult = null,
   saveJsonStrictImpl = null,
+  createJsonStrictImpl = null,
+  countCoreOverride = null,
+  fallbackPreciseCountingToSimple = null,
 }) {
   const snapshotsModulePath = path.resolve(
     __dirname,
@@ -87,6 +91,10 @@ function loadSnapshotsMainWithMocks({
     __dirname,
     '../../../electron/settings.js'
   );
+  const countCoreModulePath = path.resolve(
+    __dirname,
+    '../../../public/js/lib/count_core.js'
+  );
   const menuBuilderModulePath = path.resolve(
     __dirname,
     '../../../electron/menu_builder.js'
@@ -96,10 +104,12 @@ function loadSnapshotsMainWithMocks({
   const originalFsStorageModule = require.cache[fsStorageModulePath];
   const originalTextStateModule = require.cache[textStateModulePath];
   const originalSettingsModule = require.cache[settingsModulePath];
+  const originalCountCoreModule = require.cache[countCoreModulePath];
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const openPathCalls = [];
   const showMessageBoxCalls = [];
   const showSaveDialogCalls = [];
+  const showOpenDialogCalls = [];
   const restoreElectronModule = installElectronModuleMock({
     dialog: {
       async showSaveDialog(ownerWin, options) {
@@ -110,7 +120,12 @@ function loadSnapshotsMainWithMocks({
         if (saveDialogResult) return saveDialogResult;
         throw new Error('showSaveDialog should not be used in non-interactive snapshot tests');
       },
-      async showOpenDialog() {
+      async showOpenDialog(ownerWin, options) {
+        showOpenDialogCalls.push({ ownerWin, options });
+        if (typeof openDialogResult === 'function') {
+          return openDialogResult(ownerWin, options);
+        }
+        if (openDialogResult) return openDialogResult;
         throw new Error('showOpenDialog should not be used in this snapshot test');
       },
       async showMessageBox(ownerWin, options) {
@@ -149,6 +164,14 @@ function loadSnapshotsMainWithMocks({
         fs.mkdirSync(path.dirname(targetPath), { recursive: true });
         fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2));
       },
+      createJsonStrict(targetPath, payload) {
+        if (typeof createJsonStrictImpl === 'function') {
+          return createJsonStrictImpl(targetPath, payload);
+        }
+        fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2), {
+          flag: 'wx',
+        });
+      },
     },
   };
 
@@ -177,16 +200,26 @@ function loadSnapshotsMainWithMocks({
       getSettings() {
         return settings;
       },
+      fallbackPreciseCountingToSimple,
     },
   };
+
+  if (countCoreOverride) {
+    require.cache[countCoreModulePath] = {
+      id: countCoreModulePath,
+      filename: countCoreModulePath,
+      loaded: true,
+      exports: countCoreOverride,
+    };
+  }
 
   require.cache[menuBuilderModulePath] = {
     id: menuBuilderModulePath,
     filename: menuBuilderModulePath,
     loaded: true,
     exports: {
-      resolveDialogText(_dialogTexts, _key, fallback) {
-        return fallback || '';
+      resolveDialogText(_dialogTexts, key, fallback) {
+        return fallback || key;
       },
       getDialogTexts() {
         return {};
@@ -224,6 +257,12 @@ function loadSnapshotsMainWithMocks({
       delete require.cache[settingsModulePath];
     }
 
+    if (originalCountCoreModule) {
+      require.cache[countCoreModulePath] = originalCountCoreModule;
+    } else {
+      delete require.cache[countCoreModulePath];
+    }
+
     if (originalMenuBuilderModule) {
       require.cache[menuBuilderModulePath] = originalMenuBuilderModule;
     } else {
@@ -237,8 +276,66 @@ function loadSnapshotsMainWithMocks({
     openPathCalls,
     showMessageBoxCalls,
     showSaveDialogCalls,
+    showOpenDialogCalls,
   };
 }
+
+test('snapshot metrics retry only counting after the canonical Precise fallback establishes Simple mode', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-precise-fallback');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+  const senderWin = { isDestroyed: () => false, webContents: {} };
+  const settings = { language: 'en', modeConteo: 'preciso' };
+  const countCalls = [];
+  const preciseFailure = Object.assign(new Error('Segmenter unavailable'), {
+    name: 'PreciseCountError',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+  let fallbackCalls = 0;
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'one two',
+    settings,
+    countCoreOverride: {
+      createCountUtils() {
+        return {
+          contarTexto(_text, options) {
+            countCalls.push(options);
+            if (options.modoConteo === 'preciso') throw preciseFailure;
+            return { palabras: 2 };
+          },
+          isPreciseCountFailure(error) {
+            return error === preciseFailure;
+          },
+        };
+      },
+    },
+    fallbackPreciseCountingToSimple() {
+      fallbackCalls += 1;
+      settings.modeConteo = 'simple';
+      return { ok: true, changed: true, mode: 'simple' };
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, { getWindows: () => ({ mainWin: senderWin }) });
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { nonInteractive: true, autoFileBaseName: 'fallback', includeCount: true, includeReading: false }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(fallbackCalls, 1);
+  assert.deepEqual(countCalls, [
+    { modoConteo: 'preciso', idioma: 'en' },
+    { modoConteo: 'simple' },
+  ]);
+  const saved = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(saved.metrics.count, { words: 2, mode: 'simple' });
+});
 
 test('task-row snapshot inspection returns canonical optional metadata and reading metrics', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots-inspect');
@@ -491,6 +588,56 @@ test('non-interactive snapshot save keeps the default sequence when no filename 
   assert.equal(result.filename, 'current_text_1.json');
 });
 
+test('non-interactive snapshot save retries the next suffix after exclusive creation reports EEXIST', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-exclusive-create-retry');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const createCalls = [];
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    createJsonStrictImpl(targetPath, payload) {
+      createCalls.push(targetPath);
+      if (createCalls.length === 1) {
+        const error = new Error('appeared after candidate selection');
+        error.code = 'EEXIST';
+        throw error;
+      }
+      fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2), { flag: 'wx' });
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Batch Unit',
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.filename, 'Batch_Unit_2.json');
+  assert.deepEqual(createCalls, [
+    path.join(rootDir, 'Batch_Unit.json'),
+    path.join(rootDir, 'Batch_Unit_2.json'),
+  ]);
+});
+
 test('snapshot save derives count and reading metrics from exact text and settings', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots-metrics');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
@@ -532,11 +679,60 @@ test('snapshot save derives count and reading metrics from exact text and settin
     count: {
       words: 3,
       mode: 'simple',
-      locale: 'es-CL',
     },
     reading: {
       estimatedSeconds: 1,
       wpm: 180,
+    },
+  });
+});
+
+test('simple snapshot metrics save without Intl locale canonicalization', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-simple-no-locale-canonicalization');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const originalGetCanonicalLocales = Intl.getCanonicalLocales;
+  Intl.getCanonicalLocales = undefined;
+  t.after(() => {
+    Intl.getCanonicalLocales = originalGetCanonicalLocales;
+  });
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'uno dos tres',
+    settings: { language: 'invalid_locale!', modeConteo: 'simple' },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      nonInteractive: true,
+      autoFileBaseName: 'Simple metrics',
+      includeCount: true,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  const payload = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(payload.metrics, {
+    count: {
+      words: 3,
+      mode: 'simple',
     },
   });
 });
@@ -697,27 +893,11 @@ test('manual snapshot save uses the optional name as its default filename and pe
   assert.equal(saved.sourceComment, 'texto importado');
 });
 
-test('manual snapshot save escapes Windows device basenames before extensions', async (t) => {
-  const rootDir = createTestTempDir('current-text-snapshots-windows-device-names');
+test('manual snapshot save preserves the valid native selected filename', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-native-selected-name');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
 
-  const selectedCases = [
-    { inputBaseName: 'CON', selectedFileName: 'CON.json', expectedFileName: '_CON.json' },
-    { inputBaseName: 'con', selectedFileName: 'con.json', expectedFileName: '_con.json' },
-    { inputBaseName: 'CON.txt', selectedFileName: 'CON.txt.json', expectedFileName: '_CON.txt.json' },
-    { inputBaseName: 'PRN.foo.bar', selectedFileName: 'PRN.foo.bar.json', expectedFileName: '_PRN.foo.bar.json' },
-    { inputBaseName: 'COM1', selectedFileName: 'COM1.json', expectedFileName: '_COM1.json' },
-    { inputBaseName: 'COM1.json', selectedFileName: 'COM1.json.json', expectedFileName: '_COM1.json.json' },
-    { inputBaseName: 'LPT9.test', selectedFileName: 'LPT9.test.json', expectedFileName: '_LPT9.test.json' },
-    { inputBaseName: 'COM¹.foo', selectedFileName: 'COM¹.foo.json', expectedFileName: '_COM¹.foo.json' },
-    { inputBaseName: 'LPT³', selectedFileName: 'LPT³.json', expectedFileName: '_LPT³.json' },
-    { inputBaseName: 'COM10', selectedFileName: 'COM10.json', expectedFileName: 'COM10.json' },
-    { inputBaseName: 'LPT10', selectedFileName: 'LPT10.json', expectedFileName: 'LPT10.json' },
-    { inputBaseName: 'report-CON.txt', selectedFileName: 'report-CON.txt.json', expectedFileName: 'report-CON.txt.json' },
-    { inputBaseName: 'CONSOLE', selectedFileName: 'CONSOLE.json', expectedFileName: 'CONSOLE.json' },
-    { inputBaseName: 'Lección, №1', selectedFileName: 'Lección, №1.json', expectedFileName: 'Lección, №1.json' },
-  ];
-  let selectedCaseIndex = 0;
+  const selectedPath = path.join(rootDir, 'Lección, №1.json');
   const senderWin = {
     isDestroyed() {
       return false;
@@ -727,12 +907,85 @@ test('manual snapshot save escapes Windows device basenames before extensions', 
   const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
     senderWin,
     rootDir,
-    saveDialogResult() {
-      const selectedCase = selectedCases[selectedCaseIndex];
-      return {
-        canceled: false,
-        filePath: path.join(rootDir, `case-${selectedCaseIndex}`, selectedCase.selectedFileName),
-      };
+    saveDialogResult: { canceled: false, filePath: selectedPath },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    {
+      includeCount: false,
+      includeReading: false,
+    }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.path, path.resolve(selectedPath));
+  assert.equal(result.filename, path.basename(selectedPath));
+  assert.equal(fs.existsSync(selectedPath), true);
+});
+
+test('manual snapshot save requires an existing destination parent', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-missing-parent');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const selectedPath = path.join(rootDir, 'new-folder', 'Plan.json');
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult: { canceled: false, filePath: selectedPath },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { includeCount: false, includeReading: false }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'WRITE_FAILED' });
+  assert.equal(fs.existsSync(path.dirname(selectedPath)), false);
+  assert.equal(fs.existsSync(selectedPath), false);
+});
+
+test('manual snapshot save overwrites an existing validated destination', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-existing-destination');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const selectedPath = path.join(rootDir, 'Existing.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(selectedPath, 'existing snapshot');
+  const writeTargets = [];
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult: { canceled: false, filePath: selectedPath },
+    saveJsonStrictImpl(targetPath, payload) {
+      writeTargets.push(targetPath);
+      fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2));
     },
   });
   t.after(restore);
@@ -742,20 +995,264 @@ test('manual snapshot save escapes Windows device basenames before extensions', 
     getWindows: () => ({ mainWin: senderWin }),
   });
 
-  for (const selectedCase of selectedCases) {
-    const result = await ipcMain.invoke(
-      'current-text-snapshot-save',
-      { sender: senderWin.webContents },
-      {
-        includeCount: false,
-        includeReading: false,
-      }
-    );
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { includeCount: false, includeReading: false }
+  );
 
-    assert.equal(result.ok, true, selectedCase.inputBaseName);
-    assert.equal(result.filename, selectedCase.expectedFileName, selectedCase.inputBaseName);
-    selectedCaseIndex += 1;
+  assert.equal(result.ok, true);
+  assert.deepEqual(writeTargets, [path.resolve(selectedPath)]);
+  assert.equal(result.path, path.resolve(selectedPath));
+});
+
+test('manual snapshot save rejects an existing destination whose canonical target is not a file', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-existing-non-file-target');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const selectedPath = path.join(rootDir, 'Plan.json');
+  const canonicalPath = path.join(rootDir, 'snapshot-directory');
+  fs.mkdirSync(canonicalPath, { recursive: true });
+  fs.writeFileSync(selectedPath, 'selected alias remains unchanged');
+  const writeTargets = [];
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult: { canceled: false, filePath: selectedPath },
+    saveJsonStrictImpl(targetPath, payload) {
+      writeTargets.push(targetPath);
+      fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2));
+    },
+  });
+  const originalRealpathSync = fs.realpathSync;
+  fs.realpathSync = (targetPath, ...args) => {
+    if (path.resolve(targetPath) === path.resolve(selectedPath)) return canonicalPath;
+    return originalRealpathSync(targetPath, ...args);
+  };
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+  });
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { includeCount: false, includeReading: false }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'INVALID_SCHEMA',
+    message: 'snapshot destination is not a file',
+  });
+  assert.deepEqual(writeTargets, []);
+  assert.equal(fs.readFileSync(selectedPath, 'utf8'), 'selected alias remains unchanged');
+  assert.equal(fs.statSync(canonicalPath).isDirectory(), true);
+});
+
+test('Snapshot Save, Select, Inspect, and Load retain an in-root canonical identity without a JSON suffix', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-canonical-non-json-identity');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const selectedPath = path.join(rootDir, 'Plan.json');
+  const canonicalPath = path.join(rootDir, 'target.txt');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(selectedPath, 'selected alias remains unchanged');
+  fs.writeFileSync(canonicalPath, 'existing canonical target');
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const {
+    snapshotsMain,
+    restore,
+    showOpenDialogCalls,
+  } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'Current text before loading',
+    saveDialogResult: { canceled: false, filePath: selectedPath },
+    openDialogResult: { canceled: false, filePaths: [selectedPath] },
+  });
+  const originalRealpathSync = fs.realpathSync;
+  fs.realpathSync = (targetPath, ...args) => {
+    if (path.resolve(targetPath) === path.resolve(selectedPath)) return canonicalPath;
+    return originalRealpathSync(targetPath, ...args);
+  };
+  t.after(() => {
+    fs.realpathSync = originalRealpathSync;
+    restore();
+  });
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const saveResult = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { includeCount: false, includeReading: false }
+  );
+  assert.equal(saveResult.ok, true);
+  assert.equal(saveResult.path, canonicalPath);
+  assert.equal(saveResult.filename, 'target.txt');
+  assert.equal(
+    JSON.parse(fs.readFileSync(canonicalPath, 'utf8')).text,
+    'Current text before loading'
+  );
+  assert.equal(fs.readFileSync(selectedPath, 'utf8'), 'selected alias remains unchanged');
+
+  const selectResult = await ipcMain.invoke(
+    'current-text-snapshot-select',
+    { sender: senderWin.webContents }
+  );
+  assert.deepEqual(selectResult, { ok: true, snapshotRelPath: '/target.txt' });
+  assert.equal(showOpenDialogCalls.length, 1);
+
+  const inspectResult = await ipcMain.invoke(
+    'current-text-snapshot-inspect',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/target.txt' }
+  );
+  assert.deepEqual(inspectResult, {
+    ok: true,
+    name: null,
+    sourceComment: null,
+    estimatedSeconds: null,
+    wpm: null,
+  });
+
+  const loadResult = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/target.txt' }
+  );
+  assert.equal(loadResult.ok, true);
+  assert.equal(loadResult.path, canonicalPath);
+  assert.equal(loadResult.snapshotRelPath, '/target.txt');
+});
+
+test('manual snapshot save retries invalid filenames without rewriting the selected path', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-invalid-filename-retry');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const invalidNoExtension = path.join(rootDir, 'Plan A');
+  const invalidExistingUppercase = path.join(rootDir, 'Plan A.JSON');
+  const selectedPath = path.join(rootDir, 'Plan B.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(invalidExistingUppercase, 'existing snapshot must remain untouched');
+  const responses = [
+    { canceled: false, filePath: invalidNoExtension },
+    { canceled: false, filePath: invalidExistingUppercase },
+    { canceled: false, filePath: selectedPath },
+  ];
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const {
+    snapshotsMain,
+    restore,
+    showMessageBoxCalls,
+    showSaveDialogCalls,
+  } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult() {
+      return responses.shift();
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { includeCount: false, includeReading: false }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.path, path.resolve(selectedPath));
+  assert.equal(fs.existsSync(invalidNoExtension), false);
+  assert.equal(fs.readFileSync(invalidExistingUppercase, 'utf8'), 'existing snapshot must remain untouched');
+  assert.equal(showSaveDialogCalls.length, 3);
+  for (const { options } of showSaveDialogCalls) {
+    assert.equal(options.defaultPath, path.join(rootDir, 'current_text_1.json'));
+    assert.deepEqual(options.filters, [{ name: 'JSON', extensions: ['json'] }]);
+    assert.deepEqual(options.properties, ['showOverwriteConfirmation']);
   }
+  assert.equal(showMessageBoxCalls.length, 2);
+  for (const { options } of showMessageBoxCalls) {
+    assert.equal(options.message, 'snapshot_invalid_filename');
+    assert.deepEqual(options.buttons, ['ok']);
+  }
+});
+
+test('manual snapshot save returns CANCELLED after an invalid filename retry', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-invalid-filename-cancel');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const responses = [
+    { canceled: false, filePath: path.join(rootDir, 'Plan A') },
+    { canceled: true },
+  ];
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const {
+    snapshotsMain,
+    restore,
+    showMessageBoxCalls,
+    showSaveDialogCalls,
+  } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    saveDialogResult() {
+      return responses.shift();
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { includeCount: false, includeReading: false }
+  );
+
+  assert.deepEqual(result, { ok: false, code: 'CANCELLED' });
+  assert.equal(showSaveDialogCalls.length, 2);
+  assert.equal(showMessageBoxCalls.length, 1);
+  assert.equal(fs.existsSync(rootDir), true);
+  assert.deepEqual(fs.readdirSync(rootDir), []);
 });
 
 test('snapshot save rejects invalid optional name and source-comment values', async (t) => {
@@ -908,7 +1405,7 @@ test('non-interactive snapshot save accepts valid non-catalog language tags', as
   });
 });
 
-test('snapshot save maps saveJsonStrict failures to WRITE_FAILED', async (t) => {
+test('snapshot save maps strict creation failures to WRITE_FAILED', async (t) => {
   const rootDir = createTestTempDir('current-text-snapshots-write-failure');
   t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
 
@@ -921,7 +1418,7 @@ test('snapshot save maps saveJsonStrict failures to WRITE_FAILED', async (t) => 
   const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
     senderWin,
     rootDir,
-    saveJsonStrictImpl() {
+    createJsonStrictImpl() {
       throw new Error('disk full');
     },
   });

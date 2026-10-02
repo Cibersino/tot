@@ -1,10 +1,22 @@
 // public/task_editor.js
 'use strict';
 
-// A required dependency can fail before the Task Editor's normal coordinator
-// exists. Report the no-draft terminal state through the already-exposed
-// lifecycle bridge when it is available; no renderer draft has been admitted
-// at this point.
+// =============================================================================
+// Overview
+// =============================================================================
+// Task Editor renderer.
+// Responsibilities:
+// - Establish required renderer dependencies and report no-draft terminal bootstrap failures.
+// - Maintain editable task rows, duration summaries, and dirty-state synchronization.
+// - Coordinate task persistence, library entries, linked files, and snapshots through taskEditorAPI.
+// - Keep the table and modal UI translated and accessible.
+// - Resolve Task Editor startup, settings, and close lifecycle events.
+
+// =============================================================================
+// Bootstrap terminal reporting
+// =============================================================================
+// A required dependency can fail before the Task Editor's normal coordinator exists.
+// Report the no-draft terminal state through the already-exposed lifecycle bridge when it is available; no renderer draft has been admitted at this point.
 function reportNoDraftTaskBootstrapFailure(kind) {
   const api = typeof window !== 'undefined' ? window.taskEditorAPI : null;
   if (!api || typeof api.reportTerminalState !== 'function') return false;
@@ -23,33 +35,18 @@ function reportNoDraftTaskBootstrapFailure(kind) {
 }
 
 // =============================================================================
-// Overview
-// =============================================================================
-// Task Editor renderer.
-// - Render and edit task rows.
-// - Compute per-row and total durations.
-// - Persist task lists and column widths via taskEditorAPI.
-// - Manage library load/save/delete and link opening.
-// - Track dirty state, close confirmations, and translations/settings updates.
-
-// =============================================================================
-// Logger / constants
+// Renderer dependencies and constants
 // =============================================================================
 if (typeof window.getLogger !== 'function') {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw new Error('[task-editor] window.getLogger unavailable; cannot continue');
 }
-let log = null;
+let log;
 try {
   log = window.getLogger('task-editor');
 } catch (err) {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw err;
-}
-if (!log || typeof log.debug !== 'function' || typeof log.warn !== 'function'
-  || typeof log.warnOnce !== 'function' || typeof log.error !== 'function') {
-  reportNoDraftTaskBootstrapFailure('bootstrap-logger');
-  throw new Error('[task-editor] task editor logger unavailable; cannot continue');
 }
 log.debug('Task Editor starting...');
 const rendererIcons = window.RendererIcons || null;
@@ -102,7 +99,7 @@ const EMPTY_TASK_ROW = Object.freeze({
 const taskEditorRoot = document.querySelector('.task-editor');
 
 // =============================================================================
-// i18n
+// Shared startup and lifecycle state
 // =============================================================================
 let idiomaActual = DEFAULT_LANG;
 let taskEditorSemanticQueue = Promise.resolve();
@@ -114,6 +111,9 @@ let taskEditorCurrentInitId = null;
 let taskEditorLatestInitId = null;
 const pendingTaskInitPayloads = [];
 
+// =============================================================================
+// Translation and layout dependencies
+// =============================================================================
 const {
   transitionRendererTranslations,
   tRenderer,
@@ -249,6 +249,9 @@ let pendingLibraryRowId = null;
 let libraryItemsCache = [];
 let renderedRowFields = new Map();
 
+// =============================================================================
+// Column layout controller
+// =============================================================================
 let columnLayoutController = null;
 try {
   columnLayoutController = taskEditorColumnLayout.createController({
@@ -303,7 +306,7 @@ function syncDirtyState() {
   if (!taskEditorHasInitializedDraft || !Number.isInteger(taskEditorCurrentInitId)) return;
   const api = window.taskEditorAPI;
   if (!api || typeof api.setDirtyState !== 'function') {
-    log.warnOnce('task_editor.setDirtyState.missing', 'taskEditorAPI.setDirtyState unavailable; dirty state sync disabled.');
+    log.warn('taskEditorAPI.setDirtyState unavailable; dirty state sync failed (ignored).');
     return;
   }
   try {
@@ -312,7 +315,7 @@ function syncDirtyState() {
       initId: taskEditorCurrentInitId,
     });
   } catch (err) {
-    log.warnOnce('task_editor.setDirtyState.failed', 'taskEditorAPI.setDirtyState failed (ignored):', err);
+    log.warn('taskEditorAPI.setDirtyState failed (ignored):', err);
   }
 }
 
@@ -343,9 +346,7 @@ function normalizeSnapshotRelPath(input) {
   const segments = withoutLeading.split('/').filter(Boolean);
   if (!segments.length) return '';
   if (segments.some((seg) => seg === '.' || seg === '..')) return '';
-  const rel = `/${segments.join('/')}`;
-  if (!rel.toLowerCase().endsWith('.json')) return '';
-  return rel;
+  return `/${segments.join('/')}`;
 }
 
 function isCanonicalSnapshotRelPath(value) {
@@ -434,6 +435,9 @@ function validateCandidateTaskRows(candidateRows) {
   throw new Error(`[task-editor] candidate deriveTaskSummary failed: ${summaryResult.code}`);
 }
 
+// =============================================================================
+// Modal and bridge helpers
+// =============================================================================
 function openModal(modalEl, initialFocusEl) {
   if (!modalEl) return;
   modalEl.setAttribute('aria-hidden', 'false');
@@ -476,11 +480,11 @@ function handleTaskEditorModalEscape(event) {
   entry.close();
 }
 
-// Shared guard for taskEditorAPI methods; emits a user notice and warnOnce on missing APIs.
+// Shared guard for taskEditorAPI methods; emits a user notice and warning on missing APIs.
 function getTaskEditorApi(methodName, missingNoticeKey = 'renderer.tasks.alerts.task_unavailable') {
   const api = window.taskEditorAPI;
   if (!api || typeof api[methodName] !== 'function') {
-    log.warnOnce(`task_editor.api.missing.${methodName}`, 'taskEditorAPI missing method (ignored):', methodName);
+    log.warn('taskEditorAPI missing method (ignored):', methodName);
     if (missingNoticeKey) window.Notify.notifyEditor(missingNoticeKey);
     return null;
   }
@@ -514,6 +518,9 @@ function setCommentSaveInFlight(inFlight) {
   });
 }
 
+// =============================================================================
+// Snapshot comment workflow
+// =============================================================================
 function getSnapshotDetailsConfirmationState(confirmation) {
   const hasTextChange = !!confirmation && typeof confirmation.texto === 'string';
   const hasTimeChange = !!(confirmation && confirmation.reading);
@@ -1356,28 +1363,30 @@ function renderRow(row) {
     ariaLabel: linkName,
   });
   enlaceBtn.setAttribute('data-tot-tooltip', linkName);
-  enlaceBtn.addEventListener('click', async () => {
-    const raw = enlaceInput.value;
-    const api = getTaskEditorApi('openTaskLink');
-    if (!api) return;
-    const res = await api.openTaskLink(raw);
-    if (isFailedTaskEditorResult(res)) {
-      const code = getTaskEditorResultCode(res, 'ERROR');
-      if (code === 'CONFIRM_DENIED') return;
-      log.warn('openTaskLink failed:', { code, response: res || null });
-      if (code === 'LINK_MISSING' || code === 'LINK_BLOCKED') {
-        setTaskFieldInvalidState(enlaceInput, true);
-        enlaceInput.focus();
-        window.Notify.notifyEditor(
-          code === 'LINK_MISSING'
-            ? 'renderer.tasks.alerts.link_missing'
-            : 'renderer.tasks.alerts.link_blocked'
-        );
+  enlaceBtn.addEventListener('click', () => {
+    void (async () => {
+      const raw = enlaceInput.value;
+      const api = getTaskEditorApi('openTaskLink');
+      if (!api) return;
+      const res = await api.openTaskLink(raw);
+      if (isFailedTaskEditorResult(res)) {
+        const code = getTaskEditorResultCode(res, 'ERROR');
+        if (code === 'CONFIRM_DENIED') return;
+        log.warn('openTaskLink failed:', { code, response: res || null });
+        if (code === 'LINK_MISSING' || code === 'LINK_BLOCKED') {
+          setTaskFieldInvalidState(enlaceInput, true);
+          enlaceInput.focus();
+          window.Notify.notifyEditor(
+            code === 'LINK_MISSING'
+              ? 'renderer.tasks.alerts.link_missing'
+              : 'renderer.tasks.alerts.link_blocked'
+          );
+          return;
+        }
+        window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
         return;
       }
-      window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
-      return;
-    }
+    })().catch((err) => log.error('openTaskLink failed:', err));
   });
   enlaceWrap.appendChild(enlaceInput);
   enlaceWrap.appendChild(enlaceSelectBtn);
@@ -1737,17 +1746,21 @@ function renderLibraryItems(items) {
       if (didAdd) closeModal(libraryModal);
     });
     const btnDelete = buildActionButton('trash', 'renderer.tasks.biblioteca.library_row_delete', async () => {
-      const api = getTaskEditorApi('deleteLibraryEntry');
-      if (!api) return;
-      const delRes = await api.deleteLibraryEntry(entry.texto);
-      if (isFailedTaskEditorResult(delRes)) {
-        const code = getTaskEditorResultCode(delRes, 'WRITE_FAILED');
-        if (code === 'CONFIRM_DENIED') return;
-        log.warn('deleteLibraryEntry failed:', { code, response: delRes || null });
-        window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
-        return;
+      try {
+        const api = getTaskEditorApi('deleteLibraryEntry');
+        if (!api) return;
+        const delRes = await api.deleteLibraryEntry(entry.texto);
+        if (isFailedTaskEditorResult(delRes)) {
+          const code = getTaskEditorResultCode(delRes, 'WRITE_FAILED');
+          if (code === 'CONFIRM_DENIED') return;
+          log.warn('deleteLibraryEntry failed:', { code, response: delRes || null });
+          window.Notify.notifyEditor('renderer.tasks.alerts.library_delete_error');
+          return;
+        }
+        await refreshLibraryList();
+      } catch (err) {
+        log.error('Task library delete action failed:', err);
       }
-      await refreshLibraryList();
     });
 
     actions.appendChild(btnLoad);
@@ -2165,8 +2178,16 @@ function wireLibraryModalEvents() {
   }
 
   wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
-  if (includeCommentYes) includeCommentYes.addEventListener('click', () => saveRowToLibrary(true));
-  if (includeCommentNo) includeCommentNo.addEventListener('click', () => saveRowToLibrary(false));
+  if (includeCommentYes) {
+    includeCommentYes.addEventListener('click', () => {
+      saveRowToLibrary(true).catch((err) => log.error('saveRowToLibrary failed:', err));
+    });
+  }
+  if (includeCommentNo) {
+    includeCommentNo.addEventListener('click', () => {
+      saveRowToLibrary(false).catch((err) => log.error('saveRowToLibrary failed:', err));
+    });
+  }
 }
 
 function wireTaskEditorEvents() {
@@ -2220,6 +2241,8 @@ function sendTaskEditorCloseResponse(payload) {
   try {
     window.taskEditorAPI.respondToClose(payload);
   } catch (err) {
+    // Deliberate current tradeoff: response-send failure stays fail-closed, even if close remains pending.
+    // Safe retry requires correlated IPC; revisit only if stronger close-recovery guarantees are warranted.
     log.warn('taskEditorAPI.respondToClose failed (ignored):', err);
   }
 }
@@ -2250,10 +2273,10 @@ async function bootstrapTaskEditor() {
           bootstrapLanguage = settings.language || DEFAULT_LANG;
         }
       } catch (err) {
-        log.warn('Task Editor settings acquisition failed; using default language:', err);
+        log.warn('BOOTSTRAP: Task Editor settings acquisition failed; using default language:', err);
       }
     } else {
-      log.warnOnce('BOOTSTRAP:task_editor.getSettings.missing', 'taskEditorAPI.getSettings unavailable; using default language.');
+      log.warn('BOOTSTRAP: taskEditorAPI.getSettings unavailable; using default language.');
     }
     try {
       await transitionTaskEditorTranslations(bootstrapLanguage);
@@ -2319,6 +2342,7 @@ async function applyIncomingTaskPayload(payload) {
   }
 }
 
+// Task Editor intentionally has no programmatic initial DOM focus.
 setTaskEditorNormalInteractionAvailable(false);
 try {
   validateTaskEditorBootstrapContracts();

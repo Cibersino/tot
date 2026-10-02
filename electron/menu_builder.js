@@ -68,16 +68,14 @@ function resolveMenuLabel(obj, key, fallback = key) {
     return fallback;
 }
 
-// Exported helper: callers inject their own logger scope/prefix so missing
+// Exported helper: callers inject their own logger scope so missing
 // dialog-key diagnostics stay attributed to the feature that requested them.
 function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
-    if (!opts.log || typeof opts.log.warnOnce !== 'function') {
-        throw new Error('[menu_builder] resolveDialogText requires opts.log.warnOnce');
+    if (!opts.log || typeof opts.log.warn !== 'function') {
+        throw new Error('[menu_builder] resolveDialogText requires opts.log.warn');
     }
-    const prefix = opts.warnPrefix || 'menu_builder.dialog.missing';
-    opts.log.warnOnce(
-        `${prefix}:${key}`,
+    opts.log.warn(
         'Missing dialog translation key (using fallback):',
         key
     );

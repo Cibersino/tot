@@ -8,7 +8,7 @@
 // - Own in-memory current text, normalize line endings, and enforce size limits.
 // - Load persisted current text during init and save it during app shutdown.
 // - Accept current-text updates from authorized IPC senders only.
-// - Expose get-current-text, set-current-text, and clipboard-read-text handlers.
+// - Expose current-text IPC handlers, including the Editor bootstrap snapshot with a canonical write revision.
 // - Broadcast current-text updates to the main window and Text Editor window.
 // - Preserve compatibility behavior for the settings file on quit.
 
@@ -30,7 +30,7 @@ const log = Log.get('text-state');
 log.debug('Text state starting...');
 
 // =============================================================================
-// Helpers (validation / normalization)
+// Validation / normalization helpers and action policy
 // =============================================================================
 function isPlainObject(x) {
   if (!x || typeof x !== 'object') return false;
@@ -90,24 +90,33 @@ let settingsFile = null;
 let appRef = null;
 let currentTextProcessingController = null;
 let onCurrentTextDidBecomeEmpty = null;
+// Starts after bootstrap and advances on every canonical write for the Editor snapshot/live stream.
+let currentTextRevision = 0;
 
-// Window resolver for best-effort UI notifications.
+// main.js owns window lifecycle; this module resolves windows only to authorize and notify.
 let getWindows = () => ({ mainWin: null, editorWin: null });
 
 // =============================================================================
 // Runtime helpers
 // =============================================================================
-// Best-effort window send; avoids surfacing shutdown races as hard failures.
+// Best-effort notification: a window race must not change the text-update outcome.
 function safeSend(win, channel, payload) {
-  if (!win || win.isDestroyed()) {
+  if (!win) {
+    return;
+  }
+
+  if (win.isDestroyed()) {
+    log.warnOnce(
+      `text_state.safeSend.destroyed:${channel}`,
+      `webContents.send('${channel}') failed (ignored): target window destroyed.`
+    );
     return;
   }
 
   try {
     win.webContents.send(channel, payload);
   } catch (err) {
-    log.warnOnce(
-      `text_state.safeSend:${channel}`,
+    log.warn(
       `webContents.send('${channel}') failed (ignored):`,
       err
     );
@@ -160,6 +169,13 @@ function getProcessingRequestId(processingState) {
     : null;
 }
 
+function getEditorCurrentTextSnapshot() {
+  // Both reads occur in this synchronous main-process turn, so the text and
+  // revision describe the same canonical write. This is independent from the
+  // optional processing lifecycle and its requestId.
+  return { ok: true, text: currentText, revision: currentTextRevision };
+}
+
 function isAllowedSenderWindow(targetWin, senderWin) {
   return !!(targetWin && !targetWin.isDestroyed() && senderWin && senderWin === targetWin);
 }
@@ -173,8 +189,7 @@ function getNormalizedSetCurrentTextAction(incomingMeta) {
     : 'set';
 
   if (incomingAction && normalizedAction === 'set' && incomingAction !== 'set') {
-    log.warnOnce(
-      'text_state.setCurrentText.invalid_action',
+    log.warn(
       `set-current-text invalid action '${incomingAction}'; using 'set'.`
     );
   }
@@ -219,20 +234,22 @@ function applyCurrentText(rawText, rawMeta) {
   }
 
   currentText = text;
+  currentTextRevision += 1;
 
   const { mainWin, editorWin } = getWindows() || {};
   const broadcastMeta = incomingMeta || { source: 'main', action: 'set' };
 
-  // Notify main window (for renderer to update preview/results)
+  // Main renderer uses live updates to refresh derived views.
   safeSend(mainWin, 'current-text-updated', {
     text: currentText,
     requestId,
     meta: broadcastMeta,
   });
 
-  // Notify Text Editor with object { text, meta }
+  // Text Editor bootstraps independently; its live stream carries this canonical write revision.
   safeSend(editorWin, 'editor-text-updated', {
     text: currentText,
+    revision: currentTextRevision,
     requestId,
     meta: broadcastMeta,
   });
@@ -255,8 +272,8 @@ function applyCurrentText(rawText, rawMeta) {
   };
 }
 
-// Initial file load keeps legacy persisted shapes working, then normalizes to the
-// current in-memory/storage format before the rest of init continues.
+// Load the canonical { text: ... } storage form and a raw-string root only as
+// defensive recovery for noncanonical data; writers remain object-form only.
 function loadInitialCurrentText() {
   try {
     let raw = loadJson
@@ -268,11 +285,13 @@ function loadInitialCurrentText() {
     const isRawString = typeof raw === 'string';
     let txt = hasTextProp ? String(raw.text || '') : '';
     if (!hasTextProp && isRawString) {
+      log.warn(
+        'BOOTSTRAP: Current text file uses noncanonical root-string form; recovering text.'
+      );
       txt = raw;
     }
     if (!hasTextProp && !isRawString && typeof raw !== 'undefined') {
-      log.warnOnce(
-        'BOOTSTRAP:text_state.init.unexpectedShape',
+      log.warn(
         'BOOTSTRAP: Current text file has unexpected shape; using empty string.'
       );
     }
@@ -291,8 +310,7 @@ function loadInitialCurrentText() {
     }
 
     if (lineEndingsNormalized) {
-      log.warnOnce(
-        'BOOTSTRAP:text_state.init.line_endings_normalized',
+      log.warn(
         'BOOTSTRAP: Current text line endings normalized to LF and saved.'
       );
     }
@@ -332,15 +350,14 @@ function init(options) {
   }
   maxIpcChars = maxTextChars * MAX_IPC_MULTIPLIER;
 
-  // Initial load from disk + truncated if hard cap is exceeded
   loadInitialCurrentText();
+  currentTextRevision = 1;
 
   beginCurrentTextProcessing({
     source: 'main',
     action: 'initial_load',
   });
 
-  // Persistence in before-quit
   if (appRef && typeof appRef.on === 'function') {
     appRef.on('before-quit', persistCurrentTextOnQuit);
   }
@@ -368,12 +385,22 @@ function registerIpc(ipcMain, windowsResolver) {
   ipcMain.handle('get-current-text', async () => {
     return currentText;
   });
+  ipcMain.handle('get-editor-current-text-snapshot', (event) => {
+    const { editorWin } = getWindows() || {};
+    const senderWin = event && event.sender
+      ? BrowserWindow.fromWebContents(event.sender)
+      : null;
+    if (!isAllowedSenderWindow(editorWin, senderWin)) {
+      log.warn('get-editor-current-text-snapshot unauthorized (ignored).');
+      return { ok: false, error: 'unauthorized' };
+    }
+    return getEditorCurrentTextSnapshot();
+  });
   ipcMain.handle('clipboard-read-text', (event) => {
     const { mainWin } = getWindows() || {};
     const senderWin = BrowserWindow.fromWebContents(event.sender);
     if (!isAllowedSenderWindow(mainWin, senderWin)) {
-      log.warnOnce(
-        'text_state.clipboardRead.unauthorized',
+      log.warn(
         'clipboard-read-text unauthorized (ignored).'
       );
       return { ok: false, error: 'unauthorized', text: '', length: 0 };
@@ -384,8 +411,7 @@ function registerIpc(ipcMain, windowsResolver) {
       return { ok: false, error: 'clipboard read returned a non-string value' };
     }
     if (text.length > maxIpcChars) {
-      log.warnOnce(
-        'text_state.clipboardRead.tooLarge',
+      log.warn(
         'clipboard-read-text too large; rejecting (ignored):',
         text.length,
         '>',
@@ -408,8 +434,7 @@ function registerIpc(ipcMain, windowsResolver) {
       const editorAllowed = isAllowedSenderWindow(editorWin, senderWin);
 
       if (!mainAllowed && !editorAllowed) {
-        log.warnOnce(
-          'text_state.setCurrentText.unauthorized',
+        log.warn(
           'set-current-text unauthorized (ignored).'
         );
         return { ok: false, error: 'unauthorized' };
@@ -418,15 +443,13 @@ function registerIpc(ipcMain, windowsResolver) {
       const isPayloadObject = isPlainObject(payload);
       const hasTextProp = isPayloadObject && Object.prototype.hasOwnProperty.call(payload, 'text');
       if (!hasTextProp) {
-        log.warnOnce(
-          'text_state.setCurrentText.invalid_payload',
+        log.warn(
           'set-current-text requires payload { text, meta }; rejecting.'
         );
         return { ok: false, error: 'invalid payload' };
       }
       if (typeof payload.text !== 'string') {
-        log.warnOnce(
-          'text_state.setCurrentText.invalid_text',
+        log.warn(
           'set-current-text payload text must be a string; rejecting.'
         );
         return { ok: false, error: 'invalid payload' };
@@ -434,8 +457,7 @@ function registerIpc(ipcMain, windowsResolver) {
       const text = payload.text;
 
       if (text.length > maxIpcChars) {
-        log.warnOnce(
-          'text_state.setCurrentText.payload_too_large',
+        log.warn(
           `set-current-text payload too large (${text.length} > ${maxIpcChars}); rejecting.`
         );
         throw new Error('set-current-text payload too large');

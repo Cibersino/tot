@@ -5,17 +5,24 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Coordinate Text Editor window open/show behavior across ordinary and hidden startup flows.
-// - Track one hidden-startup cycle at a time, including waiter resolution and timeout cleanup.
-// - Validate base-presentation reports before they can advance the startup lifecycle.
-// - Notify the main window about first-show lifecycle states through editor-first-show-state.
-// - Centralize lifecycle-owned close/dispose handling for hidden startup failures and timeouts.
-//
+// - Coordinate Text Editor creation and presentation for ordinary opens and hidden startup.
+// - Own the single hidden-startup cycle used by ordinary and Reading Test paths.
+// - Bind each cycle's waiter and renderer reports to its generation.
+// - Finalize and report ordinary first show after an accepted ready report.
+// - Resolve Reading Test's hidden-startup cycle without ordinary first-show finalization.
+// - Distinguish lifecycle-owned disposal from an externally closed editor window.
+
+// =============================================================================
+// Imports and logger
+// =============================================================================
+
+const Log = require('./log');
+const log = Log.get('editor-window-lifecycle');
+
 // =============================================================================
 // Constants / config
 // =============================================================================
-// Product rule override:
-// hidden editor startup is capped at 60 seconds even if bootstrap is still progressing.
+// Product rule override: after hidden-window creation, unresolved startup is capped at 60 seconds even if bootstrap is still progressing.
 const EDITOR_HIDDEN_STARTUP_TIMEOUT_MS = 60000;
 
 // =============================================================================
@@ -54,10 +61,7 @@ function requireCreateEditorWindow(createEditorWindow, logContext) {
 // =============================================================================
 // Controller factory / lifecycle coordination
 // =============================================================================
-function createController({ log, editorState, showStartupFailureDisclosure = null }) {
-  if (!log || typeof log.warn !== 'function' || typeof log.error !== 'function') {
-    throw new Error('[editor_window_lifecycle] createController requires log');
-  }
+function createController({ editorState, showStartupFailureDisclosure = null }) {
   if (!editorState || typeof editorState.notifyWindowState !== 'function') {
     throw new Error('[editor_window_lifecycle] createController requires editorState.notifyWindowState');
   }
@@ -66,6 +70,10 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
   let hiddenStartupCycle = null;
   let pendingLifecycleOwnedCloseWindow = null;
   const startupCycleWaiters = new Map();
+
+  // =============================================================================
+  // Startup-cycle waiters and failure disclosure
+  // =============================================================================
 
   function discloseStartupFailure(details) {
     if (!details || details.disclosure !== 'main-native') return;
@@ -140,6 +148,10 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
     return lifecycleError;
   }
 
+  // =============================================================================
+  // Window presentation, first-show state, and cleanup
+  // =============================================================================
+
   function notifyMainEditorFirstShowState(mainWin, payload, logContext) {
     if (!hasLiveWebContents(mainWin)) {
       log.warn('editor-first-show-state notification failed (ignored): main window unavailable.', logContext);
@@ -173,6 +185,7 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
   function disposeHiddenStartupWindow(editorWin, logContext) {
     if (!isAliveWindow(editorWin)) return;
 
+    // handleEditorWindowClosed treats this marker as a lifecycle-owned close.
     pendingLifecycleOwnedCloseWindow = editorWin;
 
     try {
@@ -257,6 +270,7 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
 
   function finalizeOrdinaryFirstShow(editorWin, mainWin, cycle, logContext) {
     try {
+      // Ordinary first show uses the captured mode instead of __totSavedMaximized.
       showEditorWindow(editorWin, {
         maximize: cycle.initialPresentationMode === 'maximized',
         useSavedMaximized: false,
@@ -307,6 +321,7 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
 
   function armHiddenStartupTimeout(cycle, editorWin, mainWin, logContext) {
     cycle.timeoutId = setTimeout(() => {
+      // Only the still-active matching cycle may be timed out by this callback.
       if (!hiddenStartupCycle || hiddenStartupCycle.generation !== cycle.generation || cycle.resolved) {
         return;
       }
@@ -332,7 +347,11 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
     }, EDITOR_HIDDEN_STARTUP_TIMEOUT_MS);
   }
 
-  // A fresh hidden startup always creates a new generation and owns its waiter lifecycle.
+  // =============================================================================
+  // Hidden-startup creation and controller entry points
+  // =============================================================================
+
+  // This generation correlates baseReadyPromise and firstShowGeneration with matching renderer reports.
   function beginFreshHiddenStartup({
     owner,
     initialPresentationMode,
@@ -483,39 +502,22 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
         };
       }
 
+      const activeWaiter = getStartupCycleWaiter(hiddenStartupCycle.generation);
       return {
         ok: true,
         editorWin,
-        baseReadyPromise: getStartupCycleWaiter(hiddenStartupCycle.generation)
-          ? getStartupCycleWaiter(hiddenStartupCycle.generation).promise
-          : null,
+        baseReadyPromise: activeWaiter ? activeWaiter.promise : null,
       };
     }
 
     const wasVisible = typeof editorWin.isVisible === 'function' && editorWin.isVisible();
 
-    if (wasVisible) {
+    // A hidden, deferred Reading Test window is the only live-window case not presented here.
+    if (wasVisible || !deferShow || startupOwner === 'ordinary') {
       showEditorWindow(editorWin, {
         maximize: options && options.maximize === true,
         useSavedMaximized: false,
       });
-      return {
-        ok: true,
-        editorWin,
-        baseReadyPromise: null,
-      };
-    }
-
-    if (!deferShow || startupOwner === 'ordinary') {
-      showEditorWindow(editorWin, {
-        maximize: options && options.maximize === true,
-        useSavedMaximized: false,
-      });
-      return {
-        ok: true,
-        editorWin,
-        baseReadyPromise: null,
-      };
     }
 
     return {
@@ -578,6 +580,7 @@ function createController({ log, editorState, showStartupFailureDisclosure = nul
     resolveStartupCycleReady(cycle.generation);
 
     if (cycle.owner === 'reading-test') {
+      // The waiter already resolved above; Reading Test now resolves the hidden-startup cycle.
       resolveHiddenStartupCycle(cycle);
       return true;
     }

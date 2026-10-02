@@ -292,22 +292,26 @@
     setPresetFormInteractionLocked(true);
 
     function registerPresetSettingsChanged() {
-      if (window.presetAPI && typeof window.presetAPI.onSettingsChanged === 'function') {
-        try {
-          window.presetAPI.onSettingsChanged((settings) => {
-            if (presetI18nTerminal) return;
-            enqueuePresetSemanticWork(async () => {
-              const nextLang = normalizeLangTag(settings && settings.language ? settings.language : '');
-              if (!nextLang || nextLang === idiomaActual) return;
-              await applyPresetTranslationUpdate(nextLang);
-            });
-          });
-        } catch (err) {
-          log.warn('BOOTSTRAP: presetAPI.onSettingsChanged listener setup failed; language updates disabled:', err);
-        }
-        return;
+      if (!window.presetAPI || typeof window.presetAPI.onSettingsChanged !== 'function') {
+        log.error('BOOTSTRAP: presetAPI.onSettingsChanged unavailable; closing modal before normal interaction.');
+        reportTerminalPresetI18nFailure('settings-listener');
+        return false;
       }
-      log.warn('BOOTSTRAP: presetAPI.onSettingsChanged missing; language updates disabled.');
+      try {
+        window.presetAPI.onSettingsChanged((settings) => {
+          if (presetI18nTerminal) return;
+          enqueuePresetSemanticWork(async () => {
+            const nextLang = normalizeLangTag(settings && settings.language ? settings.language : '');
+            if (!nextLang || nextLang === idiomaActual) return;
+            await applyPresetTranslationUpdate(nextLang);
+          });
+        });
+        return true;
+      } catch (err) {
+        log.error('BOOTSTRAP: presetAPI.onSettingsChanged registration failed; closing modal before normal interaction:', err);
+        reportTerminalPresetI18nFailure('settings-listener');
+        return false;
+      }
     }
 
     function registerPresetInit() {
@@ -345,7 +349,7 @@
       log.warn('BOOTSTRAP: presetAPI.onInit missing; modal will not receive init data.');
     }
 
-    registerPresetSettingsChanged();
+    if (!registerPresetSettingsChanged()) return;
     registerPresetInit();
 
     // =============================================================================

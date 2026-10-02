@@ -46,7 +46,6 @@ function safeErrorMessage(err) {
 function resolveDialogText(dialogTexts, key, fallback) {
   return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
     log,
-    warnPrefix: 'text_extraction_ocr_disconnect.dialog.missing',
   });
 }
 
@@ -351,5 +350,4 @@ module.exports = {
 // =============================================================================
 // End of electron/text_extraction_platform/text_extraction_ocr_disconnect_ipc.js
 // =============================================================================
-
 

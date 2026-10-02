@@ -10,7 +10,6 @@
 // - Apply a selected language and close the window on success.
 // - Maintain busy/disabled UI state during async actions.
 // - Fall back to a local list when IPC data is unavailable.
-// =============================================================================
 
 // =============================================================================
 // Logger and DOM references

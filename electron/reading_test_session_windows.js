@@ -10,7 +10,6 @@
 // - Open the reading session windows.
 // - Update the Text Editor prestart overlay state.
 // - Open the result/questions modal windows.
-// =============================================================================
 
 // =============================================================================
 // Imports
@@ -76,14 +75,17 @@ function waitForWindowVisible(win, label, log, timeoutMs) {
   });
 }
 
-function isWindowMainFrameLoading(win) {
+function isWindowMainFrameLoading(win, log) {
   if (!hasLiveWebContents(win)) {
     return false;
   }
 
-  return typeof win.webContents.isLoadingMainFrame === 'function'
-    ? win.webContents.isLoadingMainFrame()
-    : win.webContents.isLoading();
+  if (typeof win.webContents.isLoadingMainFrame === 'function') {
+    return win.webContents.isLoadingMainFrame();
+  }
+
+  log.warn('Reading-test renderer load: isLoadingMainFrame unavailable; using isLoading() fallback.');
+  return win.webContents.isLoading();
 }
 
 function waitForWindowRendererLoad(win, label, log, timeoutMs) {
@@ -94,7 +96,7 @@ function waitForWindowRendererLoad(win, label, log, timeoutMs) {
     }
 
     const { webContents } = win;
-    if (!isWindowMainFrameLoading(win)) {
+    if (!isWindowMainFrameLoading(win, log)) {
       resolve();
       return;
     }

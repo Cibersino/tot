@@ -95,6 +95,7 @@
         "append_clipboard_error": "Errore bat gertatu da arbeletik testua eranstean.",
         "clear_error": "Errorea gertatu da testua hustean. Begiratu kontsola.",
         "current_text_processing_locked": "Uneko testua oraindik eguneratzen ari da. Leiho nagusiko interakzioak blokeatuta egongo dira azken testua egonkortu arte.",
+        "precise_counting_fallback": "Ezin izan da Modu zehatza erabili. toT modu sinplera aldatu da.",
         "current_text_recount_locked": "Uneko testuaren emaitzak oraindik berriz kalkulatzen ari dira. Leiho nagusiko interakzioak blokeatuta egongo dira azken berriz kalkulua egonkortu arte.",
         "wip": {
           "design_skins": "WIP: azal hautatzailea etorkizuneko bertsio batean irekiko da hemen.",

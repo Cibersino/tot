@@ -9,7 +9,6 @@
 // - Render planner-controlled units/inputs without moving batch business logic
 //   into renderer.js.
 // - Expose the maintained public prompt through window.Notify.
-// =============================================================================
 
 (() => {
 
@@ -725,6 +724,10 @@
       body.replaceChildren(...unitNodes);
       return;
     }
+    log.warnOnce(
+      'text-extraction.batch-planning.replace-children-body-unavailable',
+      'Batch planning body: replaceChildren unavailable; using DOM fallback.'
+    );
     body.innerHTML = '';
     unitNodes.forEach((node) => body.appendChild(node));
   }
@@ -822,6 +825,10 @@
           }
           return;
         }
+        log.warnOnce(
+          'text-extraction.batch-planning.replace-children-keep-control-unavailable',
+          'Batch planning keep control: replaceChildren unavailable; using DOM fallback.'
+        );
         root.innerHTML = '';
         if (keepControl) {
           root.appendChild(keepControl);

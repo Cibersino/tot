@@ -8,7 +8,6 @@
 // - Own the browser-extension entry trigger in the main-window brand cluster.
 // - Host the browser-extension modal open/close state and focus restoration.
 // - Route the Chrome Web Store icon link through the shared external-link bridge.
-// =============================================================================
 
 (() => {
   // =============================================================================

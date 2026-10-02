@@ -30,10 +30,6 @@ function createBridge({
   if (typeof hasLiveWebContents !== 'function') {
     throw new Error('[current_text_processing_main_bridge] createBridge requires hasLiveWebContents()');
   }
-  if (!log || typeof log.warn !== 'function') {
-    throw new Error('[current_text_processing_main_bridge] createBridge requires log.warn()');
-  }
-
   // Live broadcasts are optional until the main window exists.
   function handleStateChanged(state) {
     try {
@@ -42,13 +38,13 @@ function createBridge({
         return false;
       }
       if (!hasLiveWebContents(targetWin)) {
-        log.warn(`${CHANNEL} broadcast skipped (ignored): main window unavailable.`);
+        log.warn(`${CHANNEL} broadcast failed (ignored): main window unavailable.`);
         return false;
       }
       targetWin.webContents.send(CHANNEL, state);
       return true;
     } catch (err) {
-      log.warn('Failed to broadcast current-text processing state (ignored):', err);
+      log.warn('Current-text processing state broadcast failed (ignored):', err);
       return false;
     }
   }
@@ -66,4 +62,6 @@ module.exports = {
   createBridge,
 };
 
+// =============================================================================
 // End of electron/current_text_processing_main_bridge.js
+// =============================================================================

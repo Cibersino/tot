@@ -11,8 +11,6 @@
 // - Resolve containment checks so cleanup only targets the runtime temp subtree.
 // - Return structured cleanup warnings for callers to log at the owning boundary.
 // - Keep missing-path cleanup as an explicit no-op where that is the helper contract.
-//
-// =============================================================================
 
 // =============================================================================
 // Imports

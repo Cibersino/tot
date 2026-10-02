@@ -95,6 +95,7 @@
         "append_clipboard_error": "An error occurred while appending the clipboard text to the current text.",
         "clear_error": "An error occurred while clearing the current text.",
         "current_text_processing_locked": "Current text is still updating. Main-window interactions are locked until the latest text settles.",
+        "precise_counting_fallback": "Precise mode could not be used. toT switched to Simple mode.",
         "current_text_recount_locked": "Current text results are still being recalculated. Main-window interactions are locked until the latest recount settles.",
         "wip": {
           "design_skins": "WIP: The skins selector will open here in a future version.",

@@ -147,7 +147,14 @@
   }
 
   function ensureModalObserver() {
-    if (modalStateObserver || typeof MutationObserver !== 'function') return;
+    if (modalStateObserver) return;
+    if (typeof MutationObserver !== 'function') {
+      log.warnOnce(
+        'renderer.info.modal-mutation-observer-unavailable',
+        'Info media lightbox: MutationObserver unavailable; lightbox will not close when the info modal closes.'
+      );
+      return;
+    }
     const infoModal = document.getElementById('infoModal');
     if (!infoModal) return;
 

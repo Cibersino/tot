@@ -95,6 +95,7 @@
         "append_clipboard_error": "從剪貼簿附加文字時發生錯誤。",
         "clear_error": "清除文字時發生錯誤。請檢查主控台。",
         "current_text_processing_locked": "目前文字仍在更新。在最新文字穩定之前，主視窗互動會被鎖定。",
+        "precise_counting_fallback": "無法使用精確模式。toT 已切換到簡單模式。",
         "current_text_recount_locked": "目前文字結果仍在重新計算。在最新重新計數穩定之前，主視窗互動會被鎖定。",
         "wip": {
           "design_skins": "WIP：介面主題選擇器將在未來版本中開啟。",

@@ -10,7 +10,6 @@
 // - Invalidate stale asynchronous renders and preserve state during language refresh.
 // - Hydrate About version, runtime, and document-availability details.
 // - Expose the narrow Info-modal integration surface consumed by public/renderer.js.
-// =============================================================================
 
 (() => {
   // =============================================================================
@@ -80,9 +79,11 @@
       const doc = new DOMParser().parseFromString(htmlString, 'text/html');
       doc.querySelectorAll('[data-i18n]').forEach((el) => {
         const dataKey = el.getAttribute('data-i18n');
-        if (!dataKey) return;
-        const translated = tRenderer(`renderer.info.${key}.${dataKey}`);
-        if (translated) el.textContent = translated;
+        if (!dataKey) {
+          throw new Error('Info document contains an empty data-i18n key');
+        }
+        const translationKey = `renderer.info.${key}.${dataKey}`;
+        el.textContent = tRenderer(translationKey);
       });
       return doc.body.innerHTML;
     } catch (err) {
@@ -178,7 +179,10 @@
     const outcome = await getAboutVersionOutcome();
     if (typeof isCurrentRender === 'function' && !isCurrentRender()) return;
     const versionEl = container ? container.querySelector('#appVersion') : null;
-    if (!versionEl) return;
+    if (!versionEl) {
+      log.warn('About version target unavailable; skipping version hydration.');
+      return;
+    }
     versionEl.textContent = outcome.value || tRenderer('renderer.info.acerca_de.version.unavailable');
   }
 
@@ -214,6 +218,9 @@
             includeSharpRuntimeNames: true,
             sharpRuntimePackage,
           };
+        }
+        if (!electronVersion || !chromeVersion || !nodeVersion) {
+          log.warn('getAppRuntimeInfo missing runtime version fields; About modal shows unavailable fields.');
         }
         let licenseAvailable = false;
         let noticeAvailable = false;
@@ -263,7 +270,19 @@
     const sharpRuntimeNoticeRow = container ? container.querySelector('#sharpRuntimeNoticeRow') : null;
     const sharpRuntimeEl = container ? container.querySelector('#sharpRuntimePackageName') : null;
     const sharpRuntimeNoticeEl = container ? container.querySelector('#sharpRuntimeNoticePackageName') : null;
-    if (!envEl) return;
+    if (!envEl) {
+      log.warn('About environment target unavailable; skipping environment hydration.');
+      return;
+    }
+    const missingOptionalTargetIds = [];
+    if (!runtimeEl) missingOptionalTargetIds.push('#appRuntimeVersions');
+    if (!sharpRuntimeLicenseRow) missingOptionalTargetIds.push('#sharpRuntimeLicenseRow');
+    if (!sharpRuntimeNoticeRow) missingOptionalTargetIds.push('#sharpRuntimeNoticeRow');
+    if (!sharpRuntimeEl) missingOptionalTargetIds.push('#sharpRuntimePackageName');
+    if (!sharpRuntimeNoticeEl) missingOptionalTargetIds.push('#sharpRuntimeNoticePackageName');
+    if (missingOptionalTargetIds.length) {
+      log.warn('About document targets unavailable; partial hydration skipped:', missingOptionalTargetIds);
+    }
     const unavailableText = tRenderer('renderer.info.acerca_de.env.unavailable');
     if (outcome.unavailable) {
       envEl.textContent = unavailableText;
@@ -464,7 +483,11 @@
     infoModalContent = document.getElementById('infoModalContent');
     if (uiBound) return;
     if (infoModalClose) infoModalClose.addEventListener('click', close);
-    if (infoModalBackdrop) infoModalBackdrop.addEventListener('click', close);
+    if (infoModalBackdrop) {
+      infoModalBackdrop.addEventListener('click', close);
+    } else {
+      log.warn('Info modal backdrop unavailable; click-to-close binding skipped.');
+    }
     window.addEventListener('keydown', (ev) => {
       if (infoModal && ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') close();
     });

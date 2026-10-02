@@ -19,15 +19,15 @@
     root.CountCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
-  function createCountUtils({ DEFAULT_LANG, log, intlObject = Intl } = {}) {
+  function createCountUtils({
+    DEFAULT_LANG,
+    log,
+    intlObject = (typeof Intl !== 'undefined' ? Intl : null),
+  } = {}) {
     const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim() : '';
     if (!defaultLang) {
       throw new Error('[count_core] DEFAULT_LANG is required');
     }
-    if (!log || typeof log.warn !== 'function' || typeof log.warnOnce !== 'function') {
-      throw new Error('[count_core] log.warn() and log.warnOnce() are required');
-    }
-
     const HYPHEN_JOINERS = new Set([
       '-',
       '\u2010',
@@ -38,12 +38,13 @@
     ]);
     const reWhitespace = /\s/;
 
-    let reAlnumOnly;
+    let reAlnumOnly = null;
+    let unicodePropertyEscapesAvailable = true;
     try {
       reAlnumOnly = new RegExp('^[\\p{L}\\p{N}]+$', 'u');
     } catch {
-      reAlnumOnly = /^[A-Za-z0-9]+$/;
-      log.warn('Unicode property escapes unsupported; using ASCII alnum fallback.');
+      unicodePropertyEscapesAvailable = false;
+      log.warn('Unicode property escapes unavailable; Precise counting will use canonical Simple recovery.');
     }
 
     function hasIntlSegmenter() {
@@ -98,39 +99,26 @@
       return finalizeSimpleStats(texto, state);
     }
 
-    function consumePreciseFallbackUnit(segment, state) {
-      const isWhitespace = reWhitespace.test(segment);
-      state.conEspacios += 1;
-      if (isWhitespace) {
-        state.insideWord = false;
-      } else {
-        state.sinEspacios += 1;
-        if (!state.insideWord) {
-          state.palabras += 1;
-          state.insideWord = true;
-        }
-      }
+    const PRECISE_FAILURE_CODE_UNAVAILABLE = 'PRECISE_SEGMENTER_UNAVAILABLE';
+    const PRECISE_FAILURE_CODE_UNICODE_PROPERTIES_UNAVAILABLE = 'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE';
+    const PRECISE_FAILURE_CODE_EXECUTION = 'PRECISE_SEGMENTER_EXECUTION_FAILED';
+
+    function createPreciseCountFailure(code, stage, cause = null) {
+      const error = new Error(`Precise counting failed at ${stage}.`);
+      error.name = 'PreciseCountError';
+      error.code = code;
+      error.stage = stage;
+      if (cause) error.cause = cause;
+      return error;
     }
 
-    function finalizePreciseFallbackStats(state) {
-      return {
-        conEspacios: state.conEspacios,
-        sinEspacios: state.sinEspacios,
-        palabras: state.palabras,
-      };
-    }
-
-    function countPreciseFallbackStreaming(texto) {
-      const state = {
-        conEspacios: 0,
-        sinEspacios: 0,
-        palabras: 0,
-        insideWord: false,
-      };
-      for (const segment of texto) {
-        consumePreciseFallbackUnit(segment, state);
-      }
-      return finalizePreciseFallbackStats(state);
+    function isPreciseCountFailure(error) {
+      return !!error
+        && error.name === 'PreciseCountError'
+        && (error.code === PRECISE_FAILURE_CODE_UNAVAILABLE
+          || error.code === PRECISE_FAILURE_CODE_UNICODE_PROPERTIES_UNAVAILABLE
+          || error.code === PRECISE_FAILURE_CODE_EXECUTION)
+        && typeof error.stage === 'string';
     }
 
     function consumePreciseWordSegment(seg, state) {
@@ -155,29 +143,52 @@
 
     function countPreciseStreaming(texto, language) {
       if (!hasIntlSegmenter()) {
-        log.warnOnce('count.intl-segmenter-missing', 'Intl.Segmenter unavailable; using fallback segmentation.');
-        return countPreciseFallbackStreaming(texto);
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_UNAVAILABLE, 'availability');
+      }
+      if (!unicodePropertyEscapesAvailable) {
+        throw createPreciseCountFailure(
+          PRECISE_FAILURE_CODE_UNICODE_PROPERTIES_UNAVAILABLE,
+          'unicode-properties'
+        );
       }
 
       const resolvedLanguage = resolveLanguage(language);
-      const segGraf = new intlObject.Segmenter(resolvedLanguage, { granularity: 'grapheme' });
+      let segGraf;
+      try {
+        segGraf = new intlObject.Segmenter(resolvedLanguage, { granularity: 'grapheme' });
+      } catch (err) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'grapheme-construction', err);
+      }
       let conEspacios = 0;
       let sinEspacios = 0;
-      for (const grapheme of segGraf.segment(texto)) {
-        conEspacios += 1;
-        if (!reWhitespace.test(grapheme.segment)) {
-          sinEspacios += 1;
+      try {
+        for (const grapheme of segGraf.segment(texto)) {
+          conEspacios += 1;
+          if (!reWhitespace.test(grapheme.segment)) {
+            sinEspacios += 1;
+          }
         }
+      } catch (err) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'grapheme-segmentation', err);
       }
 
-      const segPal = new intlObject.Segmenter(resolvedLanguage, { granularity: 'word' });
+      let segPal;
+      try {
+        segPal = new intlObject.Segmenter(resolvedLanguage, { granularity: 'word' });
+      } catch (err) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'word-construction', err);
+      }
       const wordState = {
         palabras: 0,
         prevWasJoinableWord: false,
         pendingHyphenJoin: false,
       };
-      for (const seg of segPal.segment(texto)) {
-        consumePreciseWordSegment(seg, wordState);
+      try {
+        for (const seg of segPal.segment(texto)) {
+          consumePreciseWordSegment(seg, wordState);
+        }
+      } catch (err) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'word-segmentation', err);
       }
 
       return {
@@ -189,10 +200,6 @@
 
     function contarTextoSimple(texto) {
       return countSimpleStreaming(texto);
-    }
-
-    function contarTextoPrecisoFallback(texto) {
-      return countPreciseFallbackStreaming(texto);
     }
 
     function contarTextoPreciso(texto, language) {
@@ -210,10 +217,10 @@
 
     return {
       contarTextoSimple,
-      contarTextoPrecisoFallback,
       contarTextoPreciso,
       contarTexto,
       hasIntlSegmenter,
+      isPreciseCountFailure,
     };
   }
 

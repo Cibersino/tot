@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function createElement(id) {
+function createElement(id, onFocus = null) {
   const listeners = new Map();
   const attributes = {};
-  return {
+  const element = {
     id,
     textContent: '',
     disabled: false,
@@ -26,11 +26,177 @@ function createElement(id) {
       attributes[name] = String(value);
     },
   };
+  if (typeof onFocus === 'function') {
+    element.focus = (...args) => onFocus({ args, id });
+  }
+  return element;
 }
 
 function tick() {
   return new Promise((resolve) => setImmediate(resolve));
 }
+
+test('Floating Stopwatch startup has no programmatic initial DOM focus', async () => {
+  const focusCalls = [];
+  const recordFocus = (focusCall) => focusCalls.push(focusCall);
+  const elements = {
+    crono: createElement('crono', recordFocus),
+    toggle: createElement('toggle', recordFocus),
+    reset: createElement('reset', recordFocus),
+  };
+
+  const sandbox = {
+    window: {
+      AppConstants: { DEFAULT_LANG: 'en' },
+      RendererIcons: {
+        applyIconToElement() {},
+      },
+      RendererI18n: {
+        async transitionRendererTranslations(language, { applyTranslations } = {}) {
+          if (typeof applyTranslations === 'function') await applyTranslations({ language });
+        },
+        tRenderer(key) {
+          return key;
+        },
+      },
+      flotanteAPI: {
+        getSettings() {
+          return Promise.resolve({ language: 'en' });
+        },
+        onSettingsChanged() {},
+        onState() {},
+        reportRendererI18nFailure() {},
+        sendCommand() {},
+      },
+      getLogger() {
+        return {
+          debug() {},
+          error() {},
+          errorOnce() {},
+          warn() {},
+          warnOnce() {},
+        };
+      },
+      addEventListener() {},
+    },
+    document: {
+      title: '',
+      getElementById(id) {
+        return elements[id] || null;
+      },
+    },
+    console,
+  };
+
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/flotante.js'),
+    'utf8'
+  );
+  vm.runInContext(source, sandbox, { filename: 'public/flotante.js' });
+  await tick();
+  await tick();
+
+  assert.equal(elements.toggle.disabled, false);
+  assert.deepEqual(focusCalls, []);
+});
+
+test('Floating Stopwatch closes before normal interaction when live settings registration is unavailable', () => {
+  const elements = {
+    crono: createElement('crono'),
+    toggle: createElement('toggle'),
+    reset: createElement('reset'),
+  };
+  let reporterCalls = 0;
+  const sandbox = {
+    window: {
+      AppConstants: { DEFAULT_LANG: 'en' },
+      RendererIcons: { applyIconToElement() {} },
+      RendererI18n: {
+        async transitionRendererTranslations() {},
+        tRenderer(key) { return key; },
+      },
+      flotanteAPI: {
+        getSettings() { return Promise.resolve({ language: 'en' }); },
+        onState() {},
+        reportRendererI18nFailure() { reporterCalls += 1; },
+        sendCommand() {},
+      },
+      getLogger() {
+        return { debug() {}, error() {}, errorOnce() {}, warn() {}, warnOnce() {} };
+      },
+      addEventListener() {},
+    },
+    document: {
+      title: '',
+      getElementById(id) {
+        return elements[id] || null;
+      },
+    },
+    console,
+  };
+
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/flotante.js'),
+    'utf8'
+  );
+  vm.runInContext(source, sandbox, { filename: 'public/flotante.js' });
+
+  assert.equal(reporterCalls, 1);
+  assert.equal(elements.toggle.disabled, true);
+  assert.equal(elements.reset.disabled, true);
+});
+
+test('Floating Stopwatch closes before normal interaction when live settings registration throws', () => {
+  const elements = {
+    crono: createElement('crono'),
+    toggle: createElement('toggle'),
+    reset: createElement('reset'),
+  };
+  let reporterCalls = 0;
+  const sandbox = {
+    window: {
+      AppConstants: { DEFAULT_LANG: 'en' },
+      RendererIcons: { applyIconToElement() {} },
+      RendererI18n: {
+        async transitionRendererTranslations() {},
+        tRenderer(key) { return key; },
+      },
+      flotanteAPI: {
+        getSettings() { return Promise.resolve({ language: 'en' }); },
+        onSettingsChanged() {
+          throw new Error('settings listener registration failed');
+        },
+        onState() {},
+        reportRendererI18nFailure() { reporterCalls += 1; },
+        sendCommand() {},
+      },
+      getLogger() {
+        return { debug() {}, error() {}, errorOnce() {}, warn() {}, warnOnce() {} };
+      },
+      addEventListener() {},
+    },
+    document: {
+      title: '',
+      getElementById(id) {
+        return elements[id] || null;
+      },
+    },
+    console,
+  };
+
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/flotante.js'),
+    'utf8'
+  );
+  vm.runInContext(source, sandbox, { filename: 'public/flotante.js' });
+
+  assert.equal(reporterCalls, 1);
+  assert.equal(elements.toggle.disabled, true);
+  assert.equal(elements.reset.disabled, true);
+});
 
 test('Floating Stopwatch admits live language settings after its initial settings snapshot', async () => {
   const elements = {

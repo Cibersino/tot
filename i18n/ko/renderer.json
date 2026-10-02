@@ -95,6 +95,7 @@
         "append_clipboard_error": "클립보드의 텍스트를 추가하는 중 오류가 발생했습니다.",
         "clear_error": "텍스트를 비우는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
         "current_text_processing_locked": "현재 텍스트가 아직 업데이트 중입니다. 최신 텍스트가 안정될 때까지 메인 창 상호작용이 잠깁니다.",
+        "precise_counting_fallback": "정밀 모드 사용에 실패했습니다. toT가 단순 모드로 전환했습니다.",
         "current_text_recount_locked": "현재 텍스트 결과가 아직 다시 계산 중입니다. 최신 재계산이 안정될 때까지 메인 창 상호작용이 잠깁니다.",
         "wip": {
           "design_skins": "WIP: 스킨 선택기는 향후 버전에서 여기서 열립니다.",

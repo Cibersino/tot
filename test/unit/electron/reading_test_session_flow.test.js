@@ -9,11 +9,91 @@ const readingTestSessionWindows = require('../../../electron/reading_test_sessio
 
 function createLoggerDouble() {
   return {
+    debug() {},
     warn() {},
     warnOnce() {},
     error() {},
   };
 }
+
+test('computeCurrentWpm retries only the final count after canonical Precise fallback', () => {
+  const preciseFailure = Object.assign(new Error('Segmenter unavailable'), {
+    name: 'PreciseCountError',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+  const calls = [];
+  let fallbackCalls = 0;
+
+  const result = readingTestSessionFlow.computeCurrentWpm({
+    getCronoState: () => ({ elapsed: 60000 }),
+    getCurrentText: () => 'one two',
+    getSettingsSnapshot: () => ({ language: 'en', modeConteo: 'preciso' }),
+    countUtils: {
+      contarTexto(_text, options) {
+        calls.push(options);
+        if (options.modoConteo === 'preciso') throw preciseFailure;
+        return { palabras: 2 };
+      },
+      isPreciseCountFailure: (error) => error === preciseFailure,
+    },
+    fallbackPreciseCountingToSimple(failure) {
+      fallbackCalls += 1;
+      assert.deepEqual(failure, {
+        source: 'reading-test',
+        code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+        stage: 'availability',
+      });
+      return { ok: true, changed: true, mode: 'simple' };
+    },
+    DEFAULT_LANG: 'en',
+    PRESET_WPM_MIN: 1,
+    PRESET_WPM_MAX: 1000,
+    log: createLoggerDouble(),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.wordCount, 2);
+  assert.equal(fallbackCalls, 1);
+  assert.deepEqual(calls, [
+    { modoConteo: 'preciso', idioma: 'en' },
+    { modoConteo: 'simple' },
+  ]);
+});
+
+test('computeCurrentWpm does not retry Simple counting when the global fallback cannot persist', () => {
+  const preciseFailure = Object.assign(new Error('Segmenter unavailable'), {
+    name: 'PreciseCountError',
+    code: 'PRECISE_SEGMENTER_UNAVAILABLE',
+    stage: 'availability',
+  });
+  let countCalls = 0;
+
+  const result = readingTestSessionFlow.computeCurrentWpm({
+    getCronoState: () => ({ elapsed: 60000 }),
+    getCurrentText: () => 'one two',
+    getSettingsSnapshot: () => ({ language: 'en', modeConteo: 'preciso' }),
+    countUtils: {
+      contarTexto() {
+        countCalls += 1;
+        throw preciseFailure;
+      },
+      isPreciseCountFailure: (error) => error === preciseFailure,
+    },
+    fallbackPreciseCountingToSimple: () => ({ ok: false, code: 'PERSIST_FAILED' }),
+    DEFAULT_LANG: 'en',
+    PRESET_WPM_MIN: 1,
+    PRESET_WPM_MAX: 1000,
+    log: createLoggerDouble(),
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    guidanceKey: 'renderer.reading_test.alerts.result_invalid',
+    code: 'PRECISE_FALLBACK_FAILED',
+  });
+  assert.equal(countCalls, 1);
+});
 
 test('Reading arming suppresses its renderer notice when Editor creation is lifecycle-owned', async () => {
   const disclosures = [];
@@ -21,7 +101,6 @@ test('Reading arming suppresses its renderer notice when Editor creation is life
     editorState: {
       notifyWindowState() {},
     },
-    log: createLoggerDouble(),
     showStartupFailureDisclosure(details) {
       disclosures.push(details);
     },
@@ -253,4 +332,35 @@ test('handleFlotanteCommand starts the session from arming on toggle', () => {
 
   assert.equal(handled, true);
   assert.deepEqual(calls, ['startArmedSession']);
+});
+
+test('handleFlotanteCommand logs ignored invalid active-session commands', () => {
+  const warnings = [];
+  const options = {
+    state: {
+      active: true,
+      stage: 'arming',
+      selectedEntry: { sourceMode: 'current_text' },
+    },
+    startArmedSession() {},
+    cancelActiveSession() {},
+    finishRunningSession() {},
+    log: {
+      warn(...args) {
+        warnings.push(args);
+      },
+    },
+  };
+
+  assert.equal(readingTestSessionFlow.handleFlotanteCommand({}, options), true);
+  assert.deepEqual(warnings, [[
+    'Reading-test floating command ignored: payload missing a string cmd (ignored).',
+  ]]);
+
+  warnings.length = 0;
+  assert.equal(readingTestSessionFlow.handleFlotanteCommand({ cmd: 'pause' }, options), true);
+  assert.deepEqual(warnings, [[
+    'Reading-test floating command ignored during arming: unknown cmd (ignored):',
+    'pause',
+  ]]);
 });

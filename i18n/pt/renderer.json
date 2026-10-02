@@ -95,6 +95,7 @@
         "append_clipboard_error": "Ocorreu um erro ao adicionar o texto da área de transferência ao texto atual.",
         "clear_error": "Ocorreu um erro ao limpar o texto atual.",
         "current_text_processing_locked": "O texto atual ainda está sendo atualizado. As interações da janela principal ficam bloqueadas até o texto mais recente estabilizar.",
+        "precise_counting_fallback": "Não foi possível usar Modo preciso. toT mudou para o modo simples.",
         "current_text_recount_locked": "Os resultados do texto atual ainda estão sendo recalculados. As interações da janela principal ficam bloqueadas até o recálculo mais recente estabilizar.",
         "wip": {
           "design_skins": "WIP: O seletor de skins será aberto aqui em uma versão futura.",

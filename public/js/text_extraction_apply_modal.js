@@ -8,7 +8,6 @@
 // - Host text extraction post-extraction apply modal behavior.
 // - Populate modal copy, elapsed value composition, and repeat limits before prompting the user.
 // - Normalize the final repeat count before returning apply intent (`overwrite`/`append`).
-// =============================================================================
 
 (() => {
   // =============================================================================

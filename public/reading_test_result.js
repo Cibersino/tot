@@ -11,7 +11,6 @@
 // - Load renderer translations for the active window language.
 // - Render the measured WPM summary and invariant numeric values.
 // - Keep the window self-contained after the preload hands off init data.
-// =============================================================================
 
 (() => {
   // =============================================================================

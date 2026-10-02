@@ -9,7 +9,6 @@
 // - Keep renderer-side reading-test session state in sync with main-owned state.
 // - Render real-combination checkbox filters from current pool metadata.
 // - Trigger pool reset/start IPC without bloating renderer.js.
-// =============================================================================
 
 (() => {
   // =============================================================================

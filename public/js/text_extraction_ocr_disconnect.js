@@ -8,7 +8,6 @@
 // - Own the main-window Google OCR disconnect action flow.
 // - Keep renderer.js limited to wiring and shared app-level helpers.
 // - Request the main-process disconnect IPC and surface user feedback.
-// =============================================================================
 
 (() => {
   // =============================================================================

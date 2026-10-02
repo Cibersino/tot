@@ -4,8 +4,15 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Canonical current-text snapshot schema shared by normal snapshot and
-// reading-test-pool flows.
+// Canonical current-text snapshot schema shared by normal snapshot and reading-test-pool flows.
+// Responsibilities:
+// - Define the persisted snapshot fields and their canonical values.
+// - Normalize tags and precise-count locales through their shared owners.
+// - Validate optional metrics against the exact reading-duration calculation.
+// - Return normalized snapshot data and reading-test questions without I/O.
+
+// =============================================================================
+// Imports (shared schema collaborators)
 // =============================================================================
 
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
@@ -17,6 +24,10 @@ const {
   SNAPSHOT_NAME_MAX_CHARS,
   SNAPSHOT_SOURCE_COMMENT_MAX_CHARS,
 } = require('./constants_main');
+
+// =============================================================================
+// Schema contract and dependency checks
+// =============================================================================
 
 const readingDurationUtils = readingDurationCore.createReadingDurationUtils();
 
@@ -31,7 +42,8 @@ const SNAPSHOT_OPTIONAL_KEYS = Object.freeze([
 ]);
 const SNAPSHOT_META_KEYS = Object.freeze(['savedAt', 'savedWith']);
 const SNAPSHOT_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
-const SNAPSHOT_METRICS_COUNT_KEYS = Object.freeze(['words', 'mode', 'locale']);
+const SNAPSHOT_METRICS_SIMPLE_COUNT_KEYS = Object.freeze(['words', 'mode']);
+const SNAPSHOT_METRICS_PRECISE_COUNT_KEYS = Object.freeze(['words', 'mode', 'locale']);
 const SNAPSHOT_METRICS_READING_KEYS = Object.freeze(['estimatedSeconds', 'wpm']);
 
 if (!snapshotTagCatalog
@@ -46,6 +58,10 @@ if (!readingTestQuestionsCore
   || typeof readingTestQuestionsCore.validateQuestionsPayload !== 'function') {
   throw new Error('[current_text_snapshot_schema] ReadingTestQuestionsCore unavailable; cannot continue');
 }
+
+// =============================================================================
+// Schema validation helpers
+// =============================================================================
 
 function hasExactKeys(value, expectedKeys) {
   if (!snapshotTagCatalog.isPlainObject(value)) return false;
@@ -147,7 +163,7 @@ function validateSnapshotSourceComment(value) {
   );
 }
 
-function normalizeSnapshotCountLocale(value) {
+function normalizeSnapshotPreciseCountLocale(value) {
   const rawLocale = typeof value === 'string' ? value.trim() : '';
   if (!rawLocale || typeof Intl === 'undefined' || typeof Intl.getCanonicalLocales !== 'function') {
     return '';
@@ -179,26 +195,39 @@ function validateSnapshotMetrics(rawMetrics) {
     return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot metrics invalid' };
   }
 
-  if (!hasExactKeys(rawMetrics.count, SNAPSHOT_METRICS_COUNT_KEYS)) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot count metrics invalid' };
-  }
-
   const count = rawMetrics.count;
-  const locale = normalizeSnapshotCountLocale(count.locale);
-  if (!Number.isSafeInteger(count.words)
+  if (!snapshotTagCatalog.isPlainObject(count)
+    || !Number.isSafeInteger(count.words)
     || count.words < 0
-    || (count.mode !== 'simple' && count.mode !== 'preciso')
-    || !locale) {
+    || (count.mode !== 'simple' && count.mode !== 'preciso')) {
     return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot count metrics invalid' };
   }
 
-  const metrics = {
-    count: {
+  let normalizedCount = null;
+  if (count.mode === 'simple') {
+    if (!hasExactKeys(count, SNAPSHOT_METRICS_SIMPLE_COUNT_KEYS)) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot count metrics invalid' };
+    }
+    normalizedCount = {
       words: count.words,
-      mode: count.mode,
+      mode: 'simple',
+    };
+  } else {
+    if (!hasExactKeys(count, SNAPSHOT_METRICS_PRECISE_COUNT_KEYS)) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot count metrics invalid' };
+    }
+    const locale = normalizeSnapshotPreciseCountLocale(count.locale);
+    if (!locale) {
+      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot count metrics invalid' };
+    }
+    normalizedCount = {
+      words: count.words,
+      mode: 'preciso',
       locale,
-    },
-  };
+    };
+  }
+
+  const metrics = { count: normalizedCount };
 
   if (!hasReading) return { ok: true, metrics };
 
@@ -224,6 +253,10 @@ function validateSnapshotMetrics(rawMetrics) {
   };
   return { ok: true, metrics };
 }
+
+// =============================================================================
+// Snapshot document validation
+// =============================================================================
 
 function validateSnapshotDocument(rawSnapshot) {
   if (!hasCanonicalSnapshotKeys(rawSnapshot)
@@ -277,10 +310,14 @@ function validateSnapshotDocument(rawSnapshot) {
   };
 }
 
+// =============================================================================
+// Module exports
+// =============================================================================
+
 module.exports = {
   SNAPSHOT_TYPE,
   SNAPSHOT_SAVED_WITH,
-  normalizeSnapshotCountLocale,
+  normalizeSnapshotPreciseCountLocale,
   validateSnapshotName,
   validateSnapshotSourceComment,
   validateSnapshotTags,

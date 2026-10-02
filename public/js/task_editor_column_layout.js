@@ -1,12 +1,28 @@
 // public/js/task_editor_column_layout.js
 'use strict';
 
+// =============================================================================
+// Overview
+// =============================================================================
+// Responsibilities:
+// - Own utility-column widths while keeping the text column readable across wrapper sizes.
+// - Build accessible pointer and keyboard dividers for the Task Editor table.
+// - Validate and persist versioned width records without blocking resize interaction.
+// - Coalesce saves so the newest completed resize is retained and failures remain visible.
+// - Expose the narrow controller surface consumed by public/task_editor.js.
+
 (() => {
+  // =============================================================================
+  // Logger
+  // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[task-editor-columns] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('task-editor-columns');
 
+  // =============================================================================
+  // Constants / column schema
+  // =============================================================================
   const LAYOUT_VERSION = 1;
   const TEXT_COLUMN_KEY = 'texto';
   const TEXT_MIN_WIDTH_PX = 250;
@@ -23,6 +39,9 @@
     Object.freeze({ key: 'acciones', minWidth: 124 }),
   ]);
 
+  // =============================================================================
+  // Record validation
+  // =============================================================================
   function isPlainObject(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
     const prototype = Object.getPrototypeOf(value);
@@ -69,6 +88,9 @@
     return hasExactKeys(result, ['ok']) && result.ok === true;
   }
 
+  // =============================================================================
+  // Controller factory / DOM contract
+  // =============================================================================
   function createController({ wrapper, table, colGroup, utilityHeaders }) {
     if (!wrapper || !table || !colGroup || !isPlainObject(utilityHeaders)) {
       throw new Error('[task-editor-columns] createController requires table layout DOM owners');
@@ -91,6 +113,9 @@
       }
     });
 
+    // =============================================================================
+    // Controller state
+    // =============================================================================
     let utilityWidths = createDefaultWidths();
     let renderedTextWidth = TEXT_MIN_WIDTH_PX;
     let activeResize = null;
@@ -101,6 +126,9 @@
     let destroyed = false;
     const dividers = new Map();
 
+    // =============================================================================
+    // Layout calculations and divider state
+    // =============================================================================
     function sumUtilityWidths() {
       return UTILITY_COLUMNS.reduce((sum, { key }) => sum + utilityWidths[key], 0);
     }
@@ -149,6 +177,9 @@
       updateDividerState(isOverflowing());
     }
 
+    // =============================================================================
+    // Persistence queue
+    // =============================================================================
     function showSaveFailureWarning() {
       if (saveWarningActive) return;
       saveWarningActive = true;
@@ -214,6 +245,9 @@
       enqueueSnapshot(completedRevision);
     }
 
+    // =============================================================================
+    // Resize interaction
+    // =============================================================================
     function clampTargetWidth(key, requestedWidth) {
       const column = UTILITY_COLUMNS.find((candidate) => candidate.key === key);
       if (!column) return utilityWidths[key];
@@ -310,6 +344,9 @@
       if (setTargetWidth(key, utilityWidths[key] + direction * step)) completeResize();
     }
 
+    // =============================================================================
+    // Divider wiring
+    // =============================================================================
     function createDividers() {
       UTILITY_COLUMNS.forEach(({ key }) => {
         const header = utilityHeaders[key];
@@ -330,6 +367,9 @@
       });
     }
 
+    // =============================================================================
+    // Controller lifecycle
+    // =============================================================================
     function handleWrapperResize() {
       cancelActiveResize();
       applyLayout();
@@ -344,10 +384,7 @@
     async function loadInitialWidths() {
       const api = window.taskEditorAPI;
       if (!api || typeof api.getColumnLayout !== 'function') {
-        log.warnOnce(
-          'BOOTSTRAP:task_editor.columns.load.missingApi',
-          'Task column layout load unavailable; using session defaults.'
-        );
+        log.warn('BOOTSTRAP: Task column layout load unavailable; using session defaults.');
         return false;
       }
 
@@ -359,6 +396,7 @@
         return false;
       }
 
+      // A null record is the main-side fresh-layout signal; persist defaults after setup.
       if (
         hasExactKeys(result, ['ok', 'record'])
         && result.ok === true
@@ -409,5 +447,12 @@
     });
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
   window.TaskEditorColumnLayout = Object.freeze({ createController });
 })();
+
+// =============================================================================
+// End of public/js/task_editor_column_layout.js
+// =============================================================================

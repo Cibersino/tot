@@ -71,7 +71,7 @@ test('editor preload exposes the expected editor API surface', () => {
     Object.keys(exposedApi.api).sort(),
     [
       'getAppConfig',
-      'getCurrentText',
+      'getInitialCurrentTextSnapshot',
       'getSettings',
       'getWindowState',
       'onExternalUpdate',
@@ -88,6 +88,16 @@ test('editor preload exposes the expected editor API surface', () => {
       'setSpellcheckEnabled',
     ]
   );
+});
+
+test('editor preload requests the versioned initial current-text snapshot', () => {
+  const { exposedApi, invoked } = loadEditorPreload();
+
+  exposedApi.api.getInitialCurrentTextSnapshot();
+
+  assert.deepEqual(invoked, [
+    { channel: 'get-editor-current-text-snapshot', payload: undefined },
+  ]);
 });
 
 test('editor preload keeps editor-text-updated as an unsubscribe-based recurrent listener', () => {

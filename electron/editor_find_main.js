@@ -8,8 +8,8 @@
 // Responsibilities:
 // - Own the find window lifecycle (create/show/close/position).
 // - Handle Text Editor/find-window shortcuts via before-input-event.
-// - Drive native search lifecycle using webContents.findInPage APIs.
-// - Keep find UI state synced from found-in-page events.
+// - Coordinate native search state through editor_find_session and found-in-page events.
+// - Publish find-window state and focus requests to its renderer.
 // - Enforce that find IPC commands are accepted only from the find window.
 
 // =============================================================================
@@ -110,9 +110,11 @@ function buildPublicState() {
 
 function isLoadingWindowContents(wc) {
   if (!wc) return true;
-  return typeof wc.isLoadingMainFrame === 'function'
-    ? wc.isLoadingMainFrame()
-    : wc.isLoading();
+  if (typeof wc.isLoadingMainFrame === 'function') {
+    return wc.isLoadingMainFrame();
+  }
+  log.warn('Editor Find renderer load: isLoadingMainFrame unavailable; using isLoading() fallback.');
+  return wc.isLoading();
 }
 
 function safeSendToFindWindow(channel, payload) {
@@ -120,16 +122,21 @@ function safeSendToFindWindow(channel, payload) {
   if (!win) return;
 
   const wc = win.webContents;
+  // The load callback republishes state and attempts queued focus, so pre-load sends are skipped.
   if (isLoadingWindowContents(wc)) return;
 
   try {
     wc.send(channel, payload);
   } catch (err) {
-    log.warnOnce(
-      `editorFind.send.${channel}`,
-      `Text Editor find send('${channel}') failed (ignored):`,
-      err
-    );
+    if (channel === 'editor-find-state') {
+      log.warnOnce(
+        'editorFind.send.editor-find-state',
+        `Text Editor find send('${channel}') failed (ignored):`,
+        err
+      );
+    } else {
+      log.warn(`Text Editor find send('${channel}') failed (ignored):`, err);
+    }
   }
 }
 
@@ -147,11 +154,7 @@ function sendToFindWindowAfterLoad(wc, channel, payload) {
   try {
     wc.send(channel, payload);
   } catch (err) {
-    log.warnOnce(
-      `editorFind.sendAfterLoad.${channel}`,
-      `Text Editor find post-load send('${channel}') failed (ignored):`,
-      err
-    );
+    log.warn(`Text Editor find post-load send('${channel}') failed (ignored):`, err);
   }
 }
 
@@ -171,11 +174,7 @@ function focusEditorWindow() {
     editorWin.focus();
     editorWin.webContents.focus();
   } catch (err) {
-    log.warnOnce(
-      'editorFind.focusEditor.failed',
-      'Unable to focus Text Editor after find close (ignored):',
-      err
-    );
+    log.warn('Unable to focus Text Editor after find close (ignored):', err);
   }
 }
 
@@ -187,50 +186,10 @@ const session = createSession({
   publishState,
 });
 
-function clearStateOnly() {
-  return session.clearStateOnly();
-}
-
-function clearSearch(options) {
-  return session.clearSearch(options);
-}
-
-function hasQuery() {
-  return session.hasQuery();
-}
-
-function setQuery(rawQuery) {
-  return session.setQuery(rawQuery);
-}
-
-function navigate(forward) {
-  return session.navigate(forward);
-}
-
-function handleFoundInPage(result) {
-  return session.handleFoundInPage(result);
-}
-
-function clearPendingSearchWait(status) {
-  return session.clearPendingSearchWait(status);
-}
-
-function clearPendingEditorReplace(status) {
-  return session.clearPendingEditorReplace(status);
-}
-
 function clearPendingSessionState(status) {
   session.clearPendingResyncRequest();
-  clearPendingSearchWait(status);
-  clearPendingEditorReplace(status);
-}
-
-function replaceCurrent(rawReplacement) {
-  return session.replaceCurrent(rawReplacement);
-}
-
-function replaceAll(rawReplacement) {
-  return session.replaceAll(rawReplacement);
+  session.clearPendingSearchWait(status);
+  session.clearPendingEditorReplace(status);
 }
 
 function runEditorShortcutAction(actionName) {
@@ -289,6 +248,29 @@ function setExpanded(expanded, { publish = true } = {}) {
   return changed;
 }
 
+function handleSharedFindShortcut(event, input) {
+  if (isF3(input)) {
+    event.preventDefault();
+    session.navigate(!input.shift);
+    return true;
+  }
+
+  let actionName = null;
+  if (isIncreaseTextSizeShortcut(input)) {
+    actionName = 'onIncreaseTextSize';
+  } else if (isDecreaseTextSizeShortcut(input)) {
+    actionName = 'onDecreaseTextSize';
+  } else if (isResetTextSizeShortcut(input)) {
+    actionName = 'onResetTextSize';
+  }
+
+  if (!actionName) return false;
+
+  event.preventDefault();
+  runEditorShortcutAction(actionName);
+  return true;
+}
+
 // =============================================================================
 // Find window lifecycle / wiring
 // =============================================================================
@@ -329,11 +311,11 @@ function positionFindWindow() {
   }
 }
 
-function removeListenerWithWarn(target, eventName, listener, warnKey, warnMessage) {
+function removeListenerWithWarn(target, eventName, listener, warnMessage) {
   try {
     target.removeListener(eventName, listener);
   } catch (err) {
-    log.warnOnce(warnKey, warnMessage, err);
+    log.warn(warnMessage, err);
   }
 }
 
@@ -345,21 +327,18 @@ function detachFindWindow() {
     wc,
     'before-input-event',
     onBeforeInput,
-    'editorFind.detachFind.beforeInput',
     'Unable to detach Text Editor find before-input-event listener (ignored):'
   );
   removeListenerWithWarn(
     wc,
     'did-finish-load',
     onDidFinishLoad,
-    'editorFind.detachFind.didFinishLoad',
     'Unable to detach Text Editor find did-finish-load listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'focus',
     onFocus,
-    'editorFind.detachFind.focus',
     'Unable to detach Text Editor find focus listener (ignored):'
   );
 
@@ -371,8 +350,9 @@ function handleFindWindowClosed() {
   pendingFocusTarget = null;
   clearPendingSessionState('find-window-closed');
 
+  // Coordinated closure already owns cleanup or editor teardown; this branch clears search and attempts focus restoration.
   if (!closingFindWindow) {
-    clearSearch({ clearSelection: true });
+    session.clearSearch({ clearSelection: true });
     focusEditorWindow();
   }
 
@@ -396,7 +376,14 @@ function attachFindWindow(win) {
   const onDidFinishLoad = () => {
     sendToFindWindowAfterLoad(wc, 'editor-find-init', buildPublicState());
     sendToFindWindowAfterLoad(wc, 'editor-find-state', buildPublicState());
-    tryDispatchPendingFocus();
+    if (pendingFocusTarget) {
+      sendToFindWindowAfterLoad(
+        wc,
+        'editor-find-focus-target',
+        pendingFocusTarget
+      );
+      pendingFocusTarget = null;
+    }
   };
   const onFocus = () => {
     tryDispatchPendingFocus();
@@ -416,10 +403,7 @@ function attachFindWindow(win) {
 function createFindWindow() {
   const hostWin = resolveEditorWindow();
   if (!hostWin) {
-    log.warnOnce(
-      'editorFind.create.noEditor',
-      'createFindWindow ignored: Text Editor unavailable.'
-    );
+    log.warn('createFindWindow ignored: Text Editor unavailable.');
     return null;
   }
 
@@ -495,10 +479,7 @@ function openFindUi({
 } = {}) {
   const editorWin = resolveEditorWindow();
   if (!editorWin) {
-    log.warnOnce(
-      'editorFind.open.noEditor',
-      'openFindUi ignored: Text Editor unavailable.'
-    );
+    log.warn('openFindUi ignored: Text Editor unavailable.');
     return { ok: false, error: 'Text Editor unavailable' };
   }
 
@@ -509,10 +490,7 @@ function openFindUi({
 
   const win = ensureFindWindow();
   if (!isAliveWindow(win)) {
-    log.warnOnce(
-      'editorFind.open.createFailed',
-      'openFindUi failed: find window was not created.'
-    );
+    log.warn('openFindUi failed: find window was not created.');
     return { ok: false, error: 'find window unavailable' };
   }
 
@@ -538,7 +516,7 @@ function openFindUi({
 }
 
 function closeFindUi({ restoreFocus = true } = {}) {
-  clearSearch({ clearSelection: true });
+  session.clearSearch({ clearSelection: true });
   pendingFocusTarget = null;
   closeFindWindow();
 
@@ -570,38 +548,12 @@ function handleEditorBeforeInput(event, input) {
     openFindUi({
       expanded: true,
       preserveExpandedWhenOpen: false,
-      focusTarget: hasQuery() ? 'replace' : 'query',
+      focusTarget: session.hasQuery() ? 'replace' : 'query',
     });
     return;
   }
 
-  if (isF3(input)) {
-    event.preventDefault();
-    if (input.shift) {
-      navigate(false);
-    } else {
-      navigate(true);
-    }
-    return;
-  }
-
-  if (isIncreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onIncreaseTextSize');
-    return;
-  }
-
-  if (isDecreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onDecreaseTextSize');
-    return;
-  }
-
-  if (isResetTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onResetTextSize');
-    return;
-  }
+  if (handleSharedFindShortcut(event, input)) return;
 
   if (isEscape(input) && resolveFindWindow()) {
     event.preventDefault();
@@ -624,38 +576,12 @@ function handleFindBeforeInput(event, input) {
     if (!state.expanded) {
       setExpanded(true);
     }
-    queueFocusTarget(hasQuery() ? 'replace' : 'query', true);
+    queueFocusTarget(session.hasQuery() ? 'replace' : 'query', true);
     tryDispatchPendingFocus();
     return;
   }
 
-  if (isF3(input)) {
-    event.preventDefault();
-    if (input.shift) {
-      navigate(false);
-    } else {
-      navigate(true);
-    }
-    return;
-  }
-
-  if (isIncreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onIncreaseTextSize');
-    return;
-  }
-
-  if (isDecreaseTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onDecreaseTextSize');
-    return;
-  }
-
-  if (isResetTextSizeShortcut(input)) {
-    event.preventDefault();
-    runEditorShortcutAction('onResetTextSize');
-    return;
-  }
+  if (handleSharedFindShortcut(event, input)) return;
 }
 
 function onEditorWindowWillClose() {
@@ -669,7 +595,7 @@ function onEditorWindowClosed() {
   clearPendingSessionState('editor-window-closed');
   closingFindWindow = false;
   editorShortcutActions = null;
-  clearStateOnly();
+  session.clearStateOnly();
   detachEditorWindow();
   editorWinRef = null;
 }
@@ -693,56 +619,48 @@ function detachEditorWindow() {
     wc,
     'before-input-event',
     onBeforeInput,
-    'editorFind.detachEditor.beforeInput',
     'Unable to detach Text Editor before-input-event listener (ignored):'
   );
   removeListenerWithWarn(
     wc,
     'found-in-page',
     onFoundInPage,
-    'editorFind.detachEditor.foundInPage',
     'Unable to detach Text Editor found-in-page listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'move',
     onMove,
-    'editorFind.detachEditor.move',
     'Unable to detach Text Editor move listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'resize',
     onResize,
-    'editorFind.detachEditor.resize',
     'Unable to detach Text Editor resize listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'maximize',
     onMaximize,
-    'editorFind.detachEditor.maximize',
     'Unable to detach Text Editor maximize listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'unmaximize',
     onUnmaximize,
-    'editorFind.detachEditor.unmaximize',
     'Unable to detach Text Editor unmaximize listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'close',
     onClose,
-    'editorFind.detachEditor.close',
     'Unable to detach Text Editor close listener (ignored):'
   );
   removeListenerWithWarn(
     win,
     'closed',
     onClosed,
-    'editorFind.detachEditor.closed',
     'Unable to detach Text Editor closed listener (ignored):'
   );
 
@@ -770,7 +688,7 @@ function attachEditorWindow(editorWin, options = {}) {
   };
   const onFoundInPage = (_event, result) => {
     try {
-      handleFoundInPage(result);
+      session.handleFoundInPage(result);
     } catch (err) {
       log.error('Error in Text Editor found-in-page handler:', err);
     }
@@ -826,10 +744,10 @@ function isAuthorizedEditorSender(event) {
   return event.sender === editorWin.webContents;
 }
 
-function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handler) {
+function registerAuthorizedFindIpc(ipcMain, channel, warnMessage, handler) {
   ipcMain.handle(channel, (event, ...args) => {
     if (!isAuthorizedFindSender(event)) {
-      log.warnOnce(warnKey, warnMessage);
+      log.warn(warnMessage);
       return { ok: false, error: 'unauthorized' };
     }
     return handler(...args);
@@ -838,10 +756,7 @@ function registerAuthorizedFindIpc(ipcMain, channel, warnKey, warnMessage, handl
 
 function handleEditorReplaceResponse(event, payload) {
   if (!isAuthorizedEditorSender(event)) {
-    log.warnOnce(
-      'editorFind.editorReplaceResponse.unauthorized',
-      'editor-replace-response unauthorized (ignored).'
-    );
+    log.warn('editor-replace-response unauthorized (ignored).');
     return;
   }
 
@@ -861,50 +776,44 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-set-query',
-    'editorFind.ipc.setQuery.unauthorized',
     'editor-find-set-query unauthorized (ignored).',
     (rawQuery) => {
       session.clearPendingResyncRequest();
-      return setQuery(rawQuery);
+      return session.setQuery(rawQuery);
     }
   );
 
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-next',
-    'editorFind.ipc.next.unauthorized',
     'editor-find-next unauthorized (ignored).',
-    () => navigate(true)
+    () => session.navigate(true)
   );
 
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-prev',
-    'editorFind.ipc.prev.unauthorized',
     'editor-find-prev unauthorized (ignored).',
-    () => navigate(false)
+    () => session.navigate(false)
   );
 
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-replace-current',
-    'editorFind.ipc.replaceCurrent.unauthorized',
     'editor-find-replace-current unauthorized (ignored).',
-    (replacement) => replaceCurrent(replacement)
+    (replacement) => session.replaceCurrent(replacement)
   );
 
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-replace-all',
-    'editorFind.ipc.replaceAll.unauthorized',
     'editor-find-replace-all unauthorized (ignored).',
-    (replacement) => replaceAll(replacement)
+    (replacement) => session.replaceAll(replacement)
   );
 
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-toggle-expanded',
-    'editorFind.ipc.toggleExpanded.unauthorized',
     'editor-find-toggle-expanded unauthorized (ignored).',
     () => {
       setExpanded(!state.expanded);
@@ -915,7 +824,6 @@ function registerIpc(ipcMain) {
   registerAuthorizedFindIpc(
     ipcMain,
     'editor-find-close',
-    'editorFind.ipc.close.unauthorized',
     'editor-find-close unauthorized (ignored).',
     () => closeFindUi({ restoreFocus: true })
   );

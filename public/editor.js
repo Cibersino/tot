@@ -10,7 +10,6 @@
 // - Apply bootstrap config, settings, translations, and initial text state.
 // - Keep editor window state and settings-driven UI in sync with bridge updates.
 // - Route local editor interactions back through the main-process text bridge.
-// =============================================================================
 
 const editorBridge = window.editorAPI;
 if (!editorBridge || typeof editorBridge.reportBasePresentationState !== 'function') {
@@ -130,6 +129,7 @@ try {
 const editorMaximizedLayoutCore = window.EditorMaximizedLayoutCore;
 const editorFindReplaceCore = window.EditorFindReplaceCore;
 let editorI18nTerminal = false;
+let latestCurrentTextRevision = 0;
 
 // =============================================================================
 // DOM references
@@ -244,7 +244,7 @@ function requireBootstrapMethod(owner, methodName, ownerName) {
 
 function validateEditorBootstrapRequirements() {
   requireBootstrapMethod(ctx.editorAPI, 'setCurrentText', 'editorAPI');
-  requireBootstrapMethod(ctx.editorAPI, 'getCurrentText', 'editorAPI');
+  requireBootstrapMethod(ctx.editorAPI, 'getInitialCurrentTextSnapshot', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'onExternalUpdate', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'onReplaceRequest', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'sendReplaceResponse', 'editorAPI');
@@ -364,6 +364,7 @@ function releaseStartupPresentationLock() {
 
 function nextAnimationFrame() {
   if (typeof window.requestAnimationFrame !== 'function') {
+    log.warn('BOOTSTRAP: requestAnimationFrame unavailable; continuing without startup frame boundary.');
     return Promise.resolve();
   }
   return new Promise((resolve) => {
@@ -500,20 +501,28 @@ async function bootstrapEditorEnvironment() {
 }
 
 async function bootstrapInitialEditorText() {
-  let initialText = '';
+  let snapshot;
 
   try {
-    initialText = String(await ctx.editorAPI.getCurrentText() || '');
+    snapshot = await ctx.editorAPI.getInitialCurrentTextSnapshot();
   } catch (err) {
-    throw new Error(`[editor] editorAPI.getCurrentText failed during bootstrap: ${String(err)}`);
+    throw new Error(`[editor] editorAPI.getInitialCurrentTextSnapshot failed during bootstrap: ${String(err)}`);
   }
 
-  const applied = await ctx.engine.applyInitialText({
-    text: initialText,
-    meta: { source: 'main', action: 'init' },
-  });
-  if (applied !== true) {
-    throw new Error('[editor] initial current-text application failed during bootstrap');
+  if (!snapshot || snapshot.ok !== true || typeof snapshot.text !== 'string'
+    || !Number.isSafeInteger(snapshot.revision) || snapshot.revision < 1) {
+    throw new Error('[editor] editorAPI.getInitialCurrentTextSnapshot returned an invalid snapshot');
+  }
+
+  if (snapshot.revision > latestCurrentTextRevision) {
+    latestCurrentTextRevision = snapshot.revision;
+    const applied = await ctx.engine.applyInitialText({
+      text: snapshot.text,
+      meta: { source: 'main', action: 'init' },
+    });
+    if (applied !== true) {
+      throw new Error('[editor] initial current-text application failed during bootstrap');
+    }
   }
   ctx.ui.updateEditorTextDirection();
   btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
@@ -616,6 +625,13 @@ function registerEditorBridgeListeners() {
   try {
     ctx.editorAPI.onExternalUpdate(async (payload) => {
       if (editorI18nTerminal) return;
+      const revision = payload && payload.revision;
+      if (!Number.isSafeInteger(revision) || revision < 1) {
+        log.error('editor-text-updated payload ignored: revision must be a positive safe integer.');
+        return;
+      }
+      if (revision <= latestCurrentTextRevision) return;
+      latestCurrentTextRevision = revision;
       await ctx.engine.applyExternalUpdate(payload);
       ctx.ui.updateEditorTextDirection();
     });
@@ -649,14 +665,15 @@ function registerEditorBridgeListeners() {
     throw new Error(`[editor] required live listener registration failed: ${String(err)}`);
   }
 
-  if (typeof ctx.editorAPI.onSettingsChanged === 'function') {
-    try {
-      ctx.editorAPI.onSettingsChanged((settings) => enqueueEditorSettingsApplication(settings));
-    } catch (err) {
-      log.warn('BOOTSTRAP: editorAPI.onSettingsChanged registration failed; live settings updates disabled:', err);
-    }
-  } else {
-    log.warn('BOOTSTRAP: editorAPI.onSettingsChanged missing; live settings updates disabled.');
+  if (typeof ctx.editorAPI.onSettingsChanged !== 'function') {
+    reportTerminalEditorI18nFailure('settings-listener');
+    throw new Error('[editor] editorAPI.onSettingsChanged unavailable; cannot maintain required live settings synchronization');
+  }
+  try {
+    ctx.editorAPI.onSettingsChanged((settings) => enqueueEditorSettingsApplication(settings));
+  } catch (err) {
+    reportTerminalEditorI18nFailure('settings-listener');
+    throw new Error(`[editor] editorAPI.onSettingsChanged registration failed: ${String(err)}`);
   }
 
   if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
@@ -724,6 +741,7 @@ Promise.resolve()
     releaseStartupPresentationLock();
     await nextAnimationFrame();
     ctx.ui.setNormalInteractionAvailable(true);
+    ctx.ui.focusEditorAtTop();
     reportBasePresentationState({ status: 'ready' });
   })
   .catch((err) => {

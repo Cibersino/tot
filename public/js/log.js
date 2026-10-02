@@ -51,7 +51,6 @@
 
 (() => {
   const LEVELS = { silent: 0, error: 1, warn: 2, info: 3, debug: 4 };
-  const LEVEL_NAMES = Object.keys(LEVELS);
 
   function normalizeLevelName(x) {
     const s = String(x || '').toLowerCase().trim();
@@ -138,26 +137,10 @@
     return currentLevelName;
   }
 
-  function getLogger(scope) {
-    if (window.Log && typeof window.Log.get === 'function') {
-      return window.Log.get(scope);
-    }
-    return {
-      debug: () => {},
-      info: () => {},
-      warn: () => {},
-      error: () => {},
-      warnOnce: () => {},
-      errorOnce: () => {},
-    };
-  }
-
+  // Production logger acquisition and DevTools administration share this page-local state.
+  window.getLogger = makeLogger;
   window.Log = {
-    get: makeLogger,
-    setLevel,
     getLevel,
-    LEVELS,
-    LEVEL_NAMES,
+    setLevel,
   };
-  window.getLogger = getLogger;
 })();

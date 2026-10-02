@@ -10,7 +10,6 @@
 // - Show toast notifications for main and Text Editor contexts.
 // - Own stack-aware renderer modal focus containment and per-open restoration.
 // - Provide a small, stable window.Notify surface for callers.
-// =============================================================================
 
 (() => {
   // =============================================================================
@@ -77,6 +76,10 @@
     if (typeof window.requestAnimationFrame === 'function') {
       window.requestAnimationFrame(showToast);
     } else {
+      log.warnOnce(
+        'notify.toast.request-animation-frame-unavailable',
+        'Toast presentation: requestAnimationFrame unavailable; using setTimeout fallback.'
+      );
       setTimeout(showToast, 0);
     }
 
