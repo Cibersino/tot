@@ -426,7 +426,7 @@ function reportEditorI18nFailure(err, { startup = false } = {}) {
   if (!transition) {
     return;
   }
-  if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+  if (!startup && transition.hadEstablishedState && !transition.restorationFailed) {
     log.error('Text Editor language transition failed; previous translation state remains authoritative:', err);
     return;
   }
@@ -832,19 +832,17 @@ if (!bootstrapSetupError && editor) {
 
     if (ctx.state.suppressLocalUpdate || editor.readOnly) return;
 
-    if (!ctx.state.suppressLocalUpdate) {
-      if (ctx.state.debounceTimer) clearTimeout(ctx.state.debounceTimer);
-      if (calcWhileTyping && calcWhileTyping.checked) {
-        ctx.state.debounceTimer = setTimeout(() => {
-          ctx.engine.sendCurrentTextToMain('typing', {
-            onError: (err) => log.warnOnce(
-              'editor.setCurrentText.typing',
-              'setCurrentText typing sync failed (ignored):',
-              err
-            )
-          });
-        }, ctx.DEBOUNCE_MS);
-      }
+    if (ctx.state.debounceTimer) clearTimeout(ctx.state.debounceTimer);
+    if (calcWhileTyping && calcWhileTyping.checked) {
+      ctx.state.debounceTimer = setTimeout(() => {
+        ctx.engine.sendCurrentTextToMain('typing', {
+          onError: (err) => log.warnOnce(
+            'editor.setCurrentText.typing',
+            'setCurrentText typing sync failed (ignored):',
+            err
+          )
+        });
+      }, ctx.DEBOUNCE_MS);
     }
   });
 }
