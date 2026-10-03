@@ -258,6 +258,12 @@ function createEditorScriptHarness({
   transitionFailure = null,
   holdTransitionLanguage = '',
   settingsListenerThrows = false,
+  getLoggerUnavailable = false,
+  getLoggerNonFunction = false,
+  getLoggerError = null,
+  basePresentationReportError = null,
+  locationSearch = '?firstShowGeneration=1',
+  captureEvaluationError = false,
 } = {}) {
   const subscriptions = {};
   const updateDirectionCalls = [];
@@ -269,6 +275,7 @@ function createEditorScriptHarness({
   const sendCurrentTextCalls = [];
   const errorLogs = [];
   const warnLogs = [];
+  const consoleErrors = [];
   const spellcheckStateCalls = [];
   const fontSizeCalls = [];
   const normalInteractionCalls = [];
@@ -340,9 +347,10 @@ function createEditorScriptHarness({
   const sandbox = {
     window: {
       location: {
-        search: '?firstShowGeneration=1',
+        search: locationSearch,
       },
-      getLogger() {
+      getLogger: getLoggerUnavailable ? undefined : (getLoggerNonFunction ? {} : () => {
+        if (getLoggerError) throw getLoggerError;
         return {
           debug() {},
           warn(...args) {
@@ -358,7 +366,7 @@ function createEditorScriptHarness({
             errorLogs.push(args);
           },
         };
-      },
+      }),
       AppConstants: includeAppConstants ? appConstants : undefined,
       EditorMaximizedLayoutCore: {
         clampPreferredTextWidthPx(value, options = {}) {
@@ -520,7 +528,11 @@ function createEditorScriptHarness({
       removeEventListener() {},
     },
     document,
-    console,
+    console: {
+      error(...args) {
+        consoleErrors.push(args);
+      },
+    },
     Event: class Event {
       constructor(type) {
         this.type = type;
@@ -550,6 +562,7 @@ function createEditorScriptHarness({
     reportBasePresentationState(payload) {
       basePresentationReports.push(payload);
       startupEvents.push(`base-presentation:${payload.status}`);
+      if (basePresentationReportError) throw basePresentationReportError;
     },
     reportRendererI18nFailure(payload) {
       rendererFailureReports.push(payload);
@@ -599,7 +612,16 @@ function createEditorScriptHarness({
     path.resolve(__dirname, '../../../public/editor.js'),
     'utf8'
   );
-  vm.runInContext(source, sandbox, { filename: 'public/editor.js' });
+  let evaluationError = null;
+  if (captureEvaluationError) {
+    try {
+      vm.runInContext(source, sandbox, { filename: 'public/editor.js' });
+    } catch (err) {
+      evaluationError = err;
+    }
+  } else {
+    vm.runInContext(source, sandbox, { filename: 'public/editor.js' });
+  }
 
   return {
     elements,
@@ -613,6 +635,8 @@ function createEditorScriptHarness({
     sendCurrentTextCalls,
     errorLogs,
     warnLogs,
+    consoleErrors,
+    evaluationError,
     spellcheckStateCalls,
     fontSizeCalls,
     normalInteractionCalls,
@@ -677,6 +701,80 @@ test('editor UI focuses the document beginning and lets Reading Test prestart ta
 
   assert.deepEqual(harness.focusCalls, ['editor', 'reading-test-prestart-overlay']);
   assert.equal(harness.getActiveElement(), harness.readingTestPrestartOverlay);
+});
+
+test('editor reports missing or invalid required logger acquisition through base presentation before failing fast', () => {
+  const invalidLoggerCases = [
+    { label: 'missing', options: { getLoggerUnavailable: true } },
+    { label: 'non-function', options: { getLoggerNonFunction: true } },
+  ];
+
+  for (const { label, options } of invalidLoggerCases) {
+    const harness = createEditorScriptHarness({ ...options, captureEvaluationError: true });
+
+    assert.match(
+      String(harness.evaluationError),
+      /\[editor\] window\.getLogger unavailable; cannot continue/,
+      label
+    );
+    assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+      { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+    ], label);
+    assert.deepEqual(harness.normalInteractionCalls, [], label);
+    assert.deepEqual(harness.consoleErrors, [], label);
+  }
+});
+
+test('editor reports a throwing required logger acquisition through base presentation before rethrowing it', () => {
+  const loggerError = new Error('logger acquisition failed');
+  const harness = createEditorScriptHarness({ getLoggerError: loggerError, captureEvaluationError: true });
+
+  assert.equal(harness.evaluationError, loggerError);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+  ]);
+  assert.deepEqual(harness.normalInteractionCalls, []);
+  assert.deepEqual(harness.consoleErrors, []);
+});
+
+test('editor diagnoses a failed early base-presentation report before rethrowing the logger failure', () => {
+  const loggerError = new Error('logger acquisition failed');
+  const reportError = new Error('base presentation report failed');
+  const harness = createEditorScriptHarness({
+    getLoggerError: loggerError,
+    basePresentationReportError: reportError,
+    captureEvaluationError: true,
+  });
+
+  assert.equal(harness.evaluationError, loggerError);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+  ]);
+  assert.equal(harness.consoleErrors.length, 1);
+  assert.match(
+    String(harness.consoleErrors[0][0]),
+    /reportBasePresentationState call failed before logger initialization/
+  );
+  assert.equal(harness.consoleErrors[0][1], reportError);
+});
+
+test('editor diagnoses when no valid base-presentation generation is available before failing fast', () => {
+  const harness = createEditorScriptHarness({
+    getLoggerUnavailable: true,
+    locationSearch: '?firstShowGeneration=0',
+    captureEvaluationError: true,
+  });
+
+  assert.match(
+    String(harness.evaluationError),
+    /\[editor\] window\.getLogger unavailable; cannot continue/
+  );
+  assert.deepEqual(harness.basePresentationReports, []);
+  assert.equal(harness.consoleErrors.length, 1);
+  assert.match(
+    String(harness.consoleErrors[0][0]),
+    /startup firstShowGeneration missing; base presentation report skipped before logger initialization/
+  );
 });
 
 test('editor script focuses after normal interaction becomes available and before base readiness', async () => {

@@ -4,13 +4,19 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Text Editor renderer entry point.
 // Responsibilities:
-// - Validate required renderer surfaces before Text Editor startup continues.
+// - Validate required renderer surfaces and configure the Text Editor bootstrap.
+// - Report base-presentation readiness or failure to the existing Main lifecycle boundary.
 // - Build the shared editor context consumed by the UI and engine modules.
 // - Apply bootstrap config, settings, translations, and initial text state.
 // - Keep editor window state and settings-driven UI in sync with bridge updates.
 // - Route local editor interactions back through the main-process text bridge.
 
+// =============================================================================
+// Required bootstrap surfaces and early lifecycle reporting
+// =============================================================================
+// This report path is attempted before scoped logger acquisition for early startup failure.
 const editorBridge = window.editorAPI;
 if (!editorBridge || typeof editorBridge.reportBasePresentationState !== 'function') {
   throw new Error('[editor] editorAPI.reportBasePresentationState unavailable; cannot continue');
@@ -30,6 +36,36 @@ function getBasePresentationGeneration(search) {
 const basePresentationGeneration = getBasePresentationGeneration(
   window.location && window.location.search
 );
+
+function reportBasePresentationState(payload) {
+  if (!Number.isInteger(basePresentationGeneration) || basePresentationGeneration <= 0) {
+    if (log) {
+      log.warn('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped.');
+    } else {
+      console.error('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped before logger initialization.');
+    }
+    return;
+  }
+  try {
+    editorBridge.reportBasePresentationState({
+      generation: basePresentationGeneration,
+      status: payload && payload.status === 'failed' ? 'failed' : 'ready',
+      ...(payload && typeof payload.reason === 'string' && payload.reason.trim()
+        ? { reason: payload.reason.trim() }
+        : {}),
+    });
+  } catch (err) {
+    if (log) {
+      log.error('BOOTSTRAP: reportBasePresentationState call failed:', err);
+    } else {
+      console.error('BOOTSTRAP: reportBasePresentationState call failed before logger initialization:', err);
+    }
+  }
+}
+
+// =============================================================================
+// Bootstrap dependencies and configuration
+// =============================================================================
 let editorStartupPresentation = null;
 let startupPresentation = null;
 
@@ -97,11 +133,17 @@ function validateRequiredAppConstants(constants) {
   }
 }
 
+if (typeof window.getLogger !== 'function') {
+  reportBasePresentationState({ status: 'failed', reason: 'bootstrap-failed' });
+  throw new Error('[editor] window.getLogger unavailable; cannot continue');
+}
 try {
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[editor] window.getLogger unavailable; cannot continue');
-  }
   log = window.getLogger('editor');
+} catch (err) {
+  reportBasePresentationState({ status: 'failed', reason: 'bootstrap-failed' });
+  throw err;
+}
+try {
   log.debug('Text Editor starting...');
 
   appConstants = window.AppConstants;
@@ -236,6 +278,9 @@ function createEditorContext() {
   };
 }
 
+// =============================================================================
+// Bootstrap assembly
+// =============================================================================
 function requireBootstrapMethod(owner, methodName, ownerName) {
   if (!owner || typeof owner[methodName] !== 'function') {
     throw new Error(`[editor] ${ownerName}.${methodName} unavailable; cannot continue`);
@@ -246,6 +291,8 @@ function validateEditorBootstrapRequirements() {
   requireBootstrapMethod(ctx.editorAPI, 'setCurrentText', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'getInitialCurrentTextSnapshot', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'onExternalUpdate', 'editorAPI');
+  // Replace is not negotiated as an optional capability in the current bridge contract.
+  // Relax these checks only with an owner-visible availability contract that disables Replace admission coherently.
   requireBootstrapMethod(ctx.editorAPI, 'onReplaceRequest', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'sendReplaceResponse', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'getWindowState', 'editorAPI');
@@ -322,7 +369,7 @@ function initializeEditorBootstrap() {
 }
 
 // =============================================================================
-// Helpers
+// Startup presentation and local UI helpers
 // =============================================================================
 function applyActualWindowState(windowState) {
   ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
@@ -372,29 +419,6 @@ function nextAnimationFrame() {
   });
 }
 
-function reportBasePresentationState(payload) {
-  const generation = basePresentationGeneration;
-  if (!Number.isInteger(generation) || generation <= 0) {
-    if (log) {
-      log.warn('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped.');
-    }
-    return;
-  }
-  try {
-    editorBridge.reportBasePresentationState({
-      generation,
-      status: payload && payload.status === 'failed' ? 'failed' : 'ready',
-      ...(payload && typeof payload.reason === 'string' && payload.reason.trim()
-        ? { reason: payload.reason.trim() }
-        : {}),
-    });
-  } catch (err) {
-    if (log) {
-      log.error('BOOTSTRAP: reportBasePresentationState call failed:', err);
-    }
-  }
-}
-
 function applyInitialLocalUiState() {
   ctx.ui.applyTextareaDefaults();
   ctx.ui.applyEditorLanguage();
@@ -409,6 +433,9 @@ function applyInitialLocalUiState() {
   ctx.ui.updateReadProgressUi();
 }
 
+// =============================================================================
+// Renderer i18n coordination
+// =============================================================================
 async function transitionEditorTranslations(language) {
   const target = language || defaultLang;
   await ctx.rendererI18n.transitionRendererTranslations(target, {
@@ -426,7 +453,7 @@ function reportEditorI18nFailure(err, { startup = false } = {}) {
   if (!transition) {
     return;
   }
-  if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
+  if (!startup && transition.hadEstablishedState && !transition.restorationFailed) {
     log.error('Text Editor language transition failed; previous translation state remains authoritative:', err);
     return;
   }
@@ -454,6 +481,9 @@ function reportTerminalEditorI18nFailure(kind) {
   }
 }
 
+// =============================================================================
+// Bootstrap data and local editor setup
+// =============================================================================
 async function bootstrapEditorEnvironment() {
   return enqueueEditorSemanticWork(async () => {
     try {
@@ -531,6 +561,7 @@ async function bootstrapInitialEditorText() {
 function registerEditorMarginGutter(gutter, side) {
   if (!gutter) return;
 
+  // Both gutters use the same pointer and reset wiring; side identifies the active gutter.
   gutter.addEventListener('pointerdown', (event) => {
     ctx.ui.handleEditorMarginPointerDown(event, side);
   });
@@ -548,7 +579,6 @@ let editorSemanticQueue = Promise.resolve();
 
 function enqueueEditorSemanticWork(work) {
   const run = async () => {
-    // Window closure is coordinated asynchronously through the main process.
     // Do not admit queued Text Editor semantic work after terminal i18n failure.
     if (editorI18nTerminal) return;
     return work();
@@ -616,8 +646,7 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
 
 function enqueueEditorSettingsApplication(settings) {
   const run = () => applyEditorSettingsSnapshot(settings);
-  // Preload listeners do not await async callbacks. Admit full settings
-  // snapshots after the preceding root semantic operation has settled.
+  // Admit full settings snapshots after the preceding root semantic operation has settled.
   return enqueueEditorSemanticWork(run);
 }
 
@@ -834,19 +863,16 @@ if (!bootstrapSetupError && editor) {
 
     if (ctx.state.suppressLocalUpdate || editor.readOnly) return;
 
-    if (!ctx.state.suppressLocalUpdate) {
-      if (ctx.state.debounceTimer) clearTimeout(ctx.state.debounceTimer);
-      if (calcWhileTyping && calcWhileTyping.checked) {
-        ctx.state.debounceTimer = setTimeout(() => {
-          ctx.engine.sendCurrentTextToMain('typing', {
-            onError: (err) => log.warnOnce(
-              'editor.setCurrentText.typing',
-              'setCurrentText typing sync failed (ignored):',
-              err
-            )
-          });
-        }, ctx.DEBOUNCE_MS);
-      }
+    if (ctx.state.debounceTimer) clearTimeout(ctx.state.debounceTimer);
+    if (calcWhileTyping && calcWhileTyping.checked) {
+      ctx.state.debounceTimer = setTimeout(() => {
+        ctx.engine.sendCurrentTextToMain('typing', {
+          onError: (err) => log.warn(
+            'setCurrentText typing sync failed (ignored):',
+            err
+          )
+        });
+      }, ctx.DEBOUNCE_MS);
     }
   });
 }

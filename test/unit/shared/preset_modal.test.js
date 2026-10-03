@@ -38,6 +38,9 @@ function createElement(id = '', tagName = 'div') {
       const entries = listeners[type] || [];
       entries.forEach((listener) => listener(event));
     },
+    listenerCount(type) {
+      return (listeners[type] || []).length;
+    },
     focus() {
       this.focusCount += 1;
     },
@@ -63,11 +66,16 @@ function createHarness({
   transitionFailureAfterApplyAt = 0,
   transitionFailure = null,
   settingsListenerMode = 'available',
+  initListenerMode = 'available',
+  missingRequiredBridgeMethod = null,
+  missingRequiredDomElement = null,
 } = {}) {
   const subscriptions = {};
   const transitionLanguages = [];
+  const logs = [];
   let establishedLanguage = null;
   let reportRendererI18nFailureCalls = 0;
+  let closeCalls = 0;
   let throwRendererCopy = false;
   let releaseSettings;
   let markSettingsRequested;
@@ -98,6 +106,7 @@ function createHarness({
   elements.btnCancel.textContent = 'Cancel';
   elements.charCount.textContent = '';
   elements.hint.textContent = 'hint';
+  if (missingRequiredDomElement) delete elements[missingRequiredDomElement];
 
   const document = {
     title: '',
@@ -123,11 +132,11 @@ function createHarness({
     window: {
       getLogger() {
         return {
-          debug() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
-          errorOnce() {},
+          debug(...args) { logs.push({ level: 'debug', args }); },
+          warn(...args) { logs.push({ level: 'warn', args }); },
+          warnOnce(...args) { logs.push({ level: 'warnOnce', args }); },
+          error(...args) { logs.push({ level: 'error', args }); },
+          errorOnce(...args) { logs.push({ level: 'errorOnce', args }); },
         };
       },
       AppConstants: {
@@ -181,9 +190,24 @@ function createHarness({
         reportRendererI18nFailure() {
           reportRendererI18nFailureCalls += 1;
         },
-        onInit(cb) {
-          subscriptions.onInit = cb;
-        },
+        ...(missingRequiredBridgeMethod === 'onInit' ? {} : {
+          onInit(cb) {
+            if (initListenerMode === 'throw') {
+              throw new Error('init listener registration failed');
+            }
+            subscriptions.onInit = cb;
+          },
+        }),
+        ...(missingRequiredBridgeMethod === 'createPreset' ? {} : {
+          async createPreset() {
+            return { ok: true };
+          },
+        }),
+        ...(missingRequiredBridgeMethod === 'editPreset' ? {} : {
+          async editPreset() {
+            return { ok: true };
+          },
+        }),
         ...(settingsListenerMode === 'missing' ? {} : {
           onSettingsChanged(cb) {
             if (settingsListenerMode === 'throw') {
@@ -203,7 +227,9 @@ function createHarness({
       Notify: {
         notifyMain() {},
       },
-      close() {},
+      close() {
+        closeCalls += 1;
+      },
     },
     document,
     console,
@@ -217,7 +243,9 @@ function createHarness({
     'utf8'
   );
   vm.runInContext(source, sandbox, { filename: 'public/preset_modal.js' });
-  subscriptions.domContentLoaded();
+  if (typeof subscriptions.domContentLoaded === 'function') {
+    subscriptions.domContentLoaded();
+  }
 
   return {
     document,
@@ -226,6 +254,12 @@ function createHarness({
     transitionLanguages,
     getReportRendererI18nFailureCalls() {
       return reportRendererI18nFailureCalls;
+    },
+    getCloseCalls() {
+      return closeCalls;
+    },
+    getLogs() {
+      return logs;
     },
     failRendererCopy() {
       throwRendererCopy = true;
@@ -255,10 +289,112 @@ test('preset modal closes before normal interaction when live settings registrat
 
     assert.equal(harness.getReportRendererI18nFailureCalls(), 1, settingsListenerMode);
     assert.equal(harness.subscriptions.onSettingsChanged, undefined, settingsListenerMode);
-    assert.equal(harness.subscriptions.onInit, undefined, settingsListenerMode);
+    assert.equal(typeof harness.subscriptions.onInit, 'function', settingsListenerMode);
     assert.equal(harness.elements.presetName.disabled, true, settingsListenerMode);
     assert.equal(harness.elements.btnSave.disabled, true, settingsListenerMode);
   }
+});
+
+test('preset modal closes before DOM initialization when a required presetAPI method is unavailable', () => {
+  for (const missingRequiredBridgeMethod of ['onInit', 'createPreset', 'editPreset']) {
+    const harness = createHarness({ missingRequiredBridgeMethod });
+
+    assert.equal(harness.getCloseCalls(), 1, missingRequiredBridgeMethod);
+    assert.equal(harness.subscriptions.domContentLoaded, undefined, missingRequiredBridgeMethod);
+    assert.equal(harness.subscriptions.onInit, undefined, missingRequiredBridgeMethod);
+    assert.equal(harness.subscriptions.onSettingsChanged, undefined, missingRequiredBridgeMethod);
+  }
+});
+
+test('preset modal aborts DOM initialization when presetAPI.onInit registration throws', () => {
+  const harness = createHarness({ initListenerMode: 'throw' });
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.equal(harness.subscriptions.onInit, undefined);
+  assert.equal(harness.subscriptions.onSettingsChanged, undefined);
+  assert.equal(harness.elements.presetDesc.listenerCount('input'), 0);
+  assert.equal(harness.elements.presetName.listenerCount('input'), 0);
+  assert.equal(harness.elements.btnSave.listenerCount('click'), 0);
+  assert.equal(harness.elements.btnCancel.listenerCount('click'), 0);
+  assert.equal(harness.elements.presetWpm.listenerCount('input'), 0);
+});
+
+test('preset modal fails closed on an invalid first init payload', async () => {
+  const harness = createHarness();
+
+  harness.subscriptions.onInit(null);
+  harness.subscriptions.onSettingsChanged({ language: 'es' });
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'Late preset', wpm: 250, description: 'Late description' },
+  });
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.deepEqual(harness.transitionLanguages, []);
+  assert.equal(harness.elements.presetName.value, '');
+  assert.equal(harness.elements.btnSave.disabled, true);
+  assert.equal(harness.elements.btnSave.focusCount, 0);
+  assert.ok(harness.getLogs().some((entry) => (
+    entry.level === 'error'
+    && entry.args[0] === 'BOOTSTRAP: invalid preset-init payload; closing modal before initial presentation.'
+  )));
+});
+
+test('preset modal keeps its form locked when an invalid first payload arrives during init settings loading', async () => {
+  const harness = createHarness({ holdSettings: true });
+
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'Pending preset', wpm: 250, description: 'Pending description' },
+  });
+  await harness.waitForSettingsRequest();
+
+  harness.subscriptions.onInit(null);
+  harness.releaseSettings();
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.equal(harness.elements.btnSave.disabled, true);
+  assert.equal(harness.elements.btnSave.focusCount, 0);
+  assert.deepEqual(harness.transitionLanguages, []);
+});
+
+test('preset modal preserves an established presentation after an invalid later init payload', async () => {
+  const harness = createHarness();
+
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'Established preset', wpm: 250, description: 'Established description' },
+  });
+  await harness.waitForTransitionCount(1);
+  await harness.settleSemanticWork();
+
+  harness.subscriptions.onInit(null);
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.deepEqual(harness.transitionLanguages, ['en']);
+  assert.equal(harness.elements.presetName.value, 'Established preset');
+  assert.equal(harness.elements.presetWpm.value, 250);
+  assert.equal(harness.elements.presetDesc.value, 'Established description');
+  assert.equal(harness.elements.btnSave.focusCount, 1);
+  assert.ok(harness.getLogs().some((entry) => (
+    entry.level === 'warn'
+    && entry.args[0] === 'Invalid preset-init payload ignored; preserving established modal presentation.'
+  )));
+});
+
+test('preset modal logs a bootstrap error when required modal DOM is unavailable', () => {
+  const harness = createHarness({ missingRequiredDomElement: 'presetName' });
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.equal(harness.subscriptions.onInit, undefined);
+  assert.equal(harness.subscriptions.onSettingsChanged, undefined);
+  assert.ok(harness.getLogs().some((entry) => (
+    entry.level === 'error'
+    && entry.args[0] === 'BOOTSTRAP: required preset modal DOM unavailable; initialization cannot continue.'
+  )));
 });
 
 test('preset modal applies shared direction policy on init, input, and language changes', async () => {

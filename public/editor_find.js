@@ -20,6 +20,26 @@ if (typeof window.getLogger !== 'function') {
 
 const log = window.getLogger('editor-find');
 log.debug('Editor find window starting...');
+
+function reportEarlyTerminalFindI18nFailure(kind) {
+  // The static shell already disables normal Find controls while the required
+  // translation surface is being established. At this boundary, the dynamic
+  // DOM references below do not exist yet, so report directly through the
+  // stable preload surface rather than entering the regular terminal helper.
+  const api = window.editorFindAPI;
+  if (!api || typeof api.reportRendererI18nFailure !== 'function') {
+    log.warn('BOOTSTRAP: editorFindAPI.reportRendererI18nFailure unavailable; report failed (ignored): closing failed renderer locally.');
+    if (typeof window.close === 'function') window.close();
+    return;
+  }
+  try {
+    api.reportRendererI18nFailure({ kind });
+  } catch (err) {
+    log.warn('BOOTSTRAP: editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', err);
+    if (typeof window.close === 'function') window.close();
+  }
+}
+
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
   throw new Error('[editor-find] RendererIcons.applyIconToElement unavailable; cannot continue.');
@@ -41,7 +61,6 @@ if (!transitionRendererTranslations || !tRenderer) {
   throw new Error('[editor-find] RendererI18n unavailable; cannot continue.');
 }
 
-const tr = (path) => tRenderer(path);
 const findApi = window.editorFindAPI;
 if (!findApi) {
   throw new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.');
@@ -115,25 +134,6 @@ const findState = {
 
 let pendingFocusIntent = null;
 
-function reportEarlyTerminalFindI18nFailure(kind) {
-  // The static shell already disables normal Find controls while the required
-  // translation surface is being established. At this boundary, the dynamic
-  // DOM references below do not exist yet, so report directly through the
-  // stable preload surface rather than entering the regular terminal helper.
-  const api = window.editorFindAPI;
-  if (!api || typeof api.reportRendererI18nFailure !== 'function') {
-    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
-    if (typeof window.close === 'function') window.close();
-    return;
-  }
-  try {
-    api.reportRendererI18nFailure({ kind });
-  } catch (err) {
-    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', err);
-    if (typeof window.close === 'function') window.close();
-  }
-}
-
 // =============================================================================
 // State and UI helpers
 // =============================================================================
@@ -162,10 +162,10 @@ function normalizeState(payload) {
 
 function resolveStatusText() {
   if (!findState.query) {
-    return tr('renderer.editor.editor_find.status_empty_query');
+    return tRenderer('renderer.editor.editor_find.status_empty_query');
   }
   if (findState.matches <= 0) {
-    return tr('renderer.editor.editor_find.status_no_matches');
+    return tRenderer('renderer.editor.editor_find.status_no_matches');
   }
   const current = Math.max(1, Math.min(findState.activeMatchOrdinal || 1, findState.matches));
   return `${current}/${findState.matches}`;
@@ -207,34 +207,34 @@ function applyUiState() {
   const toggleNameKey = findState.expanded
     ? 'renderer.editor.editor_find.names.hide_replace'
     : 'renderer.editor.editor_find.names.show_replace';
-  const toggleName = tr(toggleNameKey);
+  const toggleName = tRenderer(toggleNameKey);
   toggleEl.setAttribute('aria-label', toggleName);
 }
 
 async function applyTranslations() {
-  const title = tr('renderer.editor.editor_find.input_aria');
+  const title = tRenderer('renderer.editor.editor_find.input_aria');
   document.title = title;
   wrapEl.setAttribute('aria-label', title);
 
-  inputEl.placeholder = tr('renderer.editor.editor_find.input_placeholder');
-  inputEl.setAttribute('aria-label', tr('renderer.editor.editor_find.input_aria'));
-  replaceInputEl.placeholder = tr('renderer.editor.editor_find.replace_placeholder');
-  replaceInputEl.setAttribute('aria-label', tr('renderer.editor.editor_find.replace_aria'));
+  inputEl.placeholder = tRenderer('renderer.editor.editor_find.input_placeholder');
+  inputEl.setAttribute('aria-label', tRenderer('renderer.editor.editor_find.input_aria'));
+  replaceInputEl.placeholder = tRenderer('renderer.editor.editor_find.replace_placeholder');
+  replaceInputEl.setAttribute('aria-label', tRenderer('renderer.editor.editor_find.replace_aria'));
 
-  replaceOneEl.textContent = tr('renderer.editor.editor_find.replace');
-  replaceAllEl.textContent = tr('renderer.editor.editor_find.replace_all');
+  replaceOneEl.textContent = tRenderer('renderer.editor.editor_find.replace');
+  replaceAllEl.textContent = tRenderer('renderer.editor.editor_find.replace_all');
 
   [
     [prevEl, 'renderer.editor.editor_find.names.previous_match'],
     [nextEl, 'renderer.editor.editor_find.names.next_match'],
     [closeEl, 'renderer.editor.editor_find.names.close'],
   ].forEach(([element, key]) => {
-    const name = tr(key);
+    const name = tRenderer(key);
     element.setAttribute('aria-label', name);
   });
-  const replaceCurrentHelp = tr('renderer.editor.editor_find.help.replace_current');
+  const replaceCurrentHelp = tRenderer('renderer.editor.editor_find.help.replace_current');
   replaceOneDescriptionEl.textContent = replaceCurrentHelp;
-  const replaceAllHelp = tr('renderer.editor.editor_find.help.replace_all');
+  const replaceAllHelp = tRenderer('renderer.editor.editor_find.help.replace_all');
   replaceAllDescriptionEl.textContent = replaceAllHelp;
 
   findSemanticReady = true;
@@ -277,14 +277,14 @@ function reportTerminalFindI18nFailure(kind) {
   toggleEl.disabled = true;
   closeEl.disabled = false;
   if (!window.editorFindAPI || typeof window.editorFindAPI.reportRendererI18nFailure !== 'function') {
-    log.warn('editorFindAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
+    log.warn('editorFindAPI.reportRendererI18nFailure unavailable; report failed (ignored): closing failed renderer locally.');
     if (typeof window.close === 'function') window.close();
     return;
   }
   try {
     window.editorFindAPI.reportRendererI18nFailure({ kind });
   } catch (reportErr) {
-    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', reportErr);
     if (typeof window.close === 'function') window.close();
   }
 }
@@ -302,11 +302,7 @@ function focusRequestedTarget(target, selectAll = false) {
       targetEl.select();
     }
   } catch (err) {
-    log.warnOnce(
-      'editor-find.focusTarget.failed',
-      'Unable to focus requested editor-find target (ignored):',
-      err
-    );
+    log.warn('Unable to focus requested editor-find target (ignored):', err);
   }
 }
 
@@ -338,7 +334,7 @@ function notifyReplaceTimeout() {
       duration: 5000,
     });
   } catch (err) {
-    log.warn('editor-find: failed to show replace-timeout toast:', err);
+    log.warn('editor-find: replace-timeout toast failed (ignored):', err);
   }
 }
 
@@ -354,11 +350,7 @@ async function pushQuery() {
   try {
     await findApi.setQuery(inputEl.value || '');
   } catch (err) {
-    log.errorOnce(
-      'editor-find.setQuery.failed',
-      'Error sending find query to main process:',
-      err
-    );
+    log.error('Error sending find query to main process:', err);
   }
 }
 
@@ -464,28 +456,8 @@ window.addEventListener('keydown', (event) => {
 });
 
 // =============================================================================
-// Bridge subscriptions
+// Language transition serialization
 // =============================================================================
-findApi.onInit((payload) => {
-  applyIncomingState(payload);
-});
-
-findApi.onState(applyIncomingState);
-
-if (typeof findApi.onFocusTarget === 'function') {
-  findApi.onFocusTarget((payload) => {
-    if (findI18nTerminal) return;
-    const target = payload && payload.target === 'replace' ? 'replace' : 'query';
-    const selectAll = !!(payload && payload.selectAll);
-    pendingFocusIntent = { target, selectAll };
-    applyPendingFocusIntent();
-  });
-} else {
-  log.warn(
-    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'
-  );
-}
-
 function enqueueFindSemanticWork(work) {
   const run = async () => {
     // Window closure is coordinated asynchronously through the main process.
@@ -516,6 +488,39 @@ function enqueueFindSettingsApplication(settings) {
   // Preload listeners do not await async callbacks. Admit full settings
   // snapshots after the preceding root semantic operation has settled.
   return enqueueFindSemanticWork(run);
+}
+
+// =============================================================================
+// Bridge subscriptions
+// =============================================================================
+findApi.onInit((payload) => {
+  applyIncomingState(payload);
+});
+
+findApi.onState(applyIncomingState);
+
+if (typeof findApi.onFocusTarget === 'function') {
+  let focusSyncEnabled = true;
+  try {
+    findApi.onFocusTarget((payload) => {
+      if (!focusSyncEnabled || findI18nTerminal) return;
+      const target = payload && payload.target === 'replace' ? 'replace' : 'query';
+      const selectAll = !!(payload && payload.selectAll);
+      pendingFocusIntent = { target, selectAll };
+      applyPendingFocusIntent();
+    });
+  } catch (err) {
+    focusSyncEnabled = false;
+    pendingFocusIntent = null;
+    log.warn(
+      'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget registration failed; focus-sync capability disabled.',
+      err
+    );
+  }
+} else {
+  log.warn(
+    'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget missing; focus-sync capability disabled.'
+  );
 }
 
 if (typeof findApi.onSettingsChanged !== 'function') {

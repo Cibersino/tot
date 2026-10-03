@@ -5,16 +5,16 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Validate required modal DOM and shared renderer surfaces before continuing.
-// - Apply preset-init payloads and live settings updates from presetAPI.
-// - Load renderer translations and keep text direction and UI copy in sync.
-// - Validate preset inputs before create/edit actions are sent to main.
-// - Keep modal field constraints, hints, and counters synchronized locally.
+// - Enforce required bootstrap dependencies and modal DOM before normal interaction.
+// - Consume preset-init and settings updates from presetAPI.
+// - Keep translated copy, text direction, form limits, and counters synchronized.
+// - Keep the form locked until the first preset payload is presented successfully.
+// - Send validated create/edit requests through presetAPI.
 
 (function () {
 
   // =============================================================================
-  // Logger
+  // Logger and required bridge boundary
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[preset_modal] window.getLogger unavailable; cannot continue');
@@ -23,9 +23,19 @@
 
   log.debug('Preset modal starting...');
 
+  const presetApi = window.presetAPI;
+  if (!presetApi
+    || typeof presetApi.onInit !== 'function'
+    || typeof presetApi.createPreset !== 'function'
+    || typeof presetApi.editPreset !== 'function') {
+    log.error('BOOTSTRAP: required presetAPI methods unavailable; closing modal.');
+    if (typeof window.close === 'function') window.close();
+    return;
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     // =============================================================================
-    // DOM references + required guards
+    // DOM references and required bootstrap guard
     // =============================================================================
     const headingEl = document.getElementById('presetHeading');
     const nameEl = document.getElementById('presetName');
@@ -37,7 +47,8 @@
     const hintEl = document.querySelector('.hint');
 
     if (!headingEl || !nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
-      log.warn('Preset modal initialization skipped: required DOM elements missing.');
+      log.error('BOOTSTRAP: required preset modal DOM unavailable; initialization cannot continue.');
+      if (typeof window.close === 'function') window.close();
       return;
     }
 
@@ -52,26 +63,25 @@
 
     const descMaxLength = PRESET_DESC_MAX;
     const nameMaxLength = PRESET_NAME_MAX;
-    if (wpmEl) {
-      wpmEl.min = String(WPM_MIN);
-      wpmEl.max = String(WPM_MAX);
-    }
-    if (nameEl) nameEl.maxLength = nameMaxLength;
-    if (descEl) descEl.maxLength = descMaxLength;
+    wpmEl.min = String(WPM_MIN);
+    wpmEl.max = String(WPM_MAX);
+    nameEl.maxLength = nameMaxLength;
+    descEl.maxLength = descMaxLength;
 
     // =============================================================================
-    // Local state
+    // Modal state
     // =============================================================================
     let mode = 'new';
     let originalName = null;
     let idiomaActual = DEFAULT_LANG;
     let presetTranslationsEstablished = false;
     let presetInitialPayloadPresentationEstablished = false;
+    let presetInitializationAborted = false;
     let presetI18nTerminal = false;
     let presetSemanticQueue = Promise.resolve();
 
     // =============================================================================
-    // Helpers
+    // Renderer i18n and form presentation
     // =============================================================================
     const {
       transitionRendererTranslations,
@@ -147,6 +157,54 @@
       presetTranslationsEstablished = true;
     }
 
+    // =============================================================================
+    // Semantic work and i18n failure handling
+    // =============================================================================
+
+    function enqueuePresetSemanticWork(work) {
+      const run = async () => {
+        // A queued continuation can run after this modal starts closing. Do not admit work after terminal i18n failure or aborted initialization.
+        if (presetI18nTerminal || presetInitializationAborted) return;
+        return work();
+      };
+      presetSemanticQueue = presetSemanticQueue.then(run, run);
+      return presetSemanticQueue;
+    }
+
+    async function getPresetSettingsLanguage() {
+      if (typeof presetApi.getSettings !== 'function') {
+        log.warn('presetAPI.getSettings missing; using default language.');
+        return DEFAULT_LANG;
+      }
+      try {
+        const settings = await presetApi.getSettings();
+        return settings && settings.language ? settings.language : DEFAULT_LANG;
+      } catch (err) {
+        log.warn('presetAPI.getSettings failed; using default language:', err);
+        return DEFAULT_LANG;
+      }
+    }
+
+    function getEffectivePresetLanguage(language) {
+      return normalizeLangTag(language) || DEFAULT_LANG;
+    }
+
+    async function applyPresetTranslationUpdate(language) {
+      try {
+        await transitionPresetTranslations(language);
+        return true;
+      } catch (err) {
+        if (err && err.rendererI18nTransition) {
+          reportPresetI18nFailure(err, {
+            startup: !presetTranslationsEstablished,
+          });
+        } else {
+          log.error('Preset modal semantic update failed:', err);
+        }
+        return false;
+      }
+    }
+
     function reportPresetI18nFailure(err, { startup = false } = {}) {
       const transition = err && err.rendererI18nTransition;
       if (!transition) {
@@ -164,18 +222,22 @@
       if (presetI18nTerminal) return;
       presetI18nTerminal = true;
       setPresetFormInteractionLocked(true);
-      if (!window.presetAPI || typeof window.presetAPI.reportRendererI18nFailure !== 'function') {
+      if (typeof presetApi.reportRendererI18nFailure !== 'function') {
         log.warn('presetAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
         if (typeof window.close === 'function') window.close();
         return;
       }
       try {
-        window.presetAPI.reportRendererI18nFailure({ kind });
+        presetApi.reportRendererI18nFailure({ kind });
       } catch (reportErr) {
         log.warn('presetAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
         if (typeof window.close === 'function') window.close();
       }
     }
+
+    // =============================================================================
+    // Preset payload and persistence
+    // =============================================================================
 
     function applyIncomingPresetPayload(payload) {
       if (!payload) return;
@@ -206,99 +268,41 @@
 
     async function savePreset(preset) {
       if (mode === 'edit') {
-        if (window.presetAPI && typeof window.presetAPI.editPreset === 'function') {
-          const res = await window.presetAPI.editPreset(originalName, preset);
-          if (res && res.ok) {
-            window.close();
-            return;
-          }
-          if (res && res.code === 'CANCELLED') return;
-          window.Notify.notifyMain('renderer.presets.alerts.edit_error');
-          log.error('Preset modal editPreset response failed:', res);
-          return;
-        }
-
-        window.Notify.notifyMain('renderer.presets.alerts.process_error');
-        log.error('presetAPI.editPreset missing.');
-        return;
-      }
-
-      if (window.presetAPI && typeof window.presetAPI.createPreset === 'function') {
-        const res = await window.presetAPI.createPreset(preset);
+        const res = await presetApi.editPreset(originalName, preset);
         if (res && res.ok) {
           window.close();
           return;
         }
-        window.Notify.notifyMain('renderer.presets.alerts.create_error');
-        log.error('Preset modal createPreset response failed:', res);
+        if (res && res.code === 'CANCELLED') return;
+        window.Notify.notifyMain('renderer.presets.alerts.edit_error');
+        log.error('Preset modal editPreset response failed:', res);
         return;
       }
 
-      window.Notify.notifyMain('renderer.presets.alerts.process_error');
-      log.error('presetAPI.createPreset missing.');
+      const res = await presetApi.createPreset(preset);
+      if (res && res.ok) {
+        window.close();
+        return;
+      }
+      window.Notify.notifyMain('renderer.presets.alerts.create_error');
+      log.error('Preset modal createPreset response failed:', res);
     }
 
     // =============================================================================
-    // Bridge integration
+    // Bridge listener registration and initialization
     // =============================================================================
-    function enqueuePresetSemanticWork(work) {
-      const run = async () => {
-        // Main-process closure is asynchronous. Do not admit queued semantic
-        // work after this modal has entered terminal i18n failure.
-        if (presetI18nTerminal) return;
-        return work();
-      };
-      presetSemanticQueue = presetSemanticQueue.then(run, run);
-      return presetSemanticQueue;
-    }
 
-    async function getPresetSettingsLanguage() {
-      if (!window.presetAPI || typeof window.presetAPI.getSettings !== 'function') {
-        log.warn('presetAPI.getSettings missing; using default language.');
-        return DEFAULT_LANG;
-      }
-      try {
-        const settings = await window.presetAPI.getSettings();
-        return settings && settings.language ? settings.language : DEFAULT_LANG;
-      } catch (err) {
-        log.warn('presetAPI.getSettings failed; using default language:', err);
-        return DEFAULT_LANG;
-      }
-    }
-
-    function getEffectivePresetLanguage(language) {
-      return normalizeLangTag(language) || DEFAULT_LANG;
-    }
-
-    async function applyPresetTranslationUpdate(language) {
-      try {
-        await transitionPresetTranslations(language);
-        return true;
-      } catch (err) {
-        if (err && err.rendererI18nTransition) {
-          reportPresetI18nFailure(err, {
-            startup: !presetTranslationsEstablished,
-          });
-        } else {
-          log.error('Preset modal semantic update failed:', err);
-        }
-        return false;
-      }
-    }
-
-    // Bootstrap HTML is only a temporary visual shell. Do not admit form
-    // mutation or persistence until an authoritative preset payload has been
-    // rendered through successfully established renderer translations.
+    // Bootstrap HTML is only a temporary visual shell. Keep user interaction and persistence locked until an authoritative preset payload has been presented through successfully established renderer translations.
     setPresetFormInteractionLocked(true);
 
     function registerPresetSettingsChanged() {
-      if (!window.presetAPI || typeof window.presetAPI.onSettingsChanged !== 'function') {
+      if (typeof presetApi.onSettingsChanged !== 'function') {
         log.error('BOOTSTRAP: presetAPI.onSettingsChanged unavailable; closing modal before normal interaction.');
         reportTerminalPresetI18nFailure('settings-listener');
         return false;
       }
       try {
-        window.presetAPI.onSettingsChanged((settings) => {
+        presetApi.onSettingsChanged((settings) => {
           if (presetI18nTerminal) return;
           enqueuePresetSemanticWork(async () => {
             const nextLang = normalizeLangTag(settings && settings.language ? settings.language : '');
@@ -315,42 +319,55 @@
     }
 
     function registerPresetInit() {
-      if (window.presetAPI && typeof window.presetAPI.onInit === 'function') {
-        try {
-          window.presetAPI.onInit((payload) => {
-            if (!payload || presetI18nTerminal) return;
-            enqueuePresetSemanticWork(async () => {
-              applyIncomingPresetPayload(payload);
-              if (presetTranslationsEstablished) {
-                try {
-                  await applyPresetLanguagePresentation();
-                  establishInitialPresetPayloadPresentation();
-                } catch (err) {
-                  log.error('Preset modal required language presentation failed:', err);
-                  reportTerminalPresetI18nFailure('semantic-application');
-                  return;
-                }
+      try {
+        presetApi.onInit((payload) => {
+          if (presetI18nTerminal || presetInitializationAborted) return;
+          if (!payload) {
+            if (!presetInitialPayloadPresentationEstablished) {
+              presetInitializationAborted = true;
+              setPresetFormInteractionLocked(true);
+              log.error('BOOTSTRAP: invalid preset-init payload; closing modal before initial presentation.');
+              if (typeof window.close === 'function') window.close();
+              return;
+            }
+            log.warn('Invalid preset-init payload ignored; preserving established modal presentation.');
+            return;
+          }
+          enqueuePresetSemanticWork(async () => {
+            applyIncomingPresetPayload(payload);
+            if (presetTranslationsEstablished) {
+              try {
+                await applyPresetLanguagePresentation();
+                if (presetI18nTerminal || presetInitializationAborted) return;
+                establishInitialPresetPayloadPresentation();
+              } catch (err) {
+                log.error('Preset modal required language presentation failed:', err);
+                reportTerminalPresetI18nFailure('semantic-application');
+                return;
               }
-              const language = getEffectivePresetLanguage(await getPresetSettingsLanguage());
-              if (!presetTranslationsEstablished || language !== idiomaActual) {
-                if (!await applyPresetTranslationUpdate(language)) {
-                  return;
-                }
+            }
+            const language = getEffectivePresetLanguage(await getPresetSettingsLanguage());
+            if (presetI18nTerminal || presetInitializationAborted) return;
+            if (!presetTranslationsEstablished || language !== idiomaActual) {
+              if (!await applyPresetTranslationUpdate(language)) {
+                return;
               }
-              establishInitialPresetPayloadPresentation();
-              btnSave.focus({ preventScroll: true });
-            });
+            }
+            if (presetI18nTerminal || presetInitializationAborted) return;
+            establishInitialPresetPayloadPresentation();
+            btnSave.focus({ preventScroll: true });
           });
-        } catch (err) {
-          log.error('BOOTSTRAP: presetAPI.onInit listener setup failed:', err);
-        }
-        return;
+        });
+        return true;
+      } catch (err) {
+        log.error('BOOTSTRAP: presetAPI.onInit listener setup failed; closing modal before normal interaction:', err);
+        if (typeof window.close === 'function') window.close();
+        return false;
       }
-      log.warn('BOOTSTRAP: presetAPI.onInit missing; modal will not receive init data.');
     }
 
+    if (!registerPresetInit()) return;
     if (!registerPresetSettingsChanged()) return;
-    registerPresetInit();
 
     // =============================================================================
     // Input validation / preset builder
@@ -422,7 +439,7 @@
       }
     });
 
-  }); // DOMContentLoaded
+  });
 })();
 
 // =============================================================================
