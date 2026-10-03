@@ -319,6 +319,72 @@ test('preset modal aborts DOM initialization when presetAPI.onInit registration 
   assert.equal(harness.elements.presetWpm.listenerCount('input'), 0);
 });
 
+test('preset modal fails closed on an invalid first init payload', async () => {
+  const harness = createHarness();
+
+  harness.subscriptions.onInit(null);
+  harness.subscriptions.onSettingsChanged({ language: 'es' });
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'Late preset', wpm: 250, description: 'Late description' },
+  });
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.deepEqual(harness.transitionLanguages, []);
+  assert.equal(harness.elements.presetName.value, '');
+  assert.equal(harness.elements.btnSave.disabled, true);
+  assert.equal(harness.elements.btnSave.focusCount, 0);
+  assert.ok(harness.getLogs().some((entry) => (
+    entry.level === 'error'
+    && entry.args[0] === 'BOOTSTRAP: invalid preset-init payload; closing modal before initial presentation.'
+  )));
+});
+
+test('preset modal keeps its form locked when an invalid first payload arrives during init settings loading', async () => {
+  const harness = createHarness({ holdSettings: true });
+
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'Pending preset', wpm: 250, description: 'Pending description' },
+  });
+  await harness.waitForSettingsRequest();
+
+  harness.subscriptions.onInit(null);
+  harness.releaseSettings();
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.equal(harness.elements.btnSave.disabled, true);
+  assert.equal(harness.elements.btnSave.focusCount, 0);
+  assert.deepEqual(harness.transitionLanguages, []);
+});
+
+test('preset modal preserves an established presentation after an invalid later init payload', async () => {
+  const harness = createHarness();
+
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'Established preset', wpm: 250, description: 'Established description' },
+  });
+  await harness.waitForTransitionCount(1);
+  await harness.settleSemanticWork();
+
+  harness.subscriptions.onInit(null);
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.deepEqual(harness.transitionLanguages, ['en']);
+  assert.equal(harness.elements.presetName.value, 'Established preset');
+  assert.equal(harness.elements.presetWpm.value, 250);
+  assert.equal(harness.elements.presetDesc.value, 'Established description');
+  assert.equal(harness.elements.btnSave.focusCount, 1);
+  assert.ok(harness.getLogs().some((entry) => (
+    entry.level === 'warn'
+    && entry.args[0] === 'Invalid preset-init payload ignored; preserving established modal presentation.'
+  )));
+});
+
 test('preset modal logs a bootstrap error when required modal DOM is unavailable', () => {
   const harness = createHarness({ missingRequiredDomElement: 'presetName' });
 

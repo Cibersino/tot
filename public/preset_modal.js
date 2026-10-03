@@ -75,6 +75,7 @@
     let idiomaActual = DEFAULT_LANG;
     let presetTranslationsEstablished = false;
     let presetInitialPayloadPresentationEstablished = false;
+    let presetInitializationAborted = false;
     let presetI18nTerminal = false;
     let presetSemanticQueue = Promise.resolve();
 
@@ -158,8 +159,8 @@
     function enqueuePresetSemanticWork(work) {
       const run = async () => {
         // Main-process closure is asynchronous. Do not admit queued semantic
-        // work after this modal has entered terminal i18n failure.
-        if (presetI18nTerminal) return;
+        // work after terminal i18n failure or aborted initialization.
+        if (presetI18nTerminal || presetInitializationAborted) return;
         return work();
       };
       presetSemanticQueue = presetSemanticQueue.then(run, run);
@@ -310,12 +311,24 @@
     function registerPresetInit() {
       try {
         presetApi.onInit((payload) => {
-          if (!payload || presetI18nTerminal) return;
+          if (presetI18nTerminal || presetInitializationAborted) return;
+          if (!payload) {
+            if (!presetInitialPayloadPresentationEstablished) {
+              presetInitializationAborted = true;
+              setPresetFormInteractionLocked(true);
+              log.error('BOOTSTRAP: invalid preset-init payload; closing modal before initial presentation.');
+              if (typeof window.close === 'function') window.close();
+              return;
+            }
+            log.warn('Invalid preset-init payload ignored; preserving established modal presentation.');
+            return;
+          }
           enqueuePresetSemanticWork(async () => {
             applyIncomingPresetPayload(payload);
             if (presetTranslationsEstablished) {
               try {
                 await applyPresetLanguagePresentation();
+                if (presetI18nTerminal || presetInitializationAborted) return;
                 establishInitialPresetPayloadPresentation();
               } catch (err) {
                 log.error('Preset modal required language presentation failed:', err);
@@ -324,11 +337,13 @@
               }
             }
             const language = getEffectivePresetLanguage(await getPresetSettingsLanguage());
+            if (presetI18nTerminal || presetInitializationAborted) return;
             if (!presetTranslationsEstablished || language !== idiomaActual) {
               if (!await applyPresetTranslationUpdate(language)) {
                 return;
               }
             }
+            if (presetI18nTerminal || presetInitializationAborted) return;
             establishInitialPresetPayloadPresentation();
             btnSave.focus({ preventScroll: true });
           });
