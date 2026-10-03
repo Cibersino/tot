@@ -47,7 +47,7 @@
     const hintEl = document.querySelector('.hint');
 
     if (!headingEl || !nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
-      log.warn('Preset modal initialization skipped: required DOM elements missing.');
+      log.error('BOOTSTRAP: required preset modal DOM unavailable; initialization cannot continue.');
       return;
     }
 

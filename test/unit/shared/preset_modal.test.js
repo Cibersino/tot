@@ -68,9 +68,11 @@ function createHarness({
   settingsListenerMode = 'available',
   initListenerMode = 'available',
   missingRequiredBridgeMethod = null,
+  missingRequiredDomElement = null,
 } = {}) {
   const subscriptions = {};
   const transitionLanguages = [];
+  const logs = [];
   let establishedLanguage = null;
   let reportRendererI18nFailureCalls = 0;
   let closeCalls = 0;
@@ -104,6 +106,7 @@ function createHarness({
   elements.btnCancel.textContent = 'Cancel';
   elements.charCount.textContent = '';
   elements.hint.textContent = 'hint';
+  if (missingRequiredDomElement) delete elements[missingRequiredDomElement];
 
   const document = {
     title: '',
@@ -129,11 +132,11 @@ function createHarness({
     window: {
       getLogger() {
         return {
-          debug() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
-          errorOnce() {},
+          debug(...args) { logs.push({ level: 'debug', args }); },
+          warn(...args) { logs.push({ level: 'warn', args }); },
+          warnOnce(...args) { logs.push({ level: 'warnOnce', args }); },
+          error(...args) { logs.push({ level: 'error', args }); },
+          errorOnce(...args) { logs.push({ level: 'errorOnce', args }); },
         };
       },
       AppConstants: {
@@ -255,6 +258,9 @@ function createHarness({
     getCloseCalls() {
       return closeCalls;
     },
+    getLogs() {
+      return logs;
+    },
     failRendererCopy() {
       throwRendererCopy = true;
     },
@@ -311,6 +317,17 @@ test('preset modal aborts DOM initialization when presetAPI.onInit registration 
   assert.equal(harness.elements.btnSave.listenerCount('click'), 0);
   assert.equal(harness.elements.btnCancel.listenerCount('click'), 0);
   assert.equal(harness.elements.presetWpm.listenerCount('input'), 0);
+});
+
+test('preset modal logs a bootstrap error when required modal DOM is unavailable', () => {
+  const harness = createHarness({ missingRequiredDomElement: 'presetName' });
+
+  assert.equal(harness.subscriptions.onInit, undefined);
+  assert.equal(harness.subscriptions.onSettingsChanged, undefined);
+  assert.ok(harness.getLogs().some((entry) => (
+    entry.level === 'error'
+    && entry.args[0] === 'BOOTSTRAP: required preset modal DOM unavailable; initialization cannot continue.'
+  )));
 });
 
 test('preset modal applies shared direction policy on init, input, and language changes', async () => {
