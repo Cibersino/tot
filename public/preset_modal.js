@@ -5,16 +5,16 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Validate required modal DOM and shared renderer surfaces before continuing.
-// - Apply preset-init payloads and live settings updates from presetAPI.
-// - Load renderer translations and keep text direction and UI copy in sync.
-// - Validate preset inputs before create/edit actions are sent to main.
-// - Keep modal field constraints, hints, and counters synchronized locally.
+// - Enforce required bootstrap dependencies and modal DOM before normal interaction.
+// - Consume preset-init and settings updates from presetAPI.
+// - Keep translated copy, text direction, form limits, and counters synchronized.
+// - Keep the form locked until the first preset payload is presented successfully.
+// - Send validated create/edit requests through presetAPI.
 
 (function () {
 
   // =============================================================================
-  // Logger
+  // Logger and required bridge boundary
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[preset_modal] window.getLogger unavailable; cannot continue');
@@ -35,7 +35,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     // =============================================================================
-    // DOM references + required guards
+    // DOM references and required bootstrap guard
     // =============================================================================
     const headingEl = document.getElementById('presetHeading');
     const nameEl = document.getElementById('presetName');
@@ -69,7 +69,7 @@
     descEl.maxLength = descMaxLength;
 
     // =============================================================================
-    // Local state
+    // Modal state
     // =============================================================================
     let mode = 'new';
     let originalName = null;
@@ -81,7 +81,7 @@
     let presetSemanticQueue = Promise.resolve();
 
     // =============================================================================
-    // Helpers
+    // Renderer i18n and form presentation
     // =============================================================================
     const {
       transitionRendererTranslations,
@@ -157,10 +157,13 @@
       presetTranslationsEstablished = true;
     }
 
+    // =============================================================================
+    // Semantic work and i18n failure handling
+    // =============================================================================
+
     function enqueuePresetSemanticWork(work) {
       const run = async () => {
-        // Main-process closure is asynchronous. Do not admit queued semantic
-        // work after terminal i18n failure or aborted initialization.
+        // A queued continuation can run after this modal starts closing. Do not admit work after terminal i18n failure or aborted initialization.
         if (presetI18nTerminal || presetInitializationAborted) return;
         return work();
       };
@@ -232,6 +235,10 @@
       }
     }
 
+    // =============================================================================
+    // Preset payload and persistence
+    // =============================================================================
+
     function applyIncomingPresetPayload(payload) {
       if (!payload) return;
 
@@ -281,9 +288,11 @@
       log.error('Preset modal createPreset response failed:', res);
     }
 
-    // Bootstrap HTML is only a temporary visual shell. Do not admit form
-    // mutation or persistence until an authoritative preset payload has been
-    // rendered through successfully established renderer translations.
+    // =============================================================================
+    // Bridge listener registration and initialization
+    // =============================================================================
+
+    // Bootstrap HTML is only a temporary visual shell. Keep user interaction and persistence locked until an authoritative preset payload has been presented through successfully established renderer translations.
     setPresetFormInteractionLocked(true);
 
     function registerPresetSettingsChanged() {
@@ -430,7 +439,7 @@
       }
     });
 
-  }); // DOMContentLoaded
+  });
 })();
 
 // =============================================================================
