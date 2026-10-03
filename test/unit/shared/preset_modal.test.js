@@ -388,6 +388,7 @@ test('preset modal preserves an established presentation after an invalid later 
 test('preset modal logs a bootstrap error when required modal DOM is unavailable', () => {
   const harness = createHarness({ missingRequiredDomElement: 'presetName' });
 
+  assert.equal(harness.getCloseCalls(), 1);
   assert.equal(harness.subscriptions.onInit, undefined);
   assert.equal(harness.subscriptions.onSettingsChanged, undefined);
   assert.ok(harness.getLogs().some((entry) => (

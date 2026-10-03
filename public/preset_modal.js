@@ -48,6 +48,7 @@
 
     if (!headingEl || !nameEl || !wpmEl || !descEl || !btnSave || !btnCancel || !charCountEl) {
       log.error('BOOTSTRAP: required preset modal DOM unavailable; initialization cannot continue.');
+      if (typeof window.close === 'function') window.close();
       return;
     }
 
