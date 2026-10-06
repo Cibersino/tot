@@ -21,6 +21,9 @@ function createWindowDouble() {
     },
     close() {
       calls.push('close');
+      if (typeof this.beforeClose === 'function') {
+        this.beforeClose();
+      }
       this.destroyed = true;
     },
   };
@@ -287,10 +290,117 @@ test('Task lifecycle accepts an uncorrelated no-draft report before the renderer
     initId: null,
     dirty: null,
   }), true);
+  assert.equal(controller.isInitialPresentationAllowed(win), true);
   await new Promise((resolve) => setImmediate(resolve));
 
   assert.deepEqual(calls, ['close']);
   assert.equal(dialog.calls[0].options.message, 'Startup failure');
+});
+
+test('Task lifecycle handles the verified initial preload failure as no-draft and blocks presentation', async () => {
+  const dialog = createDialogDouble();
+  const controller = createController(dialog);
+  const { calls, win } = createWindowDouble();
+  controller.attachWindow(win);
+  issueInitialization(controller, win);
+
+  assert.equal(controller.handleInitialPreloadFailure({
+    taskEditorWin: win,
+    preloadPath: 'task_editor_preload.js',
+    error: new Error('PRELOAD_FAILED'),
+    logContext: 'test.initialPreload',
+  }), true);
+  assert.equal(controller.isInitialPresentationAllowed(win), false);
+
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(calls, ['close']);
+  assert.equal(dialog.calls.length, 1);
+  assert.equal(dialog.calls[0].options.message, 'Startup failure');
+});
+
+test('Task lifecycle handles an initial document failure as no-draft after init issuance but before draft admission', async () => {
+  const dialog = createDialogDouble();
+  const controller = createController(dialog);
+  const { calls, win } = createWindowDouble();
+  controller.attachWindow(win);
+  issueInitialization(controller, win);
+
+  assert.equal(controller.handleInitialDocumentLoadFailure({
+    taskEditorWin: win,
+    error: new Error('ERR_FILE_NOT_FOUND'),
+    logContext: 'test.initialDocumentLoad',
+  }), true);
+  assert.equal(controller.isInitialPresentationAllowed(win), false);
+
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(calls, ['close']);
+  assert.equal(dialog.calls.length, 1);
+  assert.equal(dialog.calls[0].options.message, 'Startup failure');
+});
+
+test('Task lifecycle deduplicates overlapping initial preload and document failure signals', async () => {
+  const dialog = createDeferredDialogDouble();
+  const controller = createController(dialog);
+  const { calls, win } = createWindowDouble();
+  controller.attachWindow(win);
+
+  assert.equal(controller.handleInitialPreloadFailure({
+    taskEditorWin: win,
+    preloadPath: 'task_editor_preload.js',
+    error: new Error('PRELOAD_FAILED'),
+    logContext: 'test.initialPreload',
+  }), true);
+  assert.equal(controller.handleInitialDocumentLoadFailure({
+    taskEditorWin: win,
+    error: new Error('ERR_FILE_NOT_FOUND'),
+    logContext: 'test.initialDocumentLoad',
+  }), false);
+  assert.equal(dialog.calls.length, 1);
+
+  dialog.resolve(0);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(calls, ['close']);
+});
+
+test('Task lifecycle leaves an authorized close distinct from an initial document failure', () => {
+  const dialog = createDialogDouble();
+  const controller = createController(dialog);
+  const { calls, webContents, win } = createWindowDouble();
+  controller.attachWindow(win);
+  let loadFailureResult = null;
+  win.beforeClose = () => {
+    loadFailureResult = controller.handleInitialDocumentLoadFailure({
+      taskEditorWin: win,
+      error: new Error('LOAD_ABORTED_BY_CLOSE'),
+      logContext: 'test.authorizedClose',
+    });
+  };
+
+  assert.equal(controller.handleCloseResponse(
+    { sender: webContents },
+    { kind: 'normal', allow: true }
+  ), true);
+  assert.equal(loadFailureResult, false);
+  assert.deepEqual(calls, ['close']);
+  assert.equal(dialog.calls.length, 0);
+});
+
+test('Task lifecycle does not override established renderer draft evidence with an initial document failure', () => {
+  const dialog = createDialogDouble();
+  const controller = createController(dialog);
+  const { calls, webContents, win } = createWindowDouble();
+  controller.attachWindow(win);
+  const init = issueInitialization(controller, win);
+  controller.acceptDirtyState({ sender: webContents }, { dirty: false, initId: init.initId });
+
+  assert.equal(controller.handleInitialDocumentLoadFailure({
+    taskEditorWin: win,
+    error: new Error('UNEXPECTED_LOAD_FAILURE'),
+    logContext: 'test.afterDraftAdmission',
+  }), false);
+  assert.equal(controller.isInitialPresentationAllowed(win), true);
+  assert.deepEqual(calls, []);
+  assert.equal(dialog.calls.length, 0);
 });
 
 test('Task lifecycle accepts normal close authorization only from the current renderer sender', () => {

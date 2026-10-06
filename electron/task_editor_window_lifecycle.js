@@ -5,7 +5,8 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own Main-side Task window identity, initialization currentness, and dirty evidence.
+// - Own Main-side Task window identity, initialization currentness, dirty evidence,
+//   and bounded no-draft startup-failure decisions.
 // - Authenticate Task renderer lifecycle/close transports without owning renderer draft data.
 // - Resolve terminal disposal through Main-native disclosure or explicit discard authorization.
 // - Coalesce pending native close requests while one terminal outcome is being resolved.
@@ -46,6 +47,7 @@ function createController({ dialog, getDialogTexts }) {
   let terminalOutcome = null;
   let terminalResolutionPromise = null;
   let forceCloseAuthorized = false;
+  let initialPresentationBlocked = false;
   let closeRequestPending = false;
   let closeRequestResolver = null;
 
@@ -81,6 +83,7 @@ function createController({ dialog, getDialogTexts }) {
     terminalOutcome = null;
     terminalResolutionPromise = null;
     forceCloseAuthorized = false;
+    initialPresentationBlocked = false;
     closeRequestPending = false;
     resetEvidence();
   }
@@ -275,6 +278,60 @@ function createController({ dialog, getDialogTexts }) {
     return true;
   }
 
+  // The Main-side BrowserWindow adapter can establish these two bounded startup
+  // failures before a Task renderer can report them. A sent initId is not draft
+  // admission; current dirty evidence is the Main-side fact that proves a draft
+  // was actually established and must remain protected.
+  function acceptKnownNoDraftStartupFailure({ taskEditorWin, kind, error, logContext, preloadPath }) {
+    if (!isCurrentWindow(taskEditorWin) || forceCloseAuthorized) return false;
+    if (terminalOutcome || terminalResolutionPromise) return false;
+
+    if (dirtyEvidence.initId === currentInitId && typeof dirtyEvidence.state === 'boolean') {
+      log.error('Task Editor initial startup failure ignored after renderer draft evidence:', {
+        kind,
+        currentInitId,
+        logContext,
+      }, error);
+      return false;
+    }
+
+    const diagnostic = kind === 'initial-preload-before-bridge'
+      ? 'Task Editor initial preload failed before taskEditorAPI exposure:'
+      : 'Task Editor required initial document load failed:';
+    log.error(diagnostic, {
+      logContext,
+      ...(preloadPath ? { preloadPath } : {}),
+    }, error);
+    initialPresentationBlocked = true;
+    terminalOutcome = {
+      kind,
+      phase: 'no-draft',
+      initId: null,
+      dirty: null,
+    };
+    void startTerminalResolution(terminalOutcome);
+    return true;
+  }
+
+  function handleInitialPreloadFailure({ taskEditorWin, preloadPath, error, logContext }) {
+    return acceptKnownNoDraftStartupFailure({
+      taskEditorWin,
+      kind: 'initial-preload-before-bridge',
+      error,
+      logContext,
+      preloadPath,
+    });
+  }
+
+  function handleInitialDocumentLoadFailure({ taskEditorWin, error, logContext }) {
+    return acceptKnownNoDraftStartupFailure({
+      taskEditorWin,
+      kind: 'initial-document-load',
+      error,
+      logContext,
+    });
+  }
+
   // An authenticated initialized renderer can be terminal while its snapshot
   // is stale or missing. That establishes no current clean/dirty fact, so the
   // controller retains it as unknown evidence for conservative disposition.
@@ -455,12 +512,17 @@ function createController({ dialog, getDialogTexts }) {
     prepareInitialization,
     acceptInitializationIssued,
     acceptDirtyState,
+    handleInitialPreloadFailure,
+    handleInitialDocumentLoadFailure,
     acceptTerminalOutcome,
     handleCloseResponse,
     requestNativeClose,
     confirmReplacement,
     isForceCloseAuthorized() {
       return forceCloseAuthorized;
+    },
+    isInitialPresentationAllowed(win) {
+      return isCurrentWindow(win) && !initialPresentationBlocked;
     },
   };
 }

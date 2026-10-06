@@ -823,6 +823,8 @@ function createEditorWindow(options = {}) {
  * Restores persisted reduced geometry and maximized state.
  */
 function createTaskEditorWindow() {
+  const taskEditorPreloadPath = path.join(__dirname, 'task_editor_preload.js');
+  const taskEditorHtmlPath = path.join(__dirname, '../public/task_editor.html');
   const state = taskEditorState.loadInitialState(loadJson);
   const hasReduced =
     state &&
@@ -843,44 +845,103 @@ function createTaskEditorWindow() {
     maximizable: true,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'task_editor_preload.js'),
+      preload: taskEditorPreloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
   });
 
-  taskEditorWindowLifecycleController.attachWindow(taskEditorWin);
+  const createdTaskEditorWin = taskEditorWin;
+  taskEditorWindowLifecycleController.attachWindow(createdTaskEditorWin);
 
-  taskEditorWin.setMenu(null);
-  taskEditorWin.setMenuBarVisibility(false);
-  taskEditorWin.loadFile(path.join(__dirname, '../public/task_editor.html'));
+  createdTaskEditorWin.setMenu(null);
+  createdTaskEditorWin.setMenuBarVisibility(false);
 
-  taskEditorWin.once('ready-to-show', () => {
+  let observingInitialTaskPreload = true;
+  function removeInitialTaskPreloadObserver() {
+    if (!observingInitialTaskPreload) return;
+    observingInitialTaskPreload = false;
     try {
-      if (state && state.maximized === true) {
-        taskEditorWin.maximize();
+      createdTaskEditorWin.webContents.removeListener('preload-error', onInitialTaskPreloadError);
+    } catch (err) {
+      log.warn('Task Editor initial preload listener removal failed (ignored):', err);
+    }
+  }
+
+  function onInitialTaskPreloadError(_event, preloadPath, error) {
+    if (!observingInitialTaskPreload || preloadPath !== taskEditorPreloadPath) return;
+    removeInitialTaskPreloadObserver();
+    try {
+      taskEditorWindowLifecycleController.handleInitialPreloadFailure({
+        taskEditorWin: createdTaskEditorWin,
+        preloadPath,
+        error,
+        logContext: 'createTaskEditorWindow.initialPreload',
+      });
+    } catch (handlingErr) {
+      log.error('Task Editor initial preload failure handling failed:', {
+        preloadPath,
+        preloadError: error,
+      }, handlingErr);
+    }
+  }
+
+  // Observe only the configured initial preload. Its final source statement is
+  // the taskEditorAPI exposure, so an unhandled error here is the approved F13
+  // pre-exposure boundary rather than a renderer-reported terminal path.
+  createdTaskEditorWin.webContents.on('preload-error', onInitialTaskPreloadError);
+
+  const initialTaskDocumentLoad = createdTaskEditorWin.loadFile(taskEditorHtmlPath);
+  void initialTaskDocumentLoad.then(
+    () => {
+      removeInitialTaskPreloadObserver();
+    },
+    (error) => {
+      removeInitialTaskPreloadObserver();
+      try {
+        taskEditorWindowLifecycleController.handleInitialDocumentLoadFailure({
+          taskEditorWin: createdTaskEditorWin,
+          error,
+          logContext: 'createTaskEditorWindow.initialDocumentLoad',
+        });
+      } catch (handlingErr) {
+        log.error('Task Editor initial document load handling failed:', {
+          loadError: error,
+        }, handlingErr);
       }
-      taskEditorWin.show();
+    }
+  );
+
+  createdTaskEditorWin.once('ready-to-show', () => {
+    try {
+      if (!taskEditorWindowLifecycleController.isInitialPresentationAllowed(createdTaskEditorWin)) {
+        return;
+      }
+      if (state && state.maximized === true) {
+        createdTaskEditorWin.maximize();
+      }
+      createdTaskEditorWin.show();
     } catch (err) {
       log.error('Error showing Task Editor window:', err);
     }
   });
 
   // Persist geometry and maximized state.
-  taskEditorState.attachTo(taskEditorWin, loadJson, saveJson);
+  taskEditorState.attachTo(createdTaskEditorWin, loadJson, saveJson);
 
   // Close guard: delegate to renderer for unsaved-changes confirmation.
-  taskEditorWin.on('close', (event) => {
+  createdTaskEditorWin.on('close', (event) => {
     if (taskEditorWindowLifecycleController.isForceCloseAuthorized()) return;
     event.preventDefault();
-    void taskEditorWindowLifecycleController.requestNativeClose(taskEditorWin).catch((err) => {
+    void taskEditorWindowLifecycleController.requestNativeClose(createdTaskEditorWin).catch((err) => {
       log.error('Task Editor native close resolution failed:', err);
     });
   });
 
-  taskEditorWin.on('closed', () => {
-    taskEditorWindowLifecycleController.handleWindowClosed(taskEditorWin);
+  createdTaskEditorWin.on('closed', () => {
+    removeInitialTaskPreloadObserver();
+    taskEditorWindowLifecycleController.handleWindowClosed(createdTaskEditorWin);
     taskEditorWin = null;
   });
 }
