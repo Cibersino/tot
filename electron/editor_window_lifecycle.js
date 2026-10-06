@@ -364,6 +364,7 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
       generation: nextFirstShowGeneration++,
       owner,
       initialPresentationMode,
+      editorWin: null,
       waitingForBaseReady: true,
       resolved: false,
       timeoutId: null,
@@ -383,6 +384,7 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
         initialPresentationMode,
         firstShowGeneration: cycle.generation,
       });
+      cycle.editorWin = freshEditorWin;
 
       armHiddenStartupTimeout(cycle, freshEditorWin, mainWin, logContext);
 
@@ -527,6 +529,50 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
     };
   }
 
+  // The Main-side BrowserWindow owner reports this only for the initial
+  // editor.html navigation of a generation-scoped hidden startup cycle.
+  function handleInitialDocumentLoadFailure({
+    editorWin,
+    mainWin,
+    firstShowGeneration,
+    error,
+    logContext,
+  }) {
+    const cycle = hiddenStartupCycle;
+    if (!cycle
+      || cycle.resolved
+      || !cycle.waitingForBaseReady
+      || cycle.generation !== firstShowGeneration
+      || cycle.editorWin !== editorWin) {
+      log.warn('Text Editor initial document load failure ignored: no matching unresolved startup cycle.', {
+        firstShowGeneration,
+        activeGeneration: cycle ? cycle.generation : null,
+        logContext,
+      }, error);
+      return false;
+    }
+
+    log.error('Text Editor initial document load failed:', {
+      generation: cycle.generation,
+      owner: cycle.owner,
+      logContext,
+    }, error);
+
+    cycle.waitingForBaseReady = false;
+    rejectStartupCycle(cycle.generation, 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED');
+    resolveHiddenStartupCycle(cycle);
+
+    if (cycle.owner === 'ordinary') {
+      emitOrdinaryFirstShowState(mainWin, cycle, {
+        state: 'failed',
+        reason: 'initial-document-load-failed',
+      }, logContext);
+    }
+
+    disposeHiddenStartupWindow(editorWin, `${logContext}.initialDocumentLoadFailed`);
+    return true;
+  }
+
   // Base-presentation reports are accepted only from the live editor window for the active generation.
   function handleBasePresentationStateReport({ event, editorWin, mainWin, payload, logContext }) {
     if (!isPlainObject(payload)) {
@@ -635,6 +681,7 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
     showEditorWindow,
     handleEditorWindowReady,
     ensureEditorWindowOpen,
+    handleInitialDocumentLoadFailure,
     handleBasePresentationStateReport,
     handleEditorWindowClosed,
   };

@@ -158,6 +158,118 @@ test('openReadingSessionWindows starts a hidden maximized editor bootstrap and w
   assert.equal(result.flotanteWin, flotanteWin);
 });
 
+test('openReadingSessionWindows retains a pre-existing lifecycle failure over its disposed Editor waiter', async (t) => {
+  const readingTestSessionWindows = loadFreshReadingTestSessionWindows(t);
+  const editorWin = createWindowDouble({ visible: false, loading: true });
+  const flotanteWin = createWindowDouble({ visible: true, loading: false });
+  const lifecycleError = Object.assign(new Error('EDITOR_INITIAL_DOCUMENT_LOAD_FAILED'), {
+    code: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+    editorStartupLifecycle: {
+      cause: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+      disclosure: 'main-native',
+    },
+  });
+  let rejectBaseReady;
+  let resolveFlotanteWindow;
+  const baseReadyPromise = new Promise((_resolve, reject) => {
+    rejectBaseReady = reject;
+  });
+  // The production lifecycle attaches its own disclosure observer immediately.
+  baseReadyPromise.catch(() => {});
+
+  const openPromise = readingTestSessionWindows.openReadingSessionWindows({
+    resetCrono() {},
+    ensureEditorWindow() {
+      return {
+        ok: true,
+        editorWin,
+        baseReadyPromise,
+      };
+    },
+    ensureFlotanteWindow() {
+      return new Promise((resolve) => {
+        resolveFlotanteWindow = resolve;
+      });
+    },
+    log: {
+      warn() {},
+    },
+    timeoutMs: 5000,
+  });
+
+  await Promise.resolve();
+  rejectBaseReady(lifecycleError);
+  editorWin.destroyed = true;
+  editorWin.webContents.destroyed = true;
+  resolveFlotanteWindow(flotanteWin);
+
+  await assert.rejects(openPromise, (err) => {
+    assert.equal(err, lifecycleError);
+    return true;
+  });
+});
+
+test('openReadingSessionWindows retains a lifecycle failure when its disposal rejects an active Editor waiter', async (t) => {
+  const readingTestSessionWindows = loadFreshReadingTestSessionWindows(t);
+  const editorWin = createWindowDouble({ visible: false, loading: true });
+  const flotanteWin = createWindowDouble({ visible: true, loading: false });
+  const rendererLoadListeners = new Map();
+  const lifecycleError = Object.assign(new Error('EDITOR_INITIAL_DOCUMENT_LOAD_FAILED'), {
+    code: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+    editorStartupLifecycle: {
+      cause: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+      disclosure: 'main-native',
+    },
+  });
+  let rejectBaseReady;
+  let resolveFlotanteWindow;
+  const baseReadyPromise = new Promise((_resolve, reject) => {
+    rejectBaseReady = reject;
+  });
+  baseReadyPromise.catch(() => {});
+  editorWin.webContents.once = (event, listener) => {
+    rendererLoadListeners.set(event, listener);
+  };
+  editorWin.webContents.removeListener = (event, listener) => {
+    if (rendererLoadListeners.get(event) === listener) {
+      rendererLoadListeners.delete(event);
+    }
+  };
+
+  const openPromise = readingTestSessionWindows.openReadingSessionWindows({
+    resetCrono() {},
+    ensureEditorWindow() {
+      return {
+        ok: true,
+        editorWin,
+        baseReadyPromise,
+      };
+    },
+    ensureFlotanteWindow() {
+      return new Promise((resolve) => {
+        resolveFlotanteWindow = resolve;
+      });
+    },
+    log: {
+      warn() {},
+    },
+    timeoutMs: 5000,
+  });
+
+  await Promise.resolve();
+  resolveFlotanteWindow(flotanteWin);
+  await Promise.resolve();
+  assert.equal(typeof rendererLoadListeners.get('destroyed'), 'function');
+
+  rejectBaseReady(lifecycleError);
+  rendererLoadListeners.get('destroyed')();
+
+  await assert.rejects(openPromise, (err) => {
+    assert.equal(err, lifecycleError);
+    return true;
+  });
+});
+
 test('question and result modal windows register while live and deregister on close', async (t) => {
   const questionsWin = createModalWindowDouble();
   const resultWin = createModalWindowDouble();

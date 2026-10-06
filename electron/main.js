@@ -691,6 +691,11 @@ function createEditorWindow(options = {}) {
   spellcheckController.apply();
   const deferShow = !!(options && options.deferShow);
   const waitForBasePresentationReady = !!(options && options.waitForBasePresentationReady);
+  const firstShowGeneration = options
+    && Number.isInteger(options.firstShowGeneration)
+    && options.firstShowGeneration > 0
+    ? options.firstShowGeneration
+    : null;
 
   // Load last saved window state (size/position/maximized) from editor_state.js.
   const state = options && options.startupState
@@ -733,15 +738,46 @@ function createEditorWindow(options = {}) {
   if (options && (options.initialPresentationMode === 'maximized' || options.initialPresentationMode === 'reduced')) {
     startupQuery.initialPresentationMode = options.initialPresentationMode;
   }
-  if (options && Number.isInteger(options.firstShowGeneration) && options.firstShowGeneration > 0) {
-    startupQuery.firstShowGeneration = String(options.firstShowGeneration);
+  if (firstShowGeneration) {
+    startupQuery.firstShowGeneration = String(firstShowGeneration);
   }
 
   const loadFileOptions = Object.keys(startupQuery).length > 0
     ? { query: startupQuery }
     : undefined;
 
-  editorWin.loadFile(path.join(__dirname, '../public/editor.html'), loadFileOptions);
+  const createdEditorWin = editorWin;
+  let createdEditorWindowClosing = false;
+  createdEditorWin.on('close', () => {
+    createdEditorWindowClosing = true;
+  });
+
+  const editorDocumentLoad = createdEditorWin.loadFile(
+    path.join(__dirname, '../public/editor.html'),
+    loadFileOptions
+  );
+  if (waitForBasePresentationReady && firstShowGeneration) {
+    editorDocumentLoad.catch((err) => {
+      // A close can abort loadFile(). That close is already owned by the
+      // established closed-window lifecycle path, not F07/F08.
+      if (createdEditorWindowClosing || createdEditorWin.isDestroyed()) return;
+
+      try {
+        editorWindowLifecycleController.handleInitialDocumentLoadFailure({
+          editorWin: createdEditorWin,
+          mainWin,
+          firstShowGeneration,
+          error: err,
+          logContext: 'createEditorWindow.initialDocumentLoad',
+        });
+      } catch (handlingErr) {
+        log.error('Text Editor initial document load handling failed:', {
+          firstShowGeneration,
+          loadError: err,
+        }, handlingErr);
+      }
+    });
+  }
 
   try {
     editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
