@@ -86,6 +86,8 @@
       "renderer_i18n_failure_message": "La interfície no ha pogut carregar els recursos d’idioma necessaris. La finestra es tancarà.",
       "renderer_settings_listener_failure_title": "La interfície no s’ha pogut iniciar",
       "renderer_settings_listener_failure_message": "La interfície no ha pogut establir la sincronització necessària amb la configuració. La finestra es tancarà.",
+      "text_time_calculator_initial_document_failure_title": "La calculadora ràpida no s’ha pogut obrir",
+      "text_time_calculator_initial_document_failure_message": "La calculadora ràpida no s’ha pogut carregar i es tancarà.",
       "editor_startup_failed_title": "L’Editor de text no s’ha pogut iniciar",
       "editor_startup_failed_message": "L’Editor de text no ha pogut completar l’inici i es tancarà.",
       "editor_startup_timeout_title": "L’Editor de text ha trigat massa a iniciar-se",

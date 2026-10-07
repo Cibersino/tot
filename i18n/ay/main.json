@@ -86,6 +86,8 @@
       "renderer_i18n_failure_message": "Interfazax wakiskir aru recursos janiw cargañ atkiti. Ventanax jist’antatäniwa.",
       "renderer_settings_listener_failure_title": "Interfaz janiw qalltañ atkiti",
       "renderer_settings_listener_failure_message": "Interfazax wakiskir configuración sincronización janiw utt’ayañ atkiti. Ventanax jist’antatäniwa.",
+      "text_time_calculator_initial_document_failure_title": "Jank’a jakhuña janiw jist’arañ atkiti",
+      "text_time_calculator_initial_document_failure_message": "Jank’a jakhuña janiw cargañ atkiti; jist’antatäniwa.",
       "editor_startup_failed_title": "Qillqata askichiri janiw qalltañ atkiti",
       "editor_startup_failed_message": "Qillqata askichiri janiw qalltañ tukuykiti; jist’antatäniwa.",
       "editor_startup_timeout_title": "Qillqata askichiri qalltañatakix sinti jayäna",

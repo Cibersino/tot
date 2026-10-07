@@ -86,6 +86,8 @@
       "renderer_i18n_failure_message": "Интерфейс не смог загрузить необходимые языковые ресурсы. Окно будет закрыто.",
       "renderer_settings_listener_failure_title": "Интерфейс не удалось запустить",
       "renderer_settings_listener_failure_message": "Интерфейс не смог установить необходимую синхронизацию с настройками. Окно будет закрыто.",
+      "text_time_calculator_initial_document_failure_title": "Не удалось открыть быстрый калькулятор",
+      "text_time_calculator_initial_document_failure_message": "Быстрый калькулятор не удалось загрузить, и он будет закрыт.",
       "editor_startup_failed_title": "Текстовый редактор не удалось запустить",
       "editor_startup_failed_message": "Текстовый редактор не смог завершить запуск и будет закрыт.",
       "editor_startup_timeout_title": "Текстовый редактор запускался слишком долго",

@@ -86,6 +86,8 @@
       "renderer_i18n_failure_message": "Arayüz gerekli dil kaynaklarını yükleyemedi. Pencere kapanacak.",
       "renderer_settings_listener_failure_title": "Arayüz başlatılamadı",
       "renderer_settings_listener_failure_message": "Arayüz gerekli ayar senkronizasyonunu kuramadı. Pencere kapanacak.",
+      "text_time_calculator_initial_document_failure_title": "Hızlı hesaplayıcı açılamadı",
+      "text_time_calculator_initial_document_failure_message": "Hızlı hesaplayıcı yüklenemedi ve kapanacak.",
       "editor_startup_failed_title": "Metin Düzenleyici başlatılamadı",
       "editor_startup_failed_message": "Metin Düzenleyici başlatmayı tamamlayamadı ve kapanacak.",
       "editor_startup_timeout_title": "Metin Düzenleyici çok geç başlatıldı",
