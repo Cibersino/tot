@@ -16,15 +16,47 @@
 // Logger / globals
 // =============================================================================
 
-if (typeof window.getLogger !== 'function') {
-  throw new Error('[flotante]window.getLogger unavailable; cannot continue');
+function terminateFlotanteBootstrap(log, message, cause) {
+  try {
+    if (log) {
+      if (typeof cause === 'undefined') {
+        log.error(message);
+      } else {
+        log.error(message, cause);
+      }
+    }
+  } finally {
+    if (typeof window.close === 'function') window.close();
+  }
+
+  if (typeof cause === 'undefined') {
+    throw new Error(message);
+  }
+  throw new Error(message, { cause });
 }
-const log = window.getLogger('flotante');
+
+if (typeof window.getLogger !== 'function') {
+  terminateFlotanteBootstrap(null, '[flotante] window.getLogger unavailable; cannot continue');
+}
+
+let log;
+try {
+  log = window.getLogger('flotante');
+} catch (err) {
+  terminateFlotanteBootstrap(
+    null,
+    '[flotante] window.getLogger acquisition failed; cannot continue',
+    err
+  );
+}
 
 log.debug('Flotante starting...');
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
-  throw new Error('[flotante] RendererIcons.applyIconToElement unavailable; cannot continue');
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: RendererIcons.applyIconToElement unavailable; closing Floating Stopwatch before normal interaction.'
+  );
 }
 
 // =============================================================================
@@ -33,7 +65,10 @@ if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
 
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error('AppConstants not available; check constants.js loading.');
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: AppConstants unavailable; closing Floating Stopwatch before normal interaction.'
+  );
 }
 const { DEFAULT_LANG } = AppConstants;
 
@@ -56,14 +91,30 @@ if (!btnReset) {
   log.error('element #reset not found');
 }
 
+if (!btnToggle || !btnReset) {
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: required Floating Stopwatch controls unavailable; closing window before normal interaction.'
+  );
+}
+
 if (!window.flotanteAPI) {
-  throw new Error('[flotante] flotanteAPI unavailable; cannot continue');
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: flotanteAPI unavailable; closing Floating Stopwatch before normal interaction.'
+  );
 }
 if (typeof window.flotanteAPI.onState !== 'function') {
-  throw new Error('[flotante] flotanteAPI.onState unavailable; cannot continue');
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: flotanteAPI.onState unavailable; closing Floating Stopwatch before normal interaction.'
+  );
 }
 if (typeof window.flotanteAPI.sendCommand !== 'function') {
-  throw new Error('[flotante] flotanteAPI.sendCommand unavailable; cannot continue');
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: flotanteAPI.sendCommand unavailable; closing Floating Stopwatch before normal interaction.'
+  );
 }
 if (typeof window.flotanteAPI.getSettings !== 'function') {
   log.warn('flotanteAPI.getSettings missing; using default language (ignored).');
@@ -132,10 +183,18 @@ function renderState(state) {
 // =============================================================================
 
 // onState now listens to 'crono-state' (main)
-window.flotanteAPI.onState((state) => {
-  if (flotanteI18nTerminal) return;
-  try { renderState(state); } catch (err) { log.error(err); }
-});
+try {
+  window.flotanteAPI.onState((state) => {
+    if (flotanteI18nTerminal) return;
+    try { renderState(state); } catch (err) { log.error(err); }
+  });
+} catch (err) {
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: flotanteAPI.onState registration failed; closing Floating Stopwatch before normal interaction.',
+    err
+  );
+}
 
 async function applyFlotanteTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;

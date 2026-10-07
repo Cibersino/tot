@@ -304,6 +304,37 @@ function requestCloseFlotanteWindow() {
   }
 }
 
+function showFlotanteInitialDocumentFailureDisclosure() {
+  let dialogTexts = null;
+  try {
+    dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+  } catch (err) {
+    log.error('Floating Stopwatch initial document load native dialog translations unavailable:', err);
+  }
+
+  const title = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_title;
+  const message = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_message;
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title === 'string' && title.trim()
+    && typeof message === 'string' && message.trim()
+    && typeof ok === 'string' && ok.trim()) {
+    try {
+      dialog.showMessageBoxSync(flotanteWin, {
+        type: 'error',
+        title,
+        message,
+        buttons: [ok],
+        defaultId: 0,
+        noLink: true,
+      });
+    } catch (err) {
+      log.error('Floating Stopwatch initial document load native dialog failed:', err);
+    }
+  } else {
+    log.error('Floating Stopwatch initial document load native dialog copy unavailable.');
+  }
+}
+
 function resolveTextExtractionRuntimePaths() {
   const credentialsPath = getOcrGoogleDriveCredentialsFile();
   const tokenPath = getOcrGoogleDriveTokenFile();
@@ -1494,6 +1525,7 @@ function resolveLanguage(reason) {
 
 const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 const FLOTANTE_HTML = path.join(__dirname, '../public/flotante.html');
+const FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED = 'FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED';
 
 function clampInt(n, min, max) {
   const lo = Math.min(min, max);
@@ -1728,12 +1760,15 @@ async function createFlotanteWindow(options = {}) {
     }
   });
 
-  // Load the HTML content. If the user closes quickly, loadFile may reject; treat as expected.
+  // An already-started close can reject loadFile; a still-live initial load failure must reach its caller.
   try {
     await win.loadFile(FLOTANTE_HTML);
   } catch (err) {
     if (!winClosing && !win.isDestroyed()) {
-      log.error('Error loading flotante HTML:', err);
+      log.error('Floating Stopwatch initial document load failed:', err);
+      const initialDocumentLoadError = new Error(FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED, { cause: err });
+      initialDocumentLoadError.code = FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED;
+      throw initialDocumentLoadError;
     }
   }
 
@@ -1970,6 +2005,15 @@ ipcMain.handle('flotante-open', async () => {
     await ensureFlotanteWindowOpen();
     return { ok: true };
   } catch (err) {
+    if (err && err.code === FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED) {
+      showFlotanteInitialDocumentFailureDisclosure();
+      try {
+        requestCloseFlotanteWindow();
+      } catch (closeError) {
+        log.error('Floating Stopwatch initial document load window close failed:', closeError);
+      }
+      return { ok: false, error: err.code };
+    }
     log.error('Error processing flotante-open:', err);
     return { ok: false, error: String(err) };
   }

@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "La ventana de idioma no pudo cargarse. El inicio continuará con el idioma predeterminado.",
       "language_chooser_initial_document_failure_title": "No se pudo abrir la ventana de idioma",
       "language_chooser_initial_document_failure_message": "La ventana de idioma no pudo cargarse.",
+      "floating_stopwatch_initial_document_failure_title": "No se pudo abrir el Cronómetro Flotante",
+      "floating_stopwatch_initial_document_failure_message": "El Cronómetro Flotante no pudo cargarse y se cerrará.",
       "editor_startup_failed_title": "No se pudo iniciar el Editor de Texto",
       "editor_startup_failed_message": "El Editor de Texto no pudo completar su inicio y se cerrará.",
       "editor_startup_timeout_title": "El Editor de Texto tardó demasiado en iniciar",

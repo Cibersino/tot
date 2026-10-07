@@ -235,6 +235,74 @@ test('Reading arming preserves its existing cleanup route for an Editor document
   assert.deepEqual(failed, [null]);
 });
 
+test('Reading arming uses its existing start-failed route for Floating document-load failure', async () => {
+  const selectedEntry = { sourceMode: 'current_text' };
+  const state = {
+    active: true,
+    stage: 'arming',
+    selectedEntry,
+  };
+  const failed = [];
+  const floatingLoadError = Object.assign(
+    new Error('FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED'),
+    { code: 'FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED' }
+  );
+
+  await readingTestSessionFlow.continueArmingSession(selectedEntry, {
+    state,
+    openReadingSessionWindows: async () => {
+      throw floatingLoadError;
+    },
+    setActiveSessionWindows() {},
+    showEditorPrestart() {},
+    setArmingReady() {},
+    showEditorWindow() {},
+    waitForWindowVisible: async () => {},
+    failArmingSession(_entry, noticeKey) {
+      failed.push(noticeKey);
+    },
+    log: createLoggerDouble(),
+  });
+
+  assert.deepEqual(failed, ['renderer.reading_test.alerts.start_failed']);
+});
+
+test('Floating Stopwatch closure uses the existing Reading Test cancellation owner once', () => {
+  const notices = [];
+  const state = { active: true, stage: 'arming' };
+  const runtimeFlags = { suppressUnexpectedFlotanteClose: false };
+
+  readingTestSessionFlow.handleFlotanteClosed({
+    state,
+    runtimeFlags,
+    cancelActiveSession(noticeKey, options) {
+      notices.push({ noticeKey, options });
+    },
+  });
+
+  assert.deepEqual(notices, [{
+    noticeKey: 'renderer.reading_test.alerts.cancelled_window_closed',
+    options: { type: 'warn' },
+  }]);
+});
+
+test('Floating Stopwatch closure consumes a Reading Test-owned close suppression', () => {
+  const state = { active: true, stage: 'arming' };
+  const runtimeFlags = { suppressUnexpectedFlotanteClose: true };
+  let cancellationCalls = 0;
+
+  readingTestSessionFlow.handleFlotanteClosed({
+    state,
+    runtimeFlags,
+    cancelActiveSession() {
+      cancellationCalls += 1;
+    },
+  });
+
+  assert.equal(cancellationCalls, 0);
+  assert.equal(runtimeFlags.suppressUnexpectedFlotanteClose, false);
+});
+
 test('startArmedSession marks pool entry used only when play starts the session', () => {
   const calls = [];
   const state = {

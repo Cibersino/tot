@@ -692,6 +692,18 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Mensaje del fallo de carga inicial al abrir posteriormente la ventana de idioma; no implica fallback ni cambio del idioma ya resuelto.
         // [CONCEPTO_APP] ventana de idioma
       },
+      "floating_stopwatch_initial_document_failure_title": {
+        "es": "No se pudo abrir el Cronómetro Flotante",
+        "en": "The Floating Stopwatch could not open"
+        // [PROPÓSITO] Título del diálogo nativo cuando falla la carga del documento inicial requerido del Cronómetro Flotante en una apertura ordinaria.
+        // [CONCEPTO_APP] Cronómetro Flotante
+      },
+      "floating_stopwatch_initial_document_failure_message": {
+        "es": "El Cronómetro Flotante no pudo cargarse y se cerrará.",
+        "en": "The Floating Stopwatch could not load and will close."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial del Cronómetro Flotante en una apertura ordinaria; informa que la ventana afectada se cerrará.
+        // [CONCEPTO_APP] Cronómetro Flotante
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"

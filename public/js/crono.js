@@ -132,7 +132,13 @@
       return null;
     }
     try {
-      await electronAPI.openFlotanteWindow();
+      const openResult = await electronAPI.openFlotanteWindow();
+      if (!openResult || openResult.ok !== true) {
+        const failureCode = openResult && typeof openResult.error === 'string'
+          ? openResult.error
+          : 'UNKNOWN_FAILURE';
+        throw new Error(`[crono] Floating Stopwatch open failed: ${failureCode}`);
+      }
       setToggleChecked(toggleVF, true);
 
       if (typeof electronAPI.getCronoState === 'function') {
