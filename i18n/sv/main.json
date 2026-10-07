@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Gränssnittet kunde inte upprätta den nödvändiga synkroniseringen med inställningarna. Fönstret kommer att stängas.",
       "text_time_calculator_initial_document_failure_title": "Snabbkalkylatorn kunde inte öppnas",
       "text_time_calculator_initial_document_failure_message": "Snabbkalkylatorn kunde inte läsas in och kommer att stängas.",
+      "preset_modal_initial_document_failure_title": "Modalen för förinställningar kunde inte öppnas",
+      "preset_modal_initial_document_failure_message": "Modalen för förinställningar kunde inte läsas in och kommer att stängas.",
       "editor_startup_failed_title": "Textredigeraren kunde inte starta",
       "editor_startup_failed_message": "Textredigeraren kunde inte slutföra starten och kommer att stängas.",
       "editor_startup_timeout_title": "Textredigeraren tog för lång tid att starta",

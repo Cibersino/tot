@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Entèfas la pa t ka etabli senkronizasyon ki nesesè ak paramèt yo. Fenèt la ap fèmen.",
       "text_time_calculator_initial_document_failure_title": "Kalkilatris rapid la pa t ka louvri",
       "text_time_calculator_initial_document_failure_message": "Kalkilatris rapid la pa t ka chaje epi l ap fèmen.",
+      "preset_modal_initial_document_failure_title": "Modal preset la pa t ka louvri",
+      "preset_modal_initial_document_failure_message": "Modal preset la pa t ka chaje epi l ap fèmen.",
       "editor_startup_failed_title": "Editè Tèks la pa t ka demare",
       "editor_startup_failed_message": "Editè Tèks la pa t ka fini demaraj la epi l ap fèmen.",
       "editor_startup_timeout_title": "Editè Tèks la pran twòp tan pou demare",

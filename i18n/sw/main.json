@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Kiolesura hakikuweza kuanzisha usawazishaji unaohitajika na mipangilio. Dirisha litafungwa.",
       "text_time_calculator_initial_document_failure_title": "Kikokotoo cha haraka hakikuweza kufunguliwa",
       "text_time_calculator_initial_document_failure_message": "Kikokotoo cha haraka hakikuweza kupakiwa na kitafungwa.",
+      "preset_modal_initial_document_failure_title": "Dirisha la preseti halikuweza kufunguliwa",
+      "preset_modal_initial_document_failure_message": "Dirisha la preseti halikuweza kupakiwa na litafungwa.",
       "editor_startup_failed_title": "Kihariri cha Maandishi hakikuweza kuanza",
       "editor_startup_failed_message": "Kihariri cha Maandishi hakikuweza kukamilisha kuanza na kitafungwa.",
       "editor_startup_timeout_title": "Kihariri cha Maandishi kilichukua muda mrefu sana kuanza",

@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "इंटरफ़ेस सेटिंग्स के साथ आवश्यक सिंक्रोनाइज़ेशन स्थापित नहीं कर सका। विंडो बंद हो जाएगी।",
       "text_time_calculator_initial_document_failure_title": "त्वरित कैलकुलेटर नहीं खुल सका",
       "text_time_calculator_initial_document_failure_message": "त्वरित कैलकुलेटर लोड नहीं हो सका और बंद हो जाएगा।",
+      "preset_modal_initial_document_failure_title": "प्रीसेट मोडल नहीं खुल सका",
+      "preset_modal_initial_document_failure_message": "प्रीसेट मोडल लोड नहीं हो सका और बंद हो जाएगा।",
       "editor_startup_failed_title": "टेक्स्ट एडिटर शुरू नहीं हो सका",
       "editor_startup_failed_message": "टेक्स्ट एडिटर स्टार्टअप पूरा नहीं कर सका और बंद हो जाएगा।",
       "editor_startup_timeout_title": "टेक्स्ट एडिटर शुरू होने में बहुत अधिक समय लगा",

@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Isixhumi esibonakalayo asikwazanga ukusungula ukuvumelanisa okudingekayo nezilungiselelo. Iwindi lizovalwa.",
       "text_time_calculator_initial_document_failure_title": "Isibali esisheshayo asikwazanga ukuvuleka",
       "text_time_calculator_initial_document_failure_message": "Isibali esisheshayo asikwazanga ukulayishwa futhi sizovalwa.",
+      "preset_modal_initial_document_failure_title": "I-modal yephrezethi ayikwazanga ukuvuleka",
+      "preset_modal_initial_document_failure_message": "I-modal yephrezethi ayikwazanga ukulayishwa futhi izovalwa.",
       "editor_startup_failed_title": "Isihleli Sombhalo asikwazanga ukuqala",
       "editor_startup_failed_message": "Isihleli Sombhalo asikwazanga ukuqeda ukuqalisa futhi sizovalwa.",
       "editor_startup_timeout_title": "Isihleli Sombhalo sithathe isikhathi eside kakhulu ukuqala",

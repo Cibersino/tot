@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "La interfaz no pudo establecer la sincronización necesaria con la configuración. La ventana se va a cerrar.",
       "text_time_calculator_initial_document_failure_title": "No se pudo abrir la calculadora rápida",
       "text_time_calculator_initial_document_failure_message": "La calculadora rápida no pudo cargarse y se va a cerrar.",
+      "preset_modal_initial_document_failure_title": "No se pudo abrir la ventanita de preset",
+      "preset_modal_initial_document_failure_message": "La ventanita de preset no pudo cargarse y se va a cerrar.",
       "editor_startup_failed_title": "No se pudo abrir el Editor de Texto",
       "editor_startup_failed_message": "El Editor de Texto no terminó de partir y se va a cerrar.",
       "editor_startup_timeout_title": "El Editor de Texto se demoró demasiado en partir",

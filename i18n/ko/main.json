@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "인터페이스가 필요한 설정 동기화를 구성할 수 없습니다. 창이 닫힙니다",
       "text_time_calculator_initial_document_failure_title": "빠른 계산기를 열 수 없습니다",
       "text_time_calculator_initial_document_failure_message": "빠른 계산기를 불러올 수 없어 닫힙니다.",
+      "preset_modal_initial_document_failure_title": "프리셋 모달을 열 수 없습니다",
+      "preset_modal_initial_document_failure_message": "프리셋 모달을 불러올 수 없어 닫힙니다.",
       "editor_startup_failed_title": "텍스트 편집기를 시작할 수 없습니다",
       "editor_startup_failed_message": "텍스트 편집기가 시작을 완료하지 못해 닫힙니다.",
       "editor_startup_timeout_title": "텍스트 편집기 시작 시간이 너무 오래 걸렸습니다",

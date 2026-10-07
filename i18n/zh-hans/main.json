@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "界面无法建立所需的设置同步。窗口即将关闭。",
       "text_time_calculator_initial_document_failure_title": "快速计算器无法打开",
       "text_time_calculator_initial_document_failure_message": "快速计算器无法加载，即将关闭。",
+      "preset_modal_initial_document_failure_title": "预设模态窗口无法打开",
+      "preset_modal_initial_document_failure_message": "预设模态窗口无法加载，即将关闭。",
       "editor_startup_failed_title": "文本编辑器无法启动",
       "editor_startup_failed_message": "文本编辑器无法完成启动，即将关闭。",
       "editor_startup_timeout_title": "文本编辑器启动耗时过长",

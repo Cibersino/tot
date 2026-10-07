@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Die Oberfläche konnte die erforderliche Synchronisierung mit den Einstellungen nicht herstellen. Das Fenster wird geschlossen.",
       "text_time_calculator_initial_document_failure_title": "Der Schnellrechner konnte nicht geöffnet werden",
       "text_time_calculator_initial_document_failure_message": "Der Schnellrechner konnte nicht geladen werden und wird geschlossen.",
+      "preset_modal_initial_document_failure_title": "Der Preset-Dialog konnte nicht geöffnet werden",
+      "preset_modal_initial_document_failure_message": "Der Preset-Dialog konnte nicht geladen werden und wird geschlossen.",
       "editor_startup_failed_title": "Der Texteditor konnte nicht gestartet werden",
       "editor_startup_failed_message": "Der Texteditor konnte den Start nicht abschließen und wird geschlossen.",
       "editor_startup_timeout_title": "Der Texteditor brauchte zu lange zum Starten",

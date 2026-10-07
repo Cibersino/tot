@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Interfazeak ezin izan du konfigurazioarekin beharrezko sinkronizazioa ezarri. Leihoa itxi egingo da.",
       "text_time_calculator_initial_document_failure_title": "Kalkulagailu azkarra ezin izan da ireki",
       "text_time_calculator_initial_document_failure_message": "Kalkulagailu azkarra ezin izan da kargatu eta itxi egingo da.",
+      "preset_modal_initial_document_failure_title": "Aurrezarpen-modala ezin izan da ireki",
+      "preset_modal_initial_document_failure_message": "Aurrezarpen-modala ezin izan da kargatu eta itxi egingo da.",
       "editor_startup_failed_title": "Testu-editorea ezin izan da abiarazi",
       "editor_startup_failed_message": "Testu-editoreak ezin izan du abioa osatu eta itxi egingo da.",
       "editor_startup_timeout_title": "Testu-editoreak denbora gehiegi behar izan du abiarazteko",

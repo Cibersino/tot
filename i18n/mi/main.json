@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Kāore te atanga i āhei ki te whakarite i te tukutahitanga e hiahiatia ana ki ngā tautuhinga. Ka kati te matapihi.",
       "text_time_calculator_initial_document_failure_title": "Kāore te tātaitai tere i taea te whakatuwhera",
       "text_time_calculator_initial_document_failure_message": "Kāore te tātaitai tere i taea te uta, ā, ka kati.",
+      "preset_modal_initial_document_failure_title": "Kāore i taea te whakatuwhera i te modal preset",
+      "preset_modal_initial_document_failure_message": "Kāore i taea te uta i te modal preset, ā, ka kati.",
       "editor_startup_failed_title": "Kāore te Kaiwhakatika Kuputuhi i tīmata",
       "editor_startup_failed_message": "Kāore te Kaiwhakatika Kuputuhi i oti tana tīmatanga, ā, ka kati.",
       "editor_startup_timeout_title": "He roa rawa te tīmatanga o te Kaiwhakatika Kuputuhi",

@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "انٹرفیس مطلوبہ ترتیبات کی ہم وقت سازی قائم نہیں کر سکا۔ ونڈو بند ہو جائے گی۔",
       "text_time_calculator_initial_document_failure_title": "فوری کیلکولیٹر نہیں کھل سکا",
       "text_time_calculator_initial_document_failure_message": "فوری کیلکولیٹر لوڈ نہیں ہو سکا اور بند ہو جائے گا۔",
+      "preset_modal_initial_document_failure_title": "پری سیٹ موڈل نہیں کھل سکا",
+      "preset_modal_initial_document_failure_message": "پری سیٹ موڈل لوڈ نہیں ہو سکا اور بند ہو جائے گا۔",
       "editor_startup_failed_title": "ٹیکسٹ ایڈیٹر شروع نہیں ہو سکا",
       "editor_startup_failed_message": "ٹیکسٹ ایڈیٹر آغاز مکمل نہیں کر سکا اور بند ہو جائے گا۔",
       "editor_startup_timeout_title": "ٹیکسٹ ایڈیٹر شروع ہونے میں بہت زیادہ وقت لے گیا",

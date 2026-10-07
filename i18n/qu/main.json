@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Interfaz mana atirqanchu wakisqa configuración sincronizaciónta churayta. Qhawana wichq’akunqa.",
       "text_time_calculator_initial_document_failure_title": "Utqay yupana mana kichayta atirqanchu",
       "text_time_calculator_initial_document_failure_message": "Utqay yupana mana churayta atirqanchu hinaspa wichq’akunqa.",
+      "preset_modal_initial_document_failure_title": "Preset modal mana kichayta atirqanchu",
+      "preset_modal_initial_document_failure_message": "Preset modal mana churayta atirqanchu hinaspa wichq’akunqa.",
       "editor_startup_failed_title": "Qillqa allichana mana qallarirqanchu",
       "editor_startup_failed_message": "Qillqa allichana mana qallariyta tukuchirqanchu hinaspa wichq’akunqa.",
       "editor_startup_timeout_title": "Qillqa allichana qallarinanpaq anchata unaykurqan",

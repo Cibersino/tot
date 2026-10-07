@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "Giao diện không thể thiết lập đồng bộ hóa cần thiết với các cài đặt. Cửa sổ sẽ đóng.",
       "text_time_calculator_initial_document_failure_title": "Không thể mở máy tính nhanh",
       "text_time_calculator_initial_document_failure_message": "Máy tính nhanh không tải được và sẽ đóng.",
+      "preset_modal_initial_document_failure_title": "Không thể mở modal preset",
+      "preset_modal_initial_document_failure_message": "Modal preset không tải được và sẽ đóng.",
       "editor_startup_failed_title": "Không thể khởi động Trình soạn thảo văn bản",
       "editor_startup_failed_message": "Trình soạn thảo văn bản không thể hoàn tất khởi động và sẽ đóng.",
       "editor_startup_timeout_title": "Trình soạn thảo văn bản mất quá nhiều thời gian để khởi động",

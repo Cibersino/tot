@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "رابط نتوانست همگام‌سازی لازم با تنظیمات را برقرار کند. پنجره بسته خواهد شد.",
       "text_time_calculator_initial_document_failure_title": "ماشین‌حساب سریع نتوانست باز شود",
       "text_time_calculator_initial_document_failure_message": "ماشین‌حساب سریع نتوانست بارگذاری شود و بسته خواهد شد.",
+      "preset_modal_initial_document_failure_title": "مودال پیش‌تنظیم نتوانست باز شود",
+      "preset_modal_initial_document_failure_message": "مودال پیش‌تنظیم نتوانست بارگذاری شود و بسته خواهد شد.",
       "editor_startup_failed_title": "ویرایشگر متن نتوانست شروع شود",
       "editor_startup_failed_message": "ویرایشگر متن نتوانست راه‌اندازی را کامل کند و بسته خواهد شد.",
       "editor_startup_timeout_title": "شروع ویرایشگر متن بیش از حد طول کشید",

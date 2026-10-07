@@ -88,6 +88,8 @@
       "renderer_settings_listener_failure_message": "インターフェースは必要な設定同期を確立できませんでした。ウィンドウを閉じます。",
       "text_time_calculator_initial_document_failure_title": "クイック計算機を開けませんでした",
       "text_time_calculator_initial_document_failure_message": "クイック計算機を読み込めなかったため閉じます。",
+      "preset_modal_initial_document_failure_title": "プリセットモーダルを開けませんでした",
+      "preset_modal_initial_document_failure_message": "プリセットモーダルを読み込めなかったため閉じます。",
       "editor_startup_failed_title": "テキストエディターを起動できませんでした",
       "editor_startup_failed_message": "テキストエディターは起動を完了できなかったため閉じます。",
       "editor_startup_timeout_title": "テキストエディターの起動に時間がかかりすぎました",
