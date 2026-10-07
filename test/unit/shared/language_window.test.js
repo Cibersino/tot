@@ -230,6 +230,101 @@ async function createHarness({
   };
 }
 
+function runBootstrapFailureHarness({ failureKind, firstRun }) {
+  const document = { activeElement: null };
+  const elements = new Map();
+  const register = (id, tagName = 'div') => {
+    const element = createElement(document, tagName);
+    element.id = id;
+    elements.set(id, element);
+    return element;
+  };
+
+  if (failureKind !== 'missingLangFilter') register('langFilter', 'input');
+  if (failureKind !== 'missingLangList') register('langList');
+  register('statusLine');
+  register('languageStatusNoMatches', 'span');
+  register('languageStatusApplying', 'span');
+  register('languageStatusSelectionError', 'span');
+  document.getElementById = (id) => elements.get(id) || null;
+  document.createElement = (tagName) => createElement(document, tagName);
+
+  const loggedErrors = [];
+  const logger = {
+    debug() {},
+    error(...args) {
+      loggedErrors.push(args);
+    },
+  };
+  let closeCount = 0;
+  const window = {
+    location: {
+      search: firstRun ? '?languageChooserFirstRun=1' : '',
+    },
+    languageAPI: {},
+    close() {
+      closeCount += 1;
+    },
+  };
+  if (failureKind === 'throwingLogger') {
+    window.getLogger = () => {
+      throw new Error('logger unavailable');
+    };
+  } else if (failureKind !== 'missingLogger') {
+    window.getLogger = () => logger;
+  }
+
+  const consoleErrors = [];
+  const sandbox = {
+    window,
+    document,
+    console: {
+      error(...args) {
+        consoleErrors.push(args);
+      },
+    },
+  };
+  vm.createContext(sandbox);
+
+  let bootstrapError = null;
+  try {
+    vm.runInContext(languageWindowSource, sandbox, { filename: 'public/language_window.js' });
+  } catch (error) {
+    bootstrapError = error;
+  }
+
+  return { bootstrapError, closeCount, consoleErrors, loggedErrors };
+}
+
+test('first-run bootstrap guards close locally without changing later chooser behavior', () => {
+  const failureKinds = [
+    'missingLogger',
+    'throwingLogger',
+    'missingLangFilter',
+    'missingLangList',
+  ];
+
+  failureKinds.forEach((failureKind) => {
+    const firstRun = runBootstrapFailureHarness({ failureKind, firstRun: true });
+    assert.ok(firstRun.bootstrapError, `${failureKind} should remain fail-fast`);
+    assert.equal(
+      firstRun.consoleErrors.length + firstRun.loggedErrors.length,
+      1,
+      `${failureKind} should retain a bootstrap diagnostic`
+    );
+    assert.equal(firstRun.closeCount, 1, `${failureKind} should close the first-run chooser`);
+
+    const laterOpen = runBootstrapFailureHarness({ failureKind, firstRun: false });
+    assert.ok(laterOpen.bootstrapError, `${failureKind} should remain fail-fast`);
+    assert.equal(
+      laterOpen.consoleErrors.length + laterOpen.loggedErrors.length,
+      1,
+      `${failureKind} should retain a bootstrap diagnostic`
+    );
+    assert.equal(laterOpen.closeCount, 0, `${failureKind} must not change F25 behavior`);
+  });
+});
+
 test('current language selection remains separate from roving keyboard focus', async () => {
   const harness = await createHarness();
   const items = harness.langList.children;

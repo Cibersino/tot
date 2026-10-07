@@ -131,6 +131,25 @@ test('getDialogTexts provides Preset modal initial-document failure copy', (t) =
   );
 });
 
+test('getDialogTexts provides first-run and later Language chooser load-failure copy', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(
+    dialogTexts.language_chooser_first_run_initial_document_failure_message,
+    'The language chooser could not load. Startup will continue with the fallback language.'
+  );
+  assert.equal(
+    dialogTexts.language_chooser_initial_document_failure_title,
+    'The language chooser could not open'
+  );
+  assert.equal(
+    dialogTexts.language_chooser_initial_document_failure_message,
+    'The language chooser could not load.'
+  );
+});
+
 test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {
   withPlatform(t, 'darwin');
 

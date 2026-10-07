@@ -14,10 +14,34 @@
 // =============================================================================
 // Logger and DOM references
 // =============================================================================
+const locationSearch = window.location && typeof window.location.search === 'string'
+  ? window.location.search
+  : '';
+const isFirstRunLanguageChooser = /(?:^|[?&])languageChooserFirstRun=1(?:&|$)/.test(locationSearch);
+
+const closeFirstRunChooserAfterBootstrapFailure = () => {
+  if (!isFirstRunLanguageChooser) return;
+  try {
+    window.close();
+  } catch (closeError) {
+    console.error('[language] failed to close first-run chooser after bootstrap failure:', closeError);
+  }
+};
+
 if (typeof window.getLogger !== 'function') {
-  throw new Error('[language] window.getLogger unavailable; cannot continue');
+  const error = new Error('[language] window.getLogger unavailable; cannot continue');
+  console.error(error);
+  closeFirstRunChooserAfterBootstrapFailure();
+  throw error;
 }
-const log = window.getLogger('language');
+let log;
+try {
+  log = window.getLogger('language');
+} catch (error) {
+  console.error('[language] window.getLogger failed; cannot continue:', error);
+  closeFirstRunChooserAfterBootstrapFailure();
+  throw error;
+}
 log.debug('Language window starting...');
 const langFilter = document.getElementById('langFilter');
 const langList = document.getElementById('langList');
@@ -27,6 +51,13 @@ const statusNodes = Object.freeze({
   applying: document.getElementById('languageStatusApplying'),
   selectionError: document.getElementById('languageStatusSelectionError'),
 });
+
+if (!langFilter || !langList) {
+  const error = new Error('[language] required language chooser controls unavailable; cannot continue');
+  log.error('Language chooser bootstrap failed:', error);
+  closeFirstRunChooserAfterBootstrapFailure();
+  throw error;
+}
 
 // =============================================================================
 // Constants and shared state

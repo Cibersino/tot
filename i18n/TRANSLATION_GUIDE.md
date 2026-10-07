@@ -674,6 +674,24 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Mensaje nativo de cierre para el fallo de carga del documento inicial requerido de la ventana modal de presets.
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
+      "language_chooser_first_run_initial_document_failure_message": {
+        "es": "La ventana de idioma no pudo cargarse. El inicio continuará con el idioma predeterminado.",
+        "en": "The language chooser could not load. Startup will continue with the fallback language."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial durante el primer inicio; informa que el inicio continuará mediante el idioma predeterminado.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "language_chooser_initial_document_failure_title": {
+        "es": "No se pudo abrir la ventana de idioma",
+        "en": "The language chooser could not open"
+        // [PROPÓSITO] Título compartido del diálogo nativo cuando falla la carga del documento inicial requerido de la ventana de idioma, tanto durante el primer inicio como en una apertura posterior.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "language_chooser_initial_document_failure_message": {
+        "es": "La ventana de idioma no pudo cargarse.",
+        "en": "The language chooser could not load."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial al abrir posteriormente la ventana de idioma; no implica fallback ni cambio del idioma ya resuelto.
+        // [CONCEPTO_APP] ventana de idioma
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"
