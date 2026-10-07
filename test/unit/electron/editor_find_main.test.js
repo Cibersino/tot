@@ -74,6 +74,7 @@ class MockWindow extends EventEmitter {
     this.webContents = new MockWebContents();
     this._destroyed = false;
     this.bounds = [];
+    this.focusCount = 0;
   }
 
   isDestroyed() {
@@ -88,9 +89,13 @@ class MockWindow extends EventEmitter {
     this.bounds.push(bounds);
   }
 
-  focus() {}
+  focus() {
+    this.focusCount += 1;
+  }
 
   close() {
+    if (this._destroyed) return;
+    this.emit('close');
     this._destroyed = true;
     this.emit('closed');
   }
@@ -102,8 +107,10 @@ class FakeFindWindow extends MockWindow {
     FakeFindWindow.instances.push(this);
   }
 
-  static reset() {
+  static reset({ initialLoadError = null, holdInitialLoad = false } = {}) {
     FakeFindWindow.instances = [];
+    FakeFindWindow.initialLoadError = initialLoadError;
+    FakeFindWindow.holdInitialLoad = holdInitialLoad;
   }
 
   setMenu() {}
@@ -112,10 +119,22 @@ class FakeFindWindow extends MockWindow {
 
   loadFile() {
     this.webContents._loading = true;
-    setImmediate(() => {
-      this.emit('ready-to-show');
-      this.webContents.emit('did-finish-load');
-      this.webContents._loading = false;
+    if (FakeFindWindow.initialLoadError) {
+      return Promise.reject(FakeFindWindow.initialLoadError);
+    }
+    if (FakeFindWindow.holdInitialLoad) {
+      return new Promise((resolve, reject) => {
+        this.resolveInitialDocumentLoad = resolve;
+        this.rejectInitialDocumentLoad = reject;
+      });
+    }
+    return new Promise((resolve) => {
+      setImmediate(() => {
+        this.emit('ready-to-show');
+        this.webContents.emit('did-finish-load');
+        this.webContents._loading = false;
+        resolve();
+      });
     });
   }
 
@@ -127,6 +146,8 @@ class FakeFindWindow extends MockWindow {
 }
 
 FakeFindWindow.instances = [];
+FakeFindWindow.initialLoadError = null;
+FakeFindWindow.holdInitialLoad = false;
 
 function tick() {
   return new Promise((resolve) => setImmediate(resolve));
@@ -141,8 +162,8 @@ function getLastMessage(sentMessages, channel) {
   return null;
 }
 
-function loadEditorFindMainWithMocks() {
-  FakeFindWindow.reset();
+function loadEditorFindMainWithMocks(options = {}) {
+  FakeFindWindow.reset(options);
   const restoreElectronModule = installElectronModuleMock({
     BrowserWindow: FakeFindWindow,
     screen: {
@@ -172,7 +193,7 @@ async function setupFindHarness() {
   const editorWin = new MockWindow();
 
   editorFindMain.registerIpc(ipcMain);
-  editorFindMain.attachEditorWindow(editorWin, {});
+  editorFindMain.attachEditorWindow(editorWin, { shortcutActions: {} });
 
   const openEvent = { preventDefault() {} };
   editorWin.webContents.emit('before-input-event', openEvent, {
@@ -201,6 +222,83 @@ async function setupFindHarness() {
     restore,
   };
 }
+
+test('initial Find document failure discloses and closes the failed child', async () => {
+  const initialLoadError = new Error('Find document unavailable');
+  const { editorFindMain, restore } = loadEditorFindMainWithMocks({ initialLoadError });
+  const editorWin = new MockWindow();
+  const disclosedWindows = [];
+
+  try {
+    editorFindMain.attachEditorWindow(editorWin, {
+      shortcutActions: {},
+      showInitialDocumentFailureDisclosure(findWindow) {
+        disclosedWindows.push(findWindow);
+      },
+    });
+
+    editorWin.webContents.emit('before-input-event', { preventDefault() {} }, {
+      type: 'keyDown',
+      control: true,
+      meta: false,
+      alt: false,
+      key: 'h',
+      code: 'KeyH',
+    });
+
+    const [failedFindWindow] = FakeFindWindow.instances;
+    assert.ok(failedFindWindow, 'expected Find window creation');
+
+    await tick();
+    await tick();
+
+    assert.deepEqual(disclosedWindows, [failedFindWindow]);
+    assert.equal(failedFindWindow.isDestroyed(), true);
+    assert.equal(editorFindMain.getFindWindow(), null);
+    assert.deepEqual(editorWin.webContents.stopFindCalls, ['clearSelection']);
+    assert.equal(editorWin.focusCount, 1);
+  } finally {
+    restore();
+  }
+});
+
+test('coordinated Find closure suppresses initial document failure disclosure', async () => {
+  const { editorFindMain, restore } = loadEditorFindMainWithMocks({ holdInitialLoad: true });
+  const editorWin = new MockWindow();
+  const disclosedWindows = [];
+
+  try {
+    editorFindMain.attachEditorWindow(editorWin, {
+      shortcutActions: {},
+      showInitialDocumentFailureDisclosure(findWindow) {
+        disclosedWindows.push(findWindow);
+      },
+    });
+
+    editorWin.webContents.emit('before-input-event', { preventDefault() {} }, {
+      type: 'keyDown',
+      control: true,
+      meta: false,
+      alt: false,
+      key: 'h',
+      code: 'KeyH',
+    });
+
+    const findWin = editorFindMain.getFindWindow();
+    assert.ok(findWin, 'expected Find window creation');
+    assert.equal(typeof findWin.rejectInitialDocumentLoad, 'function');
+
+    editorWin.emit('close');
+    findWin.rejectInitialDocumentLoad(new Error('Load aborted by close'));
+    await tick();
+
+    assert.deepEqual(disclosedWindows, []);
+    assert.equal(findWin.isDestroyed(), true);
+    assert.equal(editorFindMain.getFindWindow(), null);
+  } finally {
+    restore();
+  }
+});
 
 test('Find direct post-load delivery sends state before the opening focus target', async () => {
   const { findWin, restore } = await setupFindHarness();

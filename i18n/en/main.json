@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "The language chooser could not load.",
       "floating_stopwatch_initial_document_failure_title": "The Floating Stopwatch could not open",
       "floating_stopwatch_initial_document_failure_message": "The Floating Stopwatch could not load and will close.",
+      "editor_find_initial_document_failure_title": "The find bar could not open",
+      "editor_find_initial_document_failure_message": "The find bar could not load and will close.",
       "editor_startup_failed_title": "The Text Editor could not start",
       "editor_startup_failed_message": "The Text Editor could not complete startup and will close.",
       "editor_startup_timeout_title": "The Text Editor took too long to start",

@@ -811,7 +811,10 @@ function createEditorWindow(options = {}) {
   }
 
   try {
-    editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
+    editorFindMain.attachEditorWindow(editorWin, {
+      shortcutActions: editorTextSizeController.getShortcutActions(),
+      showInitialDocumentFailureDisclosure: showEditorFindInitialDocumentFailureDisclosure,
+    });
   } catch (err) {
     log.warn('Text Editor find listener attachment failed (ignored):', err);
   }
@@ -1420,6 +1423,38 @@ function showEditorStartupFailureDisclosure(details = {}) {
     });
   } catch (err) {
     log.error('Text Editor startup failure native dialog failed:', { cause }, err);
+  }
+}
+
+function showEditorFindInitialDocumentFailureDisclosure(findWindow) {
+  let dialogTexts = null;
+  try {
+    dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+  } catch (err) {
+    log.error('Text Editor find initial document load native dialog translations unavailable:', err);
+  }
+
+  const title = dialogTexts && dialogTexts.editor_find_initial_document_failure_title;
+  const message = dialogTexts && dialogTexts.editor_find_initial_document_failure_message;
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title !== 'string' || !title.trim()
+    || typeof message !== 'string' || !message.trim()
+    || typeof ok !== 'string' || !ok.trim()) {
+    log.error('Text Editor find initial document load native dialog copy unavailable.');
+    return;
+  }
+
+  try {
+    dialog.showMessageBoxSync(findWindow, {
+      type: 'error',
+      title,
+      message,
+      buttons: [ok],
+      defaultId: 0,
+      noLink: true,
+    });
+  } catch (err) {
+    log.error('Text Editor find initial document load native dialog failed:', err);
   }
 }
 

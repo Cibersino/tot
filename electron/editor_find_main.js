@@ -58,6 +58,7 @@ let pendingFocusTarget = null;
 let closingFindWindow = false;
 let editorClosing = false;
 let editorShortcutActions = null;
+let showInitialFindDocumentFailureDisclosure = null;
 let replaceResponseListenerRegistered = false;
 
 const state = {
@@ -438,14 +439,45 @@ function createFindWindow() {
   findWin.setMenu(null);
   findWin.setMenuBarVisibility(false);
 
-  attachFindWindow(findWin);
-  findWin.loadFile(EDITOR_FIND_WINDOW_HTML);
-  findWin.once('ready-to-show', () => {
+  const createdFindWindow = findWin;
+  let createdFindWindowClosing = false;
+  createdFindWindow.on('close', () => {
+    createdFindWindowClosing = true;
+  });
+
+  attachFindWindow(createdFindWindow);
+  createdFindWindow.once('ready-to-show', () => {
     positionFindWindow();
   });
-  findWin.on('closed', () => {
+  createdFindWindow.on('closed', () => {
     handleFindWindowClosed();
     findWin = null;
+  });
+
+  const initialFindDocumentLoad = createdFindWindow.loadFile(EDITOR_FIND_WINDOW_HTML);
+  void initialFindDocumentLoad.catch((error) => {
+    // A close can abort loadFile(). That established close lifecycle already owns disposition.
+    if (createdFindWindowClosing || !isAliveWindow(createdFindWindow)) return;
+
+    log.error('Text Editor find initial document load failed:', error);
+
+    if (typeof showInitialFindDocumentFailureDisclosure === 'function') {
+      try {
+        showInitialFindDocumentFailureDisclosure(createdFindWindow);
+      } catch (disclosureError) {
+        log.error('Text Editor find initial document load native disclosure failed:', disclosureError);
+      }
+    } else {
+      log.error('Text Editor find initial document load native disclosure unavailable.');
+    }
+
+    try {
+      if (isAliveWindow(createdFindWindow)) {
+        createdFindWindow.close();
+      }
+    } catch (closeError) {
+      log.error('Text Editor find initial document load window close failed:', closeError);
+    }
   });
 
   return findWin;
@@ -595,6 +627,7 @@ function onEditorWindowClosed() {
   clearPendingSessionState('editor-window-closed');
   closingFindWindow = false;
   editorShortcutActions = null;
+  showInitialFindDocumentFailureDisclosure = null;
   session.clearStateOnly();
   detachEditorWindow();
   editorWinRef = null;
@@ -671,7 +704,11 @@ function attachEditorWindow(editorWin, options = {}) {
   detachEditorWindow();
   editorWinRef = null;
   editorClosing = false;
-  editorShortcutActions = options && typeof options === 'object' ? options : null;
+  const attachOptions = options && typeof options === 'object' ? options : {};
+  editorShortcutActions = attachOptions.shortcutActions || null;
+  showInitialFindDocumentFailureDisclosure = typeof attachOptions.showInitialDocumentFailureDisclosure === 'function'
+    ? attachOptions.showInitialDocumentFailureDisclosure
+    : null;
 
   if (!isAliveWindow(editorWin)) {
     throw new Error('attachEditorWindow requires a live Text Editor window');

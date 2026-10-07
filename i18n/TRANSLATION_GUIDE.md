@@ -704,6 +704,18 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Mensaje del fallo de carga inicial del Cronómetro Flotante en una apertura ordinaria; informa que la ventana afectada se cerrará.
         // [CONCEPTO_APP] Cronómetro Flotante
       },
+      "editor_find_initial_document_failure_title": {
+        "es": "No se pudo abrir la barra de búsqueda",
+        "en": "The find bar could not open"
+        // [PROPÓSITO] Título del diálogo nativo cuando falla la carga del documento inicial requerido de la barra de búsqueda del Editor de Texto.
+        // [CONCEPTO_APP] barra de búsqueda; Editor de Texto
+      },
+      "editor_find_initial_document_failure_message": {
+        "es": "La barra de búsqueda no pudo cargarse y se cerrará.",
+        "en": "The find bar could not load and will close."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial de la barra de búsqueda; informa que la ventana afectada se cerrará.
+        // [CONCEPTO_APP] barra de búsqueda; Editor de Texto
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"

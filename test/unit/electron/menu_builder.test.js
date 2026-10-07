@@ -165,6 +165,21 @@ test('getDialogTexts provides Floating Stopwatch initial-document failure copy',
   );
 });
 
+test('getDialogTexts provides Editor Find initial-document failure copy', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(
+    dialogTexts.editor_find_initial_document_failure_title,
+    'The find bar could not open'
+  );
+  assert.equal(
+    dialogTexts.editor_find_initial_document_failure_message,
+    'The find bar could not load and will close.'
+  );
+});
+
 test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {
   withPlatform(t, 'darwin');
 
