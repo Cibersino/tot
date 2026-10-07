@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "ভাষা নির্বাচন উইন্ডো লোড হতে পারেনি। স্টার্টআপ ডিফল্ট ভাষায় চলতে থাকবে।",
       "language_chooser_initial_document_failure_title": "ভাষা নির্বাচন উইন্ডো খোলা যায়নি",
       "language_chooser_initial_document_failure_message": "ভাষা নির্বাচন উইন্ডো লোড হতে পারেনি।",
+      "floating_stopwatch_initial_document_failure_title": "ভাসমান স্টপওয়াচ খোলা যায়নি",
+      "floating_stopwatch_initial_document_failure_message": "ভাসমান স্টপওয়াচ লোড হতে পারেনি এবং বন্ধ হয়ে যাবে।",
       "editor_startup_failed_title": "টেক্সট এডিটর শুরু করা যায়নি",
       "editor_startup_failed_message": "টেক্সট এডিটর স্টার্টআপ সম্পূর্ণ করতে পারেনি এবং বন্ধ হবে।",
       "editor_startup_timeout_title": "টেক্সট এডিটর শুরু হতে অতিরিক্ত সময় নিয়েছে",

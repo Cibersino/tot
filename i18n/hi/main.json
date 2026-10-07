@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "भाषा चयन विंडो लोड नहीं हो सकी। स्टार्टअप डिफ़ॉल्ट भाषा के साथ जारी रहेगा।",
       "language_chooser_initial_document_failure_title": "भाषा चयन विंडो नहीं खुल सकी",
       "language_chooser_initial_document_failure_message": "भाषा चयन विंडो लोड नहीं हो सकी।",
+      "floating_stopwatch_initial_document_failure_title": "फ़्लोटिंग स्टॉपवॉच नहीं खुल सकी",
+      "floating_stopwatch_initial_document_failure_message": "फ़्लोटिंग स्टॉपवॉच लोड नहीं हो सकी और बंद हो जाएगी।",
       "editor_startup_failed_title": "टेक्स्ट एडिटर शुरू नहीं हो सका",
       "editor_startup_failed_message": "टेक्स्ट एडिटर स्टार्टअप पूरा नहीं कर सका और बंद हो जाएगा।",
       "editor_startup_timeout_title": "टेक्स्ट एडिटर शुरू होने में बहुत अधिक समय लगा",

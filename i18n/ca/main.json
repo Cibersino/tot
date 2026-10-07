@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "La finestra de selecció d’idioma no s’ha pogut carregar. L’inici continuarà amb l’idioma predeterminat.",
       "language_chooser_initial_document_failure_title": "La finestra de selecció d’idioma no s’ha pogut obrir",
       "language_chooser_initial_document_failure_message": "La finestra de selecció d’idioma no s’ha pogut carregar.",
+      "floating_stopwatch_initial_document_failure_title": "El cronòmetre flotant no s’ha pogut obrir",
+      "floating_stopwatch_initial_document_failure_message": "El cronòmetre flotant no s’ha pogut carregar i es tancarà.",
       "editor_startup_failed_title": "L’Editor de text no s’ha pogut iniciar",
       "editor_startup_failed_message": "L’Editor de text no ha pogut completar l’inici i es tancarà.",
       "editor_startup_timeout_title": "L’Editor de text ha trigat massa a iniciar-se",

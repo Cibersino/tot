@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "La finestra di selezione della lingua non si è potuta caricare. L’avvio continuerà con la lingua predefinita.",
       "language_chooser_initial_document_failure_title": "La finestra di selezione della lingua non si è potuta aprire",
       "language_chooser_initial_document_failure_message": "La finestra di selezione della lingua non si è potuta caricare.",
+      "floating_stopwatch_initial_document_failure_title": "Il cronometro fluttuante non si è potuto aprire",
+      "floating_stopwatch_initial_document_failure_message": "Il cronometro fluttuante non si è potuto caricare e verrà chiuso.",
       "editor_startup_failed_title": "L’Editor di testo non si è avviato",
       "editor_startup_failed_message": "L’Editor di testo non ha completato l’avvio e verrà chiuso.",
       "editor_startup_timeout_title": "L’Editor di testo ha impiegato troppo tempo ad avviarsi",

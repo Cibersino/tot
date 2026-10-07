@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "زبان منتخب کرنے کی ونڈو لوڈ نہیں ہو سکی۔ آغاز ڈیفالٹ زبان کے ساتھ جاری رہے گا۔",
       "language_chooser_initial_document_failure_title": "زبان منتخب کرنے کی ونڈو نہیں کھل سکی",
       "language_chooser_initial_document_failure_message": "زبان منتخب کرنے کی ونڈو لوڈ نہیں ہو سکی۔",
+      "floating_stopwatch_initial_document_failure_title": "تیرتی ہوئی اسٹاپ واچ نہیں کھل سکی",
+      "floating_stopwatch_initial_document_failure_message": "تیرتی ہوئی اسٹاپ واچ لوڈ نہیں ہو سکی اور بند ہو جائے گی۔",
       "editor_startup_failed_title": "ٹیکسٹ ایڈیٹر شروع نہیں ہو سکا",
       "editor_startup_failed_message": "ٹیکسٹ ایڈیٹر آغاز مکمل نہیں کر سکا اور بند ہو جائے گا۔",
       "editor_startup_timeout_title": "ٹیکسٹ ایڈیٹر شروع ہونے میں بہت زیادہ وقت لے گیا",

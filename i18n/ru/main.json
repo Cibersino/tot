@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "Окно выбора языка не удалось загрузить. Запуск продолжится с языком по умолчанию.",
       "language_chooser_initial_document_failure_title": "Не удалось открыть окно выбора языка",
       "language_chooser_initial_document_failure_message": "Окно выбора языка не удалось загрузить.",
+      "floating_stopwatch_initial_document_failure_title": "Не удалось открыть плавающий секундомер",
+      "floating_stopwatch_initial_document_failure_message": "Плавающий секундомер не удалось загрузить, и он будет закрыт.",
       "editor_startup_failed_title": "Текстовый редактор не удалось запустить",
       "editor_startup_failed_message": "Текстовый редактор не смог завершить запуск и будет закрыт.",
       "editor_startup_timeout_title": "Текстовый редактор запускался слишком долго",

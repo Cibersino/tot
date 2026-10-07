@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "Aru ventana janiw cargañ atkiti. Qalltañax nayraqat wakichata arumpiw sarantani.",
       "language_chooser_initial_document_failure_title": "Aru ventana janiw jist’arañ atkiti",
       "language_chooser_initial_document_failure_message": "Aru ventana janiw cargañ atkiti.",
+      "floating_stopwatch_initial_document_failure_title": "Tuyuri pachayupiri janiw jist’arañ atkiti",
+      "floating_stopwatch_initial_document_failure_message": "Tuyuri pachayupiri janiw cargañ atkiti; jist’antatäniwa.",
       "editor_startup_failed_title": "Qillqata askichiri janiw qalltañ atkiti",
       "editor_startup_failed_message": "Qillqata askichiri janiw qalltañ tukuykiti; jist’antatäniwa.",
       "editor_startup_timeout_title": "Qillqata askichiri qalltañatakix sinti jayäna",

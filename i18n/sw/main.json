@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "Dirisha la kuchagua lugha halikuweza kupakiwa. Uanzishaji utaendelea kwa lugha chaguo-msingi.",
       "language_chooser_initial_document_failure_title": "Dirisha la kuchagua lugha halikuweza kufunguliwa",
       "language_chooser_initial_document_failure_message": "Dirisha la kuchagua lugha halikuweza kupakiwa.",
+      "floating_stopwatch_initial_document_failure_title": "Kipima Muda Kinachoelea hakikuweza kufunguliwa",
+      "floating_stopwatch_initial_document_failure_message": "Kipima Muda Kinachoelea hakikuweza kupakiwa na kitafungwa.",
       "editor_startup_failed_title": "Kihariri cha Maandishi hakikuweza kuanza",
       "editor_startup_failed_message": "Kihariri cha Maandishi hakikuweza kukamilisha kuanza na kitafungwa.",
       "editor_startup_timeout_title": "Kihariri cha Maandishi kilichukua muda mrefu sana kuanza",

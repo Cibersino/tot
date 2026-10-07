@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "پنجره انتخاب زبان نتوانست بارگذاری شود. راه‌اندازی با زبان پیش‌فرض ادامه خواهد یافت.",
       "language_chooser_initial_document_failure_title": "پنجره انتخاب زبان نتوانست باز شود",
       "language_chooser_initial_document_failure_message": "پنجره انتخاب زبان نتوانست بارگذاری شود.",
+      "floating_stopwatch_initial_document_failure_title": "کرنومتر شناور نتوانست باز شود",
+      "floating_stopwatch_initial_document_failure_message": "کرنومتر شناور نتوانست بارگذاری شود و بسته خواهد شد.",
       "editor_startup_failed_title": "ویرایشگر متن نتوانست شروع شود",
       "editor_startup_failed_message": "ویرایشگر متن نتوانست راه‌اندازی را کامل کند و بسته خواهد شد.",
       "editor_startup_timeout_title": "شروع ویرایشگر متن بیش از حد طول کشید",

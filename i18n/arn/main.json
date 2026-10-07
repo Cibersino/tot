@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "Kezungun ovetã pepi cargar-lafuy. Llitun amuleay kezungun müyey mew.",
       "language_chooser_initial_document_failure_title": "Kezungun ovetã nülan pepilafuy",
       "language_chooser_initial_document_failure_message": "Kezungun ovetã pepi cargar-lafuy.",
+      "floating_stopwatch_initial_document_failure_title": "Üngümwe weñyefe nülan pepilafuy",
+      "floating_stopwatch_initial_document_failure_message": "Üngümwe weñyefe pepi cargar-lafuy; nürüfay.",
       "editor_startup_failed_title": "Wirin Azümwe llitun pepilafuy",
       "editor_startup_failed_message": "Wirin Azümwe llitun chumngelay; nürüfay.",
       "editor_startup_timeout_title": "Wirin Azümwe llitun fütrañmawüy",

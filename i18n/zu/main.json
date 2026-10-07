@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "Iwindi lokukhetha ulimi alikwazanga ukulayishwa. Ukuqalisa kuzoqhubeka ngolimi oluzenzakalelayo.",
       "language_chooser_initial_document_failure_title": "Iwindi lokukhetha ulimi alikwazanga ukuvuleka",
       "language_chooser_initial_document_failure_message": "Iwindi lokukhetha ulimi alikwazanga ukulayishwa.",
+      "floating_stopwatch_initial_document_failure_title": "Isibali-sikhathi esintantayo asikwazanga ukuvuleka",
+      "floating_stopwatch_initial_document_failure_message": "Isibali-sikhathi esintantayo asikwazanga ukulayishwa futhi sizovalwa.",
       "editor_startup_failed_title": "Isihleli Sombhalo asikwazanga ukuqala",
       "editor_startup_failed_message": "Isihleli Sombhalo asikwazanga ukuqeda ukuqalisa futhi sizovalwa.",
       "editor_startup_timeout_title": "Isihleli Sombhalo sithathe isikhathi eside kakhulu ukuqala",

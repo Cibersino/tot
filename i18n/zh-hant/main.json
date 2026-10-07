@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "語言選擇視窗無法載入。啟動將使用預設語言繼續。",
       "language_chooser_initial_document_failure_title": "語言選擇視窗無法開啟",
       "language_chooser_initial_document_failure_message": "語言選擇視窗無法載入。",
+      "floating_stopwatch_initial_document_failure_title": "浮動碼錶無法開啟",
+      "floating_stopwatch_initial_document_failure_message": "浮動碼錶無法載入，即將關閉。",
       "editor_startup_failed_title": "文字編輯器無法啟動",
       "editor_startup_failed_message": "文字編輯器無法完成啟動，即將關閉。",
       "editor_startup_timeout_title": "文字編輯器啟動耗時過長",

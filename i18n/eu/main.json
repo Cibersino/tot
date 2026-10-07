@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "Hizkuntza hautatzeko leihoa ezin izan da kargatu. Abioak hizkuntza lehenetsiarekin jarraituko du.",
       "language_chooser_initial_document_failure_title": "Hizkuntza hautatzeko leihoa ezin izan da ireki",
       "language_chooser_initial_document_failure_message": "Hizkuntza hautatzeko leihoa ezin izan da kargatu.",
+      "floating_stopwatch_initial_document_failure_title": "Kronometro flotatzailea ezin izan da ireki",
+      "floating_stopwatch_initial_document_failure_message": "Kronometro flotatzailea ezin izan da kargatu eta itxi egingo da.",
       "editor_startup_failed_title": "Testu-editorea ezin izan da abiarazi",
       "editor_startup_failed_message": "Testu-editoreak ezin izan du abioa osatu eta itxi egingo da.",
       "editor_startup_timeout_title": "Testu-editoreak denbora gehiegi behar izan du abiarazteko",

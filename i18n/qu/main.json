@@ -93,6 +93,8 @@
       "language_chooser_first_run_initial_document_failure_message": "Rimay akllana qhawana mana churayta atirqanchu. Qallariy kikinmanta rimaywanmi qatiqta ruwakunqa.",
       "language_chooser_initial_document_failure_title": "Rimay akllana qhawana mana kichayta atirqanchu",
       "language_chooser_initial_document_failure_message": "Rimay akllana qhawana mana churayta atirqanchu.",
+      "floating_stopwatch_initial_document_failure_title": "Wayraqpi puriq pachayupaq mana kichayta atirqanchu",
+      "floating_stopwatch_initial_document_failure_message": "Wayraqpi puriq pachayupaq mana churayta atirqanchu hinaspa wichq’akunqa.",
       "editor_startup_failed_title": "Qillqa allichana mana qallarirqanchu",
       "editor_startup_failed_message": "Qillqa allichana mana qallariyta tukuchirqanchu hinaspa wichq’akunqa.",
       "editor_startup_timeout_title": "Qillqa allichana qallarinanpaq anchata unaykurqan",
