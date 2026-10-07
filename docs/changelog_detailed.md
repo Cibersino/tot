@@ -48,6 +48,7 @@ Reglas:
 
 ### Resumen de cambios
 
+- Ventanas secundarias / fallos terminales tempranos (Issue #335): ocho superficies —Text Editor, Task Editor, Calculadora rápida, Preset, selector de idioma, Cronómetro Flotante, Editor Find y Reading Test Result/Questions— dejan de poder quedar presentadas, inertes o reutilizables como si hubieran arrancado correctamente cuando falla un bootstrap requerido, el preload, el DOM mínimo o el documento inicial; cada owner conserva el diagnóstico y aplica disclosure/disposición según su lifecycle, sin introducir un manager, readiness protocol o mecanismo terminal común.
 - El `Info Modal` de la ventana principal deja de concentrar estado, DOM, render asíncrono, foco, carga de documentos y presentación de About en `public/renderer.js`: `public/js/info_modal.js` pasa a ser su owner renderer dedicado, mientras el entrypoint conserva únicamente inicialización, coordinación de bloqueo, delegación de menú y notificación de idioma sin cambiar la ruta de fallback de `RendererI18n`, los enlaces/capturas de `InfoModalLinks` ni el comportamiento observable del modal.
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
 - Los selects nativos de las superficies renderer convergen en un único `RendererCombobox` production-owned con modos fijo y editable: presets, planificación batch, calculadora rápida y tags de snapshots comparten desde ahora la misma semántica ARIA/teclado/hover, apertura siempre debajo del trigger y popup scrolleable con altura máxima fija de `160px`.
@@ -193,6 +194,12 @@ Reglas:
 
 ### Arreglado
 
+- Ventanas secundarias / fallos terminales tempranos (Issue #335):
+  - se completa la revisión e implementación de los 21 escenarios finalmente clasificados como `correction required` en 8 superficies secundarias, preservando diagnóstico, disclosure solo donde quedó justificado y disposición terminal según el lifecycle/owner real de cada escenario, sin imponer un mecanismo común;
+  - Text Editor y Task Editor ya no pueden quedar visibles/inertes por los fallos tempranos aprobados sin renderer utilizable; Task Editor mantiene intacta la protección de draft y deduplica preload/document failure dentro de su lifecycle existente;
+  - Calculadora rápida, Preset, selector de idioma, Cronómetro Flotante y Editor Find corrigen sus fallos de establecimiento aprobados sin extender el manejo a navegación posterior; cuando corresponde, el owner del `loadFile()` inicial conserva diagnóstico, disclosure localizado y cierre o invalidación de la instancia fallida, mientras los aborts renderer no-state usan fail-close local;
+  - Reading Test Result/Questions cierra F44a y F45 con cambios exclusivamente renderer-locales: los aborts directos F44a cierran el modal no-state y preservan el throw original, y el required-DOM failure F45 conserva su diagnóstico, solicita cierre local y continúa por el `closed` ordinario; F44b permanece deliberadamente `NO CHANGE` bajo proporcionalidad;
+  - la re-adjudicación final de F45 descarta el mecanismo causal cross-process ensayado previamente: no se agrega preload API, IPC, settlement `{ ok: false }`, autorización Main ni disclosure específico para ese required-DOM failure. El smoke final Reading Test Result → Questions → Preset pasó.
 - Fallbacks y continuidad durante actualización de idioma:
   - una falla al leer settings antes de abrir los diálogos nativos ya no degrada el texto a nombres técnicos de clave: Reading Test import y el picker de text extraction resuelven mediante `DEFAULT_LANG` en main;
   - Batch Planning ya no convierte un límite de página vacío e inválido en el máximo al retransmitir idioma; el borrador local conserva tanto entradas válidas como incompletas, mantiene scroll y cae a `Close` solo si destruye el control enfocado;
@@ -250,6 +257,8 @@ Reglas:
 
 ### Contratos tocados
 
+- Issue #335 / Cronómetro Flotante:
+  - `flotante-open` endurece la semántica de su resultado: una apertura ordinaria solo conserva `{ ok: true }` cuando el documento inicial requerido logra establecerse; un fallo genuino de esa carga devuelve `{ ok: false }`, y el renderer principal usa ese resultado para no dejar activado el toggle del Floating tras una apertura fallida.
 - Recursos i18n y superficies vivas de Reading Test:
   - `window.RendererI18n.loadLocalizedDocument(documentId, language)` es el resolver de recursos HTML completos permitidos por el catálogo i18n. Devuelve `{ html, language, path }`, donde `language` es el idioma efectivo tras intentar tag exacto, idioma base y `DEFAULT_LANG`; si ningún candidato sirve, devuelve `{ html: null, language: '', path: '' }`.
   - `window.readingTestQuestionsAPI.onSettingsChanged(cb)` y `window.readingTestResultAPI.onSettingsChanged(cb)` escuchan `settings-updated`, entregan el snapshot de settings y devuelven `unsubscribe`. Questions y Result pasan a ser targets del broadcast mientras su `BrowserWindow` siga abierta; no cambia ningún schema persistido de Reading Test.
