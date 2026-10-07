@@ -662,6 +662,18 @@ Estados de revisión recomendados:
         "en": "The quick calculator could not load and will close."
         // [CONCEPTO_APP] calculadora rápida
       },
+      "preset_modal_initial_document_failure_title": {
+        "es": "No se pudo abrir la ventana de presets",
+        "en": "The preset window could not open"
+        // [PROPÓSITO] Título del diálogo nativo para el fallo de carga del documento inicial requerido de la ventana modal de presets.
+        // [CONCEPTO_APP] preset de velocidad de lectura
+      },
+      "preset_modal_initial_document_failure_message": {
+        "es": "La ventana de presets no pudo cargarse y se cerrará.",
+        "en": "The preset window could not load and will close."
+        // [PROPÓSITO] Mensaje nativo de cierre para el fallo de carga del documento inicial requerido de la ventana modal de presets.
+        // [CONCEPTO_APP] preset de velocidad de lectura
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"

@@ -116,6 +116,21 @@ test('getDialogTexts provides Calculator initial-document failure copy', (t) => 
   );
 });
 
+test('getDialogTexts provides Preset modal initial-document failure copy', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(
+    dialogTexts.preset_modal_initial_document_failure_title,
+    'The preset window could not open'
+  );
+  assert.equal(
+    dialogTexts.preset_modal_initial_document_failure_message,
+    'The preset window could not load and will close.'
+  );
+});
+
 test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {
   withPlatform(t, 'darwin');
 
