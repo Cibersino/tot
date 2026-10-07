@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Fenèt chwa lang lan pa t ka chaje.",
       "floating_stopwatch_initial_document_failure_title": "Kwonomèt flòtan an pa t ka louvri",
       "floating_stopwatch_initial_document_failure_message": "Kwonomèt flòtan an pa t ka chaje epi l ap fèmen.",
+      "editor_find_initial_document_failure_title": "Ba rechèch la pa t ka louvri",
+      "editor_find_initial_document_failure_message": "Ba rechèch la pa t ka chaje epi l ap fèmen.",
       "editor_startup_failed_title": "Editè Tèks la pa t ka demare",
       "editor_startup_failed_message": "Editè Tèks la pa t ka fini demaraj la epi l ap fèmen.",
       "editor_startup_timeout_title": "Editè Tèks la pran twòp tan pou demare",

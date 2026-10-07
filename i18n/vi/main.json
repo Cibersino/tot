@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Cửa sổ chọn ngôn ngữ không tải được.",
       "floating_stopwatch_initial_document_failure_title": "Không thể mở đồng hồ bấm giờ nổi",
       "floating_stopwatch_initial_document_failure_message": "Đồng hồ bấm giờ nổi không tải được và sẽ đóng.",
+      "editor_find_initial_document_failure_title": "Không thể mở thanh tìm kiếm",
+      "editor_find_initial_document_failure_message": "Thanh tìm kiếm không tải được và sẽ đóng.",
       "editor_startup_failed_title": "Không thể khởi động Trình soạn thảo văn bản",
       "editor_startup_failed_message": "Trình soạn thảo văn bản không thể hoàn tất khởi động và sẽ đóng.",
       "editor_startup_timeout_title": "Trình soạn thảo văn bản mất quá nhiều thời gian để khởi động",

@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Language window no fit load.",
       "floating_stopwatch_initial_document_failure_title": "Floating Stopwatch no fit open",
       "floating_stopwatch_initial_document_failure_message": "Floating Stopwatch no fit load, so e go close.",
+      "editor_find_initial_document_failure_title": "Find bar no fit open",
+      "editor_find_initial_document_failure_message": "Find bar no fit load, so e go close.",
       "editor_startup_failed_title": "Text Editor no fit start",
       "editor_startup_failed_message": "Text Editor no fit finish startup, so e go close.",
       "editor_startup_timeout_title": "Text Editor take too much time to start",

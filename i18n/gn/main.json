@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Ovetã ñe’ẽ jeporavorã ndaikatúi oñemyenyhẽ.",
       "floating_stopwatch_initial_document_failure_title": "Cronómetro ovevýiva ndaikatúi ojepe’a",
       "floating_stopwatch_initial_document_failure_message": "Cronómetro ovevýiva ndaikatúi oñemyenyhẽ ha oñembotýta.",
+      "editor_find_initial_document_failure_title": "Barra jeheka ndaikatúi ojepe’a",
+      "editor_find_initial_document_failure_message": "Barra jeheka ndaikatúi oñemyenyhẽ ha oñembotýta.",
       "editor_startup_failed_title": "Jehai myatyrõha ndaikatúi oñepyrũ",
       "editor_startup_failed_message": "Jehai myatyrõha ndaikatúi omohu’ã ñepyrũ ha oñembotýta.",
       "editor_startup_timeout_title": "Jehai myatyrõha areterei oñepyrũ hag̃ua",

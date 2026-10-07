@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "语言选择窗口无法加载。",
       "floating_stopwatch_initial_document_failure_title": "悬浮秒表无法打开",
       "floating_stopwatch_initial_document_failure_message": "悬浮秒表无法加载，即将关闭。",
+      "editor_find_initial_document_failure_title": "查找栏无法打开",
+      "editor_find_initial_document_failure_message": "查找栏无法加载，即将关闭。",
       "editor_startup_failed_title": "文本编辑器无法启动",
       "editor_startup_failed_message": "文本编辑器无法完成启动，即将关闭。",
       "editor_startup_timeout_title": "文本编辑器启动耗时过长",

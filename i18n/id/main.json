@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Jendela pemilihan bahasa tidak dapat dimuat.",
       "floating_stopwatch_initial_document_failure_title": "Stopwatch mengambang tidak dapat dibuka",
       "floating_stopwatch_initial_document_failure_message": "Stopwatch mengambang tidak dapat dimuat dan akan ditutup.",
+      "editor_find_initial_document_failure_title": "Bilah pencarian tidak dapat dibuka",
+      "editor_find_initial_document_failure_message": "Bilah pencarian tidak dapat dimuat dan akan ditutup.",
       "editor_startup_failed_title": "Editor Teks tidak dapat dimulai",
       "editor_startup_failed_message": "Editor Teks tidak dapat menyelesaikan startup dan akan ditutup.",
       "editor_startup_timeout_title": "Editor Teks terlalu lama untuk dimulai",

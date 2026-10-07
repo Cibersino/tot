@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Das Sprachauswahlfenster konnte nicht geladen werden.",
       "floating_stopwatch_initial_document_failure_title": "Die schwebende Stoppuhr konnte nicht geöffnet werden",
       "floating_stopwatch_initial_document_failure_message": "Die schwebende Stoppuhr konnte nicht geladen werden und wird geschlossen.",
+      "editor_find_initial_document_failure_title": "Die Suchleiste konnte nicht geöffnet werden",
+      "editor_find_initial_document_failure_message": "Die Suchleiste konnte nicht geladen werden und wird geschlossen.",
       "editor_startup_failed_title": "Der Texteditor konnte nicht gestartet werden",
       "editor_startup_failed_message": "Der Texteditor konnte den Start nicht abschließen und wird geschlossen.",
       "editor_startup_timeout_title": "Der Texteditor brauchte zu lange zum Starten",

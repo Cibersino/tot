@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Dil seçimi penceresi yüklenemedi.",
       "floating_stopwatch_initial_document_failure_title": "Yüzen kronometre açılamadı",
       "floating_stopwatch_initial_document_failure_message": "Yüzen kronometre yüklenemedi ve kapanacak.",
+      "editor_find_initial_document_failure_title": "Arama çubuğu açılamadı",
+      "editor_find_initial_document_failure_message": "Arama çubuğu yüklenemedi ve kapanacak.",
       "editor_startup_failed_title": "Metin Düzenleyici başlatılamadı",
       "editor_startup_failed_message": "Metin Düzenleyici başlatmayı tamamlayamadı ve kapanacak.",
       "editor_startup_timeout_title": "Metin Düzenleyici çok geç başlatıldı",

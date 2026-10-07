@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "تعذّر تحميل نافذة اختيار اللغة.",
       "floating_stopwatch_initial_document_failure_title": "تعذّر فتح ساعة الإيقاف العائمة",
       "floating_stopwatch_initial_document_failure_message": "تعذّر تحميل ساعة الإيقاف العائمة وستُغلَق.",
+      "editor_find_initial_document_failure_title": "تعذّر فتح شريط البحث",
+      "editor_find_initial_document_failure_message": "تعذّر تحميل شريط البحث وسيُغلَق.",
       "editor_startup_failed_title": "تعذّر بدء محرر النصوص",
       "editor_startup_failed_message": "تعذّر على محرر النصوص إكمال بدء التشغيل وسيُغلَق.",
       "editor_startup_timeout_title": "استغرق محرر النصوص وقتًا طويلًا جدًا لبدء التشغيل",

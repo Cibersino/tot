@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "Kāore te matapihi kōwhiri reo i taea te uta.",
       "floating_stopwatch_initial_document_failure_title": "Kāore te Matawā Mānu i taea te whakatuwhera",
       "floating_stopwatch_initial_document_failure_message": "Kāore te Matawā Mānu i taea te uta, ā, ka kati.",
+      "editor_find_initial_document_failure_title": "Kāore te pae kimi i taea te whakatuwhera",
+      "editor_find_initial_document_failure_message": "Kāore te pae kimi i taea te uta, ā, ka kati.",
       "editor_startup_failed_title": "Kāore te Kaiwhakatika Kuputuhi i tīmata",
       "editor_startup_failed_message": "Kāore te Kaiwhakatika Kuputuhi i oti tana tīmatanga, ā, ka kati.",
       "editor_startup_timeout_title": "He roa rawa te tīmatanga o te Kaiwhakatika Kuputuhi",

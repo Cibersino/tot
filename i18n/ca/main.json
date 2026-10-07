@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "La finestra de selecció d’idioma no s’ha pogut carregar.",
       "floating_stopwatch_initial_document_failure_title": "El cronòmetre flotant no s’ha pogut obrir",
       "floating_stopwatch_initial_document_failure_message": "El cronòmetre flotant no s’ha pogut carregar i es tancarà.",
+      "editor_find_initial_document_failure_title": "La barra de cerca no s’ha pogut obrir",
+      "editor_find_initial_document_failure_message": "La barra de cerca no s’ha pogut carregar i es tancarà.",
       "editor_startup_failed_title": "L’Editor de text no s’ha pogut iniciar",
       "editor_startup_failed_message": "L’Editor de text no ha pogut completar l’inici i es tancarà.",
       "editor_startup_timeout_title": "L’Editor de text ha trigat massa a iniciar-se",

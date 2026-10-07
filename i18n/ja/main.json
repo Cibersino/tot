@@ -95,6 +95,8 @@
       "language_chooser_initial_document_failure_message": "言語選択ウィンドウを読み込めませんでした。",
       "floating_stopwatch_initial_document_failure_title": "フローティングストップウォッチを開けませんでした",
       "floating_stopwatch_initial_document_failure_message": "フローティングストップウォッチを読み込めなかったため閉じます。",
+      "editor_find_initial_document_failure_title": "検索バーを開けませんでした",
+      "editor_find_initial_document_failure_message": "検索バーを読み込めなかったため閉じます。",
       "editor_startup_failed_title": "テキストエディターを起動できませんでした",
       "editor_startup_failed_message": "テキストエディターは起動を完了できなかったため閉じます。",
       "editor_startup_timeout_title": "テキストエディターの起動に時間がかかりすぎました",
