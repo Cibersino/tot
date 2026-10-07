@@ -16,18 +16,35 @@
   // =============================================================================
   // Renderer bridges / logger
   // =============================================================================
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[reading-test-questions] window.getLogger unavailable; cannot continue');
+  let log = null;
+
+  function failClosedQuestionsBootstrap(error) {
+    try {
+      if (log && typeof log.error === 'function') {
+        log.error('Reading-test questions bootstrap failed; closing window:', error);
+      }
+    } finally {
+      if (typeof window.close === 'function') window.close();
+    }
+    throw error;
   }
-  const log = window.getLogger('reading-test-questions');
-  log.debug('Reading-test questions window starting...');
+
+  if (typeof window.getLogger !== 'function') {
+    failClosedQuestionsBootstrap(new Error('[reading-test-questions] window.getLogger unavailable; cannot continue'));
+  }
+  try {
+    log = window.getLogger('reading-test-questions');
+    log.debug('Reading-test questions window starting...');
+  } catch (err) {
+    failClosedQuestionsBootstrap(err);
+  }
 
   const questionsApi = window.readingTestQuestionsAPI || null;
   if (!questionsApi
     || typeof questionsApi.getSettings !== 'function'
     || typeof questionsApi.onInitData !== 'function'
     || typeof questionsApi.onSettingsChanged !== 'function') {
-    throw new Error('[reading-test-questions] readingTestQuestionsAPI unavailable; cannot continue');
+    failClosedQuestionsBootstrap(new Error('[reading-test-questions] readingTestQuestionsAPI unavailable; cannot continue'));
   }
   let questionsI18nTerminal = false;
   let setQuestionsTerminalUnavailable = () => {};
@@ -49,7 +66,7 @@
   if (!formatUtils
     || typeof formatUtils.obtenerSeparadoresDeNumeros !== 'function'
     || typeof formatUtils.formatearNumero !== 'function') {
-    throw new Error('[reading-test-questions] FormatUtils unavailable; cannot continue');
+    failClosedQuestionsBootstrap(new Error('[reading-test-questions] FormatUtils unavailable; cannot continue'));
   }
   const { obtenerSeparadoresDeNumeros, formatearNumero } = formatUtils;
 
@@ -58,7 +75,7 @@
     || typeof questionsCore.validateQuestionsPayload !== 'function'
     || typeof questionsCore.computeRandomGuessPercentage !== 'function'
     || typeof questionsCore.scoreQuestions !== 'function') {
-    throw new Error('[reading-test-questions] ReadingTestQuestionsCore unavailable; cannot continue');
+    failClosedQuestionsBootstrap(new Error('[reading-test-questions] ReadingTestQuestionsCore unavailable; cannot continue'));
   }
 
   // =============================================================================
@@ -109,6 +126,7 @@
 
       if (Object.values(requiredElements).some((element) => !element)) {
         log.error('Reading-test questions window missing required DOM; script aborted.');
+        if (typeof window.close === 'function') window.close();
         return null;
       }
 

@@ -335,6 +335,49 @@ test('reading-test result focuses Continue after result data renders', async () 
   assert.equal(dom.getActiveElement(), dom.elements.readingTestResultContinue);
 });
 
+test('reading-test result closes locally when its required DOM contract is unavailable', () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  let closeCalls = 0;
+  let settingsReads = 0;
+  let initSubscriptions = 0;
+  let settingsSubscriptions = 0;
+  const window = {
+    ...createBaseWindow(),
+    readingTestResultAPI: {
+      async getSettings() {
+        settingsReads += 1;
+        return { language: 'en' };
+      },
+      onInitData() {
+        initSubscriptions += 1;
+      },
+      onSettingsChanged() {
+        settingsSubscriptions += 1;
+      },
+      reportRendererI18nFailure() {},
+    },
+    close() {
+      closeCalls += 1;
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+
+  assert.equal(closeCalls, 1);
+  assert.equal(settingsReads, 0);
+  assert.equal(initSubscriptions, 0);
+  assert.equal(settingsSubscriptions, 0);
+});
+
 test('reading-test result treats an initial-settings failure after replay establishment as recoverable', async () => {
   const dom = createDomHarness([
     'readingTestResultTitle',

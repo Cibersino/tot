@@ -16,18 +16,35 @@
   // =============================================================================
   // Renderer bridges / logger
   // =============================================================================
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[reading-test-result] window.getLogger unavailable; cannot continue');
+  let log = null;
+
+  function failClosedResultBootstrap(error) {
+    try {
+      if (log && typeof log.error === 'function') {
+        log.error('Reading-test result bootstrap failed; closing window:', error);
+      }
+    } finally {
+      if (typeof window.close === 'function') window.close();
+    }
+    throw error;
   }
-  const log = window.getLogger('reading-test-result');
-  log.debug('Reading-test result window starting...');
+
+  if (typeof window.getLogger !== 'function') {
+    failClosedResultBootstrap(new Error('[reading-test-result] window.getLogger unavailable; cannot continue'));
+  }
+  try {
+    log = window.getLogger('reading-test-result');
+    log.debug('Reading-test result window starting...');
+  } catch (err) {
+    failClosedResultBootstrap(err);
+  }
 
   const resultApi = window.readingTestResultAPI || null;
   if (!resultApi
     || typeof resultApi.getSettings !== 'function'
     || typeof resultApi.onInitData !== 'function'
     || typeof resultApi.onSettingsChanged !== 'function') {
-    throw new Error('[reading-test-result] readingTestResultAPI unavailable; cannot continue');
+    failClosedResultBootstrap(new Error('[reading-test-result] readingTestResultAPI unavailable; cannot continue'));
   }
   let resultI18nTerminal = false;
   const i18nApi = window.RendererI18n || null;
@@ -52,7 +69,7 @@
   if (!formatUtils
     || typeof formatUtils.obtenerSeparadoresDeNumeros !== 'function'
     || typeof formatUtils.formatearNumero !== 'function') {
-    throw new Error('[reading-test-result] FormatUtils unavailable; cannot continue');
+    failClosedResultBootstrap(new Error('[reading-test-result] FormatUtils unavailable; cannot continue'));
   }
   const { obtenerSeparadoresDeNumeros, formatearNumero } = formatUtils;
 
@@ -93,6 +110,7 @@
 
       if (Object.values(requiredElements).some((element) => !element)) {
         log.error('Reading-test result window missing required DOM; script aborted.');
+        if (typeof window.close === 'function') window.close();
         return null;
       }
 
