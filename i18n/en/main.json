@@ -86,6 +86,8 @@
       "renderer_i18n_failure_message": "The interface could not load its required language resources. The window will close.",
       "renderer_settings_listener_failure_title": "The interface could not start",
       "renderer_settings_listener_failure_message": "The interface could not establish the required settings synchronization. The window will close.",
+      "text_time_calculator_initial_document_failure_title": "The quick calculator could not open",
+      "text_time_calculator_initial_document_failure_message": "The quick calculator could not load and will close.",
       "editor_startup_failed_title": "The Text Editor could not start",
       "editor_startup_failed_message": "The Text Editor could not complete startup and will close.",
       "editor_startup_timeout_title": "The Text Editor took too long to start",

@@ -652,6 +652,16 @@ Estados de revisión recomendados:
         "es": "La interfaz no pudo establecer la sincronización necesaria con la configuración. La ventana se cerrará.",
         "en": "The interface could not establish the required settings synchronization. The window will close."
       },
+      "text_time_calculator_initial_document_failure_title": {
+        "es": "No se pudo abrir la calculadora rápida",
+        "en": "The quick calculator could not open"
+        // [CONCEPTO_APP] calculadora rápida
+      },
+      "text_time_calculator_initial_document_failure_message": {
+        "es": "La calculadora rápida no pudo cargarse y se cerrará.",
+        "en": "The quick calculator could not load and will close."
+        // [CONCEPTO_APP] calculadora rápida
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"

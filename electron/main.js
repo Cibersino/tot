@@ -979,7 +979,59 @@ function createTextTimeCalculatorWindow() {
 
   textTimeCalculatorWin.setMenu(null);
   textTimeCalculatorWin.setMenuBarVisibility(false);
-  textTimeCalculatorWin.loadFile(path.join(__dirname, '../public/text_time_calculator.html'));
+
+  const createdTextTimeCalculatorWin = textTimeCalculatorWin;
+  let createdTextTimeCalculatorWindowClosing = false;
+  createdTextTimeCalculatorWin.on('close', () => {
+    createdTextTimeCalculatorWindowClosing = true;
+  });
+
+  const initialCalculatorDocumentLoad = createdTextTimeCalculatorWin.loadFile(
+    path.join(__dirname, '../public/text_time_calculator.html')
+  );
+  void initialCalculatorDocumentLoad.catch((error) => {
+    // A close can abort loadFile(). Ordinary Calculator closure owns that disposition and is not an F18 required-initial-document failure.
+    if (createdTextTimeCalculatorWindowClosing || !isAliveWindow(createdTextTimeCalculatorWin)) return;
+
+    log.error('Text-time calculator initial document load failed:', error);
+
+    let dialogTexts = null;
+    try {
+      dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+    } catch (dialogTextsError) {
+      log.error('Text-time calculator initial document load native dialog translations unavailable:', dialogTextsError);
+    }
+
+    const title = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_title;
+    const message = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_message;
+    const ok = dialogTexts && dialogTexts.ok;
+    if (typeof title === 'string' && title.trim()
+      && typeof message === 'string' && message.trim()
+      && typeof ok === 'string' && ok.trim()) {
+      try {
+        dialog.showMessageBoxSync(createdTextTimeCalculatorWin, {
+          type: 'error',
+          title,
+          message,
+          buttons: [ok],
+          defaultId: 0,
+          noLink: true,
+        });
+      } catch (dialogError) {
+        log.error('Text-time calculator initial document load native dialog failed:', dialogError);
+      }
+    } else {
+      log.error('Text-time calculator initial document load native dialog copy unavailable.');
+    }
+
+    try {
+      if (isAliveWindow(createdTextTimeCalculatorWin)) {
+        createdTextTimeCalculatorWin.close();
+      }
+    } catch (closeError) {
+      log.error('Text-time calculator initial document load window close failed:', closeError);
+    }
+  });
 
   textTimeCalculatorWin.once('ready-to-show', () => {
     try {

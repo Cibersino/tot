@@ -101,6 +101,21 @@ test('getDialogTexts provides distinct terminal copy for settings-listener failu
   );
 });
 
+test('getDialogTexts provides Calculator initial-document failure copy', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(
+    dialogTexts.text_time_calculator_initial_document_failure_title,
+    'The quick calculator could not open'
+  );
+  assert.equal(
+    dialogTexts.text_time_calculator_initial_document_failure_message,
+    'The quick calculator could not load and will close.'
+  );
+});
+
 test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {
   withPlatform(t, 'darwin');
 
