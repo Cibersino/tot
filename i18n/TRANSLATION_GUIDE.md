@@ -3750,9 +3750,9 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
         },
         "questions_unavailable": {
-          "es": "No se pudo abrir la ventana de preguntas de comprensión. El flujo terminó antes de crear el preset.",
-          "en": "The comprehension questions window could not be opened. The flow ended before preset creation."
-          // [PROPÓSITO] Alerta cuando no puede abrirse la ventana de preguntas y el flujo termina antes de crear preset de velocidad.
+          "es": "No se pudieron mostrar las preguntas de comprensión. El flujo continuó.",
+          "en": "The comprehension questions could not be shown. The flow continued."
+          // [PROPÓSITO] Alerta cuando no pueden mostrarse las preguntas y el flujo del test continúa.
           // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
         },
         "pool_import_failed": {

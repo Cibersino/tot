@@ -672,7 +672,7 @@
         "result_invalid": "測試結果無法轉換為有效的 WPM。流程結束，未開啟預設值對話框。",
         "result_unavailable": "無法顯示閱讀速度結果。流程已繼續。",
         "preset_unavailable": "測試後無法開啟預設值對話框。",
-        "questions_unavailable": "無法開啟理解問題對話框。流程在建立預設值前結束。",
+        "questions_unavailable": "無法顯示理解問題。流程已繼續。",
         "pool_import_failed": "無法匯入閱讀速度測試檔案。",
         "pool_import_state_cleanup_failed": "閱讀速度測試檔案已匯入，但 pool 狀態無法完全更新。",
         "start_failed": "無法啟動閱讀速度測試。",

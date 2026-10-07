@@ -672,7 +672,7 @@
         "result_invalid": "Matokeo ya jaribio hayakuweza kubadilishwa kuwa WPM halali. Mchakato uliisha bila kufungua dirisha la preseti.",
         "result_unavailable": "Matokeo ya kasi ya kusoma hayakuweza kuonyeshwa. Mchakato uliendelea.",
         "preset_unavailable": "Dirisha la preseti halikuweza kufunguliwa baada ya jaribio.",
-        "questions_unavailable": "Dirisha la maswali ya ufahamu halikuweza kufunguliwa. Mchakato uliisha kabla ya kuunda preseti.",
+        "questions_unavailable": "Maswali ya ufahamu hayakuweza kuonyeshwa. Mchakato uliendelea.",
         "pool_import_failed": "Faili za jaribio la kasi ya kusoma hazikuweza kuletwa.",
         "pool_import_state_cleanup_failed": "Faili za jaribio la kasi ya kusoma zililetwa, lakini hali ya mkusanyiko haikuweza kusasishwa kikamilifu.",
         "start_failed": "Jaribio la kasi ya kusoma halikuweza kuanzishwa.",

@@ -672,7 +672,7 @@
         "result_invalid": "Di test result no fit convert to valid WPM. Di flow end without opening preset modal.",
         "result_unavailable": "Could not show reading speed result. Di flow continue.",
         "preset_unavailable": "Could not open preset modal after di test.",
-        "questions_unavailable": "Could not open comprehension questions modal. Di flow end before preset creation.",
+        "questions_unavailable": "Could not show comprehension questions. Di flow continue.",
         "pool_import_failed": "Reading speed test files could not be imported.",
         "pool_import_state_cleanup_failed": "Di reading speed test files don import, but di pool state no fit update completely.",
         "start_failed": "Reading speed test could not start.",

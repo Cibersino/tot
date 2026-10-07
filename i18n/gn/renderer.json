@@ -672,7 +672,7 @@
         "result_invalid": "Test resultado ndaikatúi oñembohasa WPM válido-pe. Flujo opa oipe’a’ỹre modal preset.",
         "result_unavailable": "Ndaikatúi ojehechauka moñe’ẽ pya’ekue resultado. Flujo osegi.",
         "preset_unavailable": "Ndaikatúi ojepe’a modal preset test rire.",
-        "questions_unavailable": "Ndaikatúi ojepe’a modal porandu comprensión rehegua. Flujo opa preset jejapo mboyve.",
+        "questions_unavailable": "Ndaikatúi ojehechauka porandu comprensión rehegua. Flujo osegi.",
         "pool_import_failed": "Ndaikatúi ojegueru archivo moñe’ẽ pya’ekue test rehegua.",
         "pool_import_state_cleanup_failed": "Ojegueru umi moñe’ẽ pya’ekue ñeha’ã marandurenda, pero aty estado ndaikatúi oñembopyahu porãite.",
         "start_failed": "Ndaikatúi oñepyrũ moñe’ẽ pya’ekue test.",

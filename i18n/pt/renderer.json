@@ -672,7 +672,7 @@
         "result_invalid": "O resultado do teste não pôde ser convertido em um WPM válido. O fluxo terminou sem abrir o diálogo de preset.",
         "result_unavailable": "Não foi possível mostrar o resultado da velocidade de leitura. O fluxo continuou.",
         "preset_unavailable": "Não foi possível abrir o diálogo de preset após o teste.",
-        "questions_unavailable": "Não foi possível abrir o diálogo de perguntas de compreensão. O fluxo terminou antes da criação do preset.",
+        "questions_unavailable": "Não foi possível mostrar as perguntas de compreensão. O fluxo continuou.",
         "pool_import_failed": "Não foi possível importar os arquivos do teste de velocidade de leitura.",
         "pool_import_state_cleanup_failed": "Os arquivos de teste foram importados, mas o estado do pool do teste não pôde ser totalmente atualizado.",
         "start_failed": "Não foi possível iniciar o teste de velocidade de leitura.",

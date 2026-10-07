@@ -672,7 +672,7 @@
         "result_invalid": "Không thể chuyển kết quả bài kiểm tra thành WPM hợp lệ. Quy trình đã kết thúc mà không mở modal preset.",
         "result_unavailable": "Không thể hiển thị kết quả tốc độ đọc. Quy trình vẫn tiếp tục.",
         "preset_unavailable": "Không thể mở modal preset sau bài kiểm tra.",
-        "questions_unavailable": "Không thể mở modal câu hỏi đọc hiểu. Quy trình đã kết thúc trước khi tạo preset.",
+        "questions_unavailable": "Không thể hiển thị các câu hỏi đọc hiểu. Quy trình vẫn tiếp tục.",
         "pool_import_failed": "Không thể nhập các tệp bài kiểm tra tốc độ đọc.",
         "pool_import_state_cleanup_failed": "Các tệp kiểm tra tốc độ đọc đã được nhập, nhưng trạng thái pool không thể được cập nhật đầy đủ.",
         "start_failed": "Không thể bắt đầu bài kiểm tra tốc độ đọc.",
