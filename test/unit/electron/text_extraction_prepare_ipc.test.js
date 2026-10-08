@@ -116,11 +116,6 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
     }
   );
 
-  console.error(
-    '[diagnostic] text-extraction prepare result:',
-    JSON.stringify(result, null, 2)
-  );
-
   assert.equal(result.ok, true);
   assert.equal(result.prepareReady, true);
   assert.equal(result.prepareFailed, false);
