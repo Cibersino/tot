@@ -672,7 +672,7 @@
         "result_invalid": "Testaren emaitza ezin izan da WPM baliozko bihurtu. Fluxua aurrezarpen-modalik ireki gabe amaitu da.",
         "result_unavailable": "Ezin izan da irakurketa-abiaduraren emaitza erakutsi. Fluxuak jarraitu du.",
         "preset_unavailable": "Ezin izan da aurrezarpen-modala ireki testaren ondoren.",
-        "questions_unavailable": "Ezin izan da ulermen-galderen modala ireki. Fluxua aurrezarpena sortu aurretik amaitu da.",
+        "questions_unavailable": "Ezin izan dira ulermen-galderak erakutsi. Fluxuak jarraitu du.",
         "pool_import_failed": "Ezin izan dira irakurketa-abiaduraren testaren fitxategiak inportatu.",
         "pool_import_state_cleanup_failed": "Irakurketa-abiaduraren testeko fitxategiak inportatu dira, baina pool-aren egoera ezin izan da guztiz eguneratu.",
         "start_failed": "Ezin izan da irakurketa-abiaduraren testa hasi.",

@@ -652,6 +652,70 @@ Estados de revisión recomendados:
         "es": "La interfaz no pudo establecer la sincronización necesaria con la configuración. La ventana se cerrará.",
         "en": "The interface could not establish the required settings synchronization. The window will close."
       },
+      "text_time_calculator_initial_document_failure_title": {
+        "es": "No se pudo abrir la calculadora rápida",
+        "en": "The quick calculator could not open"
+        // [CONCEPTO_APP] calculadora rápida
+      },
+      "text_time_calculator_initial_document_failure_message": {
+        "es": "La calculadora rápida no pudo cargarse y se cerrará.",
+        "en": "The quick calculator could not load and will close."
+        // [CONCEPTO_APP] calculadora rápida
+      },
+      "preset_modal_initial_document_failure_title": {
+        "es": "No se pudo abrir la ventana de presets",
+        "en": "The preset window could not open"
+        // [PROPÓSITO] Título del diálogo nativo para el fallo de carga del documento inicial requerido de la ventana modal de presets.
+        // [CONCEPTO_APP] preset de velocidad de lectura
+      },
+      "preset_modal_initial_document_failure_message": {
+        "es": "La ventana de presets no pudo cargarse y se cerrará.",
+        "en": "The preset window could not load and will close."
+        // [PROPÓSITO] Mensaje nativo de cierre para el fallo de carga del documento inicial requerido de la ventana modal de presets.
+        // [CONCEPTO_APP] preset de velocidad de lectura
+      },
+      "language_chooser_first_run_initial_document_failure_message": {
+        "es": "La ventana de idioma no pudo cargarse. El inicio continuará con el idioma predeterminado.",
+        "en": "The language chooser could not load. Startup will continue with the fallback language."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial durante el primer inicio; informa que el inicio continuará mediante el idioma predeterminado.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "language_chooser_initial_document_failure_title": {
+        "es": "No se pudo abrir la ventana de idioma",
+        "en": "The language chooser could not open"
+        // [PROPÓSITO] Título compartido del diálogo nativo cuando falla la carga del documento inicial requerido de la ventana de idioma, tanto durante el primer inicio como en una apertura posterior.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "language_chooser_initial_document_failure_message": {
+        "es": "La ventana de idioma no pudo cargarse.",
+        "en": "The language chooser could not load."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial al abrir posteriormente la ventana de idioma; no implica fallback ni cambio del idioma ya resuelto.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "floating_stopwatch_initial_document_failure_title": {
+        "es": "No se pudo abrir el Cronómetro Flotante",
+        "en": "The Floating Stopwatch could not open"
+        // [PROPÓSITO] Título del diálogo nativo cuando falla la carga del documento inicial requerido del Cronómetro Flotante en una apertura ordinaria.
+        // [CONCEPTO_APP] Cronómetro Flotante
+      },
+      "floating_stopwatch_initial_document_failure_message": {
+        "es": "El Cronómetro Flotante no pudo cargarse y se cerrará.",
+        "en": "The Floating Stopwatch could not load and will close."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial del Cronómetro Flotante en una apertura ordinaria; informa que la ventana afectada se cerrará.
+        // [CONCEPTO_APP] Cronómetro Flotante
+      },
+      "editor_find_initial_document_failure_title": {
+        "es": "No se pudo abrir la barra de búsqueda",
+        "en": "The find bar could not open"
+        // [PROPÓSITO] Título del diálogo nativo cuando falla la carga del documento inicial requerido de la barra de búsqueda del Editor de Texto.
+        // [CONCEPTO_APP] barra de búsqueda; Editor de Texto
+      },
+      "editor_find_initial_document_failure_message": {
+        "es": "La barra de búsqueda no pudo cargarse y se cerrará.",
+        "en": "The find bar could not load and will close."
+        // [PROPÓSITO] Mensaje del fallo de carga inicial de la barra de búsqueda; informa que la ventana afectada se cerrará.
+        // [CONCEPTO_APP] barra de búsqueda; Editor de Texto
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"
@@ -3686,9 +3750,9 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
         },
         "questions_unavailable": {
-          "es": "No se pudo abrir la ventana de preguntas de comprensión. El flujo terminó antes de crear el preset.",
-          "en": "The comprehension questions window could not be opened. The flow ended before preset creation."
-          // [PROPÓSITO] Alerta cuando no puede abrirse la ventana de preguntas y el flujo termina antes de crear preset de velocidad.
+          "es": "No se pudieron mostrar las preguntas de comprensión. El flujo continuó.",
+          "en": "The comprehension questions could not be shown. The flow continued."
+          // [PROPÓSITO] Alerta cuando no pueden mostrarse las preguntas y el flujo del test continúa.
           // [CONCEPTO_APP] Test de velocidad de lectura; preset de velocidad de lectura
         },
         "pool_import_failed": {

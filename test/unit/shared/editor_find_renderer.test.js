@@ -53,6 +53,11 @@ function createHarness({
   holdInitialSettings = false,
   includeRendererI18n = true,
   expectStartupThrow = false,
+  loggerMode = 'available',
+  missingElementId = '',
+  omittedFindApiMethod = '',
+  initListenerMode = 'available',
+  stateListenerMode = 'available',
   focusListenerMode = 'available',
   settingsListenerMode = 'available',
 } = {}) {
@@ -60,6 +65,7 @@ function createHarness({
   const replaceCurrentCalls = [];
   const replaceAllCalls = [];
   const closeCalls = [];
+  const localCloseCalls = [];
   const queryCalls = [];
   const subscriptions = {};
   const windowListeners = {};
@@ -107,6 +113,7 @@ function createHarness({
       },
     },
     getElementById(id) {
+      if (id === missingElementId) return null;
       return elements[id] || null;
     },
   };
@@ -114,6 +121,9 @@ function createHarness({
   const sandbox = {
     window: {
       getLogger() {
+        if (loggerMode === 'throw') {
+          throw new Error('logger acquisition failed');
+        }
         return {
           debug() {},
           warn() {},
@@ -172,10 +182,16 @@ function createHarness({
           closeCalls.push(true);
         },
         onInit(cb) {
+          if (initListenerMode === 'throw') {
+            throw new Error('init listener registration failed');
+          }
           subscriptions.init = cb;
           return () => {};
         },
         onState(cb) {
+          if (stateListenerMode === 'throw') {
+            throw new Error('state listener registration failed');
+          }
           subscriptions.state = cb;
           return () => {};
         },
@@ -213,12 +229,22 @@ function createHarness({
         if (!windowListeners[type]) windowListeners[type] = [];
         windowListeners[type].push(listener);
       },
+      close() {
+        localCloseCalls.push(true);
+      },
     },
     document,
     console,
     setTimeout,
     clearTimeout,
   };
+
+  if (loggerMode === 'missing') {
+    delete sandbox.window.getLogger;
+  }
+  if (omittedFindApiMethod) {
+    delete sandbox.window.editorFindAPI[omittedFindApiMethod];
+  }
 
   vm.createContext(sandbox);
   const source = fs.readFileSync(
@@ -239,6 +265,7 @@ function createHarness({
     replaceCurrentCalls,
     replaceAllCalls,
     closeCalls,
+    localCloseCalls,
     queryCalls,
     subscriptions,
     transitionLanguages,
@@ -272,6 +299,50 @@ test('find reports earliest required i18n failure before dynamic control setup',
 
   assert.match(harness.startupError && harness.startupError.message, /RendererI18n unavailable/);
   assert.equal(harness.getReporterCalls(), 1);
+});
+
+test('find fail-closes direct non-i18n bootstrap aborts before close wiring', () => {
+  const cases = [
+    {
+      label: 'missing logger',
+      options: { loggerMode: 'missing' },
+      message: /window\.getLogger unavailable/,
+    },
+    {
+      label: 'missing required Find API method',
+      options: { omittedFindApiMethod: 'onState' },
+      message: /required methods unavailable/,
+    },
+    {
+      label: 'missing required Find control',
+      options: { missingElementId: 'findClose' },
+      message: /Missing required DOM elements/,
+    },
+  ];
+
+  for (const { label, options, message } of cases) {
+    const harness = createHarness({ ...options, expectStartupThrow: true });
+
+    assert.match(harness.startupError && harness.startupError.message, message, label);
+    assert.deepEqual(harness.localCloseCalls, [true], label);
+    assert.equal(harness.subscriptions.init, undefined, label);
+    assert.equal(harness.elements.findClose.listeners.click, undefined, label);
+  }
+});
+
+test('find fail-closes required init/state listener registration aborts after Close wiring', () => {
+  for (const listenerMode of ['initListenerMode', 'stateListenerMode']) {
+    const harness = createHarness({
+      [listenerMode]: 'throw',
+      expectStartupThrow: true,
+    });
+
+    assert.match(harness.startupError && harness.startupError.message, /listener registration failed/, listenerMode);
+    assert.deepEqual(harness.localCloseCalls, [true], listenerMode);
+    assert.equal(typeof harness.elements.findClose.listeners.click, 'function', listenerMode);
+    assert.equal(harness.getReporterCalls(), 0, listenerMode);
+    assert.equal(harness.subscriptions.settingsChanged, undefined, listenerMode);
+  }
 });
 
 test('find closes before normal interaction when live settings registration is unavailable or throws', () => {

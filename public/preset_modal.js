@@ -17,9 +17,16 @@
   // Logger and required bridge boundary
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
+    if (typeof window.close === 'function') window.close();
     throw new Error('[preset_modal] window.getLogger unavailable; cannot continue');
   }
-  const log = window.getLogger('preset-modal');
+  let log;
+  try {
+    log = window.getLogger('preset-modal');
+  } catch (err) {
+    if (typeof window.close === 'function') window.close();
+    throw err;
+  }
 
   log.debug('Preset modal starting...');
 
@@ -57,7 +64,9 @@
     // =============================================================================
     const { AppConstants } = window;
     if (!AppConstants) {
-      throw new Error('[preset_modal] AppConstants unavailable; verify constants.js load order');
+      log.error('BOOTSTRAP: AppConstants unavailable; closing modal.');
+      if (typeof window.close === 'function') window.close();
+      return;
     }
     const { DEFAULT_LANG, PRESET_DESC_MAX, PRESET_NAME_MAX, WPM_MIN, WPM_MAX } = AppConstants;
 

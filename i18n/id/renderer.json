@@ -672,7 +672,7 @@
         "result_invalid": "Hasil tes tidak dapat dikonversi menjadi WPM yang valid. Alur berakhir tanpa membuka modal preset.",
         "result_unavailable": "Hasil kecepatan membaca tidak dapat ditampilkan. Alur dilanjutkan.",
         "preset_unavailable": "Modal preset tidak dapat dibuka setelah tes.",
-        "questions_unavailable": "Modal pertanyaan pemahaman tidak dapat dibuka. Alur berakhir sebelum pembuatan preset.",
+        "questions_unavailable": "Pertanyaan pemahaman tidak dapat ditampilkan. Alur dilanjutkan.",
         "pool_import_failed": "File tes kecepatan membaca tidak dapat diimpor.",
         "pool_import_state_cleanup_failed": "File tes kecepatan membaca telah diimpor, tetapi status pool tidak dapat diperbarui sepenuhnya.",
         "start_failed": "Tes kecepatan membaca tidak dapat dimulai.",

@@ -672,7 +672,7 @@
         "result_invalid": "El resultado del test no pudo pasar a un WPM válido. La vuelta terminó sin abrir el modal del preset.",
         "result_unavailable": "No se pudo mostrar el resultado de ritmo de lectura. La vuelta siguió igual.",
         "preset_unavailable": "No se pudo abrir el modal del preset después del test.",
-        "questions_unavailable": "No se pudo abrir el modal de preguntas de comprensión lectora. La vuelta terminó antes de crear el preset.",
+        "questions_unavailable": "No se pudieron mostrar las preguntas de comprensión lectora. La vuelta siguió igual.",
         "pool_import_failed": "No se pudieron importar los archivos del test de ritmo de lectura.",
         "pool_import_state_cleanup_failed": "Se importaron los archivos del test de velocidad de lectura, pero no se pudo actualizar por completo el estado del pool.",
         "start_failed": "Cagó el inicio del test de ritmo de lectura.",

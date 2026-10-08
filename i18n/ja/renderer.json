@@ -672,7 +672,7 @@
         "result_invalid": "テスト結果を有効な WPM に変換できませんでした。プリセットモーダルを開かずにフローを終了しました。",
         "result_unavailable": "読書速度の結果を表示できませんでした。フローは続行しました。",
         "preset_unavailable": "テスト後にプリセットモーダルを開けませんでした。",
-        "questions_unavailable": "読解問題モーダルを開けませんでした。プリセット作成前にフローを終了しました。",
+        "questions_unavailable": "読解問題を表示できませんでした。フローは続行しました。",
         "pool_import_failed": "読書速度テストファイルをインポートできませんでした。",
         "pool_import_state_cleanup_failed": "読書速度テストのファイルはインポートされましたが、pool の状態を完全には更新できませんでした。",
         "start_failed": "読書速度テストを開始できませんでした。",

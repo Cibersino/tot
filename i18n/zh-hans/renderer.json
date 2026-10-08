@@ -672,7 +672,7 @@
         "result_invalid": "测试结果无法转换为有效的 WPM。流程结束，未打开预设模态窗口。",
         "result_unavailable": "无法显示阅读速度结果。流程已继续。",
         "preset_unavailable": "测试后无法打开预设模态窗口。",
-        "questions_unavailable": "无法打开理解题模态窗口。流程在创建预设前结束。",
+        "questions_unavailable": "无法显示理解题。流程已继续。",
         "pool_import_failed": "无法导入阅读速度测试文件。",
         "pool_import_state_cleanup_failed": "阅读速度测试文件已导入，但 pool 状态无法完全更新。",
         "start_failed": "无法启动阅读速度测试。",

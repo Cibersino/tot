@@ -36,6 +36,167 @@ function tick() {
   return new Promise((resolve) => setImmediate(resolve));
 }
 
+function runFlotante(sandbox) {
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/flotante.js'),
+    'utf8'
+  );
+  vm.runInContext(source, sandbox, { filename: 'public/flotante.js' });
+}
+
+function createBootstrapHarness() {
+  const elements = {
+    crono: createElement('crono'),
+    toggle: createElement('toggle'),
+    reset: createElement('reset'),
+  };
+  const errors = [];
+  let closeCalls = 0;
+  const sandbox = {
+    window: {
+      AppConstants: { DEFAULT_LANG: 'en' },
+      RendererIcons: {
+        applyIconToElement() {},
+      },
+      RendererI18n: {
+        async transitionRendererTranslations() {},
+        tRenderer(key) { return key; },
+      },
+      flotanteAPI: {
+        getSettings() { return Promise.resolve({ language: 'en' }); },
+        onSettingsChanged() {},
+        onState() {},
+        reportRendererI18nFailure() {},
+        sendCommand() {},
+      },
+      getLogger() {
+        return {
+          debug() {},
+          error(...args) { errors.push(args); },
+          errorOnce() {},
+          warn() {},
+          warnOnce() {},
+        };
+      },
+      addEventListener() {},
+      close() { closeCalls += 1; },
+    },
+    document: {
+      title: '',
+      getElementById(id) {
+        return elements[id] || null;
+      },
+    },
+    console,
+  };
+
+  return {
+    elements,
+    errors,
+    sandbox,
+    getCloseCalls: () => closeCalls,
+  };
+}
+
+test('Floating Stopwatch fail-closes direct required bootstrap failures', () => {
+  const cases = [
+    {
+      name: 'missing logger',
+      configure(harness) {
+        delete harness.sandbox.window.getLogger;
+      },
+      error: /window\.getLogger unavailable/,
+    },
+    {
+      name: 'logger acquisition failure',
+      configure(harness) {
+        harness.sandbox.window.getLogger = () => {
+          throw new Error('logger unavailable');
+        };
+      },
+      error: /window\.getLogger acquisition failed/,
+    },
+    {
+      name: 'missing icon bridge',
+      configure(harness) {
+        delete harness.sandbox.window.RendererIcons;
+      },
+      error: /RendererIcons\.applyIconToElement unavailable/,
+    },
+    {
+      name: 'missing constants',
+      configure(harness) {
+        delete harness.sandbox.window.AppConstants;
+      },
+      error: /AppConstants unavailable/,
+    },
+    {
+      name: 'missing Floating bridge',
+      configure(harness) {
+        delete harness.sandbox.window.flotanteAPI;
+      },
+      error: /flotanteAPI unavailable/,
+    },
+    {
+      name: 'missing state listener',
+      configure(harness) {
+        delete harness.sandbox.window.flotanteAPI.onState;
+      },
+      error: /flotanteAPI\.onState unavailable/,
+    },
+    {
+      name: 'missing command sender',
+      configure(harness) {
+        delete harness.sandbox.window.flotanteAPI.sendCommand;
+      },
+      error: /flotanteAPI\.sendCommand unavailable/,
+    },
+    {
+      name: 'state-listener registration failure',
+      configure(harness) {
+        harness.sandbox.window.flotanteAPI.onState = () => {
+          throw new Error('listener registration failed');
+        };
+      },
+      error: /flotanteAPI\.onState registration failed/,
+    },
+  ];
+
+  for (const failure of cases) {
+    const harness = createBootstrapHarness();
+    failure.configure(harness);
+
+    assert.throws(() => runFlotante(harness.sandbox), failure.error, failure.name);
+    assert.equal(harness.getCloseCalls(), 1, failure.name);
+  }
+});
+
+test('Floating Stopwatch fail-closes only missing required controls', async () => {
+  for (const controlId of ['toggle', 'reset']) {
+    const harness = createBootstrapHarness();
+    harness.elements[controlId] = null;
+
+    assert.throws(
+      () => runFlotante(harness.sandbox),
+      /required Floating Stopwatch controls unavailable/,
+      controlId
+    );
+    assert.equal(harness.getCloseCalls(), 1, controlId);
+    assert.deepEqual(harness.errors[0], [`element #${controlId} not found`], controlId);
+  }
+
+  const harness = createBootstrapHarness();
+  harness.elements.crono = null;
+  runFlotante(harness.sandbox);
+  await tick();
+  await tick();
+
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.equal(harness.elements.toggle.disabled, false);
+  assert.equal(harness.elements.reset.disabled, false);
+});
+
 test('Floating Stopwatch startup has no programmatic initial DOM focus', async () => {
   const focusCalls = [];
   const recordFocus = (focusCall) => focusCalls.push(focusCall);

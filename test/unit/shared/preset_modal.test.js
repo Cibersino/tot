@@ -69,6 +69,9 @@ function createHarness({
   initListenerMode = 'available',
   missingRequiredBridgeMethod = null,
   missingRequiredDomElement = null,
+  loggerMode = 'available',
+  missingAppConstants = false,
+  captureBootstrapError = false,
 } = {}) {
   const subscriptions = {};
   const transitionLanguages = [];
@@ -128,24 +131,33 @@ function createHarness({
     querySelectorAll() { return []; },
   };
 
+  const logger = {
+    debug(...args) { logs.push({ level: 'debug', args }); },
+    warn(...args) { logs.push({ level: 'warn', args }); },
+    warnOnce(...args) { logs.push({ level: 'warnOnce', args }); },
+    error(...args) { logs.push({ level: 'error', args }); },
+    errorOnce(...args) { logs.push({ level: 'errorOnce', args }); },
+  };
+
   const sandbox = {
     window: {
-      getLogger() {
-        return {
-          debug(...args) { logs.push({ level: 'debug', args }); },
-          warn(...args) { logs.push({ level: 'warn', args }); },
-          warnOnce(...args) { logs.push({ level: 'warnOnce', args }); },
-          error(...args) { logs.push({ level: 'error', args }); },
-          errorOnce(...args) { logs.push({ level: 'errorOnce', args }); },
-        };
-      },
-      AppConstants: {
-        DEFAULT_LANG: 'en',
-        PRESET_DESC_MAX: presetDescMax,
-        PRESET_NAME_MAX: presetNameMax,
-        WPM_MIN: 10,
-        WPM_MAX: 700,
-      },
+      ...(loggerMode === 'missing' ? {} : {
+        getLogger() {
+          if (loggerMode === 'throw') {
+            throw new Error('preset logger acquisition failed');
+          }
+          return logger;
+        },
+      }),
+      ...(missingAppConstants ? {} : {
+        AppConstants: {
+          DEFAULT_LANG: 'en',
+          PRESET_DESC_MAX: presetDescMax,
+          PRESET_NAME_MAX: presetNameMax,
+          WPM_MIN: 10,
+          WPM_MAX: 700,
+        },
+      }),
       RendererI18n: {
         normalizeLangTag(language) {
           return String(language || '').trim().toLowerCase().replace(/_/g, '-');
@@ -242,9 +254,22 @@ function createHarness({
     path.resolve(__dirname, '../../../public/preset_modal.js'),
     'utf8'
   );
-  vm.runInContext(source, sandbox, { filename: 'public/preset_modal.js' });
-  if (typeof subscriptions.domContentLoaded === 'function') {
-    subscriptions.domContentLoaded();
+  function runBootstrap() {
+    vm.runInContext(source, sandbox, { filename: 'public/preset_modal.js' });
+    if (typeof subscriptions.domContentLoaded === 'function') {
+      subscriptions.domContentLoaded();
+    }
+  }
+
+  let bootstrapError = null;
+  if (captureBootstrapError) {
+    try {
+      runBootstrap();
+    } catch (err) {
+      bootstrapError = err;
+    }
+  } else {
+    runBootstrap();
   }
 
   return {
@@ -260,6 +285,9 @@ function createHarness({
     },
     getLogs() {
       return logs;
+    },
+    getBootstrapError() {
+      return bootstrapError;
     },
     failRendererCopy() {
       throwRendererCopy = true;
@@ -304,6 +332,35 @@ test('preset modal closes before DOM initialization when a required presetAPI me
     assert.equal(harness.subscriptions.onInit, undefined, missingRequiredBridgeMethod);
     assert.equal(harness.subscriptions.onSettingsChanged, undefined, missingRequiredBridgeMethod);
   }
+});
+
+test('preset modal requests local closure before aborting when logger acquisition fails', () => {
+  for (const loggerMode of ['missing', 'throw']) {
+    const harness = createHarness({ loggerMode, captureBootstrapError: true });
+
+    assert.equal(harness.getCloseCalls(), 1, loggerMode);
+    assert.equal(harness.subscriptions.domContentLoaded, undefined, loggerMode);
+    assert.equal(harness.subscriptions.onInit, undefined, loggerMode);
+    assert.equal(harness.subscriptions.onSettingsChanged, undefined, loggerMode);
+    assert.match(
+      harness.getBootstrapError().message,
+      loggerMode === 'missing'
+        ? /window\.getLogger unavailable/
+        : /preset logger acquisition failed/
+    );
+  }
+});
+
+test('preset modal closes during DOM bootstrap when AppConstants is unavailable', () => {
+  const harness = createHarness({ missingAppConstants: true });
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.equal(harness.subscriptions.onInit, undefined);
+  assert.equal(harness.subscriptions.onSettingsChanged, undefined);
+  assert.ok(harness.getLogs().some((entry) => (
+    entry.level === 'error'
+    && entry.args[0] === 'BOOTSTRAP: AppConstants unavailable; closing modal.'
+  )));
 });
 
 test('preset modal aborts DOM initialization when presetAPI.onInit registration throws', () => {

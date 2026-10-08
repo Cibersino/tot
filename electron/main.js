@@ -304,6 +304,37 @@ function requestCloseFlotanteWindow() {
   }
 }
 
+function showFlotanteInitialDocumentFailureDisclosure() {
+  let dialogTexts = null;
+  try {
+    dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+  } catch (err) {
+    log.error('Floating Stopwatch initial document load native dialog translations unavailable:', err);
+  }
+
+  const title = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_title;
+  const message = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_message;
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title === 'string' && title.trim()
+    && typeof message === 'string' && message.trim()
+    && typeof ok === 'string' && ok.trim()) {
+    try {
+      dialog.showMessageBoxSync(flotanteWin, {
+        type: 'error',
+        title,
+        message,
+        buttons: [ok],
+        defaultId: 0,
+        noLink: true,
+      });
+    } catch (err) {
+      log.error('Floating Stopwatch initial document load native dialog failed:', err);
+    }
+  } else {
+    log.error('Floating Stopwatch initial document load native dialog copy unavailable.');
+  }
+}
+
 function resolveTextExtractionRuntimePaths() {
   const credentialsPath = getOcrGoogleDriveCredentialsFile();
   const tokenPath = getOcrGoogleDriveTokenFile();
@@ -691,6 +722,11 @@ function createEditorWindow(options = {}) {
   spellcheckController.apply();
   const deferShow = !!(options && options.deferShow);
   const waitForBasePresentationReady = !!(options && options.waitForBasePresentationReady);
+  const firstShowGeneration = options
+    && Number.isInteger(options.firstShowGeneration)
+    && options.firstShowGeneration > 0
+    ? options.firstShowGeneration
+    : null;
 
   // Load last saved window state (size/position/maximized) from editor_state.js.
   const state = options && options.startupState
@@ -733,18 +769,52 @@ function createEditorWindow(options = {}) {
   if (options && (options.initialPresentationMode === 'maximized' || options.initialPresentationMode === 'reduced')) {
     startupQuery.initialPresentationMode = options.initialPresentationMode;
   }
-  if (options && Number.isInteger(options.firstShowGeneration) && options.firstShowGeneration > 0) {
-    startupQuery.firstShowGeneration = String(options.firstShowGeneration);
+  if (firstShowGeneration) {
+    startupQuery.firstShowGeneration = String(firstShowGeneration);
   }
 
   const loadFileOptions = Object.keys(startupQuery).length > 0
     ? { query: startupQuery }
     : undefined;
 
-  editorWin.loadFile(path.join(__dirname, '../public/editor.html'), loadFileOptions);
+  const createdEditorWin = editorWin;
+  let createdEditorWindowClosing = false;
+  createdEditorWin.on('close', () => {
+    createdEditorWindowClosing = true;
+  });
+
+  const editorDocumentLoad = createdEditorWin.loadFile(
+    path.join(__dirname, '../public/editor.html'),
+    loadFileOptions
+  );
+  if (waitForBasePresentationReady && firstShowGeneration) {
+    editorDocumentLoad.catch((err) => {
+      // A close can abort loadFile(). That close is already owned by the
+      // established closed-window lifecycle path, not F07/F08.
+      if (createdEditorWindowClosing || createdEditorWin.isDestroyed()) return;
+
+      try {
+        editorWindowLifecycleController.handleInitialDocumentLoadFailure({
+          editorWin: createdEditorWin,
+          mainWin,
+          firstShowGeneration,
+          error: err,
+          logContext: 'createEditorWindow.initialDocumentLoad',
+        });
+      } catch (handlingErr) {
+        log.error('Text Editor initial document load handling failed:', {
+          firstShowGeneration,
+          loadError: err,
+        }, handlingErr);
+      }
+    });
+  }
 
   try {
-    editorFindMain.attachEditorWindow(editorWin, editorTextSizeController.getShortcutActions());
+    editorFindMain.attachEditorWindow(editorWin, {
+      shortcutActions: editorTextSizeController.getShortcutActions(),
+      showInitialDocumentFailureDisclosure: showEditorFindInitialDocumentFailureDisclosure,
+    });
   } catch (err) {
     log.warn('Text Editor find listener attachment failed (ignored):', err);
   }
@@ -787,6 +857,8 @@ function createEditorWindow(options = {}) {
  * Restores persisted reduced geometry and maximized state.
  */
 function createTaskEditorWindow() {
+  const taskEditorPreloadPath = path.join(__dirname, 'task_editor_preload.js');
+  const taskEditorHtmlPath = path.join(__dirname, '../public/task_editor.html');
   const state = taskEditorState.loadInitialState(loadJson);
   const hasReduced =
     state &&
@@ -807,44 +879,103 @@ function createTaskEditorWindow() {
     maximizable: true,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'task_editor_preload.js'),
+      preload: taskEditorPreloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
   });
 
-  taskEditorWindowLifecycleController.attachWindow(taskEditorWin);
+  const createdTaskEditorWin = taskEditorWin;
+  taskEditorWindowLifecycleController.attachWindow(createdTaskEditorWin);
 
-  taskEditorWin.setMenu(null);
-  taskEditorWin.setMenuBarVisibility(false);
-  taskEditorWin.loadFile(path.join(__dirname, '../public/task_editor.html'));
+  createdTaskEditorWin.setMenu(null);
+  createdTaskEditorWin.setMenuBarVisibility(false);
 
-  taskEditorWin.once('ready-to-show', () => {
+  let observingInitialTaskPreload = true;
+  function removeInitialTaskPreloadObserver() {
+    if (!observingInitialTaskPreload) return;
+    observingInitialTaskPreload = false;
     try {
-      if (state && state.maximized === true) {
-        taskEditorWin.maximize();
+      createdTaskEditorWin.webContents.removeListener('preload-error', onInitialTaskPreloadError);
+    } catch (err) {
+      log.warn('Task Editor initial preload listener removal failed (ignored):', err);
+    }
+  }
+
+  function onInitialTaskPreloadError(_event, preloadPath, error) {
+    if (!observingInitialTaskPreload || preloadPath !== taskEditorPreloadPath) return;
+    removeInitialTaskPreloadObserver();
+    try {
+      taskEditorWindowLifecycleController.handleInitialPreloadFailure({
+        taskEditorWin: createdTaskEditorWin,
+        preloadPath,
+        error,
+        logContext: 'createTaskEditorWindow.initialPreload',
+      });
+    } catch (handlingErr) {
+      log.error('Task Editor initial preload failure handling failed:', {
+        preloadPath,
+        preloadError: error,
+      }, handlingErr);
+    }
+  }
+
+  // Observe only the configured initial preload. Its final source statement is
+  // the taskEditorAPI exposure, so an unhandled error here is the approved F13
+  // pre-exposure boundary rather than a renderer-reported terminal path.
+  createdTaskEditorWin.webContents.on('preload-error', onInitialTaskPreloadError);
+
+  const initialTaskDocumentLoad = createdTaskEditorWin.loadFile(taskEditorHtmlPath);
+  void initialTaskDocumentLoad.then(
+    () => {
+      removeInitialTaskPreloadObserver();
+    },
+    (error) => {
+      removeInitialTaskPreloadObserver();
+      try {
+        taskEditorWindowLifecycleController.handleInitialDocumentLoadFailure({
+          taskEditorWin: createdTaskEditorWin,
+          error,
+          logContext: 'createTaskEditorWindow.initialDocumentLoad',
+        });
+      } catch (handlingErr) {
+        log.error('Task Editor initial document load handling failed:', {
+          loadError: error,
+        }, handlingErr);
       }
-      taskEditorWin.show();
+    }
+  );
+
+  createdTaskEditorWin.once('ready-to-show', () => {
+    try {
+      if (!taskEditorWindowLifecycleController.isInitialPresentationAllowed(createdTaskEditorWin)) {
+        return;
+      }
+      if (state && state.maximized === true) {
+        createdTaskEditorWin.maximize();
+      }
+      createdTaskEditorWin.show();
     } catch (err) {
       log.error('Error showing Task Editor window:', err);
     }
   });
 
   // Persist geometry and maximized state.
-  taskEditorState.attachTo(taskEditorWin, loadJson, saveJson);
+  taskEditorState.attachTo(createdTaskEditorWin, loadJson, saveJson);
 
   // Close guard: delegate to renderer for unsaved-changes confirmation.
-  taskEditorWin.on('close', (event) => {
+  createdTaskEditorWin.on('close', (event) => {
     if (taskEditorWindowLifecycleController.isForceCloseAuthorized()) return;
     event.preventDefault();
-    void taskEditorWindowLifecycleController.requestNativeClose(taskEditorWin).catch((err) => {
+    void taskEditorWindowLifecycleController.requestNativeClose(createdTaskEditorWin).catch((err) => {
       log.error('Task Editor native close resolution failed:', err);
     });
   });
 
-  taskEditorWin.on('closed', () => {
-    taskEditorWindowLifecycleController.handleWindowClosed(taskEditorWin);
+  createdTaskEditorWin.on('closed', () => {
+    removeInitialTaskPreloadObserver();
+    taskEditorWindowLifecycleController.handleWindowClosed(createdTaskEditorWin);
     taskEditorWin = null;
   });
 }
@@ -882,7 +1013,59 @@ function createTextTimeCalculatorWindow() {
 
   textTimeCalculatorWin.setMenu(null);
   textTimeCalculatorWin.setMenuBarVisibility(false);
-  textTimeCalculatorWin.loadFile(path.join(__dirname, '../public/text_time_calculator.html'));
+
+  const createdTextTimeCalculatorWin = textTimeCalculatorWin;
+  let createdTextTimeCalculatorWindowClosing = false;
+  createdTextTimeCalculatorWin.on('close', () => {
+    createdTextTimeCalculatorWindowClosing = true;
+  });
+
+  const initialCalculatorDocumentLoad = createdTextTimeCalculatorWin.loadFile(
+    path.join(__dirname, '../public/text_time_calculator.html')
+  );
+  void initialCalculatorDocumentLoad.catch((error) => {
+    // A close can abort loadFile(). Ordinary Calculator closure owns that disposition and is not an F18 required-initial-document failure.
+    if (createdTextTimeCalculatorWindowClosing || !isAliveWindow(createdTextTimeCalculatorWin)) return;
+
+    log.error('Text-time calculator initial document load failed:', error);
+
+    let dialogTexts = null;
+    try {
+      dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+    } catch (dialogTextsError) {
+      log.error('Text-time calculator initial document load native dialog translations unavailable:', dialogTextsError);
+    }
+
+    const title = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_title;
+    const message = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_message;
+    const ok = dialogTexts && dialogTexts.ok;
+    if (typeof title === 'string' && title.trim()
+      && typeof message === 'string' && message.trim()
+      && typeof ok === 'string' && ok.trim()) {
+      try {
+        dialog.showMessageBoxSync(createdTextTimeCalculatorWin, {
+          type: 'error',
+          title,
+          message,
+          buttons: [ok],
+          defaultId: 0,
+          noLink: true,
+        });
+      } catch (dialogError) {
+        log.error('Text-time calculator initial document load native dialog failed:', dialogError);
+      }
+    } else {
+      log.error('Text-time calculator initial document load native dialog copy unavailable.');
+    }
+
+    try {
+      if (isAliveWindow(createdTextTimeCalculatorWin)) {
+        createdTextTimeCalculatorWin.close();
+      }
+    } catch (closeError) {
+      log.error('Text-time calculator initial document load window close failed:', closeError);
+    }
+  });
 
   textTimeCalculatorWin.once('ready-to-show', () => {
     try {
@@ -936,7 +1119,58 @@ function createPresetWindow(initialData) {
   });
 
   presetWin.setMenu(null);
-  presetWin.loadFile(path.join(__dirname, '../public/preset_modal.html'));
+  const createdPresetWin = presetWin;
+  let createdPresetWindowClosing = false;
+  createdPresetWin.on('close', () => {
+    createdPresetWindowClosing = true;
+  });
+
+  const initialPresetDocumentLoad = createdPresetWin.loadFile(
+    path.join(__dirname, '../public/preset_modal.html')
+  );
+  void initialPresetDocumentLoad.catch((error) => {
+    // A close can abort loadFile(). Ordinary Preset closure owns that disposition and is not an F23 required-initial-document failure.
+    if (createdPresetWindowClosing || !isAliveWindow(createdPresetWin)) return;
+
+    log.error('Preset modal initial document load failed:', error);
+
+    let dialogTexts = null;
+    try {
+      dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+    } catch (dialogTextsError) {
+      log.error('Preset modal initial document load native dialog translations unavailable:', dialogTextsError);
+    }
+
+    const title = dialogTexts && dialogTexts.preset_modal_initial_document_failure_title;
+    const message = dialogTexts && dialogTexts.preset_modal_initial_document_failure_message;
+    const ok = dialogTexts && dialogTexts.ok;
+    if (typeof title === 'string' && title.trim()
+      && typeof message === 'string' && message.trim()
+      && typeof ok === 'string' && ok.trim()) {
+      try {
+        dialog.showMessageBoxSync(createdPresetWin, {
+          type: 'error',
+          title,
+          message,
+          buttons: [ok],
+          defaultId: 0,
+          noLink: true,
+        });
+      } catch (dialogError) {
+        log.error('Preset modal initial document load native dialog failed:', dialogError);
+      }
+    } else {
+      log.error('Preset modal initial document load native dialog copy unavailable.');
+    }
+
+    try {
+      if (isAliveWindow(createdPresetWin)) {
+        createdPresetWin.close();
+      }
+    } catch (closeError) {
+      log.error('Preset modal initial document load window close failed:', closeError);
+    }
+  });
 
   // A usable preset modal requires its initial payload; close it if delivery fails.
   presetWin.once('ready-to-show', () => {
@@ -995,7 +1229,69 @@ function createLanguageWindow() {
   });
 
   langWin.setMenu(null);
-  langWin.loadFile(LANGUAGE_WINDOW_HTML);
+  const createdLanguageWin = langWin;
+  const isFirstRunLanguageChooser = !languageResolved;
+  let createdLanguageWindowClosing = false;
+  createdLanguageWin.on('close', () => {
+    createdLanguageWindowClosing = true;
+  });
+
+  const initialLanguageDocumentLoad = createdLanguageWin.loadFile(
+    LANGUAGE_WINDOW_HTML,
+    isFirstRunLanguageChooser
+      ? { query: { languageChooserFirstRun: '1' } }
+      : undefined
+  );
+  void initialLanguageDocumentLoad.catch((error) => {
+    // A close can abort loadFile(). Ordinary chooser closure owns that disposition and is not an F26/F27 required-initial-document failure.
+    if (createdLanguageWindowClosing || !isAliveWindow(createdLanguageWin)) return;
+
+    log.error('Language chooser initial document load failed:', error);
+
+    let dialogTexts = null;
+    try {
+      dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+    } catch (dialogTextsError) {
+      log.error('Language chooser initial document load native dialog translations unavailable:', dialogTextsError);
+    }
+
+    const title = dialogTexts && dialogTexts.language_chooser_initial_document_failure_title;
+    const message = dialogTexts && (isFirstRunLanguageChooser
+      ? dialogTexts.language_chooser_first_run_initial_document_failure_message
+      : dialogTexts.language_chooser_initial_document_failure_message);
+    const ok = dialogTexts && dialogTexts.ok;
+    if (typeof title === 'string' && title.trim()
+      && typeof message === 'string' && message.trim()
+      && typeof ok === 'string' && ok.trim()) {
+      try {
+        const dialogOptions = {
+          type: 'error',
+          title,
+          message,
+          buttons: [ok],
+          defaultId: 0,
+          noLink: true,
+        };
+        if (isFirstRunLanguageChooser) {
+          dialog.showMessageBoxSync(dialogOptions);
+        } else {
+          dialog.showMessageBoxSync(mainWin, dialogOptions);
+        }
+      } catch (dialogError) {
+        log.error('Language chooser initial document load native dialog failed:', dialogError);
+      }
+    } else {
+      log.error('Language chooser initial document load native dialog copy unavailable.');
+    }
+
+    try {
+      if (isAliveWindow(createdLanguageWin)) {
+        createdLanguageWin.close();
+      }
+    } catch (closeError) {
+      log.error('Language chooser initial document load window close failed:', closeError);
+    }
+  });
 
   langWin.once('ready-to-show', () => {
     langWin.show();
@@ -1130,6 +1426,38 @@ function showEditorStartupFailureDisclosure(details = {}) {
   }
 }
 
+function showEditorFindInitialDocumentFailureDisclosure(findWindow) {
+  let dialogTexts = null;
+  try {
+    dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+  } catch (err) {
+    log.error('Text Editor find initial document load native dialog translations unavailable:', err);
+  }
+
+  const title = dialogTexts && dialogTexts.editor_find_initial_document_failure_title;
+  const message = dialogTexts && dialogTexts.editor_find_initial_document_failure_message;
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title !== 'string' || !title.trim()
+    || typeof message !== 'string' || !message.trim()
+    || typeof ok !== 'string' || !ok.trim()) {
+    log.error('Text Editor find initial document load native dialog copy unavailable.');
+    return;
+  }
+
+  try {
+    dialog.showMessageBoxSync(findWindow, {
+      type: 'error',
+      title,
+      message,
+      buttons: [ok],
+      defaultId: 0,
+      noLink: true,
+    });
+  } catch (err) {
+    log.error('Text Editor find initial document load native dialog failed:', err);
+  }
+}
+
 function closeRendererAfterI18nFailure(event, payload) {
   const sourceContents = event && event.sender;
   const sourceWindow = sourceContents && typeof BrowserWindow.fromWebContents === 'function'
@@ -1232,6 +1560,7 @@ function resolveLanguage(reason) {
 
 const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 const FLOTANTE_HTML = path.join(__dirname, '../public/flotante.html');
+const FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED = 'FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED';
 
 function clampInt(n, min, max) {
   const lo = Math.min(min, max);
@@ -1466,12 +1795,15 @@ async function createFlotanteWindow(options = {}) {
     }
   });
 
-  // Load the HTML content. If the user closes quickly, loadFile may reject; treat as expected.
+  // An already-started close can reject loadFile; a still-live initial load failure must reach its caller.
   try {
     await win.loadFile(FLOTANTE_HTML);
   } catch (err) {
     if (!winClosing && !win.isDestroyed()) {
-      log.error('Error loading flotante HTML:', err);
+      log.error('Floating Stopwatch initial document load failed:', err);
+      const initialDocumentLoadError = new Error(FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED, { cause: err });
+      initialDocumentLoadError.code = FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED;
+      throw initialDocumentLoadError;
     }
   }
 
@@ -1708,6 +2040,15 @@ ipcMain.handle('flotante-open', async () => {
     await ensureFlotanteWindowOpen();
     return { ok: true };
   } catch (err) {
+    if (err && err.code === FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED) {
+      showFlotanteInitialDocumentFailureDisclosure();
+      try {
+        requestCloseFlotanteWindow();
+      } catch (closeError) {
+        log.error('Floating Stopwatch initial document load window close failed:', closeError);
+      }
+      return { ok: false, error: err.code };
+    }
     log.error('Error processing flotante-open:', err);
     return { ok: false, error: String(err) };
   }

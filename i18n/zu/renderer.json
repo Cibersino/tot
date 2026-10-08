@@ -672,7 +672,7 @@
         "result_invalid": "Umphumela wokuhlolwa awukwazanga ukuguqulelwa ku-WPM evumelekile. Inqubo iphele ngaphandle kokuvula i-modal yephrezethi.",
         "result_unavailable": "Ayikwazanga ukubonisa umphumela wejubane lokufunda. Inqubo iqhubekile.",
         "preset_unavailable": "Ayikwazanga ukuvula i-modal yephrezethi ngemva kokuhlolwa.",
-        "questions_unavailable": "Ayikwazanga ukuvula i-modal yemibuzo yokuqonda. Inqubo iphele ngaphambi kokudala iphrezethi.",
+        "questions_unavailable": "Imibuzo yokuqonda ayikwazanga ukuboniswa. Inqubo iqhubekile.",
         "pool_import_failed": "Ayikwazanga ukungenisa amafayela okuhlolwa kwejubane lokufunda.",
         "pool_import_state_cleanup_failed": "Amafayela e-test yesivinini sokufunda angenisiwe, kodwa isimo se-pool asikwazanga ukubuyekezwa ngokuphelele.",
         "start_failed": "Ayikwazanga ukuqala ukuhlolwa kwejubane lokufunda.",

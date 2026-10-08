@@ -672,7 +672,7 @@
         "result_invalid": "Rezilta tès la pa t kapab konvèti an yon WPM valab. Flux la fini san louvri modal preset la.",
         "result_unavailable": "Pa t kapab montre rezilta vitès lekti a. Flux la kontinye.",
         "preset_unavailable": "Pa t kapab louvri modal preset la apre tès la.",
-        "questions_unavailable": "Pa t kapab louvri modal kesyon konpreyansyon an. Flux la fini anvan kreye preset la.",
+        "questions_unavailable": "Pa t kapab montre kesyon konpreyansyon yo. Flux la kontinye.",
         "pool_import_failed": "Fichye tès vitès lekti yo pa t kapab enpòte.",
         "pool_import_state_cleanup_failed": "Fichye tès vitès lekti yo te enpòte, men eta pool la pa t kapab mete ajou nèt.",
         "start_failed": "Tès vitès lekti a pa t kapab kòmanse.",

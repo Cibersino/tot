@@ -672,7 +672,7 @@
         "result_invalid": "Test sonucu geçerli bir WPM değerine dönüştürülemedi. Akış, ön ayar modalını açmadan sona erdi.",
         "result_unavailable": "Okuma hızı sonucu gösterilemedi. Akış devam etti.",
         "preset_unavailable": "Testten sonra ön ayar modalı açılamadı.",
-        "questions_unavailable": "Anlama soruları modalı açılamadı. Akış, ön ayar oluşturulmadan sona erdi.",
+        "questions_unavailable": "Anlama soruları gösterilemedi. Akış devam etti.",
         "pool_import_failed": "Okuma hızı testi dosyaları içe aktarılamadı.",
         "pool_import_state_cleanup_failed": "Okuma hızı testi dosyaları içe aktarıldı, ancak pool durumu tam olarak güncellenemedi.",
         "start_failed": "Okuma hızı testi başlatılamadı.",

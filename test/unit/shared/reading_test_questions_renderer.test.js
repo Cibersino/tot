@@ -92,6 +92,9 @@ function createDocumentHarness() {
       const listener = documentListeners.get('DOMContentLoaded');
       if (listener) listener();
     },
+    removeElement(id) {
+      elements.delete(id);
+    },
   };
 }
 
@@ -216,8 +219,10 @@ function createRendererHarness({
   reporterThrows = false,
   initPayloadOnSubscribe = null,
   questionsCoreOverride = null,
+  missingRequiredElement = '',
 } = {}) {
   const dom = createDocumentHarness();
+  if (missingRequiredElement) dom.removeElement(missingRequiredElement);
   const callbacks = {};
   const translationRequests = [];
   const deferredLoads = new Map();
@@ -454,6 +459,107 @@ test('Reading Test renderer scripts close locally when RendererI18n is unavailab
     );
     assert.equal(closeCalls, 1);
   });
+});
+
+test('Reading Test renderer scripts fail-close direct pre-wiring bootstrap aborts', () => {
+  const rendererScripts = [
+    {
+      file: 'reading_test_questions.js',
+      apiName: 'readingTestQuestionsAPI',
+      errorPrefix: 'reading-test-questions',
+    },
+    {
+      file: 'reading_test_result.js',
+      apiName: 'readingTestResultAPI',
+      errorPrefix: 'reading-test-result',
+    },
+  ];
+
+  function runBootstrap(file, window) {
+    const sandbox = {
+      console,
+      document: {
+        addEventListener() {},
+      },
+      window,
+    };
+    vm.createContext(sandbox);
+    const source = fs.readFileSync(
+      path.resolve(__dirname, `../../../public/${file}`),
+      'utf8'
+    );
+    return () => vm.runInContext(source, sandbox, { filename: `public/${file}` });
+  }
+
+  rendererScripts.forEach(({ file, apiName, errorPrefix }) => {
+    let missingLoggerCloseCalls = 0;
+    assert.throws(
+      runBootstrap(file, {
+        close() {
+          missingLoggerCloseCalls += 1;
+        },
+      }),
+      new RegExp(`\\[${errorPrefix}\\] window\\.getLogger unavailable`, 'u')
+    );
+    assert.equal(missingLoggerCloseCalls, 1);
+
+    let loggerFailureCloseCalls = 0;
+    const loggerErrors = [];
+    assert.throws(
+      runBootstrap(file, {
+        getLogger() {
+          return {
+            debug() {
+              throw new Error('logger startup failed');
+            },
+            error(...args) {
+              loggerErrors.push(args);
+            },
+          };
+        },
+        close() {
+          loggerFailureCloseCalls += 1;
+        },
+      }),
+      /logger startup failed/u
+    );
+    assert.equal(loggerFailureCloseCalls, 1);
+    assert.equal(loggerErrors.length, 1);
+
+    let incompleteApiCloseCalls = 0;
+    const apiErrors = [];
+    assert.throws(
+      runBootstrap(file, {
+        getLogger() {
+          return {
+            debug() {},
+            error(...args) {
+              apiErrors.push(args);
+            },
+          };
+        },
+        [apiName]: {
+          getSettings() {},
+          onInitData() {},
+        },
+        close() {
+          incompleteApiCloseCalls += 1;
+        },
+      }),
+      new RegExp(`\\[${errorPrefix}\\] ${apiName} unavailable`, 'u')
+    );
+    assert.equal(incompleteApiCloseCalls, 1);
+    assert.equal(apiErrors.length, 1);
+  });
+});
+
+test('Questions closes locally when its required DOM contract is unavailable', () => {
+  const harness = createRendererHarness({
+    missingRequiredElement: 'readingTestQuestionsForm',
+  });
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.deepEqual(harness.callbacks, {});
 });
 
 test('Questions ignores unrelated settings updates and uses current focus at language-driven replacement time', async () => {

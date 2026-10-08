@@ -172,9 +172,12 @@ async function openReadingSessionWindows(options = {}) {
   const editorWin = editorWindowInfo.editorWin;
   const flotanteWin = await ensureFlotanteWindow();
   await Promise.all([
+    // Keep all readiness requirements. Install the lifecycle waiter first so
+    // its causal terminal result is retained if lifecycle disposal also makes
+    // the native renderer-load waiter reject.
+    editorWindowInfo.baseReadyPromise || Promise.resolve(),
     waitForWindowRendererLoad(editorWin, 'EDITOR', log, timeoutMs),
     waitForWindowVisible(flotanteWin, 'FLOTANTE', log, timeoutMs),
-    editorWindowInfo.baseReadyPromise || Promise.resolve(),
   ]);
 
   return { editorWin, flotanteWin };

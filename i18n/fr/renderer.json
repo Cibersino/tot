@@ -672,7 +672,7 @@
         "result_invalid": "Le résultat du test n'a pas pu être converti en WPM valide. Le flux s'est terminé sans ouvrir la boîte de dialogue du preset.",
         "result_unavailable": "Le résultat de vitesse de lecture n'a pas pu être affiché. Le flux a continué.",
         "preset_unavailable": "La boîte de dialogue du preset n'a pas pu être ouverte après le test.",
-        "questions_unavailable": "La boîte de dialogue des questions de compréhension n'a pas pu être ouverte. Le flux s'est terminé avant la création du preset.",
+        "questions_unavailable": "Les questions de compréhension n'ont pas pu être affichées. Le flux a continué.",
         "pool_import_failed": "Les fichiers du test de vitesse de lecture n'ont pas pu être importés.",
         "pool_import_state_cleanup_failed": "Les fichiers du test de vitesse de lecture ont été importés, mais l’état du pool n’a pas pu être entièrement mis à jour.",
         "start_failed": "Le test de vitesse de lecture n'a pas pu démarrer.",

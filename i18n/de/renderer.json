@@ -672,7 +672,7 @@
         "result_invalid": "Das Testergebnis konnte nicht in einen gültigen WPM-Wert umgewandelt werden. Der Ablauf endete, ohne den Preset-Dialog zu öffnen.",
         "result_unavailable": "Das Ergebnis der Lesegeschwindigkeit konnte nicht angezeigt werden. Der Ablauf wurde fortgesetzt.",
         "preset_unavailable": "Der Preset-Dialog konnte nach dem Test nicht geöffnet werden.",
-        "questions_unavailable": "Der Dialog mit den Verständnisfragen konnte nicht geöffnet werden. Der Ablauf endete vor der Erstellung des Presets.",
+        "questions_unavailable": "Die Verständnisfragen konnten nicht angezeigt werden. Der Ablauf wurde fortgesetzt.",
         "pool_import_failed": "Die Dateien für den Lesegeschwindigkeitstest konnten nicht importiert werden.",
         "pool_import_state_cleanup_failed": "Die Dateien des Lesegeschwindigkeitstests wurden importiert, aber der Pool-Status konnte nicht vollständig aktualisiert werden.",
         "start_failed": "Der Lesegeschwindigkeitstest konnte nicht gestartet werden.",

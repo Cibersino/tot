@@ -439,6 +439,166 @@ test('lifecycle observes a reportable startup rejection immediately and owns nat
   }]);
 });
 
+test('ordinary initial document load failure settles the matching startup cycle without the timeout', async () => {
+  const originalSetTimeout = global.setTimeout;
+  const originalClearTimeout = global.clearTimeout;
+  let timeoutCallback = null;
+  const clearedTimeouts = [];
+
+  global.setTimeout = (callback) => {
+    timeoutCallback = callback;
+    return 1;
+  };
+  global.clearTimeout = (timeoutId) => {
+    clearedTimeouts.push(timeoutId);
+  };
+
+  try {
+    const disclosures = [];
+    const { controller } = createController({
+      showStartupFailureDisclosure(details) {
+        disclosures.push(details);
+      },
+    });
+    const { mainWin, sends } = createMainWindowDouble();
+    const { editorWin, calls } = createEditorWindowDouble({ visible: false });
+    const { result, firstShowGeneration } = createFreshOrdinaryStartup(controller, mainWin, editorWin);
+    const loadError = new Error("ERR_FILE_NOT_FOUND (-6) loading 'file:///editor.html'");
+
+    const accepted = controller.handleInitialDocumentLoadFailure({
+      editorWin,
+      mainWin,
+      firstShowGeneration,
+      error: loadError,
+      logContext: 'test.initialDocumentLoad.ordinary',
+    });
+
+    assert.equal(accepted, true);
+    assert.deepEqual(calls, ['destroy']);
+    assert.deepEqual(sends, [
+      {
+        channel: 'editor-first-show-state',
+        payload: {
+          generation: 1,
+          state: 'failed',
+          reason: 'initial-document-load-failed',
+        },
+      },
+    ]);
+    assert.deepEqual(clearedTimeouts, [1]);
+    timeoutCallback();
+    assert.deepEqual(calls, ['destroy']);
+    assert.deepEqual(sends, [
+      {
+        channel: 'editor-first-show-state',
+        payload: {
+          generation: 1,
+          state: 'failed',
+          reason: 'initial-document-load-failed',
+        },
+      },
+    ]);
+    await assert.rejects(result.baseReadyPromise, (err) => {
+      assert.equal(err.code, 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED');
+      assert.deepEqual(err.editorStartupLifecycle, {
+        cause: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+        disclosure: 'main-native',
+      });
+      return true;
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(disclosures, [{
+      cause: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+      disclosure: 'main-native',
+    }]);
+    assert.equal(controller.handleEditorWindowClosed({
+      editorWin,
+      mainWin,
+      logContext: 'test.initialDocumentLoad.ordinary.closed',
+    }), true);
+  } finally {
+    global.setTimeout = originalSetTimeout;
+    global.clearTimeout = originalClearTimeout;
+  }
+});
+
+test('initial document load failure does not settle another startup generation', () => {
+  const { controller } = createController();
+  const { mainWin, sends } = createMainWindowDouble();
+  const { editorWin, calls } = createEditorWindowDouble({ visible: false });
+  const { firstShowGeneration } = createFreshOrdinaryStartup(controller, mainWin, editorWin);
+
+  const accepted = controller.handleInitialDocumentLoadFailure({
+    editorWin,
+    mainWin,
+    firstShowGeneration: firstShowGeneration + 1,
+    error: new Error('STALE_DOCUMENT_LOAD_FAILURE'),
+    logContext: 'test.initialDocumentLoad.stale',
+  });
+
+  assert.equal(accepted, false);
+  assert.deepEqual(calls, []);
+  assert.deepEqual(sends, []);
+  controller.handleEditorWindowClosed({
+    editorWin,
+    mainWin,
+    logContext: 'test.initialDocumentLoad.stale.cleanup',
+  });
+});
+
+test('Reading Test initial document load failure remains lifecycle-owned through disposal', async () => {
+  const disclosures = [];
+  const { controller } = createController({
+    showStartupFailureDisclosure(details) {
+      disclosures.push(details);
+    },
+  });
+  const { editorWin, calls } = createEditorWindowDouble({ visible: false, maximized: false });
+  const result = controller.ensureEditorWindowOpen({
+    editorWin: null,
+    mainWin: null,
+    createEditorWindow() {
+      return editorWin;
+    },
+    options: {
+      deferShow: true,
+      waitForBasePresentationReady: true,
+      startupOwner: 'reading-test',
+      initialPresentationMode: 'maximized',
+    },
+    logContext: 'test.initialDocumentLoad.readingTest',
+  });
+
+  const accepted = controller.handleInitialDocumentLoadFailure({
+    editorWin,
+    mainWin: null,
+    firstShowGeneration: 1,
+    error: new Error('EDITOR_DOCUMENT_LOAD_FAILED'),
+    logContext: 'test.initialDocumentLoad.readingTest',
+  });
+
+  assert.equal(accepted, true);
+  assert.deepEqual(calls, ['destroy']);
+  await assert.rejects(result.baseReadyPromise, (err) => {
+    assert.equal(err.code, 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED');
+    assert.deepEqual(err.editorStartupLifecycle, {
+      cause: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+      disclosure: 'main-native',
+    });
+    return true;
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(disclosures, [{
+    cause: 'EDITOR_INITIAL_DOCUMENT_LOAD_FAILED',
+    disclosure: 'main-native',
+  }]);
+  assert.equal(controller.handleEditorWindowClosed({
+    editorWin,
+    mainWin: null,
+    logContext: 'test.initialDocumentLoad.readingTest.closed',
+  }), true);
+});
+
 test('reading-test bootstrap failure marks the later hidden editor close as lifecycle-owned', () => {
   const { controller } = createController();
   const { editorWin, calls } = createEditorWindowDouble({ visible: false, maximized: false });

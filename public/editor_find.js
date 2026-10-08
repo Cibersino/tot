@@ -14,11 +14,27 @@
 // =============================================================================
 // Logger and required runtime dependencies
 // =============================================================================
-if (typeof window.getLogger !== 'function') {
-  throw new Error('[editor-find] window.getLogger unavailable; cannot continue.');
+let log = null;
+
+function failClosedFindBootstrap(error) {
+  if (log) {
+    log.error('Editor Find bootstrap failed; closing window:', error);
+  }
+  if (typeof window.close === 'function') {
+    window.close();
+  }
+  throw error;
 }
 
-const log = window.getLogger('editor-find');
+if (typeof window.getLogger !== 'function') {
+  failClosedFindBootstrap(new Error('[editor-find] window.getLogger unavailable; cannot continue.'));
+}
+
+try {
+  log = window.getLogger('editor-find');
+} catch (err) {
+  failClosedFindBootstrap(err);
+}
 log.debug('Editor find window starting...');
 
 function reportEarlyTerminalFindI18nFailure(kind) {
@@ -42,12 +58,12 @@ function reportEarlyTerminalFindI18nFailure(kind) {
 
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
-  throw new Error('[editor-find] RendererIcons.applyIconToElement unavailable; cannot continue.');
+  failClosedFindBootstrap(new Error('[editor-find] RendererIcons.applyIconToElement unavailable; cannot continue.'));
 }
 
 const { AppConstants } = window;
 if (!AppConstants) {
-  throw new Error('[editor-find] AppConstants unavailable; verify constants.js is loaded.');
+  failClosedFindBootstrap(new Error('[editor-find] AppConstants unavailable; verify constants.js is loaded.'));
 }
 const {
   DEFAULT_LANG,
@@ -63,7 +79,7 @@ if (!transitionRendererTranslations || !tRenderer) {
 
 const findApi = window.editorFindAPI;
 if (!findApi) {
-  throw new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.');
+  failClosedFindBootstrap(new Error('[editor-find] editorFindAPI unavailable; verify editor_find_preload.js.'));
 }
 if (
   typeof findApi.setQuery !== 'function' ||
@@ -76,7 +92,7 @@ if (
   typeof findApi.onInit !== 'function' ||
   typeof findApi.onState !== 'function'
 ) {
-  throw new Error('[editor-find] editorFindAPI required methods unavailable; cannot continue.');
+  failClosedFindBootstrap(new Error('[editor-find] editorFindAPI required methods unavailable; cannot continue.'));
 }
 
 // =============================================================================
@@ -111,7 +127,7 @@ if (
   !replaceAllEl ||
   !replaceAllDescriptionEl
 ) {
-  throw new Error('[editor-find] Missing required DOM elements');
+  failClosedFindBootstrap(new Error('[editor-find] Missing required DOM elements'));
 }
 
 let idiomaActual = DEFAULT_LANG;
@@ -493,11 +509,15 @@ function enqueueFindSettingsApplication(settings) {
 // =============================================================================
 // Bridge subscriptions
 // =============================================================================
-findApi.onInit((payload) => {
-  applyIncomingState(payload);
-});
+try {
+  findApi.onInit((payload) => {
+    applyIncomingState(payload);
+  });
 
-findApi.onState(applyIncomingState);
+  findApi.onState(applyIncomingState);
+} catch (err) {
+  failClosedFindBootstrap(err);
+}
 
 if (typeof findApi.onFocusTarget === 'function') {
   let focusSyncEnabled = true;
