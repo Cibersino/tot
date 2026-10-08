@@ -238,7 +238,7 @@ async function probeNativePdfSelectableText({
 
     const pdfBuffer = fs.readFileSync(source.absPath);
     const pdfjs = getPdfJs();
-    documentHandle = await pdfjs.getDocument(pdfBuffer);
+    documentHandle = await pdfjs.getDocument(new Uint8Array(pdfBuffer));
 
     const totalPages = Number.isFinite(documentHandle.numPages) ? documentHandle.numPages : 0;
     const resolvedPageRange = resolveProbePageRange(pageRange, totalPages, startedAt, baseMetadata);
