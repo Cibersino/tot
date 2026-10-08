@@ -238,6 +238,8 @@ async function probeNativePdfSelectableText({
 
     const pdfBuffer = fs.readFileSync(source.absPath);
     const pdfjs = getPdfJs();
+    // Work around PDF.js 1.10.100 Node Buffer parsing bug.
+    // This adds a full-size in-memory copy of the PDF; revisit when upgrading the parser.
     documentHandle = await pdfjs.getDocument(new Uint8Array(pdfBuffer));
 
     const totalPages = Number.isFinite(documentHandle.numPages) ? documentHandle.numPages : 0;
