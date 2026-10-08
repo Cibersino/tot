@@ -5,6 +5,10 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
+
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+
 const {
   installElectronModuleMock,
 } = require('../../helpers/electron_module_mock');
@@ -98,11 +102,23 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
     }),
   });
 
+  const fixturePath = path.resolve(
+    __dirname,
+    '../../../test/fixtures/pdf/selectable_text_fixture_12_pages.pdf'
+  );
+
+  const fixtureSha256 = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(fixturePath))
+    .digest('hex');
+
+  console.error('[diagnostic] selectable PDF SHA256:', fixtureSha256);
+
   const result = await ipcMain.invoke(
     'text-extraction-prepare-selected-file',
     { sender: senderWin.webContents },
     {
-      filePath: path.resolve(__dirname, '../../../test/fixtures/pdf/selectable_text_fixture_12_pages.pdf'),
+      filePath: fixturePath,
       ocrLanguage: 'es',
       planningMode: 'batch',
       pdfPageSelection: {
