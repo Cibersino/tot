@@ -370,6 +370,58 @@ test('standalone full refresh failure clears pending and leaves degraded values 
   assert.equal(harness.errors.length > 0, true);
 });
 
+test('superseded standalone full refresh keeps the newer recount pending until it settles', async () => {
+  const harness = createHarness();
+  const firstSeparators = createDeferred();
+  const secondSeparators = createDeferred();
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos tres' });
+  await flushAsyncWork();
+
+  harness.queueSeparatorResolver(() => firstSeparators.promise);
+  harness.api.requestDerivedRefresh('first mode toggle');
+  await flushAsyncWork();
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, true);
+
+  harness.queueSeparatorResolver(() => secondSeparators.promise);
+  harness.api.requestDerivedRefresh('second mode toggle');
+  await flushAsyncWork();
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, true);
+
+  firstSeparators.resolve({ separadorMiles: '.', separadorDecimal: ',' });
+  await flushAsyncWork();
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, true);
+
+  secondSeparators.resolve({ separadorMiles: '.', separadorDecimal: ',' });
+  await flushAsyncWork();
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, false);
+});
+
+test('current-text processing takeover releases standalone full-refresh pending state', async () => {
+  const harness = createHarness();
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos tres' });
+  await flushAsyncWork();
+  harness.api.requestDerivedRefresh('mode toggle');
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, true);
+
+  harness.api.applyCurrentTextProcessingState({
+    active: true,
+    requestId: 1,
+    sinceEpochMs: 1,
+    source: 'test',
+    action: 'takeover',
+  }, { source: 'test_takeover' });
+
+  assert.equal(harness.standalonePendingCalls.at(-1).state.active, false);
+  assert.equal(
+    harness.standalonePendingCalls.at(-1).context.source,
+    'standalone_full_refresh_taken_over:test_takeover'
+  );
+
+  await flushAsyncWork();
+});
+
 test('stats_display refresh reuses cached stats without recounting or rerendering a non-empty preview', async () => {
   const harness = createHarness();
 

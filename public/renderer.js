@@ -293,7 +293,10 @@ currentTextRuntime.configure({
   }),
   getSettingsCache: () => settingsCache,
   getWpm: () => wpmControls.getWpm(),
-  applyStandaloneFullRefreshPendingState: textExtractionStatusUi.applyStandaloneFullRefreshPendingState,
+  applyStandaloneFullRefreshPendingState: (state, context) => {
+    textExtractionStatusUi.applyStandaloneFullRefreshPendingState(state, context);
+    syncMainInteractionLockUi();
+  },
   resolveCurrentTextProcessing: window.electronAPI.resolveCurrentTextProcessing.bind(window.electronAPI),
 });
 const currentTextRefreshPolicy = currentTextRefreshPolicyModule.createController({
