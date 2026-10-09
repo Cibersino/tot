@@ -48,6 +48,7 @@ Reglas:
 
 ### Resumen de cambios
 
+- Extracción de texto (Issue #338, F-01): las extracciones NATIVE/OCR completadas correctamente distinguen texto aplicable de resultados vacíos o de solo espacios; estos últimos no pueden modificar el texto actual, reciben un modal informativo en el flujo individual y el sufijo «Sin texto» en el informe batch. Los splits de PDF pesado exigen éxito técnico de todos sus hijos antes de aplicar un agregado.
 - Ventanas secundarias / fallos terminales tempranos (Issue #335): ocho superficies —Text Editor, Task Editor, Calculadora rápida, Preset, selector de idioma, Cronómetro Flotante, Editor Find y Reading Test Result/Questions— dejan de poder quedar presentadas, inertes o reutilizables como si hubieran arrancado correctamente cuando falla un bootstrap requerido, el preload, el DOM mínimo o el documento inicial; cada owner conserva el diagnóstico y aplica disclosure/disposición según su lifecycle, sin introducir un manager, readiness protocol o mecanismo terminal común.
 - El `Info Modal` de la ventana principal deja de concentrar estado, DOM, render asíncrono, foco, carga de documentos y presentación de About en `public/renderer.js`: `public/js/info_modal.js` pasa a ser su owner renderer dedicado, mientras el entrypoint conserva únicamente inicialización, coordinación de bloqueo, delegación de menú y notificación de idioma sin cambiar la ruta de fallback de `RendererI18n`, los enlaces/capturas de `InfoModalLinks` ni el comportamiento observable del modal.
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
@@ -194,6 +195,14 @@ Reglas:
 
 ### Arreglado
 
+- Extracción sin texto aplicable y agregación de PDF pesado (Issue #338, F-01):
+  - las extracciones técnicamente exitosas con `text.trim() === ''` se clasifican como `no_text`, sin recortar los textos aplicables ni prohibir el vaciado intencional del texto vigente por otras funciones; los resultados nominalmente exitosos que incumplen el contrato se rechazan de forma segura con diagnóstico técnico;
+  - en la extracción individual, el modal existente presenta un mensaje informativo específico traducido, deshabilita reemplazar, agregar y repeticiones, mantiene el foco inicial en Cerrar y conserva la acción condicional de mostrar PDFs generados retenidos, sin aplicar texto ni generar una notificación rutinaria de error;
+  - el procesamiento por lotes omite la aplicación de resultados no aplicables sin alterar la secuencia de reemplazo/anexado, los separadores, `hadOutput` ni la creación de snapshots; el informe final y su versión copiada identifican con «Sin texto» a los inputs y los hijos/padres técnicamente exitosos correspondientes;
+  - un split de PDF pesado terminado solo produce padre exitoso cuando todos los hijos previstos tuvieron éxito técnico; un hijo fallido u omitido por fallo impide aplicar cualquier agregado parcial, mientras la cancelación y la política de continuación/cierre siguen diferenciadas;
+  - el informe batch conserva estados de los hijos y referencias de PDFs generados incluso cuando falla la posterior aplicación canónica del agregado del padre; los sufijos de estado fallido o truncado mantienen `--warning-text`, mientras «Sin texto» usa `--text-soft`, igual que cancelado/omitido;
+  - se agregaron las cadenas del estado informativo y del estado breve del reporte a los recursos de idioma y a `i18n/TRANSLATION_GUIDE.md`; luego se completaron sus traducciones en los demás idiomas distribuidos. El smoke manual del cambio fue satisfactorio en cinco recorridos (extracción nativa, sin texto, batch mixto, OCR y PDF por rango con conservación/revelación).
+
 - Ventanas secundarias / fallos terminales tempranos (Issue #335):
   - se completa la revisión e implementación de los 21 escenarios finalmente clasificados como `correction required` en 8 superficies secundarias, preservando diagnóstico, disclosure solo donde quedó justificado y disposición terminal según el lifecycle/owner real de cada escenario, sin imponer un mecanismo común;
   - Text Editor y Task Editor ya no pueden quedar visibles/inertes por los fallos tempranos aprobados sin renderer utilizable; Task Editor mantiene intacta la protección de draft y deduplica preload/document failure dentro de su lifecycle existente;
@@ -256,6 +265,12 @@ Reglas:
 - Snapshots del texto vigente y pool de Reading Test: el formato anterior se corta de forma radical. Un snapshot guardado, bundled o importado que no cumpla el documento canónico completo —incluidos tipo, metadata de guardado y, si existen, `name`, `sourceComment`, `readingTest` y `metrics` válidos— se rechaza tal como está; no hay parser legacy, fallback, reparación, migración ni reescritura. Los snapshots canónicos sin los campos opcionales siguen siendo válidos, sin un path especial de compatibilidad.
 
 ### Contratos tocados
+
+- F-01 / resultado de extracción y reporte renderer (Issue #338):
+  - los resultados de ejecución técnicamente exitosos incorporan `textApplicability: 'applicable' | 'no_text'` (`text.trim() === ''`), incluidos el padre exitoso y los hijos exitosos de `heavySplitExecution.generatedInputs[]`; los estados no exitosos no se convierten en `no_text`;
+  - el resultado técnico de un padre heavy completado exige éxito de **todos** los hijos previstos. El reporte de cada input mantiene `state` como estado final y añade, donde corresponde, `executionState`, `textApplicability` y `textApplication: 'applied' | 'not_applied_no_text' | 'failed'`; los hijos no registran aplicaciones independientes; el fallo posterior de aplicación conserva los hijos/artefactos del padre y se distingue por su código;
+  - el prompt renderer `window.Notify.promptTextExtractionApplyChoice(...)` mantiene su API y acepta el campo aditivo `textApplicability`, con un estado informativo sin aplicación. `finalReport` sigue siendo el único modelo del informe visible y copiable, sin cambiar el árbol de unidades/inputs/hijos ni la política de fallo basada en el padre;
+  - nuevas claves renderer `renderer.text_extraction.apply_modal.no_text_message` (ES: «La extracción finalizó correctamente, pero no se obtuvo texto para aplicar.»; EN: “Extraction completed successfully, but no text was obtained to apply.”) y `renderer.text_extraction.batch_report.no_text` (ES: «Sin texto»; EN: “No text”), localizadas también en los otros idiomas distribuidos; sin nuevo IPC, API preload, ajuste persistido o prohibición general de escribir `''`.
 
 - Issue #335 / Cronómetro Flotante:
   - `flotante-open` endurece la semántica de su resultado: una apertura ordinaria solo conserva `{ ok: true }` cuando el documento inicial requerido logra establecerse; un fallo genuino de esa carga devuelve `{ ok: false }`, y el renderer principal usa ese resultado para no dejar activado el toggle del Floating tras una apertura fallida.
