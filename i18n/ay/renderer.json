@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Apsuta qillqata apnaqaña",
         "message": "Apsuta qillqata kunjam apnaqañsa ajllim.",
+        "no_text_message": "Apsuñax suma tukuyi, ukampis janiw apnaqañatak qillqatas utjkiti.",
         "elapsed": "Lurawi pacha: ",
         "repeat_label": "Kutinaka",
         "overwrite_button": "Lantintaña",
@@ -227,6 +228,7 @@
         "close_aria": "Lote apsuña tukuya informe jist’antaña",
         "failed_fallback": "Pantjasi",
         "failed_with_code": "Pantjasi: {code}",
+        "no_text": "Janiw qillqatax utjkiti",
         "applied_truncated": "khuchhurata aplikata",
         "payload_too_large": "aplicañatakix sinti jach’a",
         "text_limit": "texto límite ukaruw puri",

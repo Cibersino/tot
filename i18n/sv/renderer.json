@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Tillämpa extraherad text",
         "message": "Välj hur den extraherade texten ska tillämpas.",
+        "no_text_message": "Extraheringen slutfördes korrekt, men ingen text att tillämpa kunde hämtas.",
         "elapsed": "Körtid: ",
         "repeat_label": "Upprepningar",
         "overwrite_button": "Skriv över",
@@ -227,6 +228,7 @@
         "close_aria": "Stäng slutrapporten för satsvis extrahering",
         "failed_fallback": "misslyckades",
         "failed_with_code": "misslyckades: {code}",
+        "no_text": "Ingen text",
         "applied_truncated": "tillämpad med trunkering",
         "payload_too_large": "för stort för att tillämpas",
         "text_limit": "textgräns nådd",

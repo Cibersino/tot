@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Applica il testo estratto",
         "message": "Scegli come applicare il testo estratto.",
+        "no_text_message": "L’estrazione è stata completata correttamente, ma non è stato ottenuto alcun testo da applicare.",
         "elapsed": "Tempo di esecuzione: ",
         "repeat_label": "Ripetizioni",
         "overwrite_button": "Sovrascrivi",
@@ -227,6 +228,7 @@
         "close_aria": "Chiudi rapporto finale dell’estrazione per lotti",
         "failed_fallback": "non riuscito",
         "failed_with_code": "non riuscito: {code}",
+        "no_text": "Nessun testo",
         "applied_truncated": "applicato con troncamento",
         "payload_too_large": "troppo grande da applicare",
         "text_limit": "limite di testo raggiunto",

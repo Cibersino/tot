@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Qichusqa qillqata churay",
         "message": "Qichusqa qillqata imaynata churanaykita akllay.",
+        "no_text_message": "Qichuy allinta tukurqan, ichaqa churanapaq qillqa mana tarikurqanchu.",
         "elapsed": "Ruwasqa pacha: ",
         "repeat_label": "Kutiykuna",
         "overwrite_button": "Qillqay/tikray",
@@ -227,6 +228,7 @@
         "close_aria": "T'aqa qichuypa tukup informeta wichq'ay",
         "failed_fallback": "Pantarun",
         "failed_with_code": "Pantarun: {code}",
+        "no_text": "Mana qillqa kanchu",
         "applied_truncated": "kuchusqa hina churaska",
         "payload_too_large": "ancha hatun churaypaq",
         "text_limit": "texto límiteman chayasqa",

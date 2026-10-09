@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Eipuru jehai ojeipe’áva",
         "message": "Eiporavo mba’éichapa reipurúta jehai ojeipe’áva.",
+        "no_text_message": "Jeipe’a opa porã, péro ndaipóri jehai ojepuru hag̃ua.",
         "elapsed": "Aravo ejecución: ",
         "repeat_label": "Jey jey",
         "overwrite_button": "Myengovia",
@@ -227,6 +228,7 @@
         "close_aria": "Emboty extracción lote-pe informe paha",
         "failed_fallback": "Ojavy",
         "failed_with_code": "Ojavy: {code}",
+        "no_text": "Ndaipóri jehai",
         "applied_truncated": "oñemoĩ recorte reheve",
         "payload_too_large": "tuichaiterei oñemoĩ hag̃ua",
         "text_limit": "texto límite oñeguahẽ",

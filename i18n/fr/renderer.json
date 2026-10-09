@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Appliquer le texte extrait",
         "message": "Choisissez comment appliquer le texte extrait.",
+        "no_text_message": "L’extraction s’est terminée correctement, mais aucun texte à appliquer n’a été obtenu.",
         "elapsed": "Temps d'exécution : ",
         "repeat_label": "Répétitions",
         "overwrite_button": "Remplacer",
@@ -227,6 +228,7 @@
         "close_aria": "Fermer le rapport final de l’extraction par lots",
         "failed_fallback": "échec",
         "failed_with_code": "échec : {code}",
+        "no_text": "Aucun texte",
         "applied_truncated": "appliqué avec troncature",
         "payload_too_large": "trop volumineux pour être appliqué",
         "text_limit": "limite de texte atteinte",

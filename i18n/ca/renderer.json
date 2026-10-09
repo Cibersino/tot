@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Aplicar el text extret",
         "message": "Tria com aplicar el text extret.",
+        "no_text_message": "L’extracció ha finalitzat correctament, però no s’ha obtingut cap text per aplicar.",
         "elapsed": "Temps d’execució: ",
         "repeat_label": "Repeticions",
         "overwrite_button": "Sobreescriure",
@@ -227,6 +228,7 @@
         "close_aria": "Tancar l’informe final de l’extracció per lots",
         "failed_fallback": "Fallada",
         "failed_with_code": "Fallada: {code}",
+        "no_text": "Sense text",
         "applied_truncated": "aplicat amb truncament",
         "payload_too_large": "massa gran per aplicar",
         "text_limit": "límit de text assolit",

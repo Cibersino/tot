@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Apply extracted text",
         "message": "Choose how to apply di extracted text.",
+        "no_text_message": "Extraction complete well, but no text dey to apply.",
         "elapsed": "Execution time: ",
         "repeat_label": "Repetitions",
         "overwrite_button": "Overwrite",
@@ -227,6 +228,7 @@
         "close_aria": "Close batch extraction final report",
         "failed_fallback": "Failed",
         "failed_with_code": "Failed: {code}",
+        "no_text": "No text",
         "applied_truncated": "apply am with truncation",
         "payload_too_large": "too big to apply",
         "text_limit": "text limit don reach",

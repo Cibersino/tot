@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Çıkarılan metni uygula",
         "message": "Çıkarılan metnin nasıl uygulanacağını seçin.",
+        "no_text_message": "Çıkarma başarıyla tamamlandı, ancak uygulanacak metin elde edilemedi.",
         "elapsed": "Çalışma süresi: ",
         "repeat_label": "Yinelemeler",
         "overwrite_button": "Üzerine yaz",
@@ -227,6 +228,7 @@
         "close_aria": "Toplu çıkarım son raporunu kapat",
         "failed_fallback": "başarısız",
         "failed_with_code": "başarısız: {code}",
+        "no_text": "Metin yok",
         "applied_truncated": "kırpılarak uygulandı",
         "payload_too_large": "uygulamak için çok büyük",
         "text_limit": "metin sınırına ulaşıldı",

@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "套用擷取的文字",
         "message": "選擇如何套用擷取的文字。",
+        "no_text_message": "擷取已成功完成，但未取得可套用的文字。",
         "elapsed": "執行時間：",
         "repeat_label": "重複次數",
         "overwrite_button": "覆蓋",
@@ -227,6 +228,7 @@
         "close_aria": "關閉批次擷取最終報告",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗：{code}",
+        "no_text": "無文字",
         "applied_truncated": "已截斷並套用",
         "payload_too_large": "過大，無法套用",
         "text_limit": "已達到文字限制",

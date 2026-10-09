@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "应用提取的文本",
         "message": "选择如何应用提取的文本。",
+        "no_text_message": "提取已成功完成，但未获得可应用的文本。",
         "elapsed": "执行时间：",
         "repeat_label": "重复次数",
         "overwrite_button": "覆盖",
@@ -227,6 +228,7 @@
         "close_aria": "关闭批量提取最终报告",
         "failed_fallback": "失败",
         "failed_with_code": "失败：{code}",
+        "no_text": "无文本",
         "applied_truncated": "已截断并应用",
         "payload_too_large": "过大，无法应用",
         "text_limit": "已达到文本限制",

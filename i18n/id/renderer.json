@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Terapkan teks hasil ekstraksi",
         "message": "Pilih cara menerapkan teks hasil ekstraksi.",
+        "no_text_message": "Ekstraksi selesai dengan sukses, tetapi tidak ada teks yang diperoleh untuk diterapkan.",
         "elapsed": "Waktu eksekusi: ",
         "repeat_label": "Pengulangan",
         "overwrite_button": "Timpa",
@@ -227,6 +228,7 @@
         "close_aria": "Tutup laporan akhir ekstraksi berkelompok",
         "failed_fallback": "gagal",
         "failed_with_code": "gagal: {code}",
+        "no_text": "Tidak ada teks",
         "applied_truncated": "diterapkan dengan pemotongan",
         "payload_too_large": "terlalu besar untuk diterapkan",
         "text_limit": "batas teks tercapai",

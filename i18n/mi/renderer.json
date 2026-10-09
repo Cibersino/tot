@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Hoatu kuputuhi kua tangohia",
         "message": "Kōwhiria me pēhea te hoatu i te kuputuhi kua tangohia.",
+        "no_text_message": "I oti pai te tangohanga, engari kāore he kuputuhi i riro hei hoatu.",
         "elapsed": "Wā whakahaere: ",
         "repeat_label": "Ngā tāruaruatanga",
         "overwrite_button": "Tuhia anō",
@@ -227,6 +228,7 @@
         "close_aria": "Katia te pūrongo whakamutunga tangohanga ā-rōpū",
         "failed_fallback": "I rahua",
         "failed_with_code": "I rahua: {code}",
+        "no_text": "Kāore he kuputuhi",
         "applied_truncated": "kua hoatu me te tapahi",
         "payload_too_large": "he nui rawa kia hoatu",
         "text_limit": "kua tae ki te tepe kuputuhi",

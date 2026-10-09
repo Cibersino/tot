@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "추출된 텍스트 적용",
         "message": "추출된 텍스트를 적용할 방법을 선택하세요.",
+        "no_text_message": "추출은 성공적으로 완료되었지만 적용할 텍스트를 얻지 못했습니다.",
         "elapsed": "실행 시간: ",
         "repeat_label": "반복 횟수",
         "overwrite_button": "덮어쓰기",
@@ -227,6 +228,7 @@
         "close_aria": "일괄 추출 최종 보고서 닫기",
         "failed_fallback": "실패",
         "failed_with_code": "실패: {code}",
+        "no_text": "텍스트 없음",
         "applied_truncated": "잘라내어 적용됨",
         "payload_too_large": "적용하기에 너무 큼",
         "text_limit": "텍스트 한도에 도달함",

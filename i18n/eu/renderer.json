@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Aplikatu erauzitako testua",
         "message": "Aukeratu nola aplikatu erauzitako testua.",
+        "no_text_message": "Erauzketa behar bezala amaitu da, baina ez da aplikatzeko testurik lortu.",
         "elapsed": "Exekuzio-denbora: ",
         "repeat_label": "Errepikapenak",
         "overwrite_button": "Gainidatzi",
@@ -227,6 +228,7 @@
         "close_aria": "Itxi multzokako erauzketaren azken txostena",
         "failed_fallback": "Huts egin du",
         "failed_with_code": "Huts egin du: {code}",
+        "no_text": "Testurik ez",
         "applied_truncated": "moztuta aplikatu da",
         "payload_too_large": "handiegia aplikatzeko",
         "text_limit": "testu-muga iritsi da",

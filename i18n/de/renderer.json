@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Extrahierten Text anwenden",
         "message": "Wählen Sie aus, wie der extrahierte Text angewendet werden soll.",
+        "no_text_message": "Die Extraktion wurde erfolgreich abgeschlossen, aber es wurde kein Text zum Anwenden extrahiert.",
         "elapsed": "Ausführungszeit: ",
         "repeat_label": "Wiederholungen",
         "overwrite_button": "Überschreiben",
@@ -227,6 +228,7 @@
         "close_aria": "Abschlussbericht der Stapelextraktion schließen",
         "failed_fallback": "fehlgeschlagen",
         "failed_with_code": "fehlgeschlagen: {code}",
+        "no_text": "Kein Text",
         "applied_truncated": "mit Kürzung angewendet",
         "payload_too_large": "zu groß zum Anwenden",
         "text_limit": "Textlimit erreicht",

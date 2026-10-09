@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "抽出テキストを適用",
         "message": "抽出したテキストの適用方法を選択してください。",
+        "no_text_message": "抽出は正常に完了しましたが、適用するテキストは得られませんでした。",
         "elapsed": "実行時間: ",
         "repeat_label": "繰り返し",
         "overwrite_button": "上書き",
@@ -227,6 +228,7 @@
         "close_aria": "一括抽出の最終レポートを閉じる",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗: {code}",
+        "no_text": "テキストなし",
         "applied_truncated": "切り詰めて適用済み",
         "payload_too_large": "適用するには大きすぎます",
         "text_limit": "テキスト上限に達しました",

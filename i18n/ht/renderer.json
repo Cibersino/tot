@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Aplike tèks ekstrè a",
         "message": "Chwazi kijan pou aplike tèks ekstrè a.",
+        "no_text_message": "Ekstraksyon an fini avèk siksè, men pa t jwenn okenn tèks pou aplike.",
         "elapsed": "Tan egzekisyon: ",
         "repeat_label": "Repetisyon",
         "overwrite_button": "Ranplase",
@@ -227,6 +228,7 @@
         "close_aria": "Fèmen rapò final ekstraksyon an gwoup la",
         "failed_fallback": "Echwe",
         "failed_with_code": "Echwe: {code}",
+        "no_text": "Pa gen tèks",
         "applied_truncated": "aplike ak tronka",
         "payload_too_large": "twò gwo pou aplike",
         "text_limit": "limit tèks la rive",

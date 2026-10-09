@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Nentulelu wirin püneal",
         "message": "Düllinge chumgechi püneay tachi wirin nentulelu.",
+        "no_text_message": "Nentun küme afuy, welu ngelay wirin püneal.",
         "elapsed": "Küzawün antü: ",
         "repeat_label": "Repeticiones",
         "overwrite_button": "Kangelu",
@@ -227,6 +228,7 @@
         "close_aria": "Nürüfün informe final lote extracción",
         "failed_fallback": "Welulkuy",
         "failed_with_code": "Welulkuy: {code}",
+        "no_text": "Ngelay wirin",
         "applied_truncated": "aplicadongey recorte mew",
         "payload_too_large": "fütra rume aplicayal",
         "text_limit": "texto límite trapümüngey",

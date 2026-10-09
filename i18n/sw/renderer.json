@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Tumia maandishi yaliyotolewa",
         "message": "Chagua jinsi ya kutumia maandishi yaliyotolewa.",
+        "no_text_message": "Utoaji ulikamilika kwa mafanikio, lakini hakuna maandishi yaliyopatikana ya kutumia.",
         "elapsed": "Muda wa utoaji: ",
         "repeat_label": "Marudio",
         "overwrite_button": "Badilisha",
@@ -227,6 +228,7 @@
         "close_aria": "Funga ripoti ya mwisho ya utoaji wa kundi",
         "failed_fallback": "imeshindwa",
         "failed_with_code": "imeshindwa: {code}",
+        "no_text": "Hakuna maandishi",
         "applied_truncated": "imetumika ikiwa imekatwa",
         "payload_too_large": "kubwa mno kutumika",
         "text_limit": "kikomo cha maandishi kimefikiwa",

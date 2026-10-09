@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Aplicar texto extraído",
         "message": "Escolha como aplicar o texto extraído.",
+        "no_text_message": "A extração foi concluída com sucesso, mas nenhum texto foi obtido para aplicar.",
         "elapsed": "Tempo de extração: ",
         "repeat_label": "Repetições",
         "overwrite_button": "Substituir",
@@ -227,6 +228,7 @@
         "close_aria": "Fechar relatório final da extração em lote",
         "failed_fallback": "falhou",
         "failed_with_code": "falhou: {code}",
+        "no_text": "Sem texto",
         "applied_truncated": "aplicado com truncamento",
         "payload_too_large": "grande demais para aplicar",
         "text_limit": "limite de texto atingido",

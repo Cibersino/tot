@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "تطبيق النص المستخرج",
         "message": "اختر كيفية تطبيق النص المستخرج.",
+        "no_text_message": "اكتمل الاستخراج بنجاح، لكن لم يتم الحصول على نص لتطبيقه.",
         "elapsed": "زمن التنفيذ: ",
         "repeat_label": "التكرارات",
         "overwrite_button": "استبدال",
@@ -227,6 +228,7 @@
         "close_aria": "إغلاق التقرير النهائي للاستخراج الدفعي",
         "failed_fallback": "فشل",
         "failed_with_code": "فشل: {code}",
+        "no_text": "لا يوجد نص",
         "applied_truncated": "طُبّق مع اقتطاع",
         "payload_too_large": "كبير جدًا للتطبيق",
         "text_limit": "تم بلوغ حد النص",
