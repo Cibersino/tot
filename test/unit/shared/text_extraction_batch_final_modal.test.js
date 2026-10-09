@@ -258,6 +258,7 @@ function createHarness() {
     'renderer.text_extraction.batch_report.omitted': 'Omitted',
     'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
     'renderer.text_extraction.batch_report.failed_with_code': 'failed: {code}',
+    'renderer.text_extraction.batch_report.no_text': 'No text',
     'renderer.text_extraction.batch_report.applied_truncated': 'applied with truncation',
     'renderer.text_extraction.batch_report.payload_too_large': 'too large to apply',
     'renderer.text_extraction.batch_report.text_limit': 'text limit reached',
@@ -638,6 +639,63 @@ test('batch final modal renders ordinary failed, cancelled, and omitted rows con
   assert.match(harness.clipboardWrites[0], /- failed\.pdf \(failed: native_extraction_failed\)/);
   assert.match(harness.clipboardWrites[0], /- cancelled\.pdf \(cancelled: aborted_by_user\)/);
   assert.match(harness.clipboardWrites[0], /- omitted\.pdf \(Omitted\)/);
+
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
+});
+
+test('batch final modal renders no-text statuses consistently for ordinary and heavy records', async () => {
+  const harness = createHarness();
+  const report = {
+    flowKind: 'batch',
+    hadOutput: false,
+    units: [
+      {
+        unitTitle: 'unit_1',
+        snapshotResult: {
+          state: 'not_created',
+          text: 'Snapshot not created',
+        },
+        inputs: [
+          {
+            fileName: 'empty.txt',
+            state: 'success',
+            textApplicability: 'no_text',
+          },
+          {
+            fileName: 'heavy.pdf',
+            state: 'success',
+            textApplicability: 'no_text',
+            generatedInputs: [
+              {
+                fileName: 'heavy_page_01.pdf',
+                state: 'success',
+                textApplicability: 'no_text',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  const promptPromise = harness.prompt({
+    report,
+    elapsedValueText: '00:42',
+  });
+
+  const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
+  assert.match(renderedBody.textContent, /empty\.txt \(No text\)/);
+  assert.match(renderedBody.textContent, /heavy\.pdf \(No text\)/);
+  assert.match(renderedBody.textContent, /heavy_page_01\.pdf \(No text\)/);
+  assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--no-text/);
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.equal(harness.clipboardWrites.length, 1);
+  assert.match(harness.clipboardWrites[0], /- empty\.txt \(No text\)/);
+  assert.match(harness.clipboardWrites[0], /- heavy\.pdf \(No text\)/);
+  assert.match(harness.clipboardWrites[0], /  - heavy_page_01\.pdf \(No text\)/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;

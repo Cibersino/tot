@@ -108,6 +108,7 @@
     elapsedValueText = '',
     defaultRepeat = 1,
     maxRepeat = 1,
+    textApplicability = 'applicable',
     retainedGeneratedPdf = null,
     onRevealGeneratedPdf = null,
   } = {}) {
@@ -125,6 +126,8 @@
     const initialRepeat = normalizeRepeatForModal(defaultRepeat, safeMaxRepeat);
 
     const safeRetainedGeneratedPdf = normalizeRetainedGeneratedPdf(retainedGeneratedPdf);
+    const isNoText = textApplicability === 'no_text';
+    const canApply = !isNoText;
     const canRevealGeneratedPdf = !!(
       safeRetainedGeneratedPdf
       && typeof onRevealGeneratedPdf === 'function'
@@ -134,7 +137,12 @@
 
     function renderModalCopy() {
       title.textContent = tRenderer('renderer.text_extraction.apply_modal.title');
-      message.textContent = tRenderer('renderer.text_extraction.apply_modal.message');
+      message.textContent = tRenderer(
+        isNoText
+          ? 'renderer.text_extraction.apply_modal.no_text_message'
+          : 'renderer.text_extraction.apply_modal.message'
+      );
+      message.classList.toggle('text-extraction-apply-modal-message--no-text', isNoText);
       elapsed.hidden = !normalizedElapsedValueText;
       elapsed.setAttribute('aria-hidden', elapsed.hidden ? 'true' : 'false');
       if (normalizedElapsedValueText) {
@@ -151,6 +159,9 @@
       btnAppend.textContent = tRenderer('renderer.text_extraction.apply_modal.append_button');
       btnCancel.textContent = tRenderer('renderer.text_extraction.apply_modal.cancel_button');
       btnClose.setAttribute('aria-label', tRenderer('renderer.text_extraction.apply_modal.close_aria'));
+      repeatInput.disabled = !canApply;
+      btnOverwrite.disabled = !canApply;
+      btnAppend.disabled = !canApply;
       savedPdf.hidden = !canRevealGeneratedPdf;
       savedPdf.setAttribute('aria-hidden', savedPdf.hidden ? 'true' : 'false');
       if (canRevealGeneratedPdf) {
@@ -211,8 +222,14 @@
         resolve(choice);
       };
 
-      const onOverwrite = () => finish(resolveChoice('overwrite'));
-      const onAppend = () => finish(resolveChoice('append'));
+      const onOverwrite = () => {
+        if (!canApply) return;
+        finish(resolveChoice('overwrite'));
+      };
+      const onAppend = () => {
+        if (!canApply) return;
+        finish(resolveChoice('append'));
+      };
       const onCancel = () => finish(null);
       const onRepeatInput = () => {
         updateRepeatInvalidState(repeatInput.value, safeMaxRepeat);
@@ -262,8 +279,8 @@
 
       modal.setAttribute('aria-hidden', 'false');
       window.Notify.activateModalFocus(modal, {
-        initialFocus: btnOverwrite,
-        fallbackFocus: btnClose,
+        initialFocus: canApply ? btnOverwrite : btnClose,
+        fallbackFocus: canApply ? btnClose : btnCancel,
       });
     });
   }

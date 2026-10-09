@@ -1630,6 +1630,10 @@ body.text-extraction-drop-active .app-container {
   font-size: var(--font-size-8);
 }
 
+.text-extraction-apply-modal-message--no-text {
+  color: var(--warning-text);
+}
+
 .text-extraction-apply-modal-actions .btn-standard {
   min-width: 110px;
 }
@@ -1991,7 +1995,8 @@ body.text-extraction-drop-active .app-container {
 }
 
 .text-extraction-batch-final-status--cancelled,
-.text-extraction-batch-final-status--omitted {
+.text-extraction-batch-final-status--omitted,
+.text-extraction-batch-final-status--no-text {
   color: var(--text-soft);
 }
 

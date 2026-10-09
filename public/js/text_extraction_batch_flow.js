@@ -1041,6 +1041,9 @@
     applyTruncated = false,
     generatedInputs = [],
     generatedPdfArtifact = null,
+    executionState = '',
+    textApplicability = '',
+    textApplication = '',
   }) {
     const record = {
       fileName,
@@ -1053,6 +1056,17 @@
     if (applyTruncated === true) {
       record.applyTruncated = true;
     }
+    if (executionState) {
+      record.executionState = executionState;
+    }
+    if (textApplicability === 'applicable' || textApplicability === 'no_text') {
+      record.textApplicability = textApplicability;
+    }
+    if (textApplication === 'applied'
+      || textApplication === 'not_applied_no_text'
+      || textApplication === 'failed') {
+      record.textApplication = textApplication;
+    }
     return record;
   }
 
@@ -1062,6 +1076,9 @@
     applyTruncated = false,
     generatedInputs = [],
     generatedPdfArtifact = null,
+    executionState = '',
+    textApplicability = '',
+    textApplication = '',
   } = {}) {
     return buildInputReportRecord({
       fileName: input.fileName,
@@ -1071,6 +1088,9 @@
       applyTruncated,
       generatedInputs,
       generatedPdfArtifact,
+      executionState,
+      textApplicability,
+      textApplication,
     });
   }
 
@@ -1094,12 +1114,88 @@
     return 'failed';
   }
 
+  function getSuccessfulTextApplicability(executionResult) {
+    if (!executionResult
+      || executionResult.state !== 'success'
+      || typeof executionResult.text !== 'string') {
+      return '';
+    }
+    const textApplicability = executionResult.textApplicability;
+    if (textApplicability !== 'applicable' && textApplicability !== 'no_text') {
+      return '';
+    }
+    const expectedApplicability = executionResult.text.trim() === '' ? 'no_text' : 'applicable';
+    return textApplicability === expectedApplicability ? textApplicability : '';
+  }
+
+  function getExecutionResultContractIssue(executionResult) {
+    if (!executionResult || executionResult.state !== 'success') return '';
+    if (!getSuccessfulTextApplicability(executionResult)) {
+      return 'parent_success_applicability_invalid';
+    }
+    if (!Object.hasOwn(executionResult, 'heavySplitExecution')) return '';
+    const heavySplitExecution = executionResult.heavySplitExecution;
+    if (!heavySplitExecution
+      || typeof heavySplitExecution !== 'object'
+      || Array.isArray(heavySplitExecution)
+      || !Array.isArray(heavySplitExecution.generatedInputs)
+      || heavySplitExecution.generatedInputs.length < 1) {
+      return 'heavy_split_execution_invalid';
+    }
+    const invalidGeneratedInput = heavySplitExecution.generatedInputs.find((generatedInput) => {
+      if (!generatedInput || typeof generatedInput !== 'object' || Array.isArray(generatedInput)) {
+        return true;
+      }
+      if (generatedInput.state !== 'success') {
+        return true;
+      }
+      return generatedInput.textApplicability !== 'applicable'
+        && generatedInput.textApplicability !== 'no_text';
+    });
+    return invalidGeneratedInput ? 'generated_child_success_contract_invalid' : '';
+  }
+
+  function mapHeavyGeneratedInputs(executionResult) {
+    const generatedInputs = executionResult
+      && executionResult.heavySplitExecution
+      && Array.isArray(executionResult.heavySplitExecution.generatedInputs)
+        ? executionResult.heavySplitExecution.generatedInputs
+        : [];
+    return generatedInputs.map((generatedInput) => {
+      if (!generatedInput || typeof generatedInput !== 'object' || Array.isArray(generatedInput)) {
+        return {
+          fileName: '',
+          state: 'failed',
+          code: 'invalid_execution_result',
+          generatedPdfArtifact: null,
+        };
+      }
+      const state = mapGeneratedInputStateToReportState(generatedInput.state);
+      const record = {
+        fileName: generatedInput.fileName,
+        state,
+        code: generatedInput.errorCode || '',
+        generatedPdfArtifact: generatedInput.generatedPdfArtifact || null,
+      };
+      if (state === 'success'
+        && (generatedInput.textApplicability === 'applicable'
+          || generatedInput.textApplicability === 'no_text')) {
+        record.textApplicability = generatedInput.textApplicability;
+      }
+      return record;
+    });
+  }
+
   function appendExecutionResultToUnitReport({
     unitReport,
     input,
     executionResult,
     applyResult,
     heavyGeneratedInputs,
+    finalState = '',
+    finalCode = null,
+    textApplicability = '',
+    textApplication = '',
   }) {
     if (!unitReport || !input || !executionResult) {
       return;
@@ -1107,12 +1203,18 @@
 
     // Generated PDFs are execution children of this logical source input; they
     // never become peer inputs or units in the user-facing report.
+    const executionState = mapExecutionResultStateToReportState(executionResult);
     unitReport.inputs.push(buildOriginalInputReportRecord(input, {
-      state: mapExecutionResultStateToReportState(executionResult),
-      code: executionResult.error && executionResult.error.code ? executionResult.error.code : '',
+      state: finalState || executionState,
+      code: finalCode === null
+        ? (executionResult.error && executionResult.error.code ? executionResult.error.code : '')
+        : finalCode,
       applyTruncated: !!(applyResult && applyResult.truncated),
       generatedInputs: heavyGeneratedInputs,
       generatedPdfArtifact: executionResult.generatedPdfArtifact || null,
+      executionState,
+      textApplicability,
+      textApplication,
     }));
   }
 
@@ -1413,16 +1515,45 @@
 
           const isCancelled = execution.result.state === 'cancelled';
           const isSuccess = execution.result.state === 'success';
-          const hasText = isSuccess && typeof execution.result.text === 'string' && execution.result.text.length > 0;
+          const contractIssue = getExecutionResultContractIssue(execution.result);
+          const heavyGeneratedInputs = mapHeavyGeneratedInputs(execution.result);
+          if (contractIssue) {
+            log.error('Batch execution result violated success applicability contract; apply flow blocked.', {
+              contractIssue,
+              fileName: input.fileName,
+            });
+            appendExecutionResultToUnitReport({
+              unitReport,
+              input,
+              executionResult: execution.result,
+              heavyGeneratedInputs,
+              finalState: 'failed',
+              finalCode: 'invalid_execution_result',
+              textApplication: 'failed',
+            });
+            if (state.failurePolicy !== 'omit_failed_and_continue') {
+              closeUnitAfterFailure = true;
+            }
+            continue;
+          }
+
+          const textApplicability = getSuccessfulTextApplicability(execution.result);
+          const isApplicable = textApplicability === 'applicable';
           let applyResult = null;
-          if (hasText) {
+          if (isApplicable) {
             const applyMode = unitProducedText ? 'append' : 'overwrite';
             applyResult = await applyExecutionText(applyMode, execution.result.text);
             if (!applyResult || applyResult.ok !== true) {
-              unitReport.inputs.push(buildOriginalInputReportRecord(input, {
-                state: 'failed',
-                code: applyResult && applyResult.code ? applyResult.code : 'apply_failed',
-              }));
+              appendExecutionResultToUnitReport({
+                unitReport,
+                input,
+                executionResult: execution.result,
+                heavyGeneratedInputs,
+                finalState: 'failed',
+                finalCode: applyResult && applyResult.code ? applyResult.code : 'apply_failed',
+                textApplicability,
+                textApplication: 'failed',
+              });
               if (state.failurePolicy !== 'omit_failed_and_continue') {
                 closeUnitAfterFailure = true;
               }
@@ -1432,22 +1563,16 @@
             finalReport.hadOutput = true;
           }
 
-          const heavyGeneratedInputs = execution.result.heavySplitExecution
-            && Array.isArray(execution.result.heavySplitExecution.generatedInputs)
-              ? execution.result.heavySplitExecution.generatedInputs.map((generatedInput) => ({
-                fileName: generatedInput.fileName,
-                state: mapGeneratedInputStateToReportState(generatedInput.state),
-                code: generatedInput.errorCode || '',
-                generatedPdfArtifact: generatedInput.generatedPdfArtifact || null,
-              }))
-              : [];
-
           appendExecutionResultToUnitReport({
             unitReport,
             input,
             executionResult: execution.result,
-            applyResult: hasText ? applyResult : null,
+            applyResult: isApplicable ? applyResult : null,
             heavyGeneratedInputs,
+            textApplicability,
+            textApplication: isSuccess
+              ? (isApplicable ? 'applied' : 'not_applied_no_text')
+              : '',
           });
 
           if (isCancelled) {

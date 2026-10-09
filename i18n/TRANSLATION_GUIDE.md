@@ -1424,6 +1424,12 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Ventana modal posterior a extracción; decide cómo incorporar el texto extraído al texto actual.
           // [CONCEPTO_APP] extracción de texto; texto actual
         },
+        "no_text_message": {
+          "es": "La extracción finalizó correctamente, pero no se obtuvo texto para aplicar.",
+          "en": "Extraction completed successfully, but no text was obtained to apply."
+          // [PROPÓSITO] Mensaje informativo de la ventana modal posterior a extracción cuando el resultado técnico no contiene texto aplicable.
+          // [CONCEPTO_APP] extracción de texto; texto actual
+        },
         "elapsed": {
           "es": "Tiempo de extracción: ",
           "en": "Extraction time: "
@@ -1838,6 +1844,12 @@ Estados de revisión recomendados:
           "es": "falló: {code}",
           "en": "failed: {code}"
           // [CONCEPTO_APP] extracción de texto
+        },
+        "no_text": {
+          "es": "Sin texto",
+          "en": "No text"
+          // [PROPÓSITO] Estado breve del informe final para una extracción técnicamente exitosa sin texto aplicable.
+          // [CONCEPTO_APP] extracción por lotes; texto actual
         },
         "applied_truncated": {
           "es": "aplicado con truncamiento",

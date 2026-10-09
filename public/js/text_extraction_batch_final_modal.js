@@ -168,12 +168,18 @@
     return normalizedState ? 'failed' : '';
   }
 
-  function formatReportStatusText(state, code = '', { applyTruncated = false } = {}) {
+  function formatReportStatusText(state, code = '', {
+    applyTruncated = false,
+    textApplicability = '',
+  } = {}) {
     const normalizedState = normalizeReportState(state);
     if (!normalizedState) {
       return '';
     }
     if (normalizedState === 'success') {
+      if (textApplicability === 'no_text') {
+        return tRenderer('renderer.text_extraction.batch_report.no_text');
+      }
       if (applyTruncated === true) {
         return tRenderer('renderer.text_extraction.batch_report.applied_truncated');
       }
@@ -204,8 +210,14 @@
     return tRenderer('renderer.text_extraction.batch_report.failed_fallback');
   }
 
-  function buildReportStatusSuffix(state, code = '', { applyTruncated = false } = {}) {
-    const statusText = formatReportStatusText(state, code, { applyTruncated });
+  function buildReportStatusSuffix(state, code = '', {
+    applyTruncated = false,
+    textApplicability = '',
+  } = {}) {
+    const statusText = formatReportStatusText(state, code, {
+      applyTruncated,
+      textApplicability,
+    });
     return statusText ? `(${statusText})` : '';
   }
 
@@ -215,6 +227,7 @@
       item && item.code ? item.code : '',
       {
         applyTruncated: item && item.applyTruncated === true,
+        textApplicability: item && item.textApplicability,
       }
     );
   }
@@ -222,6 +235,7 @@
   function getReportItemStatusKind(item) {
     const normalizedState = normalizeReportState(item && item.state);
     if (normalizedState === 'success') {
+      if (item && item.textApplicability === 'no_text') return 'no-text';
       return item && item.applyTruncated === true ? 'truncated' : '';
     }
     return normalizedState;

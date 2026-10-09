@@ -1157,6 +1157,14 @@ function decorateExecutionResultForPreparedInput({
   const safeResult = result && typeof result === 'object' ? { ...result } : result;
   if (!safeResult) return result;
 
+  delete safeResult.textApplicability;
+  if (safeResult.state === 'success') {
+    const textApplicability = classifySuccessfulTextApplicability(safeResult.text);
+    if (textApplicability) {
+      safeResult.textApplicability = textApplicability;
+    }
+  }
+
   const originalFileInfo = preparedRecord && preparedRecord.fileInfo && typeof preparedRecord.fileInfo === 'object'
     ? preparedRecord.fileInfo
     : {};
@@ -1374,14 +1382,20 @@ function appendUnitText(baseText, nextText) {
   return `${base}${baseEndsWithNewline ? '\n' : '\n\n'}${incoming}`;
 }
 
+function classifySuccessfulTextApplicability(text) {
+  if (typeof text !== 'string') return '';
+  return text.trim() === '' ? 'no_text' : 'applicable';
+}
+
 function buildHeavySplitChildStatus({
   generatedInput,
   state,
   errorCode = '',
   uploadStatus = '',
   generatedPdfArtifact = null,
+  textApplicability = '',
 }) {
-  return {
+  const childStatus = {
     inputIndex: generatedInput.inputIndex,
     fromPage: generatedInput.fromPage,
     toPage: generatedInput.toPage,
@@ -1394,6 +1408,10 @@ function buildHeavySplitChildStatus({
         ? { ...generatedPdfArtifact }
         : null,
   };
+  if (state === 'success' && (textApplicability === 'applicable' || textApplicability === 'no_text')) {
+    childStatus.textApplicability = textApplicability;
+  }
+  return childStatus;
 }
 
 function appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, startIndex) {
@@ -1457,7 +1475,7 @@ async function executePreparedHeavySplitUnit({
   const childStatuses = [];
   const cleanupWarnings = [];
   let aggregatedText = '';
-  let producedText = false;
+  let allChildrenSucceeded = true;
   let lastFailureError = null;
 
   for (let index = 0; index < generatedInputs.length; index += 1) {
@@ -1492,6 +1510,7 @@ async function executePreparedHeavySplitUnit({
           },
         };
       lastFailureError = error;
+      allChildrenSucceeded = false;
       childStatuses.push(buildHeavySplitChildStatus({
         generatedInput,
         state: 'failed',
@@ -1596,14 +1615,40 @@ async function executePreparedHeavySplitUnit({
     }
 
     if (childResult && childResult.state === 'success') {
+      const textApplicability = classifySuccessfulTextApplicability(childResult.text);
+      if (!textApplicability) {
+        const error = {
+          code: 'invalid_execution_result',
+          message: 'Generated OCR split input returned a malformed successful result.',
+          detailsSafeForLogs: {
+            stage: 'heavy_split_runtime',
+            reason: 'invalid_success_result',
+            generatedInputFileName: generatedInput.processingInputFileName,
+          },
+        };
+        log.error('Heavy split child returned malformed successful execution result:', error.detailsSafeForLogs);
+        lastFailureError = error;
+        allChildrenSucceeded = false;
+        childStatuses.push(buildHeavySplitChildStatus({
+          generatedInput,
+          state: 'failed',
+          errorCode: error.code,
+          generatedPdfArtifact,
+        }));
+        if (heavySplitFailurePolicy !== 'omit_failed_and_continue') {
+          appendHeavySplitOmittedStatuses(childStatuses, generatedInputs, index + 1);
+          break;
+        }
+        continue;
+      }
       childStatuses.push(buildHeavySplitChildStatus({
         generatedInput,
         state: 'success',
         generatedPdfArtifact,
+        textApplicability,
       }));
-      if (typeof childResult.text === 'string' && childResult.text.length > 0) {
+      if (textApplicability === 'applicable') {
         aggregatedText = appendUnitText(aggregatedText, childResult.text);
-        producedText = true;
       }
       continue;
     }
@@ -1667,6 +1712,7 @@ async function executePreparedHeavySplitUnit({
         stage: 'heavy_split_runtime',
       },
     };
+    allChildrenSucceeded = false;
     childStatuses.push(buildHeavySplitChildStatus({
       generatedInput,
       state: 'failed',
@@ -1687,7 +1733,7 @@ async function executePreparedHeavySplitUnit({
     }
   });
 
-  if (producedText) {
+  if (allChildrenSucceeded) {
     const result = decorateExecutionResultForPreparedInput({
       preparedRecord,
       routeKind: 'ocr',
@@ -1737,7 +1783,7 @@ async function executePreparedHeavySplitUnit({
       executedRoute: 'ocr',
       text: '',
       warnings: topLevelWarnings,
-      summary: 'Heavy PDF OCR split did not produce extracted text.',
+      summary: 'Heavy PDF OCR split failed because one or more generated inputs did not complete successfully.',
       heavySplitExecution: {
         generatedInputs: childStatuses,
       },
@@ -1750,7 +1796,7 @@ async function executePreparedHeavySplitUnit({
       },
       error: lastFailureError || {
         code: 'ocr_conversion_failed',
-        message: 'Heavy PDF OCR split did not produce extracted text.',
+        message: 'Heavy PDF OCR split failed because one or more generated inputs did not complete successfully.',
         detailsSafeForLogs: {
           stage: 'heavy_split_runtime',
           reason: 'no_generated_input_succeeded',

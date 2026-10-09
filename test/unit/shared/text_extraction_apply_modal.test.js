@@ -90,6 +90,7 @@ function createHarness() {
   const translations = {
     'renderer.text_extraction.apply_modal.title': 'Apply extracted text',
     'renderer.text_extraction.apply_modal.message': 'Choose how to apply the extracted text.',
+    'renderer.text_extraction.apply_modal.no_text_message': 'Extraction completed successfully, but no text was obtained to apply.',
     'renderer.text_extraction.apply_modal.elapsed': 'Elapsed: ',
     'renderer.text_extraction.apply_modal.repeat_label': 'Repeat count',
     'renderer.text_extraction.apply_modal.overwrite_button': 'Overwrite',
@@ -268,6 +269,43 @@ test('apply modal reports retained PDF reveal failures through window.Notify.not
   harness.elements.textExtractionApplyModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
+});
+
+test('apply modal renders no-text state without allowing application and restores applicable controls', async () => {
+  const harness = createHarness();
+  let revealCount = 0;
+
+  const noTextPrompt = harness.prompt({
+    textApplicability: 'no_text',
+    retainedGeneratedPdf: { fileName: 'output.pdf' },
+    async onRevealGeneratedPdf() {
+      revealCount += 1;
+    },
+  });
+
+  assert.equal(harness.elements.textExtractionApplyModalMessage.textContent, 'Extraction completed successfully, but no text was obtained to apply.');
+  assert.equal(harness.elements.textExtractionApplyModalMessage.classList.contains('text-extraction-apply-modal-message--no-text'), true);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.disabled, true);
+  assert.equal(harness.elements.textExtractionApplyModalOverwrite.disabled, true);
+  assert.equal(harness.elements.textExtractionApplyModalAppend.disabled, true);
+  assert.equal(harness.elements.textExtractionApplyModalClose.focusCount, 1);
+
+  harness.elements.textExtractionApplyModalOverwrite.dispatch('click');
+  assert.equal(harness.elements.textExtractionApplyModal.getAttribute('aria-hidden'), 'false');
+  harness.elements.textExtractionApplyModalRevealSavedPdf.dispatch('click');
+  await flushMicrotasks();
+  assert.equal(revealCount, 1);
+
+  harness.elements.textExtractionApplyModalClose.dispatch('click');
+  assert.equal(await noTextPrompt, null);
+
+  const applicablePrompt = harness.prompt();
+  assert.equal(harness.elements.textExtractionApplyModalMessage.classList.contains('text-extraction-apply-modal-message--no-text'), false);
+  assert.equal(harness.elements.textExtractionApplyModalRepeatInput.disabled, false);
+  assert.equal(harness.elements.textExtractionApplyModalOverwrite.disabled, false);
+  assert.equal(harness.elements.textExtractionApplyModalAppend.disabled, false);
+  harness.elements.textExtractionApplyModalCancel.dispatch('click');
+  assert.equal(await applicablePrompt, null);
 });
 
 test('apply modal refreshes active copy through its canonical render path without resetting prompt state', async () => {

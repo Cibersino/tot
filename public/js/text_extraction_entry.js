@@ -129,6 +129,18 @@
     return !!resultLike && Object.prototype.hasOwnProperty.call(resultLike, key);
   }
 
+  function getSuccessfulTextApplicability(result) {
+    if (!result || result.state !== 'success' || typeof result.text !== 'string') {
+      return '';
+    }
+    const textApplicability = result.textApplicability;
+    if (textApplicability !== 'applicable' && textApplicability !== 'no_text') {
+      return '';
+    }
+    const expectedApplicability = result.text.trim() === '' ? 'no_text' : 'applicable';
+    return textApplicability === expectedApplicability ? textApplicability : '';
+  }
+
   function resolveRetainedGeneratedPdf(resultLike) {
     const generatedPdfArtifact = resultLike
       && resultLike.generatedPdfArtifact
@@ -675,6 +687,16 @@
         return;
       }
       if (resultState === 'success') {
+        const textApplicability = getSuccessfulTextApplicability(execution.result);
+        if (!textApplicability) {
+          log.error('Text extraction execution result violated success applicability contract; apply flow blocked.', {
+            state: execution.result.state,
+            textType: typeof execution.result.text,
+            textApplicability: execution.result.textApplicability,
+          });
+          window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+          return;
+        }
         if (typeof getClipboardRepeatCount !== 'function') {
           log.warn('getClipboardRepeatCount dependency unavailable; using default repeat count fallback.');
         }
@@ -694,6 +716,7 @@
             defaultRepeat,
             elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
             maxRepeat: MAX_CLIPBOARD_REPEAT,
+            textApplicability,
             retainedGeneratedPdf: retainedGeneratedPdf
               ? { fileName: retainedGeneratedPdf.fileName }
               : null,
@@ -716,7 +739,13 @@
           return;
         }
         if (!applyChoice) {
-          log.info('text extraction apply choice cancelled by user.');
+          if (textApplicability === 'applicable') {
+            log.info('text extraction apply choice cancelled by user.');
+          }
+          return;
+        }
+
+        if (textApplicability !== 'applicable') {
           return;
         }
 
@@ -735,7 +764,7 @@
 
         const applyResult = await applyTextViaCanonicalPath({
           mode: applyChoice.mode,
-          textToApply: execution.result.text || '',
+          textToApply: execution.result.text,
           repeatCount: applyChoice.repetitions,
         });
         if (!applyResult || applyResult.ok !== true) {
