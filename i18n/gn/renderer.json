@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF tuichakue tuichaiterei OCR-pe g̃uarã",
-        "case_a_message": "PDF tuichakue ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Ikatu eipe’a planificador compartido oñemboja’o hag̃ua automático archivo ojejapótavape extracción mboyve.",
+        "case_a_message": "PDF tuichakue ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Ikatu reprocesa automáticamente partehápe, reñongatúvo archivo original. Ambueháicha, ikatu reipuru ruta extracción nativa oĩramo.",
         "case_b_title": "Rango ojejapóva tuichaiterei OCR-pe g̃uarã",
-        "case_b_message": "PDF ojejapóva rango ojeporavóvape g̃uarã ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Archivo noñemondói. Ikatu reho jey página jeporavópe, reipuru ruta nativa, térã eipe’a planificador compartido oñemboja’o hag̃ua PDF tuichakue.",
+        "case_b_message": "PDF ojejapóva rango ojeporavóvape g̃uarã ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Archivo noñemondói. Ikatu reho jey página jeporavópe, reipuru ruta nativa oĩramo, térã reprocesa PDF tuichakue partehápe.",
         "source_file_label": "Archivo fuente:",
         "selected_range_label": "Rango ojeporavóva:",
         "generated_pdf_label": "PDF ojejapóva:",

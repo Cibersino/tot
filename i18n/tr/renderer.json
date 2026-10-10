@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Tam PDF OCR için çok büyük",
-        "case_a_message": "Tam PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Çıkarımdan önce otomatik olarak oluşturulmuş girdilere bölmek için ortak planlayıcıyı açabilirsiniz.",
+        "case_a_message": "Tam PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Orijinal dosyayı koruyarak otomatik olarak parçalar halinde işleyebilirsiniz. Alternatif olarak, varsa yerel çıkarma yolunu kullanabilirsiniz.",
         "case_b_title": "Oluşturulan aralık OCR için çok büyük",
-        "case_b_message": "Seçilen aralık için oluşturulan PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Yüklenmedi. Sayfa seçimine dönebilir, yerleşik yöntemi kullanabilir veya tam PDF’yi bölmek için ortak planlayıcıyı açabilirsiniz.",
+        "case_b_message": "Seçilen aralık için oluşturulan PDF, OCR sağlayıcı sınırını ({providerLimitMb} MB) aşıyor. Yüklenmedi. Sayfa seçimine dönebilir, varsa yerel yolu kullanabilir veya tam PDF’yi parçalar halinde işleyebilirsiniz.",
         "source_file_label": "Kaynak dosya:",
         "selected_range_label": "Seçilen aralık:",
         "generated_pdf_label": "Oluşturulan PDF:",

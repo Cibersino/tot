@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "El PDF completito es muy pesado pa' OCR",
-        "case_a_message": "El PDF completo se pasa del límite del proveedor OCR ({providerLimitMb} MB). Podís abrir la planificación compartida pa' dividirlo automáticamente en PDFs generados antes de extraer.",
+        "case_a_message": "El PDF completo se pasa del límite del proveedor OCR ({providerLimitMb} MB). Podís procesarlo automáticamente por partes, conservando el archivo original. Como alternativa, podís usar la ruta de extracción nativa, si está disponible.",
         "case_b_title": "El rango generado es muy pesado pa' OCR",
-        "case_b_message": "El PDF generado pa'l rango elegido se pasa del límite del proveedor OCR ({providerLimitMb} MB). No se subió. Podís volver a páginas, usar la nativa o abrir la planificación compartida pa' dividir el PDF completo.",
+        "case_b_message": "El PDF generado pa'l rango elegido se pasa del límite del proveedor OCR ({providerLimitMb} MB). No se subió. Podís volver a páginas, usar la nativa si está disponible o procesar el PDF completo por partes.",
         "source_file_label": "Archivo fuente:",
         "selected_range_label": "Rango elegido:",
         "generated_pdf_label": "PDF generado:",

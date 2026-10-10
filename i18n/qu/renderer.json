@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Llapan PDFqa OCRpaq ancha hatunmi",
-        "case_a_message": "Llapan PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Compartido planificadorta kichayta atinki, qichuy ñawpaqta kikinmanta ruwasqa archivokunaman t'aqananpaq.",
+        "case_a_message": "Llapan PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Llapan PDFta kikinmanta t'aqaspa procesayta atinki, archivo originalta waqaychaspa. Huk ñankaqa, nativa qichuy ñanta llamk'achiyta atinki, kanman chayqa.",
         "case_b_title": "Ruwasqa rangoqa OCRpaq ancha hatunmi",
-        "case_b_message": "Akllasqa rangopaq ruwasqa PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Archivo mana apachikurqanchu. P'anqa akllayman kutiyta, nativa ñanta llamk'achiyta, utaq compartido planificadorta kichayta atinki llapan PDFta t'aqanapaq.",
+        "case_b_message": "Akllasqa rangopaq ruwasqa PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Archivo mana apachikurqanchu. P'anqa akllayman kutiyta, nativa ñanta llamk'achiyta atinki kanman chayqa, utaq llapan PDFta t'aqaspa procesayta atinki.",
         "source_file_label": "Archivo pukyu:",
         "selected_range_label": "Akllasqa rango:",
         "generated_pdf_label": "Ruwasqa PDF:",

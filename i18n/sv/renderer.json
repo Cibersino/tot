@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Fullständig PDF är för stor för OCR",
-        "case_a_message": "Den fullständiga PDF-filen överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Du kan öppna den delade planeraren för att dela den automatiskt i genererade indata före extrahering.",
+        "case_a_message": "Den fullständiga PDF-filen överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Du kan bearbeta den automatiskt i delar och behålla originalfilen. Alternativt kan du använda den inbyggda extraheringsvägen, om den är tillgänglig.",
         "case_b_title": "Genererat intervall är för stort för OCR",
-        "case_b_message": "PDF-filen som genererades för det valda intervallet överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Den laddades inte upp. Du kan gå tillbaka till sidvalet, använda den inbyggda metoden eller öppna den delade planeraren för att dela hela PDF-filen.",
+        "case_b_message": "PDF-filen som genererades för det valda intervallet överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Den laddades inte upp. Du kan gå tillbaka till sidvalet, använda den inbyggda extraheringsvägen om den är tillgänglig eller bearbeta hela PDF-filen i delar.",
         "source_file_label": "Källfil:",
         "selected_range_label": "Valt intervall:",
         "generated_pdf_label": "Genererad PDF:",

@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Di full PDF too large for OCR",
-        "case_a_message": "Di full PDF pass di OCR provider limit ({providerLimitMb} MB). You fit open di shared planner make e split am automatically into generated files before extraction.",
+        "case_a_message": "Di full PDF pass di OCR provider limit ({providerLimitMb} MB). You fit process am automatically in parts while you keep di original file. Or you fit use di native extraction route if e dey available.",
         "case_b_title": "Di generated range too large for OCR",
-        "case_b_message": "Di PDF wey dem generate for di selected range pass di OCR provider limit ({providerLimitMb} MB). Di file no upload. You fit go back to page selection, use native route, or open di shared planner to split di full PDF.",
+        "case_b_message": "Di PDF wey dem generate for di selected range pass di OCR provider limit ({providerLimitMb} MB). Di file no upload. You fit go back to page selection, use di native route if e dey available, or process di full PDF in parts.",
         "source_file_label": "Source file:",
         "selected_range_label": "Selected range:",
         "generated_pdf_label": "Generated PDF:",

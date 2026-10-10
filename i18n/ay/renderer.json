@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Taqpach PDF ukax OCR ukatak sinti jach’awa",
-        "case_a_message": "Taqpach PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Compartido planificador jist’arasmawa, extracción nayraqat kikin lurata archivonakar t’aqañataki.",
+        "case_a_message": "Taqpach PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Ukax kikipa partes ukar procesasmawa, archivo original ukar jan mayjt’ayasa. Yaqha opciónjamax nativa thakhi apnaqasmawa, utjchi ukhaxa.",
         "case_b_title": "Lurat rango ukax OCR ukatak sinti jach’awa",
-        "case_b_message": "Ajllit rango ukatak lurat PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Archivo janiw apayaskiti. Laphinaka ajlliñar kutt’asmawa, nativa thakhi apnaqasmawa, jan ukax compartido planificador jist’arasmawa taqpach PDF t’aqañataki.",
+        "case_b_message": "Ajllit rango ukatak lurat PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Archivo janiw apayaskiti. Laphinaka ajlliñar kutt’asmawa, nativa thakhi apnaqasmawa utjchi ukhaxa, jan ukax taqpach PDF ukar partes ukar procesasmawa.",
         "source_file_label": "Fuente archivo:",
         "selected_range_label": "Ajllit rango:",
         "generated_pdf_label": "Lurat PDF:",

@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "전체 PDF가 OCR에 너무 큽니다",
-        "case_a_message": "전체 PDF가 OCR 제공자 제한({providerLimitMb} MB)을 초과합니다. 공유 계획기를 열어 추출 전에 생성 입력으로 자동 분할할 수 있습니다.",
+        "case_a_message": "전체 PDF가 OCR 제공자 제한({providerLimitMb} MB)을 초과합니다. 원본 파일을 유지하면서 자동으로 나누어 처리할 수 있습니다. 또는 사용 가능한 경우 네이티브 추출 경로를 사용할 수 있습니다.",
         "case_b_title": "생성된 범위가 OCR에 너무 큽니다",
-        "case_b_message": "선택한 범위에 대해 생성된 PDF가 OCR 제공자 제한({providerLimitMb} MB)을 초과합니다. 업로드되지 않았습니다. 페이지 선택으로 돌아가거나, 네이티브를 사용하거나, 공유 계획기를 열어 전체 PDF를 분할할 수 있습니다.",
+        "case_b_message": "선택한 범위에 대해 생성된 PDF가 OCR 제공자 제한({providerLimitMb} MB)을 초과합니다. 업로드되지 않았습니다. 페이지 선택으로 돌아가거나, 사용 가능한 경우 네이티브 경로를 사용하거나, 전체 PDF를 나누어 처리할 수 있습니다.",
         "source_file_label": "원본 파일:",
         "selected_range_label": "선택한 범위:",
         "generated_pdf_label": "생성된 PDF:",

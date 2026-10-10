@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF lengkap terlalu besar untuk OCR",
-        "case_a_message": "PDF lengkap melebihi batas penyedia OCR ({providerLimitMb} MB). Anda dapat membuka perencana bersama untuk memisahkannya secara otomatis menjadi masukan yang dibuat sebelum ekstraksi.",
+        "case_a_message": "PDF lengkap melebihi batas penyedia OCR ({providerLimitMb} MB). Anda dapat memprosesnya secara otomatis dalam beberapa bagian sambil mempertahankan file asli. Sebagai alternatif, Anda dapat menggunakan rute ekstraksi native jika tersedia.",
         "case_b_title": "Rentang yang dibuat terlalu besar untuk OCR",
-        "case_b_message": "PDF yang dibuat untuk rentang terpilih melebihi batas penyedia OCR ({providerLimitMb} MB). File tersebut tidak diunggah. Anda dapat kembali ke pemilihan halaman, menggunakan jalur bawaan, atau membuka perencana bersama untuk memisahkan PDF lengkap.",
+        "case_b_message": "PDF yang dibuat untuk rentang terpilih melebihi batas penyedia OCR ({providerLimitMb} MB). File tersebut tidak diunggah. Anda dapat kembali ke pemilihan halaman, menggunakan rute native jika tersedia, atau memproses PDF lengkap dalam beberapa bagian.",
         "source_file_label": "File sumber:",
         "selected_range_label": "Rentang terpilih:",
         "generated_pdf_label": "PDF yang dibuat:",

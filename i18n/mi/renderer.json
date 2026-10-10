@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "He nui rawa te PDF katoa mō te OCR",
-        "case_a_message": "Ka hipa te PDF katoa i te tepe kaiwhakarato OCR ({providerLimitMb} MB). Ka taea e koe te whakatuwhera i te kaiwhakamahere tiritahi hei wehe aunoa ki ngā kōnae ka hangaia i mua i te tangohanga.",
+        "case_a_message": "Ka hipa te PDF katoa i te tepe kaiwhakarato OCR ({providerLimitMb} MB). Ka taea te tukatuka aunoa hei wāhanga, me te pupuri tonu i te kōnae taketake. Hei kōwhiringa kē, ka taea te whakamahi i te ara tangohanga native mēnā e wātea ana.",
         "case_b_title": "He nui rawa te awhe kua hangaia mō te OCR",
-        "case_b_message": "Ka hipa te PDF i hangaia mō te awhe kua tīpakohia i te tepe kaiwhakarato OCR ({providerLimitMb} MB). Kāore te kōnae i tukuatu. Ka taea e koe te hoki ki te tīpakonga whārangi, te whakamahi i te ara native, te whakatuwhera rānei i te kaiwhakamahere tiritahi hei wehe i te PDF katoa.",
+        "case_b_message": "Ka hipa te PDF i hangaia mō te awhe kua tīpakohia i te tepe kaiwhakarato OCR ({providerLimitMb} MB). Kāore te kōnae i tukuatu. Ka taea e koe te hoki ki te tīpakonga whārangi, te whakamahi i te ara native mēnā e wātea ana, te tukatuka rānei i te PDF katoa hei wāhanga.",
         "source_file_label": "Kōnae pūtake:",
         "selected_range_label": "Awhe kua tīpakohia:",
         "generated_pdf_label": "PDF i hangaia:",

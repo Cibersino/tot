@@ -9,7 +9,7 @@
 - Text extraction from file picker + multi-select + drag/drop
 - PDF inspect/options flow (`All pages` vs contiguous `Page range`) + single-file heavy-PDF OCR guardrails
 - Native extraction routes (`txt`, `md`, `html`, `docx`, `epub`, PDF text layer)
-- Google-backed extraction routes (`rtf`, `odt`, OCR-capable images including `.jp2`, scanned PDFs), including OCR activation/disconnect
+- Google-backed extraction routes (`rtf`, `odt`, OCR-capable images including `.jp2`, PDFs requiring OCR), including OCR activation/disconnect
 - Text extraction route choice, batch planning/final report, per-unit auto snapshots, shared unit-tag prompt reuse, generated-PDF retain/reveal path, processing progress, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
@@ -308,7 +308,7 @@ Important limitations:
 - A local sample-file set available for text extraction:
   - native samples: `txt`, `md`, `html`, `docx`, `epub`, PDF with selectable text
   - Google-backed document samples: `rtf`, `odt`
-  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`/`jp2`) and one scanned PDF
+  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`/`jp2`) and one scanned PDF without detectable embedded text
 - Network access available for updater check (GitHub API), OCR activation/runtime checks, and first-time Electron spellchecker dictionary downloads on Windows/Linux.
 
 ### 1.3 Dev vs packaged caveats (important)
@@ -391,9 +391,9 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample.rtf`
   - `sample.odt`
 - PDFs:
-  - `sample_selectable.pdf` (contains selectable/native text and enough pages to test `All pages` vs contiguous `Page range`)
+  - `sample_selectable.pdf` (contains embedded text expected to be detected by the native PDF probe and enough pages to test `All pages` vs contiguous `Page range`)
   - `sample_scanned.pdf` (image/scanned PDF; no usable text layer and enough pages to test OCR on a selected range)
-  - optional: `sample_mixed.pdf` (small PDF where one page is scanned-only and another has selectable text, to verify range-aware triage instead of whole-document triage)
+  - optional: `sample_mixed.pdf` (small PDF with one page containing detectable embedded text and another whose text is represented only as an image, to verify page-range-aware route triage)
   - `sample_heavy_full.pdf` (PDF above the current OCR provider limit of `50 MB`, with enough pages to trigger the heavy-PDF split planner from the single-file OCR flow)
   - optional: `sample_heavy_range.pdf` or a known large range inside `sample_heavy_full.pdf` whose generated subset also exceeds `50 MB`, to test the post-subset heavy-PDF recovery modal
 - OCR images:
@@ -561,7 +561,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** OCR-capable files and dual-route PDFs respect the PDF options step and can be applied.
 1. Click **📥** and select either:
    - an OCR-capable image such as `sample.jp2`, `sample.tif`, or `sample.tiff`, or
-   - a PDF known to have both selectable text and OCR available.
+   - a PDF containing embedded text expected to be detected by the native PDF probe, with the OCR route supported.
 2. If the file is a PDF, confirm the PDF options modal appears before route choice.
 3. For the PDF path, select either:
    - `All pages`, or
@@ -885,7 +885,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-06 PDF route choice when both routes are available
 **Goal:** a dual-route PDF requires an explicit route choice and both choices are honored.
-1. Use a PDF with selectable text while OCR is available.
+1. Use a PDF containing embedded text expected to be detected by the native PDF probe, with Google OCR ready.
 2. Start text extraction and confirm the PDF options modal appears before route choice.
 3. Leave the default `All pages` path once and continue until the route-choice modal appears.
 4. Cancel once.
@@ -918,19 +918,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - A valid range continues to the next step.
 - On each fresh open, the keep-generated-PDF checkbox starts from the default unchecked/delete state; the choice is per-run and is not persisted as a user preference.
 
-#### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
+#### REG-IMPORT-07 OCR-only routing for images and PDF ranges without detectable embedded text
 **Goal:** OCR-only inputs skip native route selection and use the OCR path.
 1. Run text extraction on one OCR-capable image, ideally including `sample.jp2` plus one of `sample.tif` or `sample.tiff`.
 2. Run text extraction on `sample_scanned.pdf`.
 3. If the scanned PDF has multiple pages, repeat with a selected page range.
-4. If `sample_mixed.pdf` is available, select the scanned-only page range once and the selectable-text page range once.
+4. If `sample_mixed.pdf` is available, test the image-only page range and the range containing detectable embedded text separately.
 
 **Expected:**
 - No native-route option is offered for OCR-only inputs.
 - `.jp2` is accepted by the picker/drag-drop shared flow as an OCR-only image input and does not introduce a separate route or UI branch.
 - If OCR is ready, extraction proceeds to the apply modal.
 - If OCR is not ready, the app surfaces the correct OCR setup/activation failure instead of a generic error.
-- If a scanned PDF range is chosen, OCR operates on the selected range instead of the whole document.
+- For an OCR-only PDF range, OCR processes the selected pages rather than the whole document.
 - If `sample_mixed.pdf` is used, route availability follows the selected range, not whole-document heuristics.
 
 #### REG-IMPORT-08 Apply modal semantics

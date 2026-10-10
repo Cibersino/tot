@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "完整 PDF 对 OCR 而言过大",
-        "case_a_message": "完整 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。你可以打开共享规划器，在提取前将其自动拆分为生成的输入文件。",
+        "case_a_message": "完整 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。你可以在保留原始文件的同时自动分段处理。或者，如果原生提取路径可用，你可以使用它。",
         "case_b_title": "生成的范围对 OCR 而言过大",
-        "case_b_message": "为所选范围生成的 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。该文件未上传。你可以返回页面选择，使用原生路径，或打开共享规划器来拆分完整 PDF。",
+        "case_b_message": "为所选范围生成的 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。该文件未上传。你可以返回页面选择，在原生路径可用时使用它，或分段处理完整 PDF。",
         "source_file_label": "源文件：",
         "selected_range_label": "所选范围：",
         "generated_pdf_label": "生成的 PDF：",

@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Vollständiges PDF zu groß für OCR",
-        "case_a_message": "Das vollständige PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Sie können den gemeinsamen Planer öffnen, um es vor der Extraktion automatisch in erzeugte Eingabedateien aufzuteilen.",
+        "case_a_message": "Das vollständige PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Sie können es automatisch in Teilen verarbeiten und dabei die Originaldatei behalten. Alternativ können Sie die native Extraktionsroute verwenden, sofern sie verfügbar ist.",
         "case_b_title": "Erzeugter Bereich zu groß für OCR",
-        "case_b_message": "Das für den ausgewählten Bereich erzeugte PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Es wurde nicht hochgeladen. Sie können zur Seitenauswahl zurückkehren, die native Route verwenden oder den gemeinsamen Planer öffnen, um das vollständige PDF aufzuteilen.",
+        "case_b_message": "Das für den ausgewählten Bereich erzeugte PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Es wurde nicht hochgeladen. Sie können zur Seitenauswahl zurückkehren, die native Route verwenden, sofern sie verfügbar ist, oder das vollständige PDF in Teilen verarbeiten.",
         "source_file_label": "Quelldatei:",
         "selected_range_label": "Ausgewählter Bereich:",
         "generated_pdf_label": "Erzeugtes PDF:",

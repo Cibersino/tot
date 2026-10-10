@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF osoa handiegia da OCR-rako",
-        "case_a_message": "PDF osoak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Planifikatzaile partekatua ireki dezakezu erauzketa baino lehen automatikoki sortutako fitxategietan zatitzeko.",
+        "case_a_message": "PDF osoak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Automatikoki zatika prozesatu dezakezu, jatorrizko fitxategia mantenduz. Bestela, erauzketa-bide natiboa erabil dezakezu, erabilgarri badago.",
         "case_b_title": "Sortutako tartea handiegia da OCR-rako",
-        "case_b_message": "Hautatutako tarterako sortutako PDFak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Fitxategia ez da igo. Orrien hautapenera itzul zaitezke, bide natiboa erabil dezakezu, edo planifikatzaile partekatua ireki PDF osoa zatitzeko.",
+        "case_b_message": "Hautatutako tarterako sortutako PDFak OCR hornitzailearen muga ({providerLimitMb} MB) gainditzen du. Fitxategia ez da igo. Orrien hautapenera itzul zaitezke, bide natiboa erabil dezakezu erabilgarri badago, edo PDF osoa zatika prozesatu.",
         "source_file_label": "Iturburu-fitxategia:",
         "selected_range_label": "Hautatutako tartea:",
         "generated_pdf_label": "Sortutako PDFa:",

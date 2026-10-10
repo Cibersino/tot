@@ -1494,8 +1494,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_a_message": {
-          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesarlo automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa.",
-          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route."
+          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesarlo automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa, si está disponible.",
+          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route, if available."
           // [PROPÓSITO] Explica que el PDF fuente completo supera el límite del proveedor OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR; ruta nativa
           // [PROTEGIDO] `PDF`; `OCR`; `MB`
@@ -1509,8 +1509,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_b_message": {
-          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa o procesar el PDF completo por partes.",
-          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts."
+          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa si está disponible o procesar el PDF completo por partes.",
+          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route if available, or process the full PDF in parts."
           // [PROPÓSITO] Explica que el PDF generado para el rango no se subió por exceder el límite OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF generado; selección de páginas PDF; OCR; ruta nativa; PDF completo por partes
           // [PROTEGIDO] `PDF`; `OCR`; `MB`

@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF konplè a twò gwo pou OCR",
-        "case_a_message": "PDF konplè a depase limit founisè OCR la ({providerLimitMb} MB). Ou ka louvri planifikatè pataje a pou divize li otomatikman an fichye ki kreye anvan ekstraksyon an.",
+        "case_a_message": "PDF konplè a depase limit founisè OCR la ({providerLimitMb} MB). Ou ka trete li otomatikman an plizyè pati pandan w ap konsève fichye orijinal la. Altènativman, ou ka sèvi ak chemen ekstraksyon natif la si li disponib.",
         "case_b_title": "Ranje ki kreye a twò gwo pou OCR",
-        "case_b_message": "PDF ki kreye pou ranje chwazi a depase limit founisè OCR la ({providerLimitMb} MB). Fichye a pa t telechaje. Ou ka retounen nan seleksyon paj yo, sèvi ak chemen natif la, oswa louvri planifikatè pataje a pou divize PDF konplè a.",
+        "case_b_message": "PDF ki kreye pou ranje chwazi a depase limit founisè OCR la ({providerLimitMb} MB). Fichye a pa t telechaje. Ou ka retounen nan seleksyon paj yo, sèvi ak chemen natif la si li disponib, oswa trete PDF konplè a an plizyè pati.",
         "source_file_label": "Fichye sous:",
         "selected_range_label": "Ranje chwazi:",
         "generated_pdf_label": "PDF ki kreye:",

@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF 全体が OCR には大きすぎます",
-        "case_a_message": "PDF 全体が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。共有プランナーを開き、抽出前に生成された入力ファイルに自動分割できます。",
+        "case_a_message": "PDF 全体が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。元のファイルを保持したまま、自動的に分割して処理できます。また、利用可能な場合はネイティブ抽出ルートを使用できます。",
         "case_b_title": "生成された範囲が OCR には大きすぎます",
-        "case_b_message": "選択範囲用に生成された PDF が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。アップロードされませんでした。ページ選択に戻るか、ネイティブを使用するか、共有プランナーを開いて PDF 全体を分割できます。",
+        "case_b_message": "選択範囲用に生成された PDF が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。アップロードされませんでした。ページ選択に戻るか、利用可能な場合はネイティブルートを使用するか、PDF 全体を分割して処理できます。",
         "source_file_label": "元ファイル:",
         "selected_range_label": "選択範囲:",
         "generated_pdf_label": "生成 PDF:",

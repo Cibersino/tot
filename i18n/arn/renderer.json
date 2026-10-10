@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Kom PDF rume fütra OCR mew",
-        "case_a_message": "Kom PDF rume tripay límite proveedor OCR ({providerLimitMb} MB). Pepi nülaymi planificador compartido, extracción petu no mülele dividir automáticamente archivos dewmal mew.",
+        "case_a_message": "Kom PDF rume tripay límite proveedor OCR ({providerLimitMb} MB). Pepi procesaymi automáticamente partes mew, conservando archivo original. Kangelu, pepi püneymi nativa rüpü müleli.",
         "case_b_title": "Rango dewmal rume fütra OCR mew",
-        "case_b_message": "PDF dewmal zullin rango mew rume tripay límite proveedor OCR ({providerLimitMb} MB). Archivo no amulay. Pepi wiño amulymi püle zullin mew, püne nativa rüpü, kam nülaymi planificador compartido dividir kom PDF.",
+        "case_b_message": "PDF dewmal zullin rango mew rume tripay límite proveedor OCR ({providerLimitMb} MB). Archivo no amulay. Pepi wiño amulymi püle zullin mew, püne nativa rüpü müleli, kam procesaymi kom PDF partes mew.",
         "source_file_label": "Fuente archivo:",
         "selected_range_label": "Zullin rango:",
         "generated_pdf_label": "PDF dewmal:",

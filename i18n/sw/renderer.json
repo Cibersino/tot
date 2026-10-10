@@ -160,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF nzima ni kubwa mno kwa OCR",
-        "case_a_message": "PDF nzima inazidi kikomo cha mtoa huduma wa OCR ({providerLimitMb} MB). Unaweza kuichakata kiotomatiki kwa sehemu huku ukihifadhi faili asili. Vinginevyo, unaweza kutumia njia asilia ya utoaji.",
+        "case_a_message": "PDF nzima inazidi kikomo cha mtoa huduma wa OCR ({providerLimitMb} MB). Unaweza kuichakata kiotomatiki kwa sehemu huku ukihifadhi faili asili. Vinginevyo, unaweza kutumia njia asilia ya utoaji ikiwa inapatikana.",
         "case_b_title": "PDF iliyozalishwa ni kubwa mno kwa OCR",
-        "case_b_message": "PDF iliyozalishwa kwa masafa yaliyochaguliwa inazidi kikomo cha mtoa huduma wa OCR ({providerLimitMb} MB). Haikupakiwa. Unaweza kurudi kwenye uteuzi wa kurasa, kutumia njia asilia, au kuchakata PDF nzima kwa sehemu.",
+        "case_b_message": "PDF iliyozalishwa kwa masafa yaliyochaguliwa inazidi kikomo cha mtoa huduma wa OCR ({providerLimitMb} MB). Haikupakiwa. Unaweza kurudi kwenye uteuzi wa kurasa, kutumia njia asilia ikiwa inapatikana, au kuchakata PDF nzima kwa sehemu.",
         "source_file_label": "PDF chanzo:",
         "selected_range_label": "Masafa yaliyochaguliwa:",
         "generated_pdf_label": "PDF iliyozalishwa:",
