@@ -637,6 +637,31 @@ test('snapshot tags prompt hides save-only metadata and metric controls', async 
   assert.deepEqual(JSON.parse(JSON.stringify(result)), { tags: {} });
 });
 
+test('snapshot tag prompts reset the modal panel scroll position on each opening', async () => {
+  const harness = createHarness();
+  const panel = harness.elements.snapshotSaveTagsModalPanel;
+
+  const firstSavePrompt = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+  panel.scrollTop = 72;
+  assert.equal(panel.scrollTop, 72);
+  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
+  await firstSavePrompt;
+
+  const reopenedSavePrompt = harness.prompt({ initialTags: null });
+  await flushMicrotasks();
+  assert.equal(panel.scrollTop, 0);
+  panel.scrollTop = 48;
+  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
+  await reopenedSavePrompt;
+
+  const tagOnlyPrompt = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+  assert.equal(panel.scrollTop, 0);
+  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
+  await tagOnlyPrompt;
+});
+
 test('snapshot save tags modal creates and selects a custom tag from the inline create option', async () => {
   const harness = createHarness();
 

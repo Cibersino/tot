@@ -1289,6 +1289,7 @@
       activePromptTranslationRefreshers.add(refreshSnapshotTranslations);
 
       modal.setAttribute('aria-hidden', 'false');
+      panel.scrollTop = 0;
       const initialFocus = includeSaveFields
         ? snapshotNameInput
         : FIELD_DEFS[0].pickerEl.querySelector('.renderer-combobox__input');
