@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "抽出テキストを適用",
         "message": "抽出したテキストの適用方法を選択してください。",
+        "no_text_message": "抽出は正常に完了しましたが、適用するテキストは得られませんでした。",
         "elapsed": "実行時間: ",
         "repeat_label": "繰り返し",
         "overwrite_button": "上書き",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF 全体が OCR には大きすぎます",
-        "case_a_message": "PDF 全体が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。共有プランナーを開き、抽出前に生成された入力ファイルに自動分割できます。",
+        "case_a_message": "PDF 全体が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。元のファイルを保持したまま、自動的に分割して処理できます。また、利用可能な場合はネイティブ抽出ルートを使用できます。",
         "case_b_title": "生成された範囲が OCR には大きすぎます",
-        "case_b_message": "選択範囲用に生成された PDF が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。アップロードされませんでした。ページ選択に戻るか、ネイティブを使用するか、共有プランナーを開いて PDF 全体を分割できます。",
+        "case_b_message": "選択範囲用に生成された PDF が OCR プロバイダーの上限（{providerLimitMb} MB）を超えています。アップロードされませんでした。ページ選択に戻るか、利用可能な場合はネイティブルートを使用するか、PDF 全体を分割して処理できます。",
         "source_file_label": "元ファイル:",
         "selected_range_label": "選択範囲:",
         "generated_pdf_label": "生成 PDF:",
@@ -227,6 +228,7 @@
         "close_aria": "一括抽出の最終レポートを閉じる",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗: {code}",
+        "no_text": "テキストなし",
         "applied_truncated": "切り詰めて適用済み",
         "payload_too_large": "適用するには大きすぎます",
         "text_limit": "テキスト上限に達しました",
@@ -357,6 +359,9 @@
         "no_results": "一致するオプションはありません",
         "create": "「{label}」を作成"
       },
+      "chips": {
+        "remove_aria": "タグ「{label}」を削除"
+      },
       "labels": {
         "name": "名前（任意）",
         "source_comment": "由来（任意）",
@@ -397,11 +402,6 @@
           "too_long": "タグ名は {max} 文字を超えることはできません。",
           "duplicate": "このカテゴリには同じ名前のタグが既にあります。"
         }
-      },
-      "empty": {
-        "language": "言語タグなし",
-        "type": "種類タグなし",
-        "difficulty": "難易度タグなし"
       },
       "buttons": {
         "manage": "タグを管理",

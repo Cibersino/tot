@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Nentulelu wirin püneal",
         "message": "Düllinge chumgechi püneay tachi wirin nentulelu.",
+        "no_text_message": "Nentun küme afuy, welu ngelay wirin püneal.",
         "elapsed": "Küzawün antü: ",
         "repeat_label": "Repeticiones",
         "overwrite_button": "Kangelu",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Kom PDF rume fütra OCR mew",
-        "case_a_message": "Kom PDF rume tripay límite proveedor OCR ({providerLimitMb} MB). Pepi nülaymi planificador compartido, extracción petu no mülele dividir automáticamente archivos dewmal mew.",
+        "case_a_message": "Kom PDF rume tripay límite proveedor OCR ({providerLimitMb} MB). Pepi procesaymi automáticamente partes mew, conservando archivo original. Kangelu, pepi püneymi nativa rüpü müleli.",
         "case_b_title": "Rango dewmal rume fütra OCR mew",
-        "case_b_message": "PDF dewmal zullin rango mew rume tripay límite proveedor OCR ({providerLimitMb} MB). Archivo no amulay. Pepi wiño amulymi püle zullin mew, püne nativa rüpü, kam nülaymi planificador compartido dividir kom PDF.",
+        "case_b_message": "PDF dewmal zullin rango mew rume tripay límite proveedor OCR ({providerLimitMb} MB). Archivo no amulay. Pepi wiño amulymi püle zullin mew, püne nativa rüpü müleli, kam procesaymi kom PDF partes mew.",
         "source_file_label": "Fuente archivo:",
         "selected_range_label": "Zullin rango:",
         "generated_pdf_label": "PDF dewmal:",
@@ -227,6 +228,7 @@
         "close_aria": "Nürüfün informe final lote extracción",
         "failed_fallback": "Welulkuy",
         "failed_with_code": "Welulkuy: {code}",
+        "no_text": "Ngelay wirin",
         "applied_truncated": "aplicadongey recorte mew",
         "payload_too_large": "fütra rume aplicayal",
         "text_limit": "texto límite trapümüngey",
@@ -357,6 +359,9 @@
         "no_results": "Ngelay opciones trafkülelu",
         "create": "Dewma \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Entunge etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Üy (münafülchi)",
         "source_comment": "Mülewe (münafülchi)",
@@ -397,11 +402,6 @@
           "too_long": "Etiqueta ñi üy no pepi doy fütay {max} caracteres mew.",
           "duplicate": "Müley kiñe etiqueta feychi üy mew tüfachi categoría mew."
         }
-      },
-      "empty": {
-        "language": "Dungun tag mülenolu",
-        "type": "Az tag mülenolu",
-        "difficulty": "Rume newen tag mülenolu"
       },
       "buttons": {
         "manage": "Ngünen etiquetas",

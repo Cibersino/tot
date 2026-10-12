@@ -9,7 +9,7 @@
 - Text extraction from file picker + multi-select + drag/drop
 - PDF inspect/options flow (`All pages` vs contiguous `Page range`) + single-file heavy-PDF OCR guardrails
 - Native extraction routes (`txt`, `md`, `html`, `docx`, `epub`, PDF text layer)
-- Google-backed extraction routes (`rtf`, `odt`, OCR-capable images including `.jp2`, scanned PDFs), including OCR activation/disconnect
+- Google-backed extraction routes (`rtf`, `odt`, OCR-capable images including `.jp2`, PDFs requiring OCR), including OCR activation/disconnect
 - Text extraction route choice, batch planning/final report, per-unit auto snapshots, shared unit-tag prompt reuse, generated-PDF retain/reveal path, processing progress, processing lock, and abort flow
 - Clipboard overwrite/append (including repetition by input N), empty text, automatic count/time calculation
 - Counting mode (simple/precise) + consistency
@@ -308,7 +308,7 @@ Important limitations:
 - A local sample-file set available for text extraction:
   - native samples: `txt`, `md`, `html`, `docx`, `epub`, PDF with selectable text
   - Google-backed document samples: `rtf`, `odt`
-  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`/`jp2`) and one scanned PDF
+  - OCR samples: at least one image (`jpg`/`jpeg`/`png`/`webp`/`bmp`/`tif`/`tiff`/`jp2`) and one scanned PDF without detectable embedded text
 - Network access available for updater check (GitHub API), OCR activation/runtime checks, and first-time Electron spellchecker dictionary downloads on Windows/Linux.
 
 ### 1.3 Dev vs packaged caveats (important)
@@ -391,9 +391,9 @@ Prepare a small local sample set whose expected text is known ahead of time:
   - `sample.rtf`
   - `sample.odt`
 - PDFs:
-  - `sample_selectable.pdf` (contains selectable/native text and enough pages to test `All pages` vs contiguous `Page range`)
+  - `sample_selectable.pdf` (contains embedded text expected to be detected by the native PDF probe and enough pages to test `All pages` vs contiguous `Page range`)
   - `sample_scanned.pdf` (image/scanned PDF; no usable text layer and enough pages to test OCR on a selected range)
-  - optional: `sample_mixed.pdf` (small PDF where one page is scanned-only and another has selectable text, to verify range-aware triage instead of whole-document triage)
+  - optional: `sample_mixed.pdf` (small PDF with one page containing detectable embedded text and another whose text is represented only as an image, to verify page-range-aware route triage)
   - `sample_heavy_full.pdf` (PDF above the current OCR provider limit of `50 MB`, with enough pages to trigger the heavy-PDF split planner from the single-file OCR flow)
   - optional: `sample_heavy_range.pdf` or a known large range inside `sample_heavy_full.pdf` whose generated subset also exceeds `50 MB`, to test the post-subset heavy-PDF recovery modal
 - OCR images:
@@ -411,9 +411,9 @@ Recommended content for the text-like samples:
 
 Prepare these only if you plan to run the deeper snapshot-tag compatibility checks:
 - `snapshot_non_catalog_language.json`
-  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"language":"es-cl"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"language":["es-cl","fr-CA"]}}`
 - `snapshot_unknown_custom_tag.json`
-  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"type":"custom:type:short-story"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"type":["custom:type:short-story","custom:type:essay"]}}`
 
 Notes:
 - the second fixture is most useful when `custom:type:short-story` is not currently visible in the editable catalog;
@@ -462,19 +462,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-03 Clipboard overwrite + automatic results
 **Goal:** overwrite-from-clipboard (with repeat input) updates preview + counts + time.
 1. Copy text to clipboard.
-2. Set repeat input (`clipboardRepeatInput`) to `2` and click **📋↺** once.
+2. Set repeat input (`clipboardRepeatInput`) to `2` and click **Overwrite clipboard** (`clipboard-overwrite` SVG icon) once.
 3. Observe preview and results.
 
 **Expected:**
 - Preview shows start/end of the text (or full if short).
 - Words/chars/time update immediately.
-- With `N=2`, one click on **📋↺** writes two repeated clipboard blocks in a single overwrite.
+- With `N=2`, one click on **Overwrite clipboard** (`clipboard-overwrite` SVG icon) writes two repeated clipboard blocks in a single overwrite.
 
 ### SM-04 Append clipboard (+ newline semantics + repeat input)
 **Goal:** append-from-clipboard adds new content with correct newline/repeat semantics and updates counts.
 1. Copy text to clipboard.
-2. Set repeat input (`clipboardRepeatInput`) to `1` and click **📋+**.
-3. Set repeat input to `2` and click **📋+** once.
+2. Set repeat input (`clipboardRepeatInput`) to `1` and click **Append clipboard** (`clipboard-append` SVG icon).
+3. Set repeat input to `2` and click **Append clipboard** (`clipboard-append` SVG icon) once.
 4. Observe preview and results.
 
 **Expected:**
@@ -484,7 +484,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-05 Empty current text
 **Goal:** clearing text resets results.
-1. Click Trash (🗑) on main window.
+1. Click the **Clear current text** button (`trash` SVG icon) on the main window.
 2. Observe preview and results.
 
 **Expected:**
@@ -528,7 +528,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-08 Editor window open + edit sync
 **Goal:** editor opens, exposes the bottom-bar controls, and changes propagate to main.
-1. Click manual editor (⌨).
+1. Click the **Text Editor** button (`text-editor` SVG icon).
 2. Confirm the bottom bar shows the spellcheck checkbox plus text-size controls (`A-`, readout, `A+`, reset).
 3. Modify text.
 4. Toggle spellcheck off and back on once.
@@ -545,7 +545,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-09 Text extraction: supported non-PDF quick check
 **Goal:** picker-based text extraction works for a supported non-PDF file and reaches the apply modal.
-1. Click **📥**.
+1. Click **Text extraction** (`text-extraction-wide` SVG icon).
 2. Select a supported non-PDF file such as `sample.txt`, `sample.md`, `sample.html`, `sample.docx`, `sample.epub`, `sample.rtf`, or `sample.odt`.
 3. If the apply modal appears, leave repetitions at `1` and choose **Sobrescribir**.
 4. Observe preview and results.
@@ -559,9 +559,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-10 Text extraction: PDF page-range + OCR/route-choice quick check
 **Goal:** OCR-capable files and dual-route PDFs respect the PDF options step and can be applied.
-1. Click **📥** and select either:
+1. Click **Text extraction** (`text-extraction-wide` SVG icon) and select either:
    - an OCR-capable image such as `sample.jp2`, `sample.tif`, or `sample.tiff`, or
-   - a PDF known to have both selectable text and OCR available.
+   - a PDF containing embedded text expected to be detected by the native PDF probe, with the OCR route supported.
 2. If the file is a PDF, confirm the PDF options modal appears before route choice.
 3. For the PDF path, select either:
    - `All pages`, or
@@ -580,7 +580,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-10A Text extraction: multi-file batch quick check
 **Goal:** selecting multiple files enters the batch planner and completes through the batch final report.
-1. Click **📥** and select at least two supported files from the same folder.
+1. Click **Text extraction** (`text-extraction-wide` SVG icon) and select at least two supported files from the same folder.
 2. Confirm the batch planning modal appears instead of the single-file apply flow.
 3. Leave the default grouping or choose **One file per unit**, then click **Start extraction**.
 4. Wait for completion and review the final report.
@@ -608,8 +608,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-11 Stopwatch + floating window quick check
 **Goal:** stopwatch runs and floating window reflects state.
-1. With non-empty text, press ▶ to start stopwatch.
-2. Wait ~2–3 seconds; press pause.
+1. With non-empty text, start the stopwatch using the `play` SVG icon.
+2. Wait ~2–3 seconds; pause using the `pause` SVG icon.
 3. Toggle floating window (label may appear as **VF**/**FW** depending language).
 4. Confirm floating window shows same time/state; try start/pause from floating window.
 
@@ -630,12 +630,12 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 ### SM-13 Current text snapshots (Save/Load)
 **Goal:** save and load snapshots, including the editable tag entrypoints.
 1. Set non-empty text (SM-03).
-2. Click **💾** and verify an in-app modal appears before any native save dialog.
+2. Click **Save text snapshot** (`text-snapshot-save` SVG icon) and verify an in-app modal appears before any native save dialog.
 3. Confirm the modal exposes a visible **Manage tags** button; open it once and close it with **Done** or the close affordance.
 4. Leave all selectors empty, click **Save Text Snapshot**, and save as `smoke_snapshot.json` under `config/saved_current_texts/`.
-5. Repeat **💾**, type a new `type` label such as `Short story`, choose **Create "Short story"**, and save as `smoke_snapshot_custom.json`.
+5. Repeat **Save text snapshot** (`text-snapshot-save` SVG icon), type a new `type` label such as `Short story`, choose **Create "Short story"**, and save as `smoke_snapshot_custom.json`.
 6. Change current text (SM-04 or edit in editor).
-7. Click **📂**, select `smoke_snapshot.json`, and confirm overwrite.
+7. Click **Load text snapshot** (`text-snapshot-load` SVG icon), select `smoke_snapshot.json`, and confirm overwrite.
 8. Repeat load with `smoke_snapshot_custom.json` and confirm overwrite.
 
 **Expected:**
@@ -686,10 +686,10 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-16 Task editor: open + basic save
 **Goal:** save and load tasks.
-1. From the main window, click **📝** (new task) to open the task editor.
+1. From the main window, click **New task** (`task-new` SVG icon) to open the task editor.
 2. Add one row with required text (and any numeric fields as desired).
 3. Save the task list (accept the save dialog; choose a name).
-4. Close the task editor, click **🗃️** (load task), and verify the saved data is present.
+4. Close the task editor, click **Load task** (`task-load` SVG icon), and verify the saved data is present.
 
 **Expected:** 
 - task editor opens
@@ -768,10 +768,10 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-MAIN-04 Snapshots: overwrite + cancel semantics
 **Goal:** load behaves like an overwrite flow; cancels are no-ops.
 1. Set a known text `T1` (SM-03).
-2. Click **💾** → `reg_T1.json` under `config/saved_current_texts/`.
+2. Click **Save text snapshot** (`text-snapshot-save` SVG icon) → `reg_T1.json` under `config/saved_current_texts/`.
 3. Change current text to `T2`.
-4. Click **📂** → select `reg_T1.json` → **cancel** overwrite confirmation.
-5. Click **📂** again → select `reg_T1.json` → **confirm** overwrite.
+4. Click **Load text snapshot** (`text-snapshot-load` SVG icon) → select `reg_T1.json` → **cancel** overwrite confirmation.
+5. Click **Load text snapshot** (`text-snapshot-load` SVG icon) again → select `reg_T1.json` → **confirm** overwrite.
 
 **Expected:**
 - After cancel: current text remains `T2`.
@@ -780,9 +780,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 #### REG-MAIN-05 Clipboard repeat input normalization/clamp
 **Goal:** invalid/overflow values in clipboard repeat input are normalized safely.
 1. Copy a short text to clipboard.
-2. Set repeat input to each value and click **📋↺** once per case: `''`, `0`, `-3`, `3.7`, `abc`.
-3. Repeat step 2 with **📋+**.
-4. Set repeat input to a very large value (e.g., `100000`) and click **📋↺** and **📋+**.
+2. Set repeat input to each value and click **Overwrite clipboard** (`clipboard-overwrite` SVG icon) once per case: `''`, `0`, `-3`, `3.7`, `abc`.
+3. Repeat step 2 with **Append clipboard** (`clipboard-append` SVG icon).
+4. Set repeat input to a very large value (e.g., `100000`) and click **Overwrite clipboard** (`clipboard-overwrite` SVG icon) and **Append clipboard** (`clipboard-append` SVG icon).
 
 **Expected:**
 - Invalid values (`''`, `0`, `-3`, decimal, text) are treated as `N=1` (no crash, no broken flow).
@@ -795,7 +795,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-01 Picker entry + supported format list
 **Goal:** the main text extraction entrypoint is available and the picker accepts the supported file set.
-1. Click **📥**.
+1. Click **Text extraction** (`text-extraction-wide` SVG icon).
 2. Inspect the native picker filter and confirm it allows supported native and OCR-capable formats.
 3. Cancel the picker.
 
@@ -808,7 +808,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-01A Picker multi-selection enters the batch planner
 **Goal:** selecting multiple supported files from the picker starts the shared batch-planning flow.
-1. Click **📥**.
+1. Click **Text extraction** (`text-extraction-wide` SVG icon).
 2. Select two or more supported files in one picker action.
 3. Confirm the batch planning modal appears.
 4. Cancel the planner once.
@@ -855,9 +855,9 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-04 Preconditions block text extraction
 **Goal:** text extraction refuses to start when a secondary window is open or the stopwatch is running.
-1. Start the stopwatch and try **📥**.
+1. Start the stopwatch and try **Text extraction** (`text-extraction-wide` SVG icon).
 2. Stop the stopwatch.
-3. Open a secondary window (editor, task editor, quick calculator, or floating window if it counts in the current build) and try **📥** again.
+3. Open a secondary window (editor, task editor, quick calculator, or floating window if it counts in the current build) and try **Text extraction** (`text-extraction-wide` SVG icon) again.
 
 **Expected:**
 - The flow does not start while blocked.
@@ -885,7 +885,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 #### REG-IMPORT-06 PDF route choice when both routes are available
 **Goal:** a dual-route PDF requires an explicit route choice and both choices are honored.
-1. Use a PDF with selectable text while OCR is available.
+1. Use a PDF containing embedded text expected to be detected by the native PDF probe, with Google OCR ready.
 2. Start text extraction and confirm the PDF options modal appears before route choice.
 3. Leave the default `All pages` path once and continue until the route-choice modal appears.
 4. Cancel once.
@@ -918,19 +918,19 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - A valid range continues to the next step.
 - On each fresh open, the keep-generated-PDF checkbox starts from the default unchecked/delete state; the choice is per-run and is not persisted as a user preference.
 
-#### REG-IMPORT-07 OCR-only routing for images and scanned PDFs
+#### REG-IMPORT-07 OCR-only routing for images and PDF ranges without detectable embedded text
 **Goal:** OCR-only inputs skip native route selection and use the OCR path.
 1. Run text extraction on one OCR-capable image, ideally including `sample.jp2` plus one of `sample.tif` or `sample.tiff`.
 2. Run text extraction on `sample_scanned.pdf`.
 3. If the scanned PDF has multiple pages, repeat with a selected page range.
-4. If `sample_mixed.pdf` is available, select the scanned-only page range once and the selectable-text page range once.
+4. If `sample_mixed.pdf` is available, test the image-only page range and the range containing detectable embedded text separately.
 
 **Expected:**
 - No native-route option is offered for OCR-only inputs.
 - `.jp2` is accepted by the picker/drag-drop shared flow as an OCR-only image input and does not introduce a separate route or UI branch.
 - If OCR is ready, extraction proceeds to the apply modal.
 - If OCR is not ready, the app surfaces the correct OCR setup/activation failure instead of a generic error.
-- If a scanned PDF range is chosen, OCR operates on the selected range instead of the whole document.
+- For an OCR-only PDF range, OCR processes the selected pages rather than the whole document.
 - If `sample_mixed.pdf` is used, route availability follows the selected range, not whole-document heuristics.
 
 #### REG-IMPORT-08 Apply modal semantics
@@ -1036,14 +1036,14 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - **Copy report** preserves the same unit/source/generated-child hierarchy with indentation and includes failure codes when applicable.
 - **Open snapshots folder** opens the snapshots root, not a random last-used folder.
 - Multi-unit runs that produced text create per-unit JSON snapshots automatically; single-unit runs do not.
-- Created batch snapshots are loadable through the normal **📂** flow.
+- Created batch snapshots are loadable through the normal **Load text snapshot** (`text-snapshot-load` SVG icon) flow.
 
 #### REG-IMPORT-09 Processing mode lock + abort
 **Goal:** processing mode blocks main-window interactions until completion or abort, and abort exits cleanly.
 1. Start a text extraction run that lasts long enough to observe the processing bar (OCR path is the easiest).
 2. While processing is active, try other main-window actions such as clipboard overwrite, editor open, snapshot load, or task open.
 3. If a batch run is available, repeat with batch extraction and observe the progress labels.
-4. Click **⛔** to abort.
+4. Click **Abort extraction** (`abort-extraction` SVG icon) to abort.
 
 **Expected:**
 - Main controls are replaced by the processing UI while active.
@@ -1215,7 +1215,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Goal:** delete a user preset and verify it disappears.
 1. Go back to the previous language.
 2. Select `test`.
-3. Click delete (🗑).
+3. Click the **Delete preset** control (`trash` SVG icon).
 4. Save and confirm dialog.
 
 **Expected:**
@@ -1587,7 +1587,7 @@ accessibility stack) with the run evidence.
 
 #### REG-TASKS-01 Open new task editor + close guard
 **Goal:** Task editor window open/close correctly.
-1. From the main window, click new task (**📝**).
+1. From the main window, click **New task** (`task-new` SVG icon).
 2. Verify the task editor window opens and is interactive (you can add/edit rows).
 3. Attempt to close with unsaved changes:
    - Cancel keeps the window open.
@@ -1599,11 +1599,11 @@ accessibility stack) with the run evidence.
 
 #### REG-TASKS-02 Save + load task list
 **Goal:** saved list can be reopened.
-1. Open Tasks editor (📝).
+1. Open the Task Editor with **New task** (`task-new` SVG icon).
 2. Add 2 rows with distinct values.
 3. Save as a new list (name: e.g., "demo").
 4. Close editor.
-5. Click **🗃️** to load a Task in the saved folder.
+5. Click **Load task** (`task-load` SVG icon) to load a Task in the saved folder.
 6. Click Save again and choose the same filename (overwrite).
 
 **Expected:**
@@ -1711,7 +1711,7 @@ nonconforming persisted data without migration or repair.
 
 #### REG-CRONO-01 Start/pause/reset in main
 **Goal:** stopwatch controls behave correctly.
-1. Start (▶), wait, pause, reset (⏹).
+1. Start (`play` SVG icon), wait, pause (`pause` SVG icon), then stop/reset (`stop` SVG icon).
 2. Confirm display changes as expected.
 
 **Expected:**
@@ -1742,25 +1742,31 @@ nonconforming persisted data without migration or repair.
 
 ### REG-SNAPSHOTS — Snapshot save modal, editable tags, and shared catalog semantics
 
-#### REG-SNAPSHOTS-01 Inline custom-tag creation + normalized duplicate suppression
-**Goal:** the searchable selectors expose inline creation only when no normalized exact match already exists.
-1. Set non-empty text and open **💾**.
-2. In the `Type` selector, type `Short story`.
-3. Confirm the first visible option is **Create "Short story"**.
-4. Activate it and confirm the selector now shows `Short story` as the selected value.
-5. Close and reopen **💾**.
-6. Type variants such as `short story` and ` short   story ` into the same selector.
-7. In a default-tag case, type `ficcion` and inspect the same list.
+#### REG-SNAPSHOTS-01 Multi-select chips, inline custom-tag creation, and normalized duplicate suppression
+**Goal:** each category accepts multiple tags, retains unavailable values as removable chips, and exposes inline creation only when no normalized exact match already exists.
+1. Set non-empty text and open **Save text snapshot** (`text-snapshot-save` SVG icon).
+2. In the `Language` selector, choose two values consecutively. Confirm each becomes a removable chip, the selector stays open, and neither chosen value remains available in its list.
+3. Remove one chip with the pointer and another with keyboard activation; confirm focus returns to that category's selector and the removed value is offered again.
+4. In the `Type` selector, type `Short story`.
+5. Confirm the first visible option is **Create "Short story"**.
+6. Activate it and confirm `Short story` becomes a chip without closing the modal or selector.
+7. Cancel and reopen **Save text snapshot** (`text-snapshot-save` SVG icon). Confirm no draft chips are restored, while `Short story` remains available as a normal catalog option in the `Type` selector.
+8. Type variants such as `short story` and ` short   story ` into the same selector.
+9. In a default-tag case, type `ficcion` and inspect the same list.
+10. With a custom tag selected, open **Manage tags**, remove that custom tag from the visible catalog, return to the save prompt, and confirm its chip remains visible and removable.
+11. While an inline custom tag is being saved, use **Confirm**, **Cancel**, and **Manage tags** in separate attempts; confirm the latest request takes effect after the save settles. Simulate one failed catalog save and confirm a deferred **Confirm** leaves the draft open without committing it.
 
 **Expected:**
 - The create affordance appears first and only when there is no normalized exact match in the current category.
-- Creating the tag selects it immediately and keeps the modal usable.
-- Reopening the modal shows the new custom tag as a normal catalog option.
+- Chosen values are represented by independently removable icon-named chips; each category's selector remains a one-value-at-a-time candidate picker.
+- Creating the tag selects it immediately and keeps the modal usable; it does not lose selections made in other categories.
+- Canceling the modal discards its draft assignments; reopening starts without chips, while successfully created custom tags remain normal catalog options.
 - Normalized duplicates are suppressed for existing custom tags and for existing default labels.
+- Deferred actions occur only after the serialized catalog writes settle; cancellation still closes after a failed save, while a deferred confirm after a failed save does not commit the draft.
 
 #### REG-SNAPSHOTS-02 Tag manager create/hide/restore/order semantics
 **Goal:** the dedicated manager owns tag administration, reversible hiding of defaults, and persisted visible order.
-1. Open **💾** and confirm the main prompt exposes a normal-size localized **Manage tags** button instead of an icon-only affordance.
+1. Open **Save text snapshot** (`text-snapshot-save` SVG icon) and confirm the main prompt exposes a normal-size localized **Manage tags** button instead of an icon-only affordance.
 2. Open the manager and confirm **New tag**, **Sort A-Z**, and **Restore hidden defaults** are normal-size text buttons.
 3. Click **New tag**, type a draft label, then press `Escape`.
 4. Confirm only the draft is cancelled and the manager remains open.
@@ -1768,7 +1774,7 @@ nonconforming persisted data without migration or repair.
 6. Hide one default tag and accept the confirmation.
 7. Use **Restore hidden defaults** for that category.
 8. Use **Sort A-Z**, then move one visible tag manually.
-9. Close the manager, reopen **💾**, and inspect the same category order.
+9. Close the manager, reopen **Save text snapshot** (`text-snapshot-save` SVG icon), and inspect the same category order.
 
 **Expected:**
 - The manager opens as a shared renderer modal and moves focus into a manager control on open.
@@ -1786,23 +1792,23 @@ nonconforming persisted data without migration or repair.
 3. Open **Tags** for one eligible unit.
 4. Confirm the same custom tag appears in the matching category and uses the same visible ordering as the current-text snapshot-save modal.
 5. Open **Manage tags** from the batch tag prompt, make one safe catalog change, return to the prompt, and inspect the selector again.
-6. Apply tags and return to the planner summary.
+6. Apply multiple tags in at least one category and return to the planner summary.
 
 **Expected:**
 - The batch unit-tag flow reuses the same effective snapshot-tag catalog and prompt contract as the current-text snapshot-save flow.
 - Custom labels resolve from the current editable snapshot-tag preferences, not from raw canonical values.
-- Manager changes made from the batch prompt are reflected immediately in the same prompt and in the planner's tag summary.
+- Manager changes made from the batch prompt are reflected immediately in the same prompt and in the planner's tag summary, which lists the selected labels grouped by category.
 
 #### REG-SNAPSHOTS-04 Snapshot load compatibility with custom or non-catalog tags
 **Goal:** canonical current-text snapshots accept semantically valid custom or non-catalog tags.
 1. Prepare the optional fixtures from 3.4 or equivalent real files under `config/saved_current_texts/`.
-2. Load `snapshot_non_catalog_language.json` through the normal **📂** flow.
-3. Load `snapshot_unknown_custom_tag.json` through the normal **📂** flow.
-4. If the second fixture's custom tag is currently visible in the manager, remove it from the editable catalog, then load the file again.
+2. Load `snapshot_non_catalog_language.json` through the normal **Load text snapshot** (`text-snapshot-load` SVG icon) flow.
+3. Load `snapshot_unknown_custom_tag.json` through the normal **Load text snapshot** (`text-snapshot-load` SVG icon) flow.
+4. If either custom fixture tag is currently visible in the manager, remove it from the editable catalog, then load the file again.
 
 **Expected:**
-- Snapshot load accepts valid metadata such as `es-cl` or `fr-CA` even though those values are outside the default language catalog.
-- Snapshot load also accepts valid custom tag values even when they are no longer present in the current editable catalog.
+- Snapshot load accepts valid metadata arrays such as `es-cl` and `fr-CA` even though those values are outside the default language catalog.
+- Snapshot load also accepts valid custom tag arrays even when their values are no longer present in the current editable catalog.
 - In all cases, only the snapshot `text` is applied to current-text state; tag metadata is not imported into live UI state.
 
 ---
@@ -1814,14 +1820,16 @@ nonconforming persisted data without migration or repair.
 1. Open the reading speed test entry modal.
 2. If the pool is exhausted, confirm the warning appears **inside the modal**, then use **Reset pool** and confirm.
 3. Note the current eligible-file count.
-4. Check and uncheck several filter boxes in different categories.
-5. Try to reach a combination that would leave zero matching files.
+4. Select two tag values in one category and confirm entries matching either value remain eligible; then select a tag value in a second category and confirm only entries matching both category conditions remain eligible.
+5. Check and uncheck several other filter boxes in different categories.
+6. Try to reach a combination that would leave zero matching files.
 
 **Expected:**
 - The modal opens even when the pool is exhausted.
 - The exhaustion message appears inline in the modal, not as a separate alert.
 - Reset is reachable from the same modal and recomputes availability immediately after confirmation.
 - The eligible-file count updates live as filters change.
+- Multiple selected values within one tag category are ORed; selected tag categories are ANDed with each other and with the existing filters.
 - Checkbox interaction locks briefly during recomputation/stabilization.
 - Impossible boxes end up disabled instead of allowing a dead-end selection.
 
@@ -1996,9 +2004,9 @@ nonconforming persisted data without migration or repair.
 #### REG-PERSIST-03 Snapshots folder + subfolder load (relaunch)
 **Goal:** snapshots work under `config/saved_current_texts/` (including subfolders) across relaunch.
 1. Set a known text `TP1`.
-2. Click **💾** and save as `sub/persist_TP1.json` under `config/saved_current_texts/` (create `sub/` if needed).
+2. Click **Save text snapshot** (`text-snapshot-save` SVG icon) and save as `sub/persist_TP1.json` under `config/saved_current_texts/` (create `sub/` if needed).
 3. Close app and relaunch.
-4. Click **📂**, select `sub/persist_TP1.json`, confirm overwrite.
+4. Click **Load text snapshot** (`text-snapshot-load` SVG icon), select `sub/persist_TP1.json`, confirm overwrite.
 
 **Expected:**
 - Snapshot remains on disk after relaunch.
@@ -2011,7 +2019,7 @@ nonconforming persisted data without migration or repair.
 3. Run the same batch again without deleting the earlier snapshot files.
 4. Confirm the second run creates new files instead of overwriting the previous ones.
 5. Close the app and relaunch.
-6. Load one of the collision-suffixed batch snapshot files through **📂**.
+6. Load one of the collision-suffixed batch snapshot files through **Load text snapshot** (`text-snapshot-load` SVG icon).
 
 **Expected:**
 - Batch auto snapshots are created under `config/saved_current_texts/`.
@@ -2023,7 +2031,7 @@ nonconforming persisted data without migration or repair.
 **Goal:** custom snapshot tags, hidden defaults, and per-category order survive app restart.
 1. Create at least one custom snapshot tag, hide at least one default tag, and reorder one category through **Manage tags**.
 2. Close the app fully.
-3. Relaunch the app and open **💾**, then **Manage tags** again.
+3. Relaunch the app and open **Save text snapshot** (`text-snapshot-save` SVG icon), then **Manage tags** again.
 4. Inspect `snapshot_tags.json` if you need on-disk confirmation.
 
 **Expected:**
@@ -2034,7 +2042,7 @@ nonconforming persisted data without migration or repair.
 
 #### REG-PERSIST-04 Tasks: config/tasks persistence (lists, library, allowlist, widths, window position)
 **Goal:** task feature state persists under config/tasks and reloads correctly after restart.
-1. Click **📝** to open Tasks editor.
+1. Click **New task** (`task-new` SVG icon) to open Tasks editor.
 2. Resize at least two columns to non-default widths.
 3. Add a row with a distinctive Text + Time and an optional Comment.
 4. Save the list (name: e.g., "persist_demo").
@@ -2061,7 +2069,7 @@ nonconforming persisted data without migration or repair.
 
 #### REG-PERSIST-05 Text extraction picker + OCR runtime state persistence
 **Goal:** text extraction persists its picker folder and OCR runtime state files correctly.
-1. Use **📥** to open a file from a non-default folder and complete or cancel the run after selection.
+1. Use **Text extraction** (`text-extraction-wide` SVG icon) to open a file from a non-default folder and complete or cancel the run after selection.
 2. If possible, complete one successful range-based PDF run with the keep-generated-PDF option enabled.
 3. If OCR is part of the build, complete OCR activation once.
 4. Close the app.
@@ -2070,7 +2078,7 @@ nonconforming persisted data without migration or repair.
    - `ocr_google_drive/credentials.json` exists in OCR-enabled builds
    - `ocr_google_drive/token.json` exists after successful OCR activation
    - if keep-mode PDF retention was used, the generated subset PDF exists under the app-owned generated-PDF folder rooted at `app.getPath('userData')/tot-generated-pdfs/`
-6. Relaunch the app and open **📥** again.
+6. Relaunch the app and open **Text extraction** (`text-extraction-wide` SVG icon) again.
 7. Re-open a range-based PDF flow and inspect the keep-generated-PDF control state.
 
 **Expected:**
@@ -2199,8 +2207,8 @@ nonconforming persisted data without migration or repair.
 **Goal:** invalid/outside selections do not crash and do not change current text.
 1. Set a known current text `TE1`.
 2. Create `config/saved_current_texts/invalid.json` with invalid JSON (e.g., `{`).
-3. Click **📂** and select `invalid.json`.
-4. Click **📂** again and select a JSON file outside `config/saved_current_texts/` (navigate via dialog).
+3. Click **Load text snapshot** (`text-snapshot-load` SVG icon) and select `invalid.json`.
+4. Click **Load text snapshot** (`text-snapshot-load` SVG icon) again and select a JSON file outside `config/saved_current_texts/` (navigate via dialog).
 5. (Advanced) Repeat step 4 via a symlink/junction escape if applicable.
 
 **Expected:**
@@ -2211,8 +2219,8 @@ nonconforming persisted data without migration or repair.
 ### EDGE-05 Append repeat overflow guards (IPC/text cap)
 **Goal:** repeated append fails safely when projected payload/size exceeds limits.
 1. Put a large text in clipboard (large enough that repeating with high `N` can exceed limits).
-2. Set repeat input to a high value and click **📋+**.
-3. If current text is already near max size, click **📋+** again with any valid `N`.
+2. Set repeat input to a high value and click **Append clipboard** (`clipboard-append` SVG icon).
+3. If current text is already near max size, click **Append clipboard** (`clipboard-append` SVG icon) again with any valid `N`.
 
 **Expected:**
 - If projected payload exceeds IPC cap, append is aborted with the same “append too large” behavior.
@@ -2222,7 +2230,7 @@ nonconforming persisted data without migration or repair.
 ### EDGE-05A Current-text pending lock during large runtime updates
 **Goal:** large runtime current-text mutations show one strong pending owner and ignore stale completions.
 1. Start with a very large text source, for example a long clipboard payload, a large snapshot, or a large edit from Text Editor typing sync.
-2. Trigger a current-text mutation such as **📋↺**, **📋+**, snapshot load, or a debounced Text Editor sync.
+2. Trigger a current-text mutation such as **Overwrite clipboard** (`clipboard-overwrite` SVG icon), **Append clipboard** (`clipboard-append` SVG icon), snapshot load, or a debounced Text Editor sync.
 3. While the current-text area is still settling, try main-window controls and at least one menu action.
 4. If practical, trigger a second current-text mutation before the first settle finishes.
 

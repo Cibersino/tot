@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Terapkan teks hasil ekstraksi",
         "message": "Pilih cara menerapkan teks hasil ekstraksi.",
+        "no_text_message": "Ekstraksi selesai dengan sukses, tetapi tidak ada teks yang diperoleh untuk diterapkan.",
         "elapsed": "Waktu eksekusi: ",
         "repeat_label": "Pengulangan",
         "overwrite_button": "Timpa",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF lengkap terlalu besar untuk OCR",
-        "case_a_message": "PDF lengkap melebihi batas penyedia OCR ({providerLimitMb} MB). Anda dapat membuka perencana bersama untuk memisahkannya secara otomatis menjadi masukan yang dibuat sebelum ekstraksi.",
+        "case_a_message": "PDF lengkap melebihi batas penyedia OCR ({providerLimitMb} MB). Anda dapat memprosesnya secara otomatis dalam beberapa bagian sambil mempertahankan file asli. Sebagai alternatif, Anda dapat menggunakan rute ekstraksi native jika tersedia.",
         "case_b_title": "Rentang yang dibuat terlalu besar untuk OCR",
-        "case_b_message": "PDF yang dibuat untuk rentang terpilih melebihi batas penyedia OCR ({providerLimitMb} MB). File tersebut tidak diunggah. Anda dapat kembali ke pemilihan halaman, menggunakan jalur bawaan, atau membuka perencana bersama untuk memisahkan PDF lengkap.",
+        "case_b_message": "PDF yang dibuat untuk rentang terpilih melebihi batas penyedia OCR ({providerLimitMb} MB). File tersebut tidak diunggah. Anda dapat kembali ke pemilihan halaman, menggunakan rute native jika tersedia, atau memproses PDF lengkap dalam beberapa bagian.",
         "source_file_label": "File sumber:",
         "selected_range_label": "Rentang terpilih:",
         "generated_pdf_label": "PDF yang dibuat:",
@@ -227,6 +228,7 @@
         "close_aria": "Tutup laporan akhir ekstraksi berkelompok",
         "failed_fallback": "gagal",
         "failed_with_code": "gagal: {code}",
+        "no_text": "Tidak ada teks",
         "applied_truncated": "diterapkan dengan pemotongan",
         "payload_too_large": "terlalu besar untuk diterapkan",
         "text_limit": "batas teks tercapai",
@@ -357,6 +359,9 @@
         "no_results": "Tidak ada opsi yang cocok",
         "create": "Buat \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Hapus tag \"{label}\""
+      },
       "labels": {
         "name": "Nama (opsional)",
         "source_comment": "Asal (opsional)",
@@ -397,11 +402,6 @@
           "too_long": "Nama tag tidak boleh melebihi {max} karakter.",
           "duplicate": "Tag dengan nama tersebut sudah ada dalam kategori ini."
         }
-      },
-      "empty": {
-        "language": "Tanpa tag bahasa",
-        "type": "Tanpa tag jenis",
-        "difficulty": "Tanpa tag kesulitan"
       },
       "buttons": {
         "manage": "Kelola tag",

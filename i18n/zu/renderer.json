@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Sebenzisa umbhalo okhishiwe",
         "message": "Khetha ukuthi uzowusebenzisa kanjani umbhalo okhishiwe.",
+        "no_text_message": "Ukukhishwa kombhalo kuqedwe ngempumelelo, kodwa awukho umbhalo otholakele ongasetshenziswa.",
         "elapsed": "Isikhathi sokusebenza: ",
         "repeat_label": "Ukuphindaphinda",
         "overwrite_button": "Bhala phezu",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "I-PDF ephelele inkulu kakhulu ku-OCR",
-        "case_a_message": "I-PDF ephelele idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ungavula isihleli esabiwe ukuze uyihlukanise ngokuzenzakalelayo ibe amafayela adaliwayo ngaphambi kokukhishwa.",
+        "case_a_message": "I-PDF ephelele idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ungayicubungula ngokuzenzakalelayo ngezingxenye, ugcine ifayela lokuqala. Okunye, ungasebenzisa indlela yokukhipha ye-native uma itholakala.",
         "case_b_title": "Ibanga elidaliwe likhulu kakhulu ku-OCR",
-        "case_b_message": "I-PDF edalelwe ibanga elikhethiwe idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ifayela alilayishwanga. Ungabuyela ekukhetheni amakhasi, usebenzise indlela ye-native, noma uvule isihleli esabiwe ukuze uhlukanise i-PDF ephelele.",
+        "case_b_message": "I-PDF edalelwe ibanga elikhethiwe idlula umkhawulo womhlinzeki we-OCR ({providerLimitMb} MB). Ifayela alilayishwanga. Ungabuyela ekukhetheni amakhasi, usebenzise indlela ye-native uma itholakala, noma ucubungule i-PDF ephelele ngezingxenye.",
         "source_file_label": "Ifayela lomthombo:",
         "selected_range_label": "Ibanga elikhethiwe:",
         "generated_pdf_label": "I-PDF edaliwe:",
@@ -227,6 +228,7 @@
         "close_aria": "Vala umbiko wokugcina wokukhishwa okuyiqoqo",
         "failed_fallback": "Kwehlulekile",
         "failed_with_code": "Kwehlulekile: {code}",
+        "no_text": "Awukho umbhalo",
         "applied_truncated": "kusetshenziswe ngokunqunywa",
         "payload_too_large": "kukhulu kakhulu ukuthi kusetshenziswe",
         "text_limit": "umkhawulo wombhalo ufinyelelwe",
@@ -357,6 +359,9 @@
         "no_results": "Azikho izinketho ezifanayo",
         "create": "Dala \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Susa ithegi \"{label}\""
+      },
       "labels": {
         "name": "Igama (uma uthanda)",
         "source_comment": "Umsuka (uma uthanda)",
@@ -397,11 +402,6 @@
           "too_long": "Igama lethegi alikwazi ukudlula izinhlamvu ezingu-{max}.",
           "duplicate": "Ithegi enalelo gama isivele ikhona kulesi sigaba."
         }
-      },
-      "empty": {
-        "language": "Alikho ithegi lolimi",
-        "type": "Alikho ithegi lohlobo",
-        "difficulty": "Alikho ithegi lobunzima"
       },
       "buttons": {
         "manage": "Phatha amathegi",

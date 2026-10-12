@@ -14,9 +14,10 @@ function createHarness({
   promptBatchPlanResult = null,
   onPromptBatchPlan = null,
   executionResultsByProcessingInputFileName = {},
+  normalizeExecutionResultApplicability = true,
   promptBatchFinalReportImpl = null,
   applyTextViaCanonicalPathImpl = null,
-  snapshotTagsPromptResult = { tags: { language: 'en' } },
+  snapshotTagsPromptResult = { tags: { language: ['en'] } },
   settingsCache = null,
 }) {
   let capturedViewModel = null;
@@ -39,6 +40,39 @@ function createHarness({
       toPage: safeTotalPages,
       selectedPageCount: safeTotalPages,
       totalPages: safeTotalPages,
+    };
+  }
+
+  function withMainResultApplicability(execution) {
+    if (!normalizeExecutionResultApplicability
+      || !execution
+      || !execution.result
+      || execution.result.state !== 'success') {
+      return execution;
+    }
+    const result = { ...execution.result };
+    if (typeof result.text === 'string' && !Object.hasOwn(result, 'textApplicability')) {
+      result.textApplicability = result.text.trim() === '' ? 'no_text' : 'applicable';
+    }
+    if (result.heavySplitExecution && Array.isArray(result.heavySplitExecution.generatedInputs)) {
+      result.heavySplitExecution = {
+        ...result.heavySplitExecution,
+        generatedInputs: result.heavySplitExecution.generatedInputs.map((generatedInput) => {
+          if (!generatedInput
+            || generatedInput.state !== 'success'
+            || Object.hasOwn(generatedInput, 'textApplicability')) {
+            return generatedInput;
+          }
+          return {
+            ...generatedInput,
+            textApplicability: 'applicable',
+          };
+        }),
+      };
+    }
+    return {
+      ...execution,
+      result,
     };
   }
 
@@ -100,6 +134,13 @@ function createHarness({
           const translations = {
             'renderer.text_extraction.batch_plan.pages_all': 'All pages',
             'renderer.text_extraction.batch_plan.tags_none': 'No tags',
+            'renderer.snapshots.labels.language': 'Language',
+            'renderer.snapshots.labels.type': 'Type',
+            'renderer.snapshots.labels.difficulty': 'Difficulty',
+            'renderer.snapshots.options.language.en': 'English',
+            'renderer.snapshots.options.language.es': 'Spanish',
+            'renderer.snapshots.options.type.fiction': 'Ficción',
+            'renderer.snapshots.options.type.non_fiction': 'No ficción',
             'renderer.text_extraction.batch_plan.unit_label': 'Unit {index}',
             'renderer.text_extraction.batch_report.snapshot_created': 'Snapshot created: {filename}',
             'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
@@ -184,7 +225,9 @@ function createHarness({
           const processingInputFileName = processingContext && processingContext.processingInputFileName
             ? processingContext.processingInputFileName
             : '';
-          return executionResultsByProcessingInputFileName[processingInputFileName] || null;
+          return withMainResultApplicability(
+            executionResultsByProcessingInputFileName[processingInputFileName] || null
+          );
         };
       }
       if (methodName === 'getTextExtractionProcessingMode') {
@@ -549,7 +592,7 @@ test('batch flow opens shared tags modal with batch-planning copy overrides', as
   assert.deepEqual(
     JSON.parse(JSON.stringify(harness.getSnapshotTagsPromptOptions())),
     {
-      initialTags: null,
+      initialTags: {},
       copy: {
         titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
         messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
@@ -579,7 +622,7 @@ test('batch flow formats planner tag summaries with custom labels from snapshot-
 
   const harness = createHarness({
     preparationsByPath,
-    snapshotTagsPromptResult: { tags: { language: customLanguage } },
+    snapshotTagsPromptResult: { tags: { language: [customLanguage, 'es'] } },
     settingsCache: {
       snapshotTags: {
         language: {
@@ -602,8 +645,47 @@ test('batch flow formats planner tag summaries with custom labels from snapshot-
 
   assert.equal(
     controller.getViewModel().units[0].tagsSummary,
-    'Plain text'
+    'Language: Plain text, Spanish'
   );
+});
+
+test('batch unit tag drafts retain all values when reopened and remain independent by unit', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({ fileName: 'first.pdf', chosenRoute: 'native' }),
+    'C:\\docs\\second.pdf': createPreparation({ fileName: 'second.pdf', chosenRoute: 'native' }),
+  };
+  const selectedTags = {
+    language: ['en', 'es'],
+    type: ['fiction', 'non_fiction'],
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    snapshotTagsPromptResult: { tags: selectedTags },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-multi-tag-reopen',
+  });
+
+  const controller = harness.getCapturedController();
+  controller.applyAction({ type: 'apply_preset_separate' });
+  const [firstUnit] = controller.getViewModel().units;
+  await controller.editUnitTags(firstUnit.unitKey);
+
+  assert.equal(
+    controller.getViewModel().units[0].tagsSummary,
+    'Language: English, Spanish · Type: Ficción, No ficción'
+  );
+  assert.equal(controller.getViewModel().units[1].tagsSummary, 'No tags');
+
+  await controller.editUnitTags(firstUnit.unitKey);
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(harness.getSnapshotTagsPromptOptions().initialTags)),
+    selectedTags
+  );
+  assert.equal(controller.getViewModel().units[1].tagsSummary, 'No tags');
 });
 
 test('batch flow keeps page summary for heavy PDFs and omits it for non-PDF inputs', async () => {
@@ -943,7 +1025,7 @@ test('batch execution clamps custom unit names before snapshot handoff', async (
     autoFileBaseName: expectedName,
     name: expectedName,
     sourceComment: 'chapter.pdf',
-    tags: null,
+    tags: {},
     includeCount: true,
     includeReading: false,
   });
@@ -1216,8 +1298,9 @@ test('batch execution processes ordinary and heavy inputs in one unit and snapsh
               },
               {
                 fileName: 'heavy_pages_021_040.pdf',
-                state: 'failed',
-                errorCode: 'ocr_conversion_failed',
+                state: 'success',
+                textApplicability: 'no_text',
+                errorCode: '',
                 generatedPdfArtifact: {
                   retainedArtifactPath: 'C:\\tmp\\heavy_pages_021_040.pdf',
                 },
@@ -1280,8 +1363,8 @@ test('batch execution processes ordinary and heavy inputs in one unit and snapsh
       },
       {
         fileName: 'heavy_pages_021_040.pdf',
-        state: 'failed',
-        code: 'ocr_conversion_failed',
+        state: 'success',
+        code: '',
         retainedArtifactPath: 'C:\\tmp\\heavy_pages_021_040.pdf',
       },
     ]
@@ -1932,6 +2015,152 @@ test('batch execution applies the configured unit failure policy after a zero-ch
   );
 });
 
+test('batch failure policy follows the failed heavy parent while retaining child execution outcomes', async () => {
+  const createPolicyHarness = (failurePolicy, childStates) => {
+    const preparationsByPath = {
+      'C:\\docs\\book.pdf': createPreparation({
+        fileName: 'book.pdf',
+        chosenRoute: 'ocr',
+        heavySplitEligible: true,
+        routeChoiceOptions: ['ocr'],
+      }),
+      'C:\\docs\\notes.txt': createPreparation({
+        fileName: 'notes.txt',
+        chosenRoute: 'native',
+        fileKind: 'txt',
+        pdfPageSelection: null,
+      }),
+    };
+    return {
+      preparationsByPath,
+      harness: createHarness({
+        preparationsByPath,
+        promptBatchPlanResult: { action: 'start' },
+        async onPromptBatchPlan(controller) {
+          controller.applyAction({ type: 'apply_preset_all' });
+          controller.applyAction({ type: 'set_failure_policy', failurePolicy });
+        },
+        executionResultsByProcessingInputFileName: {
+          'book.pdf': {
+            ok: true,
+            result: {
+              state: 'failure',
+              text: '',
+              error: { code: 'ocr_conversion_failed' },
+              generatedPdfArtifact: null,
+              heavySplitExecution: {
+                generatedInputs: childStates,
+              },
+            },
+          },
+          'notes.txt': {
+            ok: true,
+            result: {
+              state: 'success',
+              text: 'Notes text',
+              error: null,
+              generatedPdfArtifact: null,
+            },
+          },
+        },
+      }),
+    };
+  };
+  const retainedArtifact = { retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf' };
+  const continuedRun = createPolicyHarness('omit_failed_and_continue', [
+    {
+      fileName: 'book_pages_001_020.pdf',
+      state: 'success',
+      textApplicability: 'applicable',
+      errorCode: '',
+      generatedPdfArtifact: retainedArtifact,
+    },
+    {
+      fileName: 'book_pages_021_040.pdf',
+      state: 'failed',
+      errorCode: 'ocr_conversion_failed',
+      generatedPdfArtifact: null,
+    },
+    {
+      fileName: 'book_pages_041_060.pdf',
+      state: 'success',
+      textApplicability: 'no_text',
+      errorCode: '',
+      generatedPdfArtifact: null,
+    },
+  ]);
+
+  await continuedRun.harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(continuedRun.preparationsByPath),
+    actionId: 'test-heavy-parent-failure-continue-policy',
+  });
+
+  const continuedReport = JSON.parse(JSON.stringify(continuedRun.harness.getCapturedFinalReport()));
+  const continuedParent = continuedReport.units[0].inputs[0];
+  assert.equal(continuedParent.state, 'failed');
+  assert.equal(continuedParent.code, 'ocr_conversion_failed');
+  assert.deepEqual(
+    continuedParent.generatedInputs.map((input) => ({
+      state: input.state,
+      textApplicability: input.textApplicability || '',
+      retainedArtifactPath: input.generatedPdfArtifact && input.generatedPdfArtifact.retainedArtifactPath,
+    })),
+    [
+      { state: 'success', textApplicability: 'applicable', retainedArtifactPath: 'C:\\tmp\\book_pages_001_020.pdf' },
+      { state: 'failed', textApplicability: '', retainedArtifactPath: null },
+      { state: 'success', textApplicability: 'no_text', retainedArtifactPath: null },
+    ]
+  );
+  assert.equal(continuedReport.units[0].inputs[1].state, 'success');
+  assert.deepEqual(
+    continuedRun.harness.getExecutionEvents()
+      .filter((event) => event.type === 'apply')
+      .map((event) => `${event.payload.mode}:${event.payload.textToApply}`),
+    ['overwrite:Notes text']
+  );
+
+  const stoppingRun = createPolicyHarness('finish_unit_after_last_success', [
+    {
+      fileName: 'book_pages_001_020.pdf',
+      state: 'success',
+      textApplicability: 'applicable',
+      errorCode: '',
+      generatedPdfArtifact: retainedArtifact,
+    },
+    {
+      fileName: 'book_pages_021_040.pdf',
+      state: 'failed',
+      errorCode: 'ocr_conversion_failed',
+      generatedPdfArtifact: null,
+    },
+    {
+      fileName: 'book_pages_041_060.pdf',
+      state: 'omitted',
+      errorCode: '',
+      generatedPdfArtifact: null,
+    },
+  ]);
+
+  await stoppingRun.harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(stoppingRun.preparationsByPath),
+    actionId: 'test-heavy-parent-failure-stopping-policy',
+  });
+
+  const stoppingReport = JSON.parse(JSON.stringify(stoppingRun.harness.getCapturedFinalReport()));
+  const stoppingParent = stoppingReport.units[0].inputs[0];
+  assert.equal(stoppingParent.state, 'failed');
+  assert.deepEqual(
+    stoppingParent.generatedInputs.map((input) => input.state),
+    ['success', 'failed', 'omitted']
+  );
+  assert.equal(stoppingParent.generatedInputs[0].generatedPdfArtifact.retainedArtifactPath, 'C:\\tmp\\book_pages_001_020.pdf');
+  assert.deepEqual(
+    stoppingReport.units[0].inputs.slice(1).map((input) => ({ fileName: input.fileName, state: input.state })),
+    [{ fileName: 'notes.txt', state: 'omitted' }]
+  );
+  assert.deepEqual(stoppingRun.harness.getExecutionEvents().filter((event) => event.type === 'apply'), []);
+});
+
 test('batch execution final report annotates ordinary selected-page PDF rows with the chosen range', async () => {
   const preparationsByPath = {
     'C:\\docs\\source.pdf': createPreparation({
@@ -1982,6 +2211,9 @@ test('batch execution final report annotates ordinary selected-page PDF rows wit
         displayName: 'source.pdf (\u206612-18\u2069)',
         state: 'success',
         code: '',
+        executionState: 'success',
+        textApplicability: 'applicable',
+        textApplication: 'applied',
         generatedInputs: [],
         generatedPdfArtifact: {
           retainedArtifactPath: 'C:\\tmp\\source_pages_12_18.pdf',
@@ -2040,6 +2272,9 @@ test('batch execution final report preserves apply truncation on ordinary succes
         state: 'success',
         code: '',
         applyTruncated: true,
+        executionState: 'success',
+        textApplicability: 'applicable',
+        textApplication: 'applied',
         generatedInputs: [],
         generatedPdfArtifact: null,
       },
@@ -2100,4 +2335,317 @@ test('batch execution final report preserves apply truncation on the heavy sourc
   assert.equal(report.units[0].inputs[0].state, 'success');
   assert.equal(report.units[0].inputs[0].applyTruncated, true);
   assert.equal(report.units[0].inputs[0].generatedInputs.length, 1);
+});
+
+test('batch applies only applicable results without changing overwrite/append sequencing for no-text results', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.txt': createPreparation({ fileName: 'first.txt', chosenRoute: 'native', fileKind: 'txt' }),
+    'C:\\docs\\empty.txt': createPreparation({ fileName: 'empty.txt', chosenRoute: 'native', fileKind: 'txt' }),
+    'C:\\docs\\third.txt': createPreparation({ fileName: 'third.txt', chosenRoute: 'native', fileKind: 'txt' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    async onPromptBatchPlan(controller) {
+      controller.applyAction({ type: 'apply_preset_all' });
+    },
+    executionResultsByProcessingInputFileName: {
+      'first.txt': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'First text',
+          textApplicability: 'applicable',
+          error: null,
+          generatedPdfArtifact: null,
+        },
+      },
+      'empty.txt': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: ' \n\t ',
+          textApplicability: 'no_text',
+          error: null,
+          generatedPdfArtifact: null,
+        },
+      },
+      'third.txt': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Third text',
+          textApplicability: 'applicable',
+          error: null,
+          generatedPdfArtifact: null,
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-no-text-application-sequencing',
+  });
+
+  assert.deepEqual(
+    harness.getExecutionEvents()
+      .filter((event) => event.type === 'apply')
+      .map((event) => `${event.payload.mode}:${event.payload.textToApply}`),
+    ['overwrite:First text', 'append:Third text']
+  );
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(report.hadOutput, true);
+  assert.deepEqual(report.units[0].inputs[1], {
+    fileName: 'empty.txt',
+    displayName: 'empty.txt',
+    state: 'success',
+    code: '',
+    generatedInputs: [],
+    generatedPdfArtifact: null,
+    executionState: 'success',
+    textApplicability: 'no_text',
+    textApplication: 'not_applied_no_text',
+  });
+});
+
+test('batch no-text successes receive no output or snapshot credit while retaining heavy child applicability', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\empty.txt': createPreparation({ fileName: 'empty.txt', chosenRoute: 'native', fileKind: 'txt' }),
+    'C:\\docs\\heavy.pdf': createPreparation({
+      fileName: 'heavy.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['ocr'],
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'empty.txt': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: ' \n',
+          textApplicability: 'no_text',
+          error: null,
+          generatedPdfArtifact: null,
+        },
+      },
+      'heavy.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: '',
+          textApplicability: 'no_text',
+          error: null,
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'heavy_pages_001_020.pdf',
+                state: 'success',
+                textApplicability: 'no_text',
+                errorCode: '',
+                generatedPdfArtifact: null,
+              },
+            ],
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-no-text-output-and-snapshot-credit',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(report.hadOutput, false);
+  assert.deepEqual(harness.getExecutionEvents().filter((event) => event.type === 'apply'), []);
+  assert.deepEqual(harness.getSavedSnapshotPayloads(), []);
+  assert.deepEqual(
+    report.units.map((unit) => unit.snapshotResult.state),
+    ['not_created', 'not_created']
+  );
+  assert.equal(report.units[0].inputs[0].textApplication, 'not_applied_no_text');
+  assert.equal(report.units[1].inputs[0].textApplication, 'not_applied_no_text');
+  assert.equal(report.units[1].inputs[0].generatedInputs[0].textApplicability, 'no_text');
+});
+
+test('batch preserves heavy child records and retained artifacts when aggregate application fails', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\heavy.pdf': createPreparation({
+      fileName: 'heavy.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['ocr'],
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'heavy.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Heavy aggregate',
+          textApplicability: 'applicable',
+          error: null,
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'heavy_pages_001_020.pdf',
+                state: 'success',
+                textApplicability: 'applicable',
+                errorCode: '',
+                generatedPdfArtifact: { retainedArtifactPath: 'C:\\tmp\\heavy_pages_001_020.pdf' },
+              },
+              {
+                fileName: 'heavy_pages_021_040.pdf',
+                state: 'success',
+                textApplicability: 'no_text',
+                errorCode: '',
+                generatedPdfArtifact: { retainedArtifactPath: 'C:\\tmp\\heavy_pages_021_040.pdf' },
+              },
+            ],
+          },
+        },
+      },
+    },
+    applyTextViaCanonicalPathImpl: async () => ({ ok: false, code: 'SET_CURRENT_TEXT_FAILED' }),
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-heavy-aggregate-apply-failure-report',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  const parent = report.units[0].inputs[0];
+  assert.equal(report.hadOutput, false);
+  assert.equal(parent.state, 'failed');
+  assert.equal(parent.code, 'SET_CURRENT_TEXT_FAILED');
+  assert.equal(parent.executionState, 'success');
+  assert.equal(parent.textApplicability, 'applicable');
+  assert.equal(parent.textApplication, 'failed');
+  assert.deepEqual(parent.generatedInputs.map((child) => ({
+    fileName: child.fileName,
+    state: child.state,
+    textApplicability: child.textApplicability,
+    retainedArtifactPath: child.generatedPdfArtifact.retainedArtifactPath,
+  })), [
+    {
+      fileName: 'heavy_pages_001_020.pdf',
+      state: 'success',
+      textApplicability: 'applicable',
+      retainedArtifactPath: 'C:\\tmp\\heavy_pages_001_020.pdf',
+    },
+    {
+      fileName: 'heavy_pages_021_040.pdf',
+      state: 'success',
+      textApplicability: 'no_text',
+      retainedArtifactPath: 'C:\\tmp\\heavy_pages_021_040.pdf',
+    },
+  ]);
+});
+
+test('batch rejects malformed nominal success results instead of reporting them as no-text', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\broken.txt': createPreparation({ fileName: 'broken.txt', chosenRoute: 'native', fileKind: 'txt' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    normalizeExecutionResultApplicability: false,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'broken.txt': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: '',
+          error: null,
+          generatedPdfArtifact: null,
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-malformed-success-report',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(harness.getExecutionEvents().filter((event) => event.type === 'apply'), []);
+  assert.equal(report.units[0].inputs[0].state, 'failed');
+  assert.equal(report.units[0].inputs[0].code, 'invalid_execution_result');
+  assert.equal(report.units[0].inputs[0].executionState, 'success');
+  assert.equal(Object.hasOwn(report.units[0].inputs[0], 'textApplicability'), false);
+});
+
+test('batch rejects a nominally successful heavy parent with a failed child', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\broken-heavy.pdf': createPreparation({
+      fileName: 'broken-heavy.pdf',
+      chosenRoute: 'ocr',
+      heavySplitEligible: true,
+      routeChoiceOptions: ['ocr'],
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'broken-heavy.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Invalid partial aggregate',
+          textApplicability: 'applicable',
+          error: null,
+          generatedPdfArtifact: null,
+          heavySplitExecution: {
+            generatedInputs: [
+              {
+                fileName: 'broken-heavy_pages_001_020.pdf',
+                state: 'success',
+                textApplicability: 'applicable',
+                errorCode: '',
+                generatedPdfArtifact: null,
+              },
+              {
+                fileName: 'broken-heavy_pages_021_040.pdf',
+                state: 'failed',
+                errorCode: 'ocr_conversion_failed',
+                generatedPdfArtifact: null,
+              },
+            ],
+          },
+        },
+      },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-malformed-heavy-parent-success-report',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  const parent = report.units[0].inputs[0];
+  assert.deepEqual(harness.getExecutionEvents().filter((event) => event.type === 'apply'), []);
+  assert.equal(parent.state, 'failed');
+  assert.equal(parent.code, 'invalid_execution_result');
+  assert.equal(parent.executionState, 'success');
+  assert.deepEqual(parent.generatedInputs.map((input) => input.state), ['success', 'failed']);
 });

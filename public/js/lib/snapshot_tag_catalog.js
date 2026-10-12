@@ -256,19 +256,33 @@
     }
   }
 
+  function normalizeTagValues(category, rawValues) {
+    const normalizedCategory = normalizeTagCategory(category);
+    if (!normalizedCategory || !Array.isArray(rawValues) || !rawValues.length) return null;
+
+    const values = [];
+    const seen = new Set();
+    for (const rawValue of rawValues) {
+      const value = normalizeTagValue(normalizedCategory, rawValue);
+      if (!value || seen.has(value)) return null;
+      seen.add(value);
+      values.push(value);
+    }
+    return values;
+  }
+
   function normalizeTags(rawTags) {
     if (!isPlainObject(rawTags)) return null;
+    if (Object.keys(rawTags).some((key) => !TAG_KEYS.includes(key))) return null;
+
     const tags = {};
-
-    const language = normalizeLanguageTag(rawTags.language);
-    const type = normalizeTypeTag(rawTags.type);
-    const difficulty = normalizeDifficultyTag(rawTags.difficulty);
-
-    if (language) tags.language = language;
-    if (type) tags.type = type;
-    if (difficulty) tags.difficulty = difficulty;
-
-    return Object.keys(tags).length ? tags : null;
+    for (const category of TAG_KEYS) {
+      if (!Object.prototype.hasOwnProperty.call(rawTags, category)) continue;
+      const values = normalizeTagValues(category, rawTags[category]);
+      if (!values) return null;
+      tags[category] = values;
+    }
+    return tags;
   }
 
   // =============================================================================
@@ -604,23 +618,6 @@
     return catalog;
   }
 
-  function normalizeTagsAgainstCatalog(rawTags, rawPreferences, { getDefaultLabel } = {}) {
-    const normalizedTags = normalizeTags(rawTags);
-    if (!normalizedTags) return null;
-    const catalog = resolveEditableCatalog(rawPreferences, { getDefaultLabel });
-    const nextTags = {};
-
-    TAG_KEYS.forEach((category) => {
-      const value = normalizedTags[category];
-      if (!value) return;
-      if (catalog[category].visibleValueSet.has(value)) {
-        nextTags[category] = value;
-      }
-    });
-
-    return Object.keys(nextTags).length ? nextTags : null;
-  }
-
   function findKnownOptionByNormalizedLabel(category, rawPreferences, normalizedLabel, { getDefaultLabel } = {}) {
     if (!normalizedLabel) return null;
     const resolvedCategory = resolveCategoryCatalog(category, rawPreferences, { getDefaultLabel });
@@ -861,6 +858,7 @@
     normalizeTypeTag,
     normalizeDifficultyTag,
     normalizeTagValue,
+    normalizeTagValues,
     normalizeTags,
     normalizeCustomTagValue,
     validateCustomLabel,
@@ -872,7 +870,6 @@
     normalizeSnapshotTagPreferences,
     resolveCategoryCatalog,
     resolveEditableCatalog,
-    normalizeTagsAgainstCatalog,
     resolveTagLabel,
     findKnownOptionByNormalizedLabel,
     createCustomTag,

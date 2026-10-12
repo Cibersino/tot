@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Appliquer le texte extrait",
         "message": "Choisissez comment appliquer le texte extrait.",
+        "no_text_message": "L’extraction s’est terminée correctement, mais aucun texte à appliquer n’a été obtenu.",
         "elapsed": "Temps d'exécution : ",
         "repeat_label": "Répétitions",
         "overwrite_button": "Remplacer",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF complet trop volumineux pour OCR",
-        "case_a_message": "Le PDF complet dépasse la limite du fournisseur OCR ({providerLimitMb} MB). Vous pouvez ouvrir le planificateur partagé pour le diviser automatiquement en entrées générées avant l’extraction.",
+        "case_a_message": "Le PDF complet dépasse la limite du fournisseur OCR ({providerLimitMb} MB). Vous pouvez le traiter automatiquement en plusieurs parties tout en conservant le fichier original. Vous pouvez aussi utiliser la route d’extraction native, si elle est disponible.",
         "case_b_title": "Plage générée trop volumineuse pour OCR",
-        "case_b_message": "Le PDF généré pour la plage sélectionnée dépasse la limite du fournisseur OCR ({providerLimitMb} MB). Il n’a pas été téléversé. Vous pouvez revenir à la sélection de pages, utiliser la route native ou ouvrir le planificateur partagé pour diviser le PDF complet.",
+        "case_b_message": "Le PDF généré pour la plage sélectionnée dépasse la limite du fournisseur OCR ({providerLimitMb} MB). Il n’a pas été téléversé. Vous pouvez revenir à la sélection de pages, utiliser la route native si elle est disponible ou traiter le PDF complet en plusieurs parties.",
         "source_file_label": "Fichier source :",
         "selected_range_label": "Plage sélectionnée :",
         "generated_pdf_label": "PDF généré :",
@@ -227,6 +228,7 @@
         "close_aria": "Fermer le rapport final de l’extraction par lots",
         "failed_fallback": "échec",
         "failed_with_code": "échec : {code}",
+        "no_text": "Aucun texte",
         "applied_truncated": "appliqué avec troncature",
         "payload_too_large": "trop volumineux pour être appliqué",
         "text_limit": "limite de texte atteinte",
@@ -357,6 +359,9 @@
         "no_results": "Aucune option correspondante",
         "create": "Créer « {label} »"
       },
+      "chips": {
+        "remove_aria": "Supprimer l’étiquette « {label} »"
+      },
       "labels": {
         "name": "Nom (facultatif)",
         "source_comment": "Origine (facultative)",
@@ -397,11 +402,6 @@
           "too_long": "Le nom de l’étiquette ne peut pas dépasser {max} caractères.",
           "duplicate": "Une étiquette portant ce nom existe déjà dans cette catégorie."
         }
-      },
-      "empty": {
-        "language": "Sans tag de langue",
-        "type": "Sans tag de type",
-        "difficulty": "Sans tag de difficulté"
       },
       "buttons": {
         "manage": "Gérer les étiquettes",

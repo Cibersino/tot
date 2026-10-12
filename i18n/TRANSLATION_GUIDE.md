@@ -1424,6 +1424,12 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Ventana modal posterior a extracción; decide cómo incorporar el texto extraído al texto actual.
           // [CONCEPTO_APP] extracción de texto; texto actual
         },
+        "no_text_message": {
+          "es": "La extracción finalizó correctamente, pero no se obtuvo texto para aplicar.",
+          "en": "Extraction completed successfully, but no text was obtained to apply."
+          // [PROPÓSITO] Mensaje informativo de la ventana modal posterior a extracción cuando el resultado técnico no contiene texto aplicable.
+          // [CONCEPTO_APP] extracción de texto; texto actual
+        },
         "elapsed": {
           "es": "Tiempo de extracción: ",
           "en": "Extraction time: "
@@ -1488,8 +1494,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_a_message": {
-          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesarlo automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa.",
-          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route."
+          "es": "El PDF completo supera el límite del proveedor OCR ({providerLimitMb} MB). Puedes procesarlo automáticamente por partes, conservando el archivo original. Alternativamente, puedes usar la ruta de extracción nativa, si está disponible.",
+          "en": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route, if available."
           // [PROPÓSITO] Explica que el PDF fuente completo supera el límite del proveedor OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF fuente; PDF completo por partes; OCR; ruta nativa
           // [PROTEGIDO] `PDF`; `OCR`; `MB`
@@ -1503,8 +1509,8 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `PDF`; `OCR`
         },
         "case_b_message": {
-          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa o procesar el PDF completo por partes.",
-          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts."
+          "es": "El PDF generado para el rango seleccionado supera el límite del proveedor OCR ({providerLimitMb} MB). No se subió. Puedes volver a la selección de páginas, usar la ruta nativa si está disponible o procesar el PDF completo por partes.",
+          "en": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route if available, or process the full PDF in parts."
           // [PROPÓSITO] Explica que el PDF generado para el rango no se subió por exceder el límite OCR y ofrece alternativas.
           // [CONCEPTO_APP] PDF generado; selección de páginas PDF; OCR; ruta nativa; PDF completo por partes
           // [PROTEGIDO] `PDF`; `OCR`; `MB`
@@ -1838,6 +1844,12 @@ Estados de revisión recomendados:
           "es": "falló: {code}",
           "en": "failed: {code}"
           // [CONCEPTO_APP] extracción de texto
+        },
+        "no_text": {
+          "es": "Sin texto",
+          "en": "No text"
+          // [PROPÓSITO] Estado breve del informe final para una extracción técnicamente exitosa sin texto aplicable.
+          // [CONCEPTO_APP] extracción por lotes; texto actual
         },
         "applied_truncated": {
           "es": "aplicado con truncamiento",
@@ -2435,6 +2447,15 @@ Estados de revisión recomendados:
           "en": "Create \"{label}\""
         }
       },
+      "chips": {
+        "remove_aria": {
+          "es": "Quitar etiqueta \"{label}\"",
+          "en": "Remove tag \"{label}\""
+          // [PROPÓSITO] Nombre accesible de un botón que elimina solo la etiqueta indicada del borrador del snapshot.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+          // [PROTEGIDO] `{label}`
+        }
+      },
       "labels": {
         "name": {
           "es": "Nombre (opcional)",
@@ -2604,23 +2625,6 @@ Estados de revisión recomendados:
             "es": "Ya existe una etiqueta con ese nombre en esta categoría.",
             "en": "A tag with that label already exists in this category."
           }
-        }
-      },
-      "empty": {
-        "language": {
-          "es": "Sin etiqueta de idioma",
-          "en": "No language tag"
-          // [CONCEPTO_APP] etiquetas de snapshot de texto
-        },
-        "type": {
-          "es": "Sin etiqueta de tipo",
-          "en": "No type tag"
-          // [CONCEPTO_APP] etiquetas de snapshot de texto
-        },
-        "difficulty": {
-          "es": "Sin etiqueta de dificultad",
-          "en": "No difficulty tag"
-          // [CONCEPTO_APP] etiquetas de snapshot de texto
         }
       },
       "buttons": {

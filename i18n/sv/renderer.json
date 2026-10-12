@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Tillämpa extraherad text",
         "message": "Välj hur den extraherade texten ska tillämpas.",
+        "no_text_message": "Extraheringen slutfördes korrekt, men ingen text att tillämpa kunde hämtas.",
         "elapsed": "Körtid: ",
         "repeat_label": "Upprepningar",
         "overwrite_button": "Skriv över",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Fullständig PDF är för stor för OCR",
-        "case_a_message": "Den fullständiga PDF-filen överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Du kan öppna den delade planeraren för att dela den automatiskt i genererade indata före extrahering.",
+        "case_a_message": "Den fullständiga PDF-filen överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Du kan bearbeta den automatiskt i delar och behålla originalfilen. Alternativt kan du använda den inbyggda extraheringsvägen, om den är tillgänglig.",
         "case_b_title": "Genererat intervall är för stort för OCR",
-        "case_b_message": "PDF-filen som genererades för det valda intervallet överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Den laddades inte upp. Du kan gå tillbaka till sidvalet, använda den inbyggda metoden eller öppna den delade planeraren för att dela hela PDF-filen.",
+        "case_b_message": "PDF-filen som genererades för det valda intervallet överskrider OCR-leverantörens gräns ({providerLimitMb} MB). Den laddades inte upp. Du kan gå tillbaka till sidvalet, använda den inbyggda extraheringsvägen om den är tillgänglig eller bearbeta hela PDF-filen i delar.",
         "source_file_label": "Källfil:",
         "selected_range_label": "Valt intervall:",
         "generated_pdf_label": "Genererad PDF:",
@@ -227,6 +228,7 @@
         "close_aria": "Stäng slutrapporten för satsvis extrahering",
         "failed_fallback": "misslyckades",
         "failed_with_code": "misslyckades: {code}",
+        "no_text": "Ingen text",
         "applied_truncated": "tillämpad med trunkering",
         "payload_too_large": "för stort för att tillämpas",
         "text_limit": "textgräns nådd",
@@ -357,6 +359,9 @@
         "no_results": "Inga matchande alternativ",
         "create": "Skapa \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Ta bort taggen \"{label}\""
+      },
       "labels": {
         "name": "Namn (valfritt)",
         "source_comment": "Ursprung (valfritt)",
@@ -397,11 +402,6 @@
           "too_long": "Taggnamnet får inte överstiga {max} tecken.",
           "duplicate": "Det finns redan en tagg med det namnet i den här kategorin."
         }
-      },
-      "empty": {
-        "language": "Ingen språktagg",
-        "type": "Ingen typtagg",
-        "difficulty": "Ingen svårighetsgradstagg"
       },
       "buttons": {
         "manage": "Hantera taggar",

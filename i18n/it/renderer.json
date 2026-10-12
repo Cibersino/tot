@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Applica il testo estratto",
         "message": "Scegli come applicare il testo estratto.",
+        "no_text_message": "L’estrazione è stata completata correttamente, ma non è stato ottenuto alcun testo da applicare.",
         "elapsed": "Tempo di esecuzione: ",
         "repeat_label": "Ripetizioni",
         "overwrite_button": "Sovrascrivi",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF completo troppo grande per OCR",
-        "case_a_message": "Il PDF completo supera il limite del fornitore OCR ({providerLimitMb} MB). Puoi aprire il pianificatore condiviso per dividerlo automaticamente in file generati prima dell’estrazione.",
+        "case_a_message": "Il PDF completo supera il limite del fornitore OCR ({providerLimitMb} MB). Puoi elaborarlo automaticamente in più parti, mantenendo il file originale. In alternativa, puoi usare il percorso di estrazione nativo, se disponibile.",
         "case_b_title": "Intervallo generato troppo grande per OCR",
-        "case_b_message": "Il PDF generato per l’intervallo selezionato supera il limite del fornitore OCR ({providerLimitMb} MB). Non è stato caricato. Puoi tornare alla selezione delle pagine, usare il percorso nativo o aprire il pianificatore condiviso per dividere il PDF completo.",
+        "case_b_message": "Il PDF generato per l’intervallo selezionato supera il limite del fornitore OCR ({providerLimitMb} MB). Non è stato caricato. Puoi tornare alla selezione delle pagine, usare il percorso nativo se disponibile o elaborare il PDF completo in più parti.",
         "source_file_label": "File sorgente:",
         "selected_range_label": "Intervallo selezionato:",
         "generated_pdf_label": "PDF generato:",
@@ -227,6 +228,7 @@
         "close_aria": "Chiudi rapporto finale dell’estrazione per lotti",
         "failed_fallback": "non riuscito",
         "failed_with_code": "non riuscito: {code}",
+        "no_text": "Nessun testo",
         "applied_truncated": "applicato con troncamento",
         "payload_too_large": "troppo grande da applicare",
         "text_limit": "limite di testo raggiunto",
@@ -357,6 +359,9 @@
         "no_results": "Nessuna opzione corrispondente",
         "create": "Crea \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Rimuovi tag \"{label}\""
+      },
       "labels": {
         "name": "Nome (facoltativo)",
         "source_comment": "Origine (facoltativa)",
@@ -397,11 +402,6 @@
           "too_long": "Il nome del tag non può superare {max} caratteri.",
           "duplicate": "Esiste già un tag con questo nome in questa categoria."
         }
-      },
-      "empty": {
-        "language": "Nessun tag lingua",
-        "type": "Nessun tag tipo",
-        "difficulty": "Nessun tag difficoltà"
       },
       "buttons": {
         "manage": "Gestisci tag",

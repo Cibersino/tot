@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Qichusqa qillqata churay",
         "message": "Qichusqa qillqata imaynata churanaykita akllay.",
+        "no_text_message": "Qichuy allinta tukurqan, ichaqa churanapaq qillqa mana tarikurqanchu.",
         "elapsed": "Ruwasqa pacha: ",
         "repeat_label": "Kutiykuna",
         "overwrite_button": "Qillqay/tikray",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Llapan PDFqa OCRpaq ancha hatunmi",
-        "case_a_message": "Llapan PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Compartido planificadorta kichayta atinki, qichuy ñawpaqta kikinmanta ruwasqa archivokunaman t'aqananpaq.",
+        "case_a_message": "Llapan PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Llapan PDFta kikinmanta t'aqaspa procesayta atinki, archivo originalta waqaychaspa. Huk ñankaqa, nativa qichuy ñanta llamk'achiyta atinki, kanman chayqa.",
         "case_b_title": "Ruwasqa rangoqa OCRpaq ancha hatunmi",
-        "case_b_message": "Akllasqa rangopaq ruwasqa PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Archivo mana apachikurqanchu. P'anqa akllayman kutiyta, nativa ñanta llamk'achiyta, utaq compartido planificadorta kichayta atinki llapan PDFta t'aqanapaq.",
+        "case_b_message": "Akllasqa rangopaq ruwasqa PDFqa OCR proveedorpa límite-ninta yallin ({providerLimitMb} MB). Archivo mana apachikurqanchu. P'anqa akllayman kutiyta, nativa ñanta llamk'achiyta atinki kanman chayqa, utaq llapan PDFta t'aqaspa procesayta atinki.",
         "source_file_label": "Archivo pukyu:",
         "selected_range_label": "Akllasqa rango:",
         "generated_pdf_label": "Ruwasqa PDF:",
@@ -227,6 +228,7 @@
         "close_aria": "T'aqa qichuypa tukup informeta wichq'ay",
         "failed_fallback": "Pantarun",
         "failed_with_code": "Pantarun: {code}",
+        "no_text": "Mana qillqa kanchu",
         "applied_truncated": "kuchusqa hina churaska",
         "payload_too_large": "ancha hatun churaypaq",
         "text_limit": "texto límiteman chayasqa",
@@ -357,6 +359,9 @@
         "no_results": "Mana tinkuq akllanak kanchu",
         "create": "\"{label}\" kamay"
       },
+      "chips": {
+        "remove_aria": "\"{label}\" etiquetata qichuy"
+      },
       "labels": {
         "name": "Suti (munaspa)",
         "source_comment": "Maymanta (munaspa)",
@@ -397,11 +402,6 @@
           "too_long": "Etiqueta sutin mana {max} caracteres nisqamanta aswan achka kanmanchu.",
           "duplicate": "Kay categoría nisqapi chay sutiyuq etiqueta kachkanña."
         }
-      },
-      "empty": {
-        "language": "Mana rimay etiqueta",
-        "type": "Mana laya etiqueta",
-        "difficulty": "Mana sasa etiqueta"
       },
       "buttons": {
         "manage": "Etiquetankunata kamachiy",

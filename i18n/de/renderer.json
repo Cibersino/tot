@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Extrahierten Text anwenden",
         "message": "Wählen Sie aus, wie der extrahierte Text angewendet werden soll.",
+        "no_text_message": "Die Extraktion wurde erfolgreich abgeschlossen, aber es wurde kein Text zum Anwenden extrahiert.",
         "elapsed": "Ausführungszeit: ",
         "repeat_label": "Wiederholungen",
         "overwrite_button": "Überschreiben",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Vollständiges PDF zu groß für OCR",
-        "case_a_message": "Das vollständige PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Sie können den gemeinsamen Planer öffnen, um es vor der Extraktion automatisch in erzeugte Eingabedateien aufzuteilen.",
+        "case_a_message": "Das vollständige PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Sie können es automatisch in Teilen verarbeiten und dabei die Originaldatei behalten. Alternativ können Sie die native Extraktionsroute verwenden, sofern sie verfügbar ist.",
         "case_b_title": "Erzeugter Bereich zu groß für OCR",
-        "case_b_message": "Das für den ausgewählten Bereich erzeugte PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Es wurde nicht hochgeladen. Sie können zur Seitenauswahl zurückkehren, die native Route verwenden oder den gemeinsamen Planer öffnen, um das vollständige PDF aufzuteilen.",
+        "case_b_message": "Das für den ausgewählten Bereich erzeugte PDF überschreitet das OCR-Anbieterlimit ({providerLimitMb} MB). Es wurde nicht hochgeladen. Sie können zur Seitenauswahl zurückkehren, die native Route verwenden, sofern sie verfügbar ist, oder das vollständige PDF in Teilen verarbeiten.",
         "source_file_label": "Quelldatei:",
         "selected_range_label": "Ausgewählter Bereich:",
         "generated_pdf_label": "Erzeugtes PDF:",
@@ -227,6 +228,7 @@
         "close_aria": "Abschlussbericht der Stapelextraktion schließen",
         "failed_fallback": "fehlgeschlagen",
         "failed_with_code": "fehlgeschlagen: {code}",
+        "no_text": "Kein Text",
         "applied_truncated": "mit Kürzung angewendet",
         "payload_too_large": "zu groß zum Anwenden",
         "text_limit": "Textlimit erreicht",
@@ -357,6 +359,9 @@
         "no_results": "Keine passenden Optionen",
         "create": "\"{label}\" erstellen"
       },
+      "chips": {
+        "remove_aria": "Tag \"{label}\" entfernen"
+      },
       "labels": {
         "name": "Name (optional)",
         "source_comment": "Herkunft (optional)",
@@ -397,11 +402,6 @@
           "too_long": "Der Tag-Name darf höchstens {max} Zeichen lang sein.",
           "duplicate": "In dieser Kategorie gibt es bereits einen Tag mit diesem Namen."
         }
-      },
-      "empty": {
-        "language": "Kein Sprach-Tag",
-        "type": "Kein Typ-Tag",
-        "difficulty": "Kein Schwierigkeits-Tag"
       },
       "buttons": {
         "manage": "Tags verwalten",

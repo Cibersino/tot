@@ -10,6 +10,16 @@ function flushAsyncWork() {
   return new Promise((resolve) => setImmediate(resolve));
 }
 
+function createDeferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, reject, resolve };
+}
+
 function readRendererValue(language, key) {
   const bundle = JSON.parse(fs.readFileSync(
     path.resolve(__dirname, `../../../i18n/${language}/renderer.json`),
@@ -484,6 +494,15 @@ async function createRendererHarness({
     window,
   };
   vm.createContext(sandbox);
+  const currentTextRefreshPolicySource = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/current_text_refresh_policy.js'),
+    'utf8'
+  );
+  vm.runInContext(
+    currentTextRefreshPolicySource,
+    sandbox,
+    { filename: 'public/js/current_text_refresh_policy.js' }
+  );
   const infoModalSource = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/info_modal.js'),
     'utf8'
@@ -620,6 +639,211 @@ test('main renderer keeps the Precise toggle disabled while persistence is pendi
   harness.subscriptions.textExtractionProcessingModeChanged({ active: false });
   assert.equal(toggle.disabled, false);
   assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+});
+
+test('main renderer unlocks the Precise toggle after each settled standalone recount without a text update', async () => {
+  const pendingPersistences = [createDeferred(), createDeferred()];
+  const persistedModes = [];
+  const recountReasons = [];
+  let applyStandalonePendingState = null;
+  let standalonePending = false;
+  let ownerSequence = 0;
+  const harness = await createRendererHarness({
+    currentTextRuntimeOverrides: {
+      configure(config) {
+        applyStandalonePendingState = config.applyStandaloneFullRefreshPendingState;
+      },
+      requestDerivedRefresh(reason) {
+        recountReasons.push(reason);
+        ownerSequence += 1;
+        applyStandalonePendingState({
+          active: true,
+          ownerSequence,
+          sinceEpochMs: ownerSequence,
+          reason,
+        }, { source: 'standalone_full_refresh_begin' });
+      },
+    },
+    electronMethodOverrides: {
+      setModeConteo(mode) {
+        persistedModes.push(mode);
+        return pendingPersistences[persistedModes.length - 1].promise;
+      },
+    },
+    statusUiOverrides: {
+      applyStandaloneFullRefreshPendingState(state) {
+        standalonePending = state.active === true;
+      },
+      isCurrentTextAreaPendingActive() {
+        return standalonePending;
+      },
+    },
+  });
+  const toggle = harness.getElement('toggleModoPreciso');
+
+  assert.equal(typeof applyStandalonePendingState, 'function');
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+  assert.deepEqual(persistedModes, ['simple']);
+
+  await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'simple' });
+  assert.deepEqual(recountReasons, ['settings change']);
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.disabled, true);
+
+  pendingPersistences[0].resolve({ ok: true, mode: 'simple' });
+  await flushAsyncWork();
+  assert.equal(toggle.disabled, true);
+
+  applyStandalonePendingState({
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+    reason: '',
+  }, { source: 'standalone_full_refresh_settled' });
+  assert.equal(toggle.disabled, false);
+
+  toggle.checked = true;
+  toggle.dispatch('change');
+  await flushAsyncWork();
+  assert.deepEqual(persistedModes, ['simple', 'preciso']);
+
+  await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'preciso' });
+  assert.deepEqual(recountReasons, ['settings change', 'settings change']);
+  assert.equal(toggle.checked, true);
+  assert.equal(toggle.disabled, true);
+
+  pendingPersistences[1].resolve({ ok: true, mode: 'preciso' });
+  await flushAsyncWork();
+  assert.equal(toggle.disabled, true);
+
+  applyStandalonePendingState({
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+    reason: '',
+  }, { source: 'standalone_full_refresh_settled' });
+  assert.equal(toggle.disabled, false);
+  assert.deepEqual(harness.currentTextRuntimeCalls.textUpdates, []);
+});
+
+test('main renderer projects standalone recount failure release to main controls', async () => {
+  let applyStandalonePendingState = null;
+  let standalonePending = false;
+  const harness = await createRendererHarness({
+    currentTextRuntimeOverrides: {
+      configure(config) {
+        applyStandalonePendingState = config.applyStandaloneFullRefreshPendingState;
+      },
+    },
+    statusUiOverrides: {
+      applyStandaloneFullRefreshPendingState(state) {
+        standalonePending = state.active === true;
+      },
+      isCurrentTextAreaPendingActive() {
+        return standalonePending;
+      },
+    },
+  });
+  const controls = [
+    harness.getElement('toggleModoPreciso'),
+    harness.getElement('btnHelp'),
+    harness.getElement('wpmInput'),
+  ];
+
+  applyStandalonePendingState({
+    active: true,
+    ownerSequence: 1,
+    sinceEpochMs: 1,
+    reason: 'mode toggle',
+  }, { source: 'standalone_full_refresh_begin' });
+  assert.equal(controls.every((control) => control.disabled), true);
+  assert.equal(controls.every((control) => control.getAttribute('aria-disabled') === 'true'), true);
+
+  applyStandalonePendingState({
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+    reason: '',
+  }, { source: 'standalone_full_refresh_failed' });
+  assert.equal(controls.every((control) => control.disabled), false);
+  assert.equal(controls.every((control) => control.getAttribute('aria-disabled') === 'false'), true);
+});
+
+test('main renderer keeps controls locked through standalone recount takeover until current-text processing resolves', async () => {
+  let applyStandalonePendingState = null;
+  let currentTextProcessingActive = false;
+  let standalonePending = false;
+  const harness = await createRendererHarness({
+    currentTextRuntimeOverrides: {
+      configure(config) {
+        applyStandalonePendingState = config.applyStandaloneFullRefreshPendingState;
+      },
+      applyCurrentTextProcessingState(state) {
+        if (!state.active) return;
+        applyStandalonePendingState({
+          active: false,
+          ownerSequence: 0,
+          sinceEpochMs: null,
+          reason: '',
+        }, { source: 'standalone_full_refresh_taken_over:ipc_event' });
+      },
+    },
+    statusUiOverrides: {
+      applyCurrentTextProcessingState(state) {
+        currentTextProcessingActive = state.active === true;
+      },
+      applyStandaloneFullRefreshPendingState(state) {
+        standalonePending = state.active === true;
+      },
+      isCurrentTextAreaPendingActive() {
+        return currentTextProcessingActive || standalonePending;
+      },
+    },
+  });
+  const controls = [
+    harness.getElement('toggleModoPreciso'),
+    harness.getElement('btnHelp'),
+    harness.getElement('wpmInput'),
+  ];
+  const assertControlLock = (locked) => {
+    assert.equal(controls.every((control) => control.disabled === locked), true);
+    assert.equal(
+      controls.every((control) => control.getAttribute('aria-disabled') === (locked ? 'true' : 'false')),
+      true
+    );
+  };
+
+  applyStandalonePendingState({
+    active: true,
+    ownerSequence: 1,
+    sinceEpochMs: 1,
+    reason: 'mode toggle',
+  }, { source: 'standalone_full_refresh_begin' });
+  assertControlLock(true);
+
+  harness.subscriptions.currentTextProcessingStateChanged({
+    active: true,
+    requestId: 1,
+    sinceEpochMs: 1,
+    source: 'test',
+    action: 'takeover',
+  });
+  assert.equal(standalonePending, false);
+  assert.equal(currentTextProcessingActive, true);
+  assertControlLock(true);
+
+  harness.subscriptions.currentTextProcessingStateChanged({
+    active: false,
+    requestId: 1,
+    sinceEpochMs: null,
+    source: '',
+    action: '',
+  });
+  assert.equal(currentTextProcessingActive, false);
+  assertControlLock(false);
 });
 
 test('main renderer disables Precise persistence when its bridge capability is absent or invalid', async () => {

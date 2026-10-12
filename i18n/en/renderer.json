@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Apply extracted text",
         "message": "Choose how to apply the extracted text.",
+        "no_text_message": "Extraction completed successfully, but no text was obtained to apply.",
         "elapsed": "Extraction time: ",
         "repeat_label": "Repetitions",
         "overwrite_button": "Replace",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Full PDF too large for OCR",
-        "case_a_message": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route.",
+        "case_a_message": "The full PDF exceeds the OCR provider limit ({providerLimitMb} MB). You can process it automatically in parts, keeping the original file. Alternatively, you can use the native extraction route, if available.",
         "case_b_title": "Generated PDF too large for OCR",
-        "case_b_message": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route, or process the full PDF in parts.",
+        "case_b_message": "The generated PDF for the selected range exceeds the OCR provider limit ({providerLimitMb} MB). It was not uploaded. You can return to page selection, use the native route if available, or process the full PDF in parts.",
         "source_file_label": "Source PDF:",
         "selected_range_label": "Selected range:",
         "generated_pdf_label": "Generated PDF:",
@@ -227,6 +228,7 @@
         "close_aria": "Close batch extraction final report",
         "failed_fallback": "failed",
         "failed_with_code": "failed: {code}",
+        "no_text": "No text",
         "applied_truncated": "applied with truncation",
         "payload_too_large": "too large to apply",
         "text_limit": "text limit reached",
@@ -357,6 +359,9 @@
         "no_results": "No matching options",
         "create": "Create \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Remove tag \"{label}\""
+      },
       "labels": {
         "name": "Name (optional)",
         "source_comment": "Origin (optional)",
@@ -397,11 +402,6 @@
           "too_long": "Tag label cannot exceed {max} characters.",
           "duplicate": "A tag with that label already exists in this category."
         }
-      },
-      "empty": {
-        "language": "No language tag",
-        "type": "No type tag",
-        "difficulty": "No difficulty tag"
       },
       "buttons": {
         "manage": "Manage tags",
@@ -772,7 +772,7 @@
       "tip13": "toT uses the system's external browser for authorizations and sensitive links, avoiding embedded flows inside the app.",
       "tip14": "The reading speed test result can create a preset, but it does not represent a universal speed: different types of text require different rhythms.",
       "tip15": "OCR extraction can take seconds or minutes, depending on the size and complexity of the file.",
-      "tip16": "If a PDF has selectable text, native extraction is usually faster than OCR, but the quality of the result may vary.",
+      "tip16": "When a PDF allows direct text recovery, native extraction is usually faster than OCR, although the quality of the result may vary.",
       "tip17": "Default presets can be restored: you can experiment with custom speeds without losing a reference baseline.",
       "tip18": "OCR usually works better with horizontal, focused text and without strong shadows, stains, complex backgrounds, or excessive tilt.",
       "tip19": "In the reading speed test, answering the comprehension questions is optional and does not affect your final score.",
@@ -782,7 +782,7 @@
       "tip23": "The tasks feature lets you organize multiple texts with estimated reading times, links, and comments.",
       "tip24": "In the Task Editor, you can save individual rows to a library and reuse them in different tasks.",
       "tip25": "toT is an open-source project. If you want to contribute, check the repository on GitHub and feel free to open an issue or a pull request.",
-      "tip26": "toT distinguishes between native extraction and OCR because not all documents contain selectable text, even if they visually look like text.",
+      "tip26": "toT distinguishes between native extraction and OCR because not all documents contain embedded text, even if they visually look like text.",
       "tip27": "In the Task Editor, columns can be resized to adapt the table to the type of information you are organizing.",
       "tip28": "The Floating Stopwatch lets you keep following the stopwatch while you read in another window or application.",
       "tip29": "If you want to use your own text for the reading speed test, load it as the current text and then start the test with the corresponding option.",
@@ -804,7 +804,7 @@
       "tip45": "When the reading speed test uses a text from the pool, that file is marked as used to prevent future repetitions until you reset the pool.",
       "tip46": "If you save a text snapshot in the 'reading_speed_test_pool' folder, the reading speed test will be able to use it as a test text.",
       "tip47": "The test pool importer can incorporate individual test files or compressed packages, depending on the format you use.",
-      "tip48": "OCR stands for Optical Character Recognition and is a technology that converts images of text into editable and selectable text.",
+      "tip48": "OCR stands for Optical Character Recognition. It identifies writing in images and produces text, without necessarily adding a text layer to the original file.",
       "tip49": "One of OCR's predecessors was the optophone, an early 20th-century machine designed so blind people could convert printed text into sounds.",
       "tip50": "The development of modern OCR accelerated between the 1950s and 1960s, driven by postal automation and the reading of business documents.",
       "tip51": "Kurzweil's reading machine, introduced in the 1970s, combined a scanner, OCR, and speech synthesis to read printed text aloud.",

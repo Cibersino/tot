@@ -339,6 +339,73 @@ async function createMixedPdfFixture(t) {
   return outputPath;
 }
 
+function createHeavySplitPreparedRecord(generatedInputs) {
+  return {
+    fileInfo: getFileInfo(SELECTABLE_PDF_FIXTURE),
+    ocrLanguage: 'es',
+    planningMode: 'batch',
+    forceHeavySplitFullSource: true,
+    pdfPageSelection: {
+      mode: 'all',
+      fromPage: 1,
+      toPage: 12,
+      selectedPageCount: 12,
+      totalPages: 12,
+    },
+    generatedPdfArtifactPolicy: {
+      mode: 'delete',
+    },
+    processingInputFileName: 'selectable_text_fixture_12_pages.pdf',
+    routeMetadata: {
+      fileKind: 'pdf',
+      availableRoutes: ['native', 'ocr'],
+      chosenRoute: null,
+      executedRoute: null,
+      executionKind: null,
+      pdfTriage: 'both',
+      triageReason: 'native_text_detected_and_ocr_ready_choice_required',
+      ocrSetupState: 'ready',
+      heavySplitEligible: true,
+      heavySplitPreview: {
+        ok: true,
+        generatedInputs,
+      },
+    },
+    requiresRouteChoice: true,
+    routeChoiceOptions: ['native', 'ocr'],
+  };
+}
+
+function createHeavySplitGeneratedInputs(inputCount) {
+  return Array.from({ length: inputCount }, (_, offset) => {
+    const inputIndex = offset + 1;
+    return {
+      inputIndex,
+      fromPage: inputIndex,
+      toPage: inputIndex,
+      pdfPageSelection: {
+        mode: 'range',
+        fromPage: inputIndex,
+        toPage: inputIndex,
+        selectedPageCount: 1,
+        totalPages: 12,
+      },
+      processingInputFileName: `selectable_text_fixture_12_pages_page_${String(inputIndex).padStart(2, '0')}.pdf`,
+    };
+  });
+}
+
+function resolveHeavySplitTestPaths() {
+  return {
+    credentialsPath: '',
+    tokenPath: '',
+    bundledCredentialsFailureCode: '',
+    bundledCredentialsFailureReason: '',
+    bundledCredentialsFailureDetailsSafeForLogs: {},
+    retainedGeneratedPdfArtifactsDir: RETAINED_GENERATED_PDF_ARTIFACTS_TEST_DIR,
+  };
+}
+
 test('resolvePreparePayload trims supported fields and drops invalid values', () => {
   assert.deepEqual(
     resolvePreparePayload({
@@ -1658,6 +1725,7 @@ test('executePreparedImport processes heavy split through generated child PDFs i
   assert.equal(result.ok, true);
   assert.equal(result.executionKind, 'google_drive');
   assert.equal(result.result.state, 'success');
+  assert.equal(result.result.textApplicability, 'applicable');
   assert.match(result.result.text, /pages_01_02\.pdf/);
   assert.match(result.result.text, /pages_03_04\.pdf/);
   assert.deepEqual(ocrRouteCalls, [
@@ -1674,15 +1742,18 @@ test('executePreparedImport processes heavy split through generated child PDFs i
     result.result.heavySplitExecution.generatedInputs.map((generatedInput) => ({
       fileName: generatedInput.fileName,
       state: generatedInput.state,
+      textApplicability: generatedInput.textApplicability,
     })),
     [
       {
         fileName: 'selectable_text_fixture_12_pages_pages_01_02.pdf',
         state: 'success',
+        textApplicability: 'applicable',
       },
       {
         fileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
         state: 'success',
+        textApplicability: 'applicable',
       },
     ]
   );
@@ -2104,4 +2175,203 @@ test('executePreparedImport keeps retained generated PDFs only on heavy split ch
   assert.equal(result.result.heavySplitExecution.generatedInputs.length, 1);
   assert.equal(result.result.heavySplitExecution.generatedInputs[0].generatedPdfArtifact.retained, true);
   assert.ok(result.result.heavySplitExecution.generatedInputs[0].generatedPdfArtifact.retainedArtifactPath);
+});
+
+test('executePreparedImport marks whitespace-only native success as no-text without altering its text', async (t) => {
+  const originalText = ' \n\t ';
+  const { core, restore } = loadCoreWithNativeRouteMock(async () => ({
+    state: 'success',
+    executedRoute: 'native',
+    text: originalText,
+    warnings: [],
+    provenance: {
+      metadataSafeForLogs: {},
+    },
+    error: null,
+  }));
+  t.after(restore);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo('sample.txt'),
+      ocrLanguage: 'es',
+      pdfPageSelection: null,
+      generatedPdfArtifactPolicy: null,
+      processingInputFileName: 'sample.txt',
+      routeMetadata: {
+        fileKind: 'text_document',
+        availableRoutes: ['native'],
+        chosenRoute: 'native',
+        executedRoute: null,
+        executionKind: 'native',
+        pdfTriage: 'not_pdf',
+        triageReason: 'non_pdf',
+        ocrSetupState: 'not_checked',
+      },
+      requiresRouteChoice: false,
+      routeChoiceOptions: [],
+    },
+    routePreference: '',
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'success');
+  assert.equal(result.result.text, originalText);
+  assert.equal(result.result.textApplicability, 'no_text');
+});
+
+test('executePreparedImport returns a no-text heavy parent when every child technically succeeds with whitespace-only text', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async ({ filePath }) => ({
+      state: 'success',
+      executedRoute: 'ocr',
+      text: path.basename(filePath).includes('page_01') ? ' \n' : '\t',
+      warnings: [],
+      provenance: {
+        metadataSafeForLogs: {},
+      },
+      error: null,
+    }),
+  });
+  t.after(restore);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: createHeavySplitPreparedRecord(createHeavySplitGeneratedInputs(2)),
+    routePreference: 'ocr',
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'success');
+  assert.equal(result.result.text, '');
+  assert.equal(result.result.textApplicability, 'no_text');
+  assert.deepEqual(
+    result.result.heavySplitExecution.generatedInputs.map((generatedInput) => ({
+      state: generatedInput.state,
+      textApplicability: generatedInput.textApplicability,
+    })),
+    [
+      { state: 'success', textApplicability: 'no_text' },
+      { state: 'success', textApplicability: 'no_text' },
+    ]
+  );
+});
+
+test('executePreparedImport continues later heavy children under omit_failed_and_continue but fails the parent without partial aggregate text', async (t) => {
+  let callCount = 0;
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async () => {
+      callCount += 1;
+      if (callCount === 2) {
+        return {
+          state: 'failure',
+          executedRoute: 'ocr',
+          text: '',
+          warnings: [],
+          provenance: {
+            metadataSafeForLogs: {},
+          },
+          error: {
+            code: 'ocr_conversion_failed',
+            message: 'The generated input failed.',
+            detailsSafeForLogs: {},
+          },
+        };
+      }
+      return {
+        state: 'success',
+        executedRoute: 'ocr',
+        text: `Child ${callCount} text`,
+        warnings: [],
+        provenance: {
+          metadataSafeForLogs: {},
+        },
+        error: null,
+      };
+    },
+  });
+  t.after(restore);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: createHeavySplitPreparedRecord(createHeavySplitGeneratedInputs(3)),
+    routePreference: 'ocr',
+    heavySplitFailurePolicy: 'omit_failed_and_continue',
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+    log: silentLog,
+  });
+
+  assert.equal(callCount, 3);
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'failure');
+  assert.equal(result.result.error.code, 'ocr_conversion_failed');
+  assert.equal(result.result.text, '');
+  assert.equal(Object.hasOwn(result.result, 'textApplicability'), false);
+  assert.deepEqual(
+    result.result.heavySplitExecution.generatedInputs.map((generatedInput) => generatedInput.state),
+    ['success', 'failed', 'success']
+  );
+  assert.equal(result.result.heavySplitExecution.generatedInputs[0].textApplicability, 'applicable');
+  assert.equal(result.result.heavySplitExecution.generatedInputs[2].textApplicability, 'applicable');
+});
+
+test('executePreparedImport omits later heavy children under the stopping policy and fails the parent without partial aggregate text', async (t) => {
+  let callCount = 0;
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async () => {
+      callCount += 1;
+      if (callCount === 2) {
+        return {
+          state: 'failure',
+          executedRoute: 'ocr',
+          text: '',
+          warnings: [],
+          provenance: {
+            metadataSafeForLogs: {},
+          },
+          error: {
+            code: 'ocr_conversion_failed',
+            message: 'The generated input failed.',
+            detailsSafeForLogs: {},
+          },
+        };
+      }
+      return {
+        state: 'success',
+        executedRoute: 'ocr',
+        text: `Child ${callCount} text`,
+        warnings: [],
+        provenance: {
+          metadataSafeForLogs: {},
+        },
+        error: null,
+      };
+    },
+  });
+  t.after(restore);
+
+  const result = await core.executePreparedImport({
+    preparedRecord: createHeavySplitPreparedRecord(createHeavySplitGeneratedInputs(3)),
+    routePreference: 'ocr',
+    heavySplitFailurePolicy: 'finish_unit_after_last_success',
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+    log: silentLog,
+  });
+
+  assert.equal(callCount, 2);
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'failure');
+  assert.equal(result.result.error.code, 'ocr_conversion_failed');
+  assert.equal(result.result.text, '');
+  assert.deepEqual(
+    result.result.heavySplitExecution.generatedInputs.map((generatedInput) => generatedInput.state),
+    ['success', 'failed', 'omitted']
+  );
+  assert.equal(result.result.heavySplitExecution.generatedInputs[0].textApplicability, 'applicable');
 });

@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Áp dụng văn bản đã trích xuất",
         "message": "Chọn cách áp dụng văn bản đã trích xuất.",
+        "no_text_message": "Quá trình trích xuất đã hoàn tất thành công, nhưng không thu được văn bản nào để áp dụng.",
         "elapsed": "Thời gian thực thi: ",
         "repeat_label": "Số lần lặp",
         "overwrite_button": "Ghi đè",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF đầy đủ quá lớn cho OCR",
-        "case_a_message": "PDF đầy đủ vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Bạn có thể mở trình lập kế hoạch dùng chung để tự động chia nó thành dữ liệu đầu vào được tạo trước khi trích xuất.",
+        "case_a_message": "PDF đầy đủ vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Bạn có thể tự động xử lý theo từng phần trong khi vẫn giữ tệp gốc. Hoặc, bạn có thể dùng tuyến trích xuất native nếu có.",
         "case_b_title": "Khoảng đã tạo quá lớn cho OCR",
-        "case_b_message": "PDF được tạo cho khoảng trang đã chọn vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Nó không được tải lên. Bạn có thể quay lại phần chọn trang, dùng phương thức tích hợp hoặc mở trình lập kế hoạch dùng chung để chia PDF đầy đủ.",
+        "case_b_message": "PDF được tạo cho khoảng trang đã chọn vượt quá giới hạn của nhà cung cấp OCR ({providerLimitMb} MB). Nó không được tải lên. Bạn có thể quay lại phần chọn trang, dùng tuyến native nếu có, hoặc xử lý PDF đầy đủ theo từng phần.",
         "source_file_label": "Tệp nguồn:",
         "selected_range_label": "Khoảng đã chọn:",
         "generated_pdf_label": "PDF đã tạo:",
@@ -227,6 +228,7 @@
         "close_aria": "Đóng báo cáo cuối cùng của trích xuất theo lô",
         "failed_fallback": "thất bại",
         "failed_with_code": "thất bại: {code}",
+        "no_text": "Không có văn bản",
         "applied_truncated": "đã áp dụng với phần cắt bớt",
         "payload_too_large": "quá lớn để áp dụng",
         "text_limit": "đã đạt giới hạn văn bản",
@@ -357,6 +359,9 @@
         "no_results": "Không có tùy chọn phù hợp",
         "create": "Tạo \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Xóa thẻ \"{label}\""
+      },
       "labels": {
         "name": "Tên (không bắt buộc)",
         "source_comment": "Nguồn gốc (không bắt buộc)",
@@ -397,11 +402,6 @@
           "too_long": "Tên thẻ không được vượt quá {max} ký tự.",
           "duplicate": "Đã có thẻ với tên đó trong danh mục này."
         }
-      },
-      "empty": {
-        "language": "Không có thẻ ngôn ngữ",
-        "type": "Không có thẻ loại",
-        "difficulty": "Không có thẻ độ khó"
       },
       "buttons": {
         "manage": "Quản lý thẻ",

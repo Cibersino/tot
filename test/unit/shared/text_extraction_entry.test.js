@@ -12,8 +12,12 @@ function createHarness({
   singleFileHeavyResponses = null,
   requestPreparedImportResult = null,
   executePreparedTextExtractionResult = null,
+  applyChoice = null,
+  applyTextViaCanonicalPathResult = null,
 } = {}) {
   let capturedSingleFileHeavyOptions = null;
+  let capturedApplyPromptOptions = null;
+  const applyPayloads = [];
   const notifications = [];
   let pdfOptionsPromptCount = 0;
   let singleFileHeavyPromptCount = 0;
@@ -62,6 +66,10 @@ function createHarness({
           }
           return 'cancel';
         },
+        async promptTextExtractionApplyChoice(options) {
+          capturedApplyPromptOptions = options;
+          return applyChoice;
+        },
       },
       getLogger() {
         return {
@@ -109,6 +117,10 @@ function createHarness({
   entry.configure({
     getClipboardRepeatCount() {
       return 1;
+    },
+    async applyTextViaCanonicalPath(payload) {
+      applyPayloads.push(payload);
+      return applyTextViaCanonicalPathResult || { ok: true };
     },
     getOcrLanguage() {
       return 'en';
@@ -207,6 +219,12 @@ function createHarness({
     notifications,
     getCapturedSingleFileHeavyOptions() {
       return capturedSingleFileHeavyOptions;
+    },
+    getCapturedApplyPromptOptions() {
+      return capturedApplyPromptOptions;
+    },
+    getApplyPayloads() {
+      return applyPayloads.map((payload) => ({ ...payload }));
     },
     getPdfOptionsPromptCount() {
       return pdfOptionsPromptCount;
@@ -337,6 +355,75 @@ test('single-file cancellation finishes abort finalization only after execution 
     harness.notifications,
     ['renderer.text_extraction.alerts.cancellation_complete']
   );
+});
+
+test('single-file no-text success opens the informational prompt but never applies text', async () => {
+  const harness = createHarness({
+    applyChoice: { mode: 'overwrite', repetitions: 1 },
+    executePreparedTextExtractionResult: {
+      ok: true,
+      result: {
+        state: 'success',
+        text: ' \n\t ',
+        textApplicability: 'no_text',
+        error: null,
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.equal(harness.getCapturedApplyPromptOptions().textApplicability, 'no_text');
+  assert.deepEqual(harness.getApplyPayloads(), []);
+  assert.deepEqual(harness.notifications, []);
+});
+
+test('single-file malformed nominal success fails closed instead of opening no-text prompt', async () => {
+  const harness = createHarness({
+    executePreparedTextExtractionResult: {
+      ok: true,
+      result: {
+        state: 'success',
+        text: '',
+        error: null,
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.equal(harness.getCapturedApplyPromptOptions(), null);
+  assert.deepEqual(harness.getApplyPayloads(), []);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.apply_error']);
+});
+
+test('single-file rejects a success whose applicability contradicts its text', async () => {
+  const harness = createHarness({
+    executePreparedTextExtractionResult: {
+      ok: true,
+      result: {
+        state: 'success',
+        text: ' \n\t ',
+        textApplicability: 'applicable',
+        error: null,
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.equal(harness.getCapturedApplyPromptOptions(), null);
+  assert.deepEqual(harness.getApplyPayloads(), []);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.apply_error']);
 });
 
 test('single-file entry shows the OCR image-upload alert without opening the heavy-PDF modal', async () => {

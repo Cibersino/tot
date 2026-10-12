@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Aplicar texto extraído",
         "message": "Escolha como aplicar o texto extraído.",
+        "no_text_message": "A extração foi concluída com sucesso, mas nenhum texto foi obtido para aplicar.",
         "elapsed": "Tempo de extração: ",
         "repeat_label": "Repetições",
         "overwrite_button": "Substituir",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF completo grande demais para OCR",
-        "case_a_message": "O PDF completo excede o limite do provedor OCR ({providerLimitMb} MB). Você pode processá-lo automaticamente em partes, mantendo o arquivo original. Como alternativa, pode usar a rota nativa.",
+        "case_a_message": "O PDF completo excede o limite do provedor OCR ({providerLimitMb} MB). Você pode processá-lo automaticamente em partes, mantendo o arquivo original. Como alternativa, pode usar a rota de extração nativa, se estiver disponível.",
         "case_b_title": "PDF gerado grande demais para OCR",
-        "case_b_message": "O PDF gerado para o intervalo selecionado excede o limite do provedor OCR ({providerLimitMb} MB). Ele não foi enviado. Você pode voltar à seleção de páginas, usar a rota nativa ou processar o PDF completo em partes.",
+        "case_b_message": "O PDF gerado para o intervalo selecionado excede o limite do provedor OCR ({providerLimitMb} MB). Ele não foi enviado. Você pode voltar à seleção de páginas, usar a rota nativa se estiver disponível ou processar o PDF completo em partes.",
         "source_file_label": "PDF de origem:",
         "selected_range_label": "Intervalo selecionado:",
         "generated_pdf_label": "PDF gerado:",
@@ -227,6 +228,7 @@
         "close_aria": "Fechar relatório final da extração em lote",
         "failed_fallback": "falhou",
         "failed_with_code": "falhou: {code}",
+        "no_text": "Sem texto",
         "applied_truncated": "aplicado com truncamento",
         "payload_too_large": "grande demais para aplicar",
         "text_limit": "limite de texto atingido",
@@ -357,6 +359,9 @@
         "no_results": "Nenhuma opção correspondente",
         "create": "Criar \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Remover etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Nome (opcional)",
         "source_comment": "Origem (opcional)",
@@ -397,11 +402,6 @@
           "too_long": "O nome da etiqueta não pode exceder {max} caracteres.",
           "duplicate": "Já existe uma etiqueta com esse nome nesta categoria."
         }
-      },
-      "empty": {
-        "language": "Sem etiqueta de idioma",
-        "type": "Sem etiqueta de tipo",
-        "difficulty": "Sem etiqueta de dificuldade"
       },
       "buttons": {
         "manage": "Gerenciar etiquetas",

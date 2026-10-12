@@ -78,9 +78,9 @@ test('bundled sync seeds runtime files and pool state is tracked externally', ()
   writeJson(path.join(bundledSourceDir, 'starter.json'), createSnapshotData({
     text: 'Bundled starter text.',
     tags: {
-      language: 'en',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['en'],
+      type: ['fiction'],
+      difficulty: ['normal'],
     },
     readingTest: {
       questions: [
@@ -153,7 +153,7 @@ test('bundled sync refreshes managed starter content when bundled content hash c
   writeJson(bundledFilePath, createSnapshotData({
     text: 'Version one.',
     tags: {
-      language: 'en',
+      language: ['en'],
     },
   }));
 
@@ -172,7 +172,7 @@ test('bundled sync refreshes managed starter content when bundled content hash c
   writeJson(bundledFilePath, createSnapshotData({
     text: 'Version two.',
     tags: {
-      language: 'en',
+      language: ['en'],
     },
   }));
 
@@ -398,7 +398,7 @@ test('bundled sync keeps ownership separate from current schema usability', () =
     type: 'text snapshot',
     meta: { ...SNAPSHOT_META },
     text: 'Legacy bundled content.',
-    tags: { language: 'en', obsolete: false },
+    tags: { language: ['en'], obsolete: false },
   };
 
   writeJson(runtimeFilePath, nowInvalidData);
@@ -437,7 +437,7 @@ test('pool listing retains matching ownership for a parseable but unusable manag
     type: 'text snapshot',
     meta: { ...SNAPSHOT_META },
     text: 'Legacy bundled content.',
-    tags: { language: 'en', obsolete: false },
+    tags: { language: ['en'], obsolete: false },
   };
 
   writeJson(runtimeFilePath, nowInvalidData);
@@ -767,9 +767,9 @@ test('startup prune removes stale state entries but leaves existing unmanaged fi
   writeJson(path.join(poolDir, 'custom_story.json'), createSnapshotData({
     text: 'Imported custom story.',
     tags: {
-      language: 'en',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['en'],
+      type: ['fiction'],
+      difficulty: ['normal'],
     },
   }));
   writeJson(stateFilePath, {
@@ -807,9 +807,9 @@ test('listPoolEntries accepts permitted custom snapshot tags from pool files', (
   writeJson(path.join(poolDir, 'custom_pool.json'), createSnapshotData({
     text: 'Imported custom pool story.',
     tags: {
-      language: customLanguage,
-      type: customType,
-      difficulty: 'hard',
+      language: [customLanguage],
+      type: [customType],
+      difficulty: ['hard'],
     },
   }));
 
@@ -822,9 +822,9 @@ test('listPoolEntries accepts permitted custom snapshot tags from pool files', (
   assert.equal(listInfo.ok, true);
   assert.equal(listInfo.entries.length, 1);
   assert.deepEqual(listInfo.entries[0].tags, {
-    language: customLanguage,
-    type: customType,
-    difficulty: 'hard',
+    language: [customLanguage],
+    type: [customType],
+    difficulty: ['hard'],
   });
 });
 
@@ -838,8 +838,8 @@ test('listPoolEntries accepts valid non-catalog language tags from pool files', 
   writeJson(path.join(poolDir, 'open-language-pool.json'), createSnapshotData({
     text: 'Imported open-language pool story.',
     tags: {
-      language: 'es-cl',
-      type: 'fiction',
+      language: ['es-cl'],
+      type: ['fiction'],
     },
   }));
 
@@ -852,9 +852,40 @@ test('listPoolEntries accepts valid non-catalog language tags from pool files', 
   assert.equal(listInfo.ok, true);
   assert.equal(listInfo.entries.length, 1);
   assert.deepEqual(listInfo.entries[0].tags, {
-    language: 'es-cl',
-    type: 'fiction',
+    language: ['es-cl'],
+    type: ['fiction'],
   });
+});
+
+test('pool metadata retains every tag and does not share category arrays with callers', () => {
+  const tempDir = makeTempDir();
+  const snapshotsRootDir = path.join(tempDir, 'snapshots');
+  const bundledSourceDir = path.join(tempDir, 'bundled');
+  const stateFilePath = path.join(tempDir, 'reading_test_pool_state.json');
+  const poolDir = path.join(snapshotsRootDir, readingTestPool.POOL_DIR_NAME);
+
+  writeJson(path.join(poolDir, 'multi-tagged.json'), createSnapshotData({
+    text: 'Multi-tagged pool story.',
+    tags: {
+      language: ['es', 'fr'],
+      type: ['fiction', 'non_fiction'],
+    },
+  }));
+
+  const listInfo = readingTestPool.listPoolEntries({
+    snapshotsRootDir,
+    bundledSourceDir,
+    stateFilePath,
+  });
+  assert.equal(listInfo.ok, true);
+  assert.deepEqual(listInfo.entries[0].tags, {
+    language: ['es', 'fr'],
+    type: ['fiction', 'non_fiction'],
+  });
+
+  const metadata = readingTestPool.serializePoolEntryMeta(listInfo.entries[0]);
+  metadata.tags.language.push('en');
+  assert.deepEqual(listInfo.entries[0].tags.language, ['es', 'fr']);
 });
 
 test('startup prune removes retired managed starter files and their state entries', () => {
@@ -867,7 +898,7 @@ test('startup prune removes retired managed starter files and their state entrie
   writeJson(bundledFilePath, createSnapshotData({
     text: 'Retired starter.',
     tags: {
-      language: 'en',
+      language: ['en'],
     },
   }));
 

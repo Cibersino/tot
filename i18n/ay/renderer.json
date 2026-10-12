@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Apsuta qillqata apnaqaña",
         "message": "Apsuta qillqata kunjam apnaqañsa ajllim.",
+        "no_text_message": "Apsuñax suma tukuyi, ukampis janiw apnaqañatak qillqatas utjkiti.",
         "elapsed": "Lurawi pacha: ",
         "repeat_label": "Kutinaka",
         "overwrite_button": "Lantintaña",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "Taqpach PDF ukax OCR ukatak sinti jach’awa",
-        "case_a_message": "Taqpach PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Compartido planificador jist’arasmawa, extracción nayraqat kikin lurata archivonakar t’aqañataki.",
+        "case_a_message": "Taqpach PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Ukax kikipa partes ukar procesasmawa, archivo original ukar jan mayjt’ayasa. Yaqha opciónjamax nativa thakhi apnaqasmawa, utjchi ukhaxa.",
         "case_b_title": "Lurat rango ukax OCR ukatak sinti jach’awa",
-        "case_b_message": "Ajllit rango ukatak lurat PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Archivo janiw apayaskiti. Laphinaka ajlliñar kutt’asmawa, nativa thakhi apnaqasmawa, jan ukax compartido planificador jist’arasmawa taqpach PDF t’aqañataki.",
+        "case_b_message": "Ajllit rango ukatak lurat PDF ukax OCR proveedor límite ukar jilawayi ({providerLimitMb} MB). Archivo janiw apayaskiti. Laphinaka ajlliñar kutt’asmawa, nativa thakhi apnaqasmawa utjchi ukhaxa, jan ukax taqpach PDF ukar partes ukar procesasmawa.",
         "source_file_label": "Fuente archivo:",
         "selected_range_label": "Ajllit rango:",
         "generated_pdf_label": "Lurat PDF:",
@@ -227,6 +228,7 @@
         "close_aria": "Lote apsuña tukuya informe jist’antaña",
         "failed_fallback": "Pantjasi",
         "failed_with_code": "Pantjasi: {code}",
+        "no_text": "Janiw qillqatax utjkiti",
         "applied_truncated": "khuchhurata aplikata",
         "payload_too_large": "aplicañatakix sinti jach’a",
         "text_limit": "texto límite ukaruw puri",
@@ -357,6 +359,9 @@
         "no_results": "Janiw kikipa ajlliñanak utjkiti",
         "create": "\"{label}\" luraña"
       },
+      "chips": {
+        "remove_aria": "\"{label}\" etiqueta chhaqtayaña"
+      },
       "labels": {
         "name": "Suti (munata)",
         "source_comment": "Kawkhata juti (munata)",
@@ -397,11 +402,6 @@
           "too_long": "Etiqueta sutipax janiw {max} caracteres ukat jiläñapäkiti.",
           "duplicate": "Aka categoría ukan uka sutini etiqueta utjxiwa."
         }
-      },
-      "empty": {
-        "language": "Jan aru etiqueta",
-        "type": "Jan kasta etiqueta",
-        "difficulty": "Jan ch’amäwi etiqueta"
       },
       "buttons": {
         "manage": "Etiquetas apnaqaña",

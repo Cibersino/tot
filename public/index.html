@@ -1003,6 +1003,7 @@
         class="info-modal-backdrop"
       ></div>
       <div
+        id="snapshotSaveTagsModalPanel"
         class="snapshot-save-tags-modal-panel framed-dialog__panel"
         role="document"
         aria-describedby="snapshotSaveTagsModalMessage"
@@ -1054,34 +1055,67 @@
           </div>
           <div class="snapshot-save-tags-form">
             <div class="snapshot-save-tags-field">
+              <ul
+                id="snapshotSaveTagsLanguageSelected"
+                class="snapshot-save-tags-selected"
+                aria-labelledby="snapshotSaveTagsLanguageLabel"
+                hidden
+              ></ul>
               <span
                 id="snapshotSaveTagsLanguageLabel"
                 class="snapshot-save-field-label"
               >Idioma</span>
               <div
                 id="snapshotSaveTagsLanguageControl"
-                class="snapshot-save-tags-combobox"
-              ></div>
+                class="snapshot-save-tags-control"
+              >
+                <div
+                  id="snapshotSaveTagsLanguagePicker"
+                  class="snapshot-save-tags-combobox"
+                ></div>
+              </div>
             </div>
             <div class="snapshot-save-tags-field">
+              <ul
+                id="snapshotSaveTagsTypeSelected"
+                class="snapshot-save-tags-selected"
+                aria-labelledby="snapshotSaveTagsTypeLabel"
+                hidden
+              ></ul>
               <span
                 id="snapshotSaveTagsTypeLabel"
                 class="snapshot-save-field-label"
               >Tipo</span>
               <div
                 id="snapshotSaveTagsTypeControl"
-                class="snapshot-save-tags-combobox"
-              ></div>
+                class="snapshot-save-tags-control"
+              >
+                <div
+                  id="snapshotSaveTagsTypePicker"
+                  class="snapshot-save-tags-combobox"
+                ></div>
+              </div>
             </div>
             <div class="snapshot-save-tags-field">
+              <ul
+                id="snapshotSaveTagsDifficultySelected"
+                class="snapshot-save-tags-selected"
+                aria-labelledby="snapshotSaveTagsDifficultyLabel"
+                hidden
+              ></ul>
               <span
                 id="snapshotSaveTagsDifficultyLabel"
                 class="snapshot-save-field-label"
               >Dificultad</span>
               <div
                 id="snapshotSaveTagsDifficultyControl"
-                class="snapshot-save-tags-combobox"
-              ></div>
+                class="snapshot-save-tags-control"
+              >
+                <div
+                  id="snapshotSaveTagsDifficultyPicker"
+                  class="snapshot-save-tags-combobox"
+                ></div>
+              </div>
             </div>
           </div>
           <div

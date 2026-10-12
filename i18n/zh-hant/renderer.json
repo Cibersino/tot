@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "套用擷取的文字",
         "message": "選擇如何套用擷取的文字。",
+        "no_text_message": "擷取已成功完成，但未取得可套用的文字。",
         "elapsed": "執行時間：",
         "repeat_label": "重複次數",
         "overwrite_button": "覆蓋",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "完整 PDF 對 OCR 而言過大",
-        "case_a_message": "完整 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。你可以開啟共用規劃器，在擷取前將其自動分割為產生的輸入檔案。",
+        "case_a_message": "完整 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。你可以在保留原始檔案的同時自動分段處理。或者，若原生擷取路徑可用，你可以使用它。",
         "case_b_title": "產生的範圍對 OCR 而言過大",
-        "case_b_message": "為所選範圍產生的 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。該檔案未上傳。你可以返回頁面選擇、使用原生路徑，或開啟共用規劃器來分割完整 PDF。",
+        "case_b_message": "為所選範圍產生的 PDF 超過 OCR 供應方限制（{providerLimitMb} MB）。該檔案未上傳。你可以返回頁面選擇，在原生路徑可用時使用它，或分段處理完整 PDF。",
         "source_file_label": "來源檔案：",
         "selected_range_label": "所選範圍：",
         "generated_pdf_label": "產生的 PDF：",
@@ -227,6 +228,7 @@
         "close_aria": "關閉批次擷取最終報告",
         "failed_fallback": "失敗",
         "failed_with_code": "失敗：{code}",
+        "no_text": "無文字",
         "applied_truncated": "已截斷並套用",
         "payload_too_large": "過大，無法套用",
         "text_limit": "已達到文字限制",
@@ -357,6 +359,9 @@
         "no_results": "沒有相符的選項",
         "create": "建立「{label}」"
       },
+      "chips": {
+        "remove_aria": "移除標籤「{label}」"
+      },
       "labels": {
         "name": "名稱（選填）",
         "source_comment": "來源（選填）",
@@ -397,11 +402,6 @@
           "too_long": "標籤名稱不能超過 {max} 個字元。",
           "duplicate": "此類別中已存在相同名稱的標籤。"
         }
-      },
-      "empty": {
-        "language": "無語言標籤",
-        "type": "無類型標籤",
-        "difficulty": "無難度標籤"
       },
       "buttons": {
         "manage": "管理標籤",

@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "应用提取的文本",
         "message": "选择如何应用提取的文本。",
+        "no_text_message": "提取已成功完成，但未获得可应用的文本。",
         "elapsed": "执行时间：",
         "repeat_label": "重复次数",
         "overwrite_button": "覆盖",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "完整 PDF 对 OCR 而言过大",
-        "case_a_message": "完整 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。你可以打开共享规划器，在提取前将其自动拆分为生成的输入文件。",
+        "case_a_message": "完整 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。你可以在保留原始文件的同时自动分段处理。或者，如果原生提取路径可用，你可以使用它。",
         "case_b_title": "生成的范围对 OCR 而言过大",
-        "case_b_message": "为所选范围生成的 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。该文件未上传。你可以返回页面选择，使用原生路径，或打开共享规划器来拆分完整 PDF。",
+        "case_b_message": "为所选范围生成的 PDF 超过 OCR 提供方限制（{providerLimitMb} MB）。该文件未上传。你可以返回页面选择，在原生路径可用时使用它，或分段处理完整 PDF。",
         "source_file_label": "源文件：",
         "selected_range_label": "所选范围：",
         "generated_pdf_label": "生成的 PDF：",
@@ -227,6 +228,7 @@
         "close_aria": "关闭批量提取最终报告",
         "failed_fallback": "失败",
         "failed_with_code": "失败：{code}",
+        "no_text": "无文本",
         "applied_truncated": "已截断并应用",
         "payload_too_large": "过大，无法应用",
         "text_limit": "已达到文本限制",
@@ -357,6 +359,9 @@
         "no_results": "没有匹配的选项",
         "create": "创建“{label}”"
       },
+      "chips": {
+        "remove_aria": "移除标签“{label}”"
+      },
       "labels": {
         "name": "名称（可选）",
         "source_comment": "来源（可选）",
@@ -397,11 +402,6 @@
           "too_long": "标签名称不能超过 {max} 个字符。",
           "duplicate": "此类别中已存在同名标签。"
         }
-      },
-      "empty": {
-        "language": "无语言标签",
-        "type": "无类型标签",
-        "difficulty": "无难度标签"
       },
       "buttons": {
         "manage": "管理标签",

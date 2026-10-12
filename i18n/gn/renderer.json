@@ -147,6 +147,7 @@
       "apply_modal": {
         "title": "Eipuru jehai ojeipe’áva",
         "message": "Eiporavo mba’éichapa reipurúta jehai ojeipe’áva.",
+        "no_text_message": "Jeipe’a opa porã, péro ndaipóri jehai ojepuru hag̃ua.",
         "elapsed": "Aravo ejecución: ",
         "repeat_label": "Jey jey",
         "overwrite_button": "Myengovia",
@@ -159,9 +160,9 @@
       },
       "single_file_heavy": {
         "case_a_title": "PDF tuichakue tuichaiterei OCR-pe g̃uarã",
-        "case_a_message": "PDF tuichakue ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Ikatu eipe’a planificador compartido oñemboja’o hag̃ua automático archivo ojejapótavape extracción mboyve.",
+        "case_a_message": "PDF tuichakue ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Ikatu reprocesa automáticamente partehápe, reñongatúvo archivo original. Ambueháicha, ikatu reipuru ruta extracción nativa oĩramo.",
         "case_b_title": "Rango ojejapóva tuichaiterei OCR-pe g̃uarã",
-        "case_b_message": "PDF ojejapóva rango ojeporavóvape g̃uarã ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Archivo noñemondói. Ikatu reho jey página jeporavópe, reipuru ruta nativa, térã eipe’a planificador compartido oñemboja’o hag̃ua PDF tuichakue.",
+        "case_b_message": "PDF ojejapóva rango ojeporavóvape g̃uarã ohasa límite proveedor OCR rehegua ({providerLimitMb} MB). Archivo noñemondói. Ikatu reho jey página jeporavópe, reipuru ruta nativa oĩramo, térã reprocesa PDF tuichakue partehápe.",
         "source_file_label": "Archivo fuente:",
         "selected_range_label": "Rango ojeporavóva:",
         "generated_pdf_label": "PDF ojejapóva:",
@@ -227,6 +228,7 @@
         "close_aria": "Emboty extracción lote-pe informe paha",
         "failed_fallback": "Ojavy",
         "failed_with_code": "Ojavy: {code}",
+        "no_text": "Ndaipóri jehai",
         "applied_truncated": "oñemoĩ recorte reheve",
         "payload_too_large": "tuichaiterei oñemoĩ hag̃ua",
         "text_limit": "texto límite oñeguahẽ",
@@ -357,6 +359,9 @@
         "no_results": "Ndaipóri opción ojueheguáva",
         "create": "Ejapo \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Eipe’a etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Téra (ojeporavóva)",
         "source_comment": "Moõguipa ou (ojeporavóva)",
@@ -397,11 +402,6 @@
           "too_long": "Etiqueta réra ndaikatúi ohasa {max} caracteres.",
           "duplicate": "Ko categoría-pe oĩma etiqueta upe téra reheve."
         }
-      },
-      "empty": {
-        "language": "Ñe’ẽ etiqueta’ỹre",
-        "type": "Tipo etiqueta’ỹre",
-        "difficulty": "Hasýkue etiqueta’ỹre"
       },
       "buttons": {
         "manage": "Eñangareko etiqueta-kuérare",

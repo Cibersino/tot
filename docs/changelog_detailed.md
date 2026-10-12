@@ -48,6 +48,8 @@ Reglas:
 
 ### Resumen de cambios
 
+- Snapshots de texto / etiquetas múltiples por categoría (Issue #339): `language`, `type` y `difficulty` admiten cero, una o varias etiquetas independientes por categoría, con representación canónica exclusivamente mediante arrays. El guardado manual, las unidades batch, los snapshots generados y los filtros del pool de Reading Test conservan las asignaciones completas; el modal incorpora chips removibles y un selector de adición consecutiva, con mejoras de distribución, scroll y foco.
+- Extracción de texto (Issue #338, F-01): las extracciones NATIVE/OCR completadas correctamente distinguen texto aplicable de resultados vacíos o de solo espacios; estos últimos no pueden modificar el texto actual, reciben un modal informativo en el flujo individual y el sufijo «Sin texto» en el informe batch. Los splits de PDF pesado exigen éxito técnico de todos sus hijos antes de aplicar un agregado.
 - Ventanas secundarias / fallos terminales tempranos (Issue #335): ocho superficies —Text Editor, Task Editor, Calculadora rápida, Preset, selector de idioma, Cronómetro Flotante, Editor Find y Reading Test Result/Questions— dejan de poder quedar presentadas, inertes o reutilizables como si hubieran arrancado correctamente cuando falla un bootstrap requerido, el preload, el DOM mínimo o el documento inicial; cada owner conserva el diagnóstico y aplica disclosure/disposición según su lifecycle, sin introducir un manager, readiness protocol o mecanismo terminal común.
 - El `Info Modal` de la ventana principal deja de concentrar estado, DOM, render asíncrono, foco, carga de documentos y presentación de About en `public/renderer.js`: `public/js/info_modal.js` pasa a ser su owner renderer dedicado, mientras el entrypoint conserva únicamente inicialización, coordinación de bloqueo, delegación de menú y notificación de idioma sin cambiar la ruta de fallback de `RendererI18n`, los enlaces/capturas de `InfoModalLinks` ni el comportamiento observable del modal.
 - La ventana principal suma una calculadora rápida de lectura como ventana secundaria no modal: un nuevo botón icon-only en `RESULTS` abre una herramienta auxiliar para derivar `words`, `time` o `WPM` a partir de los otros dos valores, reutilizando la gramática `H+:MM:SS` del cronómetro y manteniendo el feature fuera del menú nativo.
@@ -73,6 +75,12 @@ Reglas:
 - Reading Test mantiene Questions y Result como consumers vivos de `settings-updated` durante toda la vida real de sus `BrowserWindow`; el cambio de idioma conserva respuestas, resultado y estado de sesión.
 
 ### Agregado
+
+- Selección múltiple de etiquetas de snapshots (Issue #339):
+  - el modal compartido de guardado manual y edición de tags de unidades batch muestra las asignaciones de cada categoría como una lista semántica de chips individuales, con botón de eliminación y nombre accesible localizado; cada eliminación afecta solo al valor elegido y retirar el último deja la categoría sin asignación;
+  - los chips se distribuyen centrados sobre el label y el combobox de su categoría, ocupan el ancho disponible con wrapping y no reservan espacio cuando la lista está vacía; su presentación final es compacta, plana y de extremos redondeados, con tipografía, color e icono `close` dimensionados mediante tokens existentes y sin crear un modificador global de `btn-standard`;
+  - el `RendererCombobox` compartido sigue seleccionando un único candidato por operación: el estado multivalor pertenece al modal, que permite incorporar etiquetas consecutivas sin cerrar el desplegable, evita ofrecer asignaciones ya elegidas y conserva etiquetas válidas aunque no figuren en el catálogo editable;
+  - la creación inline de tags personalizados conserva su persistencia asíncrona y coordina las acciones de confirmar, cancelar y abrir el gestor con las escrituras pendientes, sin duplicar asignaciones ni comprometer un borrador incompleto ante un fallo.
 
 - Kiswahili (`sw`) como idioma de interfaz distribuido:
   - `i18n/languages.json` registra el autónimo `Kiswahili`; `i18n/sw/` aporta `main.json`, `renderer.json` y `numberFormat.json`, y el bundle renderer declara su propia opción de tag de snapshot;
@@ -118,6 +126,12 @@ Reglas:
 
 ### Cambiado
 
+- Snapshots / representación y propagación de conjuntos de tags (Issue #339):
+  - `SnapshotTagCatalog` valida cada categoría presente como un array no vacío de identificadores canónicos distintos; omite las categorías sin asignaciones, conserva valores válidos externos al catálogo visible y rechaza por la vía normal las formas escalares, arrays vacíos, elementos inválidos y duplicados tras normalización;
+  - el guardado/carga/inspección de snapshots, el estado y los resúmenes de unidades batch, los snapshots automáticos y los metadatos del pool Reading Test transportan todas las etiquetas de cada categoría, también cuando existe una sola; los snapshots bundled incluidos en el repositorio y la cobertura correspondiente utilizan la nueva representación;
+  - Reading Test reúne opciones desde todos los tags asignados y evalúa sus filtros con `OR` dentro de cada categoría y `AND` entre categorías activas, sin cambiar esas reglas ni el criterio de elegibilidad; la carga de un snapshot continúa aplicando únicamente su texto al estado vigente;
+  - el panel de edición de tags admite crecimiento vertical y mantiene los desplegables anclados debajo del selector, con una lista de opciones de hasta `134px` y desplazamiento automático del panel cuando es necesario mostrarla completa.
+
 - Internacionalización runtime, ownership de texto y actualización viva:
   - `Info Modal` deja de mantener una cadena local de filenames para el manual: conserva el modal abierto ante `settings-updated`, vuelve a cargar el documento equivalente desde el resolver i18n, conserva scroll cuando corresponde y aplica `lang` + dirección del recurso efectivamente servido; si el contenido enfocado se reemplaza, usa el fallback normal `Close` sin reconstruir el target exacto;
   - la ventana principal invoca el refresco feature-owned de los prompts custom aún activos. Snapshot Save/Tag Manager, PDF Options, Route Choice, Apply, Batch Planning, Batch Final, PDF pesado y OCR Disclosure actualizan solo su copy y mantienen su promise, elecciones, borradores, valores tipeados y scroll según la superficie;
@@ -136,7 +150,7 @@ Reglas:
   - el selector de presets de la ventana principal reemplaza el `<select>` nativo por modo `select` sin alterar persistencia, rollback, dirección de la descripción, sincronización WPM ni estado de botones;
   - los selectores dinámicos de ruta y unidad de destino del batch planner pasan al mismo modo `select`, destruyen sus instancias en cada rerender y restauran el foco sobre el trigger reemplazado;
   - la Calculadora rápida construye y retraduce sus tres opciones mediante el controller compartido, preservando recálculo inmediato y retención del input raw al cambiar el target;
-  - los tres campos del modal de tags de snapshot pasan a modo `editable`; el componente común absorbe DOM/listbox, ARIA, foco y teclado genéricos, mientras el feature conserva filtrado de catálogo, normalización, clear e inline-create con commit solo después de persistencia exitosa;
+  - los tres campos del modal de tags de snapshot pasan a modo `editable`; el componente común absorbe DOM/listbox, ARIA, foco y teclado genéricos, mientras el feature conserva filtrado de catálogo, normalización e inline-create con commit solo después de persistencia exitosa; el estado multivalor y la eliminación individual son responsabilidad del modal;
   - `Snapshot Tag Manager` y la ventana especializada de idioma conservan su estructura propia; la migración elimina los sitios productivos restantes de `<select>` nativo sin convertir esas dos superficies en comboboxes.
 - Accesibilidad renderer y retiro de `title` (Issue #332):
   - todos los controles renderer inventariados dejan de depender de `title` o de una burbuja para recibir su nombre: los controles icon-only obtienen nombres explícitos, los controles con texto o `<label>` conservan esa fuente visible y se eliminan ARIA redundantes, mientras los `<title>` de documento y SVG continúan intactos y fuera de esta migración;
@@ -193,6 +207,19 @@ Reglas:
   - `docs/test_suite.md` registra la cobertura automatizada del contrato compartido y agrega smoke manual para apertura debajo del trigger, límite fijo, scroll, teclado, RTL y presentación por tema en los consumers migrados.
 
 ### Arreglado
+
+- Modal de tags de snapshots / disposición y desplazamiento (Issue #339):
+  - las listas de chips sin selecciones dejan de ocupar una fila invisible dentro del grid; la alineación de labels y comboboxes y la separación respecto de metadatos y checkboxes se ajustan sin alterar los controles compartidos;
+  - al cerrar y reabrir el modal en la misma sesión, el panel vuelve al inicio en ambas modalidades (`promptSnapshotSave` y `promptSnapshotTags`), sin restablecer el scroll durante una interacción activa ni al volver del gestor de etiquetas;
+  - la visibilidad de las opciones del combobox sigue resolviéndose dentro del panel scrolleable, incluso con varias filas de chips, sin recortar el desplegable inferior.
+
+- Extracción sin texto aplicable y agregación de PDF pesado (Issue #338, F-01):
+  - las extracciones técnicamente exitosas con `text.trim() === ''` se clasifican como `no_text`, sin recortar los textos aplicables ni prohibir el vaciado intencional del texto vigente por otras funciones; los resultados nominalmente exitosos que incumplen el contrato se rechazan de forma segura con diagnóstico técnico;
+  - en la extracción individual, el modal existente presenta un mensaje informativo específico traducido, deshabilita reemplazar, agregar y repeticiones, mantiene el foco inicial en Cerrar y conserva la acción condicional de mostrar PDFs generados retenidos, sin aplicar texto ni generar una notificación rutinaria de error;
+  - el procesamiento por lotes omite la aplicación de resultados no aplicables sin alterar la secuencia de reemplazo/anexado, los separadores, `hadOutput` ni la creación de snapshots; el informe final y su versión copiada identifican con «Sin texto» a los inputs y los hijos/padres técnicamente exitosos correspondientes;
+  - un split de PDF pesado terminado solo produce padre exitoso cuando todos los hijos previstos tuvieron éxito técnico; un hijo fallido u omitido por fallo impide aplicar cualquier agregado parcial, mientras la cancelación y la política de continuación/cierre siguen diferenciadas;
+  - el informe batch conserva estados de los hijos y referencias de PDFs generados incluso cuando falla la posterior aplicación canónica del agregado del padre; los sufijos de estado fallido o truncado mantienen `--warning-text`, mientras «Sin texto» usa `--text-soft`, igual que cancelado/omitido;
+  - se agregaron las cadenas del estado informativo y del estado breve del reporte a los recursos de idioma y a `i18n/TRANSLATION_GUIDE.md`; luego se completaron sus traducciones en los demás idiomas distribuidos. El smoke manual del cambio fue satisfactorio en cinco recorridos (extracción nativa, sin texto, batch mixto, OCR y PDF por rango con conservación/revelación).
 
 - Ventanas secundarias / fallos terminales tempranos (Issue #335):
   - se completa la revisión e implementación de los 21 escenarios finalmente clasificados como `correction required` en 8 superficies secundarias, preservando diagnóstico, disclosure solo donde quedó justificado y disposición terminal según el lifecycle/owner real de cada escenario, sin imponer un mecanismo común;
@@ -251,11 +278,24 @@ Reglas:
 
 ### Migración
 
+- Tags de snapshots (Issue #339): corte de compatibilidad sin migración automática. En el documento canónico, toda categoría `language`, `type` o `difficulty` presente dentro de `tags` debe contener un array no vacío, incluso si tiene un único valor. Los snapshots previos con categorías escalares o arrays vacíos son inválidos bajo la validación normal; no se convierten, reparan, deduplican ni reinterpretan al cargar o importar. Los archivos externos al repositorio que se quieran conservar deben adaptarse fuera de la app; los recursos bundled del repositorio se actualizan al formato canónico.
+
 - Task Editor / `column_widths.json`: el modelo anterior de mapa no versionado se corta de forma radical, sin migración ni interpretación de datos heredados; un archivo ausente, antiguo, parcial o inválido se reemplaza por los defaults versionados, mientras un fallo real de lectura conserva esos defaults solo para la sesión y no sobrescribe el archivo existente.
 - Task Editor / listas y biblioteca: la persistencia adopta un cutover radical sin migración, parser legacy, fallback de compatibilidad ni reparación. Una lista existente que no incluya `type: "task"`, el `meta` trazable y, cuando aplica, el resumen canónico, o una entrada de biblioteca que no satisfaga su schema completo, se rechaza y el archivo original permanece intacto; debe corregirse o recrearse fuera de la app antes de poder usarse.
 - Snapshots del texto vigente y pool de Reading Test: el formato anterior se corta de forma radical. Un snapshot guardado, bundled o importado que no cumpla el documento canónico completo —incluidos tipo, metadata de guardado y, si existen, `name`, `sourceComment`, `readingTest` y `metrics` válidos— se rechaza tal como está; no hay parser legacy, fallback, reparación, migración ni reescritura. Los snapshots canónicos sin los campos opcionales siguen siendo válidos, sin un path especial de compatibilidad.
 
 ### Contratos tocados
+
+- Issue #339 / `tags` en snapshots y datos asociados:
+  - la representación canónica es `tags: { language?: string[], type?: string[], difficulty?: string[] }`, con un subconjunto de claves conocidas; una categoría sin asignaciones se omite y un snapshot sin asignaciones conserva `tags: {}`. Cada array presente tiene al menos un identificador válido, normalizado y único; los valores escalares, arrays vacíos, duplicados tras normalización, identificadores inválidos y categorías desconocidas son errores ordinarios de schema;
+  - el mismo contrato multivalor atraviesa el catálogo normalizador, los borradores renderer, el payload de los prompts de guardado/edición, la persistencia y validación de snapshots, el batch de extracción y el pool de Reading Test. `window.Notify.promptSnapshotSave(...)` y `promptSnapshotTags(...)` conservan sus entrypoints y resultados generales, pero el objeto `tags` contiene arrays en lugar de valores escalares;
+  - la selección de filtros del Reading Test continúa expresándose mediante arrays y mantiene `OR` intra-categoría / `AND` inter-categoría; sus entradas y opciones consideran todas las etiquetas asignadas, no solo una por categoría. No se agregan categorías, canales IPC, claves de storage ni una API multiselect al `RendererCombobox` compartido.
+
+- F-01 / resultado de extracción y reporte renderer (Issue #338):
+  - los resultados de ejecución técnicamente exitosos incorporan `textApplicability: 'applicable' | 'no_text'` (`text.trim() === ''`), incluidos el padre exitoso y los hijos exitosos de `heavySplitExecution.generatedInputs[]`; los estados no exitosos no se convierten en `no_text`;
+  - el resultado técnico de un padre heavy completado exige éxito de **todos** los hijos previstos. El reporte de cada input mantiene `state` como estado final y añade, donde corresponde, `executionState`, `textApplicability` y `textApplication: 'applied' | 'not_applied_no_text' | 'failed'`; los hijos no registran aplicaciones independientes; el fallo posterior de aplicación conserva los hijos/artefactos del padre y se distingue por su código;
+  - el prompt renderer `window.Notify.promptTextExtractionApplyChoice(...)` mantiene su API y acepta el campo aditivo `textApplicability`, con un estado informativo sin aplicación. `finalReport` sigue siendo el único modelo del informe visible y copiable, sin cambiar el árbol de unidades/inputs/hijos ni la política de fallo basada en el padre;
+  - nuevas claves renderer `renderer.text_extraction.apply_modal.no_text_message` (ES: «La extracción finalizó correctamente, pero no se obtuvo texto para aplicar.»; EN: “Extraction completed successfully, but no text was obtained to apply.”) y `renderer.text_extraction.batch_report.no_text` (ES: «Sin texto»; EN: “No text”), localizadas también en los otros idiomas distribuidos; sin nuevo IPC, API preload, ajuste persistido o prohibición general de escribir `''`.
 
 - Issue #335 / Cronómetro Flotante:
   - `flotante-open` endurece la semántica de su resultado: una apertura ordinaria solo conserva `{ ok: true }` cuando el documento inicial requerido logra establecerse; un fallo genuino de esa carga devuelve `{ ok: false }`, y el renderer principal usa ese resultado para no dejar activado el toggle del Floating tras una apertura fallida.
