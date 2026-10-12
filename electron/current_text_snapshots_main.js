@@ -350,7 +350,9 @@ function sanitizeSnapshotSavePayload(payload) {
   if (Object.prototype.hasOwnProperty.call(payload, 'tags') && payload.tags != null) {
     const tagsInfo = currentTextSnapshotSchema.validateSnapshotTags(payload.tags);
     if (!tagsInfo.ok) return tagsInfo;
-    tags = Object.keys(tagsInfo.tags).length ? { ...tagsInfo.tags } : null;
+    tags = Object.keys(tagsInfo.tags).length
+      ? Object.fromEntries(Object.entries(tagsInfo.tags).map(([category, values]) => [category, values.slice()]))
+      : null;
   }
 
   return {
@@ -481,7 +483,9 @@ function parseSnapshotFile(selectedReal) {
   return {
     ok: true,
     text: snapshotInfo.snapshot.text,
-    tags: Object.keys(tags).length ? tags : null,
+    tags: Object.keys(tags).length
+      ? Object.fromEntries(Object.entries(tags).map(([category, values]) => [category, values.slice()]))
+      : null,
     name: Object.prototype.hasOwnProperty.call(snapshotInfo.snapshot, 'name')
       ? snapshotInfo.snapshot.name
       : null,

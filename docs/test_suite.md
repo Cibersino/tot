@@ -411,9 +411,9 @@ Recommended content for the text-like samples:
 
 Prepare these only if you plan to run the deeper snapshot-tag compatibility checks:
 - `snapshot_non_catalog_language.json`
-  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"language":"es-cl"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"language":["es-cl","fr-CA"]}}`
 - `snapshot_unknown_custom_tag.json`
-  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"type":"custom:type:short-story"}}`
+  - `{"type":"text snapshot","meta":{"savedAt":"2026-08-03T00:00:00.000Z","savedWith":"toT (totapp.org)"},"text":"Fixture text","tags":{"type":["custom:type:short-story","custom:type:essay"]}}`
 
 Notes:
 - the second fixture is most useful when `custom:type:short-story` is not currently visible in the editable catalog;
@@ -1742,21 +1742,27 @@ nonconforming persisted data without migration or repair.
 
 ### REG-SNAPSHOTS — Snapshot save modal, editable tags, and shared catalog semantics
 
-#### REG-SNAPSHOTS-01 Inline custom-tag creation + normalized duplicate suppression
-**Goal:** the searchable selectors expose inline creation only when no normalized exact match already exists.
+#### REG-SNAPSHOTS-01 Multi-select chips, inline custom-tag creation, and normalized duplicate suppression
+**Goal:** each category accepts multiple tags, retains unavailable values as removable chips, and exposes inline creation only when no normalized exact match already exists.
 1. Set non-empty text and open **💾**.
-2. In the `Type` selector, type `Short story`.
-3. Confirm the first visible option is **Create "Short story"**.
-4. Activate it and confirm the selector now shows `Short story` as the selected value.
-5. Close and reopen **💾**.
-6. Type variants such as `short story` and ` short   story ` into the same selector.
-7. In a default-tag case, type `ficcion` and inspect the same list.
+2. In the `Language` selector, choose two values consecutively. Confirm each becomes a removable chip, the selector stays open, and neither chosen value remains available in its list.
+3. Remove one chip with the pointer and another with keyboard activation; confirm focus returns to that category's selector and the removed value is offered again.
+4. In the `Type` selector, type `Short story`.
+5. Confirm the first visible option is **Create "Short story"**.
+6. Activate it and confirm `Short story` becomes a chip without closing the modal or selector.
+7. Cancel and reopen **💾**. Confirm no draft chips are restored, while `Short story` remains available as a normal catalog option in the `Type` selector.
+8. Type variants such as `short story` and ` short   story ` into the same selector.
+9. In a default-tag case, type `ficcion` and inspect the same list.
+10. With a custom tag selected, open **Manage tags**, remove that custom tag from the visible catalog, return to the save prompt, and confirm its chip remains visible and removable.
+11. While an inline custom tag is being saved, use **Confirm**, **Cancel**, and **Manage tags** in separate attempts; confirm the latest request takes effect after the save settles. Simulate one failed catalog save and confirm a deferred **Confirm** leaves the draft open without committing it.
 
 **Expected:**
 - The create affordance appears first and only when there is no normalized exact match in the current category.
-- Creating the tag selects it immediately and keeps the modal usable.
-- Reopening the modal shows the new custom tag as a normal catalog option.
+- Chosen values are represented by independently removable icon-named chips; each category's selector remains a one-value-at-a-time candidate picker.
+- Creating the tag selects it immediately and keeps the modal usable; it does not lose selections made in other categories.
+- Canceling the modal discards its draft assignments; reopening starts without chips, while successfully created custom tags remain normal catalog options.
 - Normalized duplicates are suppressed for existing custom tags and for existing default labels.
+- Deferred actions occur only after the serialized catalog writes settle; cancellation still closes after a failed save, while a deferred confirm after a failed save does not commit the draft.
 
 #### REG-SNAPSHOTS-02 Tag manager create/hide/restore/order semantics
 **Goal:** the dedicated manager owns tag administration, reversible hiding of defaults, and persisted visible order.
@@ -1786,23 +1792,23 @@ nonconforming persisted data without migration or repair.
 3. Open **Tags** for one eligible unit.
 4. Confirm the same custom tag appears in the matching category and uses the same visible ordering as the current-text snapshot-save modal.
 5. Open **Manage tags** from the batch tag prompt, make one safe catalog change, return to the prompt, and inspect the selector again.
-6. Apply tags and return to the planner summary.
+6. Apply multiple tags in at least one category and return to the planner summary.
 
 **Expected:**
 - The batch unit-tag flow reuses the same effective snapshot-tag catalog and prompt contract as the current-text snapshot-save flow.
 - Custom labels resolve from the current editable snapshot-tag preferences, not from raw canonical values.
-- Manager changes made from the batch prompt are reflected immediately in the same prompt and in the planner's tag summary.
+- Manager changes made from the batch prompt are reflected immediately in the same prompt and in the planner's tag summary, which lists the selected labels grouped by category.
 
 #### REG-SNAPSHOTS-04 Snapshot load compatibility with custom or non-catalog tags
 **Goal:** canonical current-text snapshots accept semantically valid custom or non-catalog tags.
 1. Prepare the optional fixtures from 3.4 or equivalent real files under `config/saved_current_texts/`.
 2. Load `snapshot_non_catalog_language.json` through the normal **📂** flow.
 3. Load `snapshot_unknown_custom_tag.json` through the normal **📂** flow.
-4. If the second fixture's custom tag is currently visible in the manager, remove it from the editable catalog, then load the file again.
+4. If either custom fixture tag is currently visible in the manager, remove it from the editable catalog, then load the file again.
 
 **Expected:**
-- Snapshot load accepts valid metadata such as `es-cl` or `fr-CA` even though those values are outside the default language catalog.
-- Snapshot load also accepts valid custom tag values even when they are no longer present in the current editable catalog.
+- Snapshot load accepts valid metadata arrays such as `es-cl` and `fr-CA` even though those values are outside the default language catalog.
+- Snapshot load also accepts valid custom tag arrays even when their values are no longer present in the current editable catalog.
 - In all cases, only the snapshot `text` is applied to current-text state; tag metadata is not imported into live UI state.
 
 ---
@@ -1814,14 +1820,16 @@ nonconforming persisted data without migration or repair.
 1. Open the reading speed test entry modal.
 2. If the pool is exhausted, confirm the warning appears **inside the modal**, then use **Reset pool** and confirm.
 3. Note the current eligible-file count.
-4. Check and uncheck several filter boxes in different categories.
-5. Try to reach a combination that would leave zero matching files.
+4. Select two tag values in one category and confirm entries matching either value remain eligible; then select a tag value in a second category and confirm only entries matching both category conditions remain eligible.
+5. Check and uncheck several other filter boxes in different categories.
+6. Try to reach a combination that would leave zero matching files.
 
 **Expected:**
 - The modal opens even when the pool is exhausted.
 - The exhaustion message appears inline in the modal, not as a separate alert.
 - Reset is reachable from the same modal and recomputes availability immediately after confirmation.
 - The eligible-file count updates live as filters change.
+- Multiple selected values within one tag category are ORed; selected tag categories are ANDed with each other and with the existing filters.
 - Checkbox interaction locks briefly during recomputation/stabilization.
 - Impossible boxes end up disabled instead of allowing a dead-end selection.
 

@@ -33,6 +33,7 @@
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
   if (!snapshotTagCatalog
     || !Array.isArray(snapshotTagCatalog.LANGUAGE_OPTIONS)
+    || typeof snapshotTagCatalog.normalizeTags !== 'function'
     || typeof snapshotTagCatalog.resolveTagLabel !== 'function') {
     throw new Error('[text-extraction-batch-flow] SnapshotTagCatalog unavailable; cannot continue');
   }
@@ -142,8 +143,11 @@
   }
 
   function cloneTags(tags) {
-    if (!tags || typeof tags !== 'object' || Array.isArray(tags)) return null;
-    return { ...tags };
+    const normalizedTags = snapshotTagCatalog.normalizeTags(tags);
+    if (!normalizedTags) {
+      throw new Error('[text-extraction-batch-flow] unit tags must use the canonical snapshot structure');
+    }
+    return normalizedTags;
   }
 
   function cloneSelection(selection) {
@@ -186,34 +190,21 @@
   }
 
   function formatTagsSummary(tags) {
-    const safeTags = tags && typeof tags === 'object' ? tags : null;
-    if (!safeTags) return tRenderer('renderer.text_extraction.batch_plan.tags_none');
+    const safeTags = cloneTags(tags);
+    if (!Object.keys(safeTags).length) return tRenderer('renderer.text_extraction.batch_plan.tags_none');
     const snapshotTagPreferences = getSnapshotTagPreferences();
     const parts = [];
-    if (safeTags.language) {
-      parts.push(snapshotTagCatalog.resolveTagLabel(
-        'language',
-        safeTags.language,
+    ['language', 'type', 'difficulty'].forEach((category) => {
+      const values = safeTags[category];
+      if (!values || !values.length) return;
+      const labels = values.map((value) => snapshotTagCatalog.resolveTagLabel(
+        category,
+        value,
         snapshotTagPreferences,
         { getDefaultLabel: (option) => tRenderer(option.labelKey) }
       ));
-    }
-    if (safeTags.type) {
-      parts.push(snapshotTagCatalog.resolveTagLabel(
-        'type',
-        safeTags.type,
-        snapshotTagPreferences,
-        { getDefaultLabel: (option) => tRenderer(option.labelKey) }
-      ));
-    }
-    if (safeTags.difficulty) {
-      parts.push(snapshotTagCatalog.resolveTagLabel(
-        'difficulty',
-        safeTags.difficulty,
-        snapshotTagPreferences,
-        { getDefaultLabel: (option) => tRenderer(option.labelKey) }
-      ));
-    }
+      parts.push(`${tRenderer(`renderer.snapshots.labels.${category}`)}: ${labels.join(', ')}`);
+    });
     return parts.length
       ? parts.join(' · ')
       : tRenderer('renderer.text_extraction.batch_plan.tags_none');
@@ -404,7 +395,7 @@
       if (!state.unitMetaByKey[unitKey]) {
         state.unitMetaByKey[unitKey] = {
           customName: '',
-          tags: null,
+          tags: {},
         };
       }
     });
@@ -510,7 +501,7 @@
     const nextGroupKey = makeGroupKey();
     state.unitMetaByKey[nextGroupKey] = {
       customName: '',
-      tags: null,
+      tags: {},
     };
     activeInputs.forEach((input) => {
       input.groupKey = nextGroupKey;
@@ -524,7 +515,7 @@
       input.groupKey = groupKey;
       state.unitMetaByKey[groupKey] = {
         customName: '',
-        tags: null,
+        tags: {},
       };
     });
     syncUnitMetadata(state);
@@ -596,7 +587,7 @@
       nextGroupKey = makeGroupKey();
       state.unitMetaByKey[nextGroupKey] = {
         customName: '',
-        tags: null,
+        tags: {},
       };
     }
     input.groupKey = nextGroupKey;
@@ -736,11 +727,11 @@
         }
       },
       async editUnitTags(unitKey) {
-        const currentTags = state.unitMetaByKey[unitKey] ? state.unitMetaByKey[unitKey].tags : null;
+        const currentTags = state.unitMetaByKey[unitKey] ? state.unitMetaByKey[unitKey].tags : {};
         let nextTags = null;
         try {
           nextTags = await window.Notify.promptSnapshotTags({
-            initialTags: currentTags || null,
+            initialTags: currentTags,
             copy: {
               titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
               messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
@@ -754,7 +745,7 @@
           return;
         }
         if (!nextTags) return;
-        setUnitTags(state, unitKey, nextTags.tags || null);
+        setUnitTags(state, unitKey, nextTags.tags);
       },
     };
   }
@@ -955,7 +946,7 @@
       const payload = {
         nonInteractive: true,
         autoFileBaseName: fileBaseSource,
-        tags: tags || null,
+        tags: cloneTags(tags),
         includeCount: true,
         includeReading: false,
       };

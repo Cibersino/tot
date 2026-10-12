@@ -420,6 +420,14 @@ function resetPoolUsageState(options = {}) {
 // Helpers: pool entry validation and shaping
 // =============================================================================
 
+function cloneSnapshotTags(tags) {
+  const copy = {};
+  Object.entries(tags).forEach(([category, values]) => {
+    copy[category] = values.slice();
+  });
+  return copy;
+}
+
 function sanitizePoolData(rawData) {
   const snapshotInfo = currentTextSnapshotSchema.validateSnapshotDocument(rawData);
   if (!snapshotInfo.ok) return snapshotInfo;
@@ -458,7 +466,7 @@ function parsePoolFile(filePath, rootPath, stateEntry) {
       snapshotRelPath: toSnapshotRelPath(rootCanonical, fileCanonical),
       fileName: path.basename(fileCanonical),
       text: dataInfo.data.text,
-      tags: dataInfo.data.tags ? { ...dataInfo.data.tags } : {},
+      tags: cloneSnapshotTags(dataInfo.data.tags),
       used: !!(stateEntry && stateEntry.used === true),
       isBundled: !!(stateEntry && typeof stateEntry.managedBundledHash === 'string' && stateEntry.managedBundledHash),
       hasValidQuestions: dataInfo.hasValidQuestions,
@@ -1306,7 +1314,7 @@ function serializePoolEntryMeta(entry) {
     snapshotRelPath: entry.snapshotRelPath,
     fileName: entry.fileName,
     hasValidQuestions: !!entry.hasValidQuestions,
-    tags: { ...(entry.tags || {}) },
+    tags: cloneSnapshotTags(entry.tags),
     used: !!(entry && entry.used === true),
   };
 }

@@ -78,6 +78,56 @@ test('normalizeLanguageTag keeps valid non-catalog language tags open', () => {
   assert.equal(snapshotTagCatalog.normalizeLanguageTag(customLanguage), customLanguage);
 });
 
+test('normalizeTags requires non-empty canonical value arrays and preserves their order', () => {
+  assert.deepEqual(
+    snapshotTagCatalog.normalizeTags({
+      language: [' es ', 'fr-CA'],
+      type: ['custom:type:short-story'],
+    }),
+    {
+      language: ['es', 'fr-CA'],
+      type: ['custom:type:short-story'],
+    }
+  );
+  assert.deepEqual(snapshotTagCatalog.normalizeTags({}), {});
+
+  [
+    { language: 'es' },
+    { language: [] },
+    { language: ['es', 'es'] },
+    { type: ['fiction', 'invalid'] },
+    { unknown: ['value'] },
+  ].forEach((tags) => {
+    assert.equal(snapshotTagCatalog.normalizeTags(tags), null);
+  });
+});
+
+test('normalizeTags preserves valid assigned values independently of editable catalog visibility', () => {
+  const hiddenEnglishPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  hiddenEnglishPreferences.language.hiddenDefaults = ['en'];
+  const unknownCustomType = 'custom:type:deleted-entry';
+
+  assert.equal(
+    snapshotTagCatalog.resolveCategoryCatalog(
+      'language',
+      hiddenEnglishPreferences,
+      { getDefaultLabel }
+    ).visibleOptions.some((option) => option.value === 'en'),
+    false
+  );
+  assert.deepEqual(
+    snapshotTagCatalog.normalizeTags({
+      language: ['en', 'es-cl'],
+      type: ['fiction', unknownCustomType],
+    }),
+    {
+      language: ['en', 'es-cl'],
+      type: ['fiction', unknownCustomType],
+    }
+  );
+  assert.equal(snapshotTagCatalog.normalizeTags({ language: ['ES', 'es'] }), null);
+});
+
 test('createCustomTag rejects normalized duplicates against localized default labels', () => {
   const result = snapshotTagCatalog.createCustomTag(
     snapshotTagCatalog.createEmptySnapshotTagPreferences(),

@@ -59,7 +59,7 @@ function loadSnapshotsModule({ promptResult, getCurrentWpm = null } = {}) {
 test('manual snapshot save forwards selected count and reading metadata with active WPM', async () => {
   const { snapshots, saveCalls } = loadSnapshotsModule({
     promptResult: {
-      tags: { language: 'es' },
+      tags: { language: ['es'] },
       includeCount: true,
       includeReading: true,
     },
@@ -72,7 +72,7 @@ test('manual snapshot save forwards selected count and reading metadata with act
   assert.deepEqual(JSON.parse(JSON.stringify(saveCalls)), [{
     includeCount: true,
     includeReading: true,
-    tags: { language: 'es' },
+    tags: { language: ['es'] },
     wpm: 240,
   }]);
 });
@@ -80,7 +80,7 @@ test('manual snapshot save forwards selected count and reading metadata with act
 test('manual snapshot save forwards an intentional no-metrics selection without WPM', async () => {
   const { snapshots, saveCalls } = loadSnapshotsModule({
     promptResult: {
-      tags: null,
+      tags: {},
       includeCount: false,
       includeReading: false,
     },
@@ -92,6 +92,7 @@ test('manual snapshot save forwards an intentional no-metrics selection without 
   assert.deepEqual(JSON.parse(JSON.stringify(saveCalls)), [{
     includeCount: false,
     includeReading: false,
+    tags: {},
   }]);
 });
 
@@ -100,7 +101,7 @@ test('manual snapshot save forwards optional snapshot name and source comment', 
     promptResult: {
       name: 'Reading',
       sourceComment: 'chapter-1.pdf, Unit 1',
-      tags: null,
+      tags: {},
       includeCount: false,
       includeReading: false,
     },
@@ -114,5 +115,6 @@ test('manual snapshot save forwards optional snapshot name and source comment', 
     sourceComment: 'chapter-1.pdf, Unit 1',
     includeCount: false,
     includeReading: false,
+    tags: {},
   }]);
 });

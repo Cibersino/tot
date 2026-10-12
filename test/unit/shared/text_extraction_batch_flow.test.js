@@ -17,7 +17,7 @@ function createHarness({
   normalizeExecutionResultApplicability = true,
   promptBatchFinalReportImpl = null,
   applyTextViaCanonicalPathImpl = null,
-  snapshotTagsPromptResult = { tags: { language: 'en' } },
+  snapshotTagsPromptResult = { tags: { language: ['en'] } },
   settingsCache = null,
 }) {
   let capturedViewModel = null;
@@ -134,6 +134,13 @@ function createHarness({
           const translations = {
             'renderer.text_extraction.batch_plan.pages_all': 'All pages',
             'renderer.text_extraction.batch_plan.tags_none': 'No tags',
+            'renderer.snapshots.labels.language': 'Language',
+            'renderer.snapshots.labels.type': 'Type',
+            'renderer.snapshots.labels.difficulty': 'Difficulty',
+            'renderer.snapshots.options.language.en': 'English',
+            'renderer.snapshots.options.language.es': 'Spanish',
+            'renderer.snapshots.options.type.fiction': 'Ficción',
+            'renderer.snapshots.options.type.non_fiction': 'No ficción',
             'renderer.text_extraction.batch_plan.unit_label': 'Unit {index}',
             'renderer.text_extraction.batch_report.snapshot_created': 'Snapshot created: {filename}',
             'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
@@ -585,7 +592,7 @@ test('batch flow opens shared tags modal with batch-planning copy overrides', as
   assert.deepEqual(
     JSON.parse(JSON.stringify(harness.getSnapshotTagsPromptOptions())),
     {
-      initialTags: null,
+      initialTags: {},
       copy: {
         titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
         messageKey: 'renderer.text_extraction.batch_plan.tags_modal.message',
@@ -615,7 +622,7 @@ test('batch flow formats planner tag summaries with custom labels from snapshot-
 
   const harness = createHarness({
     preparationsByPath,
-    snapshotTagsPromptResult: { tags: { language: customLanguage } },
+    snapshotTagsPromptResult: { tags: { language: [customLanguage, 'es'] } },
     settingsCache: {
       snapshotTags: {
         language: {
@@ -638,8 +645,47 @@ test('batch flow formats planner tag summaries with custom labels from snapshot-
 
   assert.equal(
     controller.getViewModel().units[0].tagsSummary,
-    'Plain text'
+    'Language: Plain text, Spanish'
   );
+});
+
+test('batch unit tag drafts retain all values when reopened and remain independent by unit', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({ fileName: 'first.pdf', chosenRoute: 'native' }),
+    'C:\\docs\\second.pdf': createPreparation({ fileName: 'second.pdf', chosenRoute: 'native' }),
+  };
+  const selectedTags = {
+    language: ['en', 'es'],
+    type: ['fiction', 'non_fiction'],
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    snapshotTagsPromptResult: { tags: selectedTags },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-multi-tag-reopen',
+  });
+
+  const controller = harness.getCapturedController();
+  controller.applyAction({ type: 'apply_preset_separate' });
+  const [firstUnit] = controller.getViewModel().units;
+  await controller.editUnitTags(firstUnit.unitKey);
+
+  assert.equal(
+    controller.getViewModel().units[0].tagsSummary,
+    'Language: English, Spanish · Type: Ficción, No ficción'
+  );
+  assert.equal(controller.getViewModel().units[1].tagsSummary, 'No tags');
+
+  await controller.editUnitTags(firstUnit.unitKey);
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(harness.getSnapshotTagsPromptOptions().initialTags)),
+    selectedTags
+  );
+  assert.equal(controller.getViewModel().units[1].tagsSummary, 'No tags');
 });
 
 test('batch flow keeps page summary for heavy PDFs and omits it for non-PDF inputs', async () => {
@@ -979,7 +1025,7 @@ test('batch execution clamps custom unit names before snapshot handoff', async (
     autoFileBaseName: expectedName,
     name: expectedName,
     sourceComment: 'chapter.pdf',
-    tags: null,
+    tags: {},
     includeCount: true,
     includeReading: false,
   });

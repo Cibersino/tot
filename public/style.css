@@ -2081,11 +2081,17 @@ body.text-extraction-drop-active .app-container {
 /* Snapshot save tags modal */
 .snapshot-save-tags-modal-panel {
   width: 560px;
+  max-height: var(--modal-max-height);
+  overflow-y: auto;
 }
 
 .snapshot-save-tags-modal-body p {
   margin: 0;
   font-size: var(--font-size-8);
+}
+
+.snapshot-save-tags-modal-body {
+  padding-block-end: calc(134px + 16px);
 }
 
 .snapshot-save-metadata-form {
@@ -2113,23 +2119,80 @@ body.text-extraction-drop-active .app-container {
 
 .snapshot-save-tags-form {
   display: grid;
-  grid-template-columns: max-content max-content;
-  justify-content: center;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) max-content 200px minmax(0, 1fr);
   gap: 12px;
+  margin-block: 8px;
 }
 
 .snapshot-save-tags-field {
-  display: contents;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  row-gap: 8px;
+}
+
+.snapshot-save-tags-field > .snapshot-save-field-label {
+  grid-column: 2;
+  justify-self: end;
+}
+
+.snapshot-save-tags-control {
+  grid-column: 3;
+}
+
+.snapshot-save-tags-selected {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.snapshot-save-tags-selected[hidden] {
+  display: none;
+}
+
+.snapshot-save-tags-chip-item {
+  max-width: 100%;
+}
+
+.snapshot-save-tags-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  gap: 4px;
+  padding: 4px 6px;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-3);
+  line-height: var(--line-height-solid);
+  border: 0;
+  border-radius: 999px;
+  background: var(--app-primary-bg);
+  color: var(--text-soft);
+  cursor: pointer;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  user-select: none;
+}
+
+.snapshot-save-tags-chip:is(:hover, :focus) {
+  background: var(--button-hover-bg);
+}
+
+.snapshot-save-tags-chip .tot-icon-slot {
+  --tot-icon-size: var(--tot-icon-size-sm);
+  flex: none;
 }
 
 .snapshot-save-tags-combobox {
   width: 200px;
   font-size: var(--font-size-7);
-}
-
-.snapshot-save-tags-combobox .renderer-combobox__option[data-variant="clear"] {
-  font-style: italic;
 }
 
 .snapshot-save-tags-combobox .renderer-combobox__option[data-variant="create"] {

@@ -224,9 +224,9 @@ test('importSelectedFiles imports a valid canonical snapshot and preserves readi
   writeJson(sourcePath, createSnapshotData({
     text: 'Sample reading text.',
     tags: {
-      language: 'EN',
-      type: 'Non fiction',
-      difficulty: 'HARD',
+      language: ['EN'],
+      type: ['Non fiction'],
+      difficulty: ['HARD'],
     },
     readingTest: {
       questions: [
@@ -265,9 +265,9 @@ test('importSelectedFiles imports a valid canonical snapshot and preserves readi
   });
   assert.equal(imported.text, 'Sample reading text.');
   assert.deepEqual(imported.tags, {
-    language: 'en',
-    type: 'non_fiction',
-    difficulty: 'hard',
+    language: ['en'],
+    type: ['non_fiction'],
+    difficulty: ['hard'],
   });
   assert.deepEqual(imported.readingTest, {
     questions: [
@@ -293,9 +293,9 @@ test('importSelectedFiles rejects imported json that contains invalid readingTes
   writeJson(sourcePath, createSnapshotData({
     text: 'Invalid imported text.',
     tags: {
-      language: 'en',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['en'],
+      type: ['fiction'],
+      difficulty: ['normal'],
     },
     readingTest: {
       invalid: true,
@@ -321,7 +321,7 @@ test('importSelectedFiles rejects legacy snapshot JSON', async () => {
 
   writeJson(sourcePath, {
     text: 'Former snapshot shape.',
-    tags: { language: 'en' },
+    tags: { language: ['en'] },
   });
 
   const result = await importSelectedFiles({
@@ -335,6 +335,33 @@ test('importSelectedFiles rejects legacy snapshot JSON', async () => {
   assert.equal(fs.existsSync(path.join(poolDir, 'legacy-snapshot.json')), false);
 });
 
+test('importSelectedFiles rejects a canonical-root snapshot with scalar tags as invalid schema', async () => {
+  const tempDir = makeTempDir();
+  const sourcePath = path.join(tempDir, 'scalar-tags.json');
+  const poolDir = path.join(tempDir, 'reading_speed_test_pool');
+  fs.mkdirSync(poolDir, { recursive: true });
+
+  writeJson(sourcePath, {
+    type: 'text snapshot',
+    meta: {
+      savedAt: '2026-08-03T00:00:00.000Z',
+      savedWith: 'toT (totapp.org)',
+    },
+    text: 'Scalar tag input.',
+    tags: { language: 'en' },
+  });
+
+  const result = await importSelectedFiles({
+    selectedPaths: [sourcePath],
+    poolDir,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.imported, 0);
+  assert.equal(result.failedValidation, 1);
+  assert.equal(fs.existsSync(path.join(poolDir, 'scalar-tags.json')), false);
+});
+
 test('importSelectedFiles imports valid zip entries and reports invalid json entries as failed validation', async () => {
   const tempDir = makeTempDir();
   const zipPath = path.join(tempDir, 'pack.zip');
@@ -345,9 +372,9 @@ test('importSelectedFiles imports valid zip entries and reports invalid json ent
   zip.addFile('valid.json', Buffer.from(JSON.stringify(createSnapshotData({
     text: 'Zip reading text.',
     tags: {
-      language: 'fr',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['fr'],
+      type: ['fiction'],
+      difficulty: ['normal'],
     },
   }), null, 2), 'utf8'));
   zip.addFile('invalid.json', Buffer.from('{invalid', 'utf8'));
@@ -379,17 +406,17 @@ test('importSelectedFiles skips duplicate destination filenames when conflict st
   writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
     text: 'Existing text.',
     tags: {
-      language: 'es',
-      type: 'fiction',
-      difficulty: 'easy',
+      language: ['es'],
+      type: ['fiction'],
+      difficulty: ['easy'],
     },
   }));
   writeJson(sourcePath, createSnapshotData({
     text: 'Imported text.',
     tags: {
-      language: 'en',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['en'],
+      type: ['fiction'],
+      difficulty: ['normal'],
     },
   }));
 
@@ -417,17 +444,17 @@ test('importSelectedFiles replaces duplicate destination filenames when conflict
   writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
     text: 'Existing text.',
     tags: {
-      language: 'es',
-      type: 'fiction',
-      difficulty: 'easy',
+      language: ['es'],
+      type: ['fiction'],
+      difficulty: ['easy'],
     },
   }));
   writeJson(sourcePath, createSnapshotData({
     text: 'Replacement text.',
     tags: {
-      language: 'pt',
-      type: 'non_fiction',
-      difficulty: 'normal',
+      language: ['pt'],
+      type: ['non_fiction'],
+      difficulty: ['normal'],
     },
   }));
 
@@ -444,7 +471,7 @@ test('importSelectedFiles replaces duplicate destination filenames when conflict
 
   const imported = JSON.parse(fs.readFileSync(path.join(poolDir, 'duplicate.json'), 'utf8'));
   assert.equal(imported.text, 'Replacement text.');
-  assert.equal(imported.tags.language, 'pt');
+  assert.deepEqual(imported.tags.language, ['pt']);
 });
 
 test('importSelectedFiles rejects a redirected replacement destination', async (t) => {
@@ -488,9 +515,9 @@ test('importSelectedFiles reports failed final writes explicitly', async () => {
   writeJson(sourcePath, createSnapshotData({
     text: 'Blocked replacement text.',
     tags: {
-      language: 'en',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['en'],
+      type: ['fiction'],
+      difficulty: ['normal'],
     },
   }));
 
@@ -543,9 +570,9 @@ test('importSelectedFiles rejects imported json that contains unsupported tag ke
   writeJson(sourcePath, createSnapshotData({
     text: 'Invalid imported text.',
     tags: {
-      language: 'en',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['en'],
+      type: ['fiction'],
+      difficulty: ['normal'],
       obsolete: false,
     },
   }));
@@ -577,9 +604,9 @@ test('registerIpc returns partial success when imported files are written but po
   writeJson(sourcePath, createSnapshotData({
     text: 'Imported text.',
     tags: {
-      language: 'en',
-      type: 'fiction',
-      difficulty: 'normal',
+      language: ['en'],
+      type: ['fiction'],
+      difficulty: ['normal'],
     },
   }));
 
@@ -637,11 +664,11 @@ test('registerIpc resolves reading-test picker and conflict copy from main dialo
   fs.mkdirSync(poolDir, { recursive: true });
   writeJson(sourcePath, createSnapshotData({
     text: 'Replacement text.',
-    tags: { language: 'en', type: 'fiction', difficulty: 'normal' },
+    tags: { language: ['en'], type: ['fiction'], difficulty: ['normal'] },
   }));
   writeJson(path.join(poolDir, 'duplicate.json'), createSnapshotData({
     text: 'Existing text.',
-    tags: { language: 'en', type: 'fiction', difficulty: 'normal' },
+    tags: { language: ['en'], type: ['fiction'], difficulty: ['normal'] },
   }));
 
   const { readingTestPoolImport, restore } = loadFreshReadingTestPoolImportForIpc({

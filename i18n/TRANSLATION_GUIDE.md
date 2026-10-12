@@ -2447,6 +2447,15 @@ Estados de revisión recomendados:
           "en": "Create \"{label}\""
         }
       },
+      "chips": {
+        "remove_aria": {
+          "es": "Quitar etiqueta \"{label}\"",
+          "en": "Remove tag \"{label}\""
+          // [PROPÓSITO] Nombre accesible de un botón que elimina solo la etiqueta indicada del borrador del snapshot.
+          // [CONCEPTO_APP] etiquetas de snapshot de texto
+          // [PROTEGIDO] `{label}`
+        }
+      },
       "labels": {
         "name": {
           "es": "Nombre (opcional)",
@@ -2616,23 +2625,6 @@ Estados de revisión recomendados:
             "es": "Ya existe una etiqueta con ese nombre en esta categoría.",
             "en": "A tag with that label already exists in this category."
           }
-        }
-      },
-      "empty": {
-        "language": {
-          "es": "Sin etiqueta de idioma",
-          "en": "No language tag"
-          // [CONCEPTO_APP] etiquetas de snapshot de texto
-        },
-        "type": {
-          "es": "Sin etiqueta de tipo",
-          "en": "No type tag"
-          // [CONCEPTO_APP] etiquetas de snapshot de texto
-        },
-        "difficulty": {
-          "es": "Sin etiqueta de dificultad",
-          "en": "No difficulty tag"
-          // [CONCEPTO_APP] etiquetas de snapshot de texto
         }
       },
       "buttons": {

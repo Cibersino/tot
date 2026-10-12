@@ -41,16 +41,13 @@ const SNAPSHOT_OPTIONAL_KEYS = Object.freeze([
   'readingTest',
 ]);
 const SNAPSHOT_META_KEYS = Object.freeze(['savedAt', 'savedWith']);
-const SNAPSHOT_TAG_KEYS = Object.freeze(['language', 'type', 'difficulty']);
 const SNAPSHOT_METRICS_SIMPLE_COUNT_KEYS = Object.freeze(['words', 'mode']);
 const SNAPSHOT_METRICS_PRECISE_COUNT_KEYS = Object.freeze(['words', 'mode', 'locale']);
 const SNAPSHOT_METRICS_READING_KEYS = Object.freeze(['estimatedSeconds', 'wpm']);
 
 if (!snapshotTagCatalog
   || typeof snapshotTagCatalog.isPlainObject !== 'function'
-  || typeof snapshotTagCatalog.normalizeLanguageTag !== 'function'
-  || typeof snapshotTagCatalog.normalizeTypeTag !== 'function'
-  || typeof snapshotTagCatalog.normalizeDifficultyTag !== 'function') {
+  || typeof snapshotTagCatalog.normalizeTags !== 'function') {
   throw new Error('[current_text_snapshot_schema] SnapshotTagCatalog unavailable; cannot continue');
 }
 
@@ -104,40 +101,10 @@ function validateSnapshotMeta(rawMeta) {
 }
 
 function validateSnapshotTags(rawTags) {
-  if (!snapshotTagCatalog.isPlainObject(rawTags)) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags must be an object' };
+  const tags = snapshotTagCatalog.normalizeTags(rawTags);
+  if (!tags) {
+    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags invalid' };
   }
-
-  const rawKeys = Object.keys(rawTags);
-  if (rawKeys.some((key) => !SNAPSHOT_TAG_KEYS.includes(key))) {
-    return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot tags contain unsupported keys' };
-  }
-
-  const tags = {};
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'language')) {
-    const language = snapshotTagCatalog.normalizeLanguageTag(rawTags.language);
-    if (!language) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot language tag invalid' };
-    }
-    tags.language = language;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'type')) {
-    const type = snapshotTagCatalog.normalizeTypeTag(rawTags.type);
-    if (!type) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot type tag invalid' };
-    }
-    tags.type = type;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(rawTags, 'difficulty')) {
-    const difficulty = snapshotTagCatalog.normalizeDifficultyTag(rawTags.difficulty);
-    if (!difficulty) {
-      return { ok: false, code: 'INVALID_SCHEMA', message: 'snapshot difficulty tag invalid' };
-    }
-    tags.difficulty = difficulty;
-  }
-
   return { ok: true, tags };
 }
 

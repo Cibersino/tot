@@ -359,6 +359,9 @@
         "no_results": "No matching options",
         "create": "Create \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Remove tag \"{label}\""
+      },
       "labels": {
         "name": "Name (optional)",
         "source_comment": "Origin (optional)",
@@ -399,11 +402,6 @@
           "too_long": "Tag label cannot exceed {max} characters.",
           "duplicate": "A tag with that label already exists in this category."
         }
-      },
-      "empty": {
-        "language": "No language tag",
-        "type": "No type tag",
-        "difficulty": "No difficulty tag"
       },
       "buttons": {
         "manage": "Manage tags",

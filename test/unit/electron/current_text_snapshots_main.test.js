@@ -473,7 +473,7 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
       includeCount: true,
       includeReading: false,
       tags: {
-        language: 'es',
+        language: ['es', 'fr'],
       },
     }
   );
@@ -487,7 +487,7 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
   assert.equal(firstPayload.text, 'Batch snapshot text');
   assert.equal(firstPayload.name, 'Reading');
   assert.equal(firstPayload.sourceComment, 'chapter-1.pdf, Unit 1');
-  assert.deepEqual(firstPayload.tags, { language: 'es' });
+  assert.deepEqual(firstPayload.tags, { language: ['es', 'fr'] });
   assert.deepEqual(firstPayload.metrics, {
     count: {
       words: 3,
@@ -504,7 +504,7 @@ test('non-interactive snapshot save creates deterministic collision-safe files a
       autoFileBaseName: 'Lección ñ / Unit 1',
       includeCount: true,
       includeReading: false,
-      tags: null,
+      tags: {},
     }
   );
 
@@ -1285,7 +1285,7 @@ test('snapshot save rejects invalid optional name and source-comment values', as
       name: 'x'.repeat(121),
       includeCount: true,
       includeReading: false,
-      tags: null,
+      tags: {},
     }
   );
 
@@ -1304,7 +1304,7 @@ test('snapshot save rejects invalid optional name and source-comment values', as
       sourceComment: 'source\ncomment',
       includeCount: true,
       includeReading: false,
-      tags: null,
+      tags: {},
     }
   );
   assert.deepEqual(invalidSourceCommentResult, {
@@ -1348,8 +1348,8 @@ test('non-interactive snapshot save accepts permitted custom tag values', async 
       includeCount: true,
       includeReading: false,
       tags: {
-        language: customLanguage,
-        type: customType,
+        language: [customLanguage],
+        type: [customType, 'fiction'],
       },
     }
   );
@@ -1357,8 +1357,8 @@ test('non-interactive snapshot save accepts permitted custom tag values', async 
   assert.equal(saveResult.ok, true);
   const payload = JSON.parse(fs.readFileSync(path.join(rootDir, saveResult.filename), 'utf8'));
   assert.deepEqual(payload.tags, {
-    language: customLanguage,
-    type: customType,
+    language: [customLanguage],
+    type: [customType, 'fiction'],
   });
 });
 
@@ -1393,7 +1393,7 @@ test('non-interactive snapshot save accepts valid non-catalog language tags', as
       includeCount: true,
       includeReading: false,
       tags: {
-        language: 'es-cl',
+        language: ['es-cl', 'fr-CA'],
       },
     }
   );
@@ -1401,7 +1401,7 @@ test('non-interactive snapshot save accepts valid non-catalog language tags', as
   assert.equal(saveResult.ok, true);
   const payload = JSON.parse(fs.readFileSync(path.join(rootDir, saveResult.filename), 'utf8'));
   assert.deepEqual(payload.tags, {
-    language: 'es-cl',
+    language: ['es-cl', 'fr-CA'],
   });
 });
 
@@ -1437,7 +1437,7 @@ test('snapshot save maps strict creation failures to WRITE_FAILED', async (t) =>
       autoFileBaseName: 'Failure Unit',
       includeCount: true,
       includeReading: false,
-      tags: null,
+      tags: {},
     }
   );
 
@@ -1605,7 +1605,7 @@ test('snapshot load accepts custom snapshot tags that are unknown to the current
   fs.writeFileSync(
     snapshotPath,
     JSON.stringify(createSnapshotFileData('Loaded custom snapshot text', {
-      language: customLanguage,
+      language: [customLanguage],
     }), null, 2)
   );
 
@@ -1647,7 +1647,7 @@ test('snapshot load accepts valid non-catalog language tags', async (t) => {
   fs.writeFileSync(
     snapshotPath,
     JSON.stringify(createSnapshotFileData('Loaded open-language snapshot text', {
-      language: 'fr-CA',
+      language: ['fr-CA'],
     }), null, 2)
   );
 

@@ -8,13 +8,16 @@ const {
 } = require('../../../public/js/lib/reading_test_filters_core');
 
 function createEntry({ language, type = 'fiction', difficulty, used = false }) {
+  const tags = {
+    language: Array.isArray(language) ? language : [language],
+    type: Array.isArray(type) ? type : [type],
+  };
+  if (difficulty !== undefined) {
+    tags.difficulty = Array.isArray(difficulty) ? difficulty : [difficulty];
+  }
   return {
     used,
-    tags: {
-      language,
-      type,
-      difficulty,
-    },
+    tags,
   };
 }
 
@@ -102,4 +105,21 @@ test('computeFilterState derives custom option values directly from pool-entry t
     [customType]
   );
   assert.equal(state.eligibleCount, 1);
+});
+
+test('computeFilterState ORs selected values within a category and ANDs selected categories', () => {
+  const entries = [
+    createEntry({ language: ['en', 'es'], type: 'fiction', difficulty: 'easy' }),
+    createEntry({ language: 'fr', type: 'fiction', difficulty: 'easy' }),
+    createEntry({ language: 'en', type: 'non_fiction', difficulty: 'easy' }),
+  ];
+
+  const languageOnly = computeFilterState(entries, { language: ['en', 'fr'] });
+  const withType = computeFilterState(entries, {
+    language: ['en', 'fr'],
+    type: ['fiction'],
+  });
+
+  assert.equal(languageOnly.eligibleCount, 3);
+  assert.equal(withType.eligibleCount, 2);
 });

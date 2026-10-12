@@ -34,13 +34,24 @@ function createReadingTestPoolMock({
   resetPoolUsageStateImpl = null,
 } = {}) {
   let showBundledEntries = initialShowBundledEntries;
+  const poolEntries = entries.map((entry) => ({
+    ...entry,
+    tags: Object.fromEntries(
+      Object.entries(entry.tags || {}).map(([category, values]) => [
+        category,
+        values.slice(),
+      ])
+    ),
+  }));
 
   function serializePoolEntryMeta(entry) {
     return {
       snapshotRelPath: entry.snapshotRelPath,
       fileName: entry.fileName,
       hasValidQuestions: !!entry.hasValidQuestions,
-      tags: { ...(entry.tags || {}) },
+      tags: Object.fromEntries(
+        Object.entries(entry.tags || {}).map(([category, values]) => [category, values.slice()])
+      ),
       used: entry.used === true,
     };
   }
@@ -60,7 +71,7 @@ function createReadingTestPoolMock({
   return {
     POOL_DIR_NAME: 'reading_speed_test_pool',
     listPoolEntries() {
-      return { ok: true, entries: entries.slice() };
+      return { ok: true, entries: poolEntries.slice() };
     },
     getShowBundledEntries() {
       return showBundledEntries;
@@ -77,12 +88,12 @@ function createReadingTestPoolMock({
     serializePoolEntryMeta,
     resetPoolUsageState() {
       if (typeof resetPoolUsageStateImpl === 'function') {
-        return resetPoolUsageStateImpl(entries);
+        return resetPoolUsageStateImpl(poolEntries);
       }
-      for (const entry of entries) {
+      for (const entry of poolEntries) {
         entry.used = false;
       }
-      return { ok: true, updated: entries.length, failed: 0 };
+      return { ok: true, updated: poolEntries.length, failed: 0 };
     },
     markPoolEntryUsed() {
       return { ok: true };
@@ -164,6 +175,7 @@ function createControllerHarness({
   currentText = '',
   preconditionContext = null,
   resetPoolUsageStateImpl = null,
+  sessionWindowsMock = null,
 } = {}) {
   const senderWin = {
     isDestroyed() {
@@ -178,7 +190,11 @@ function createControllerHarness({
     initialShowBundledEntries: showBundledEntries,
     resetPoolUsageStateImpl,
   });
-  const { readingTestSession, restore } = loadReadingTestSessionWithMocks(readingTestPoolMock, senderWin);
+  const { readingTestSession, restore } = loadReadingTestSessionWithMocks(
+    readingTestPoolMock,
+    senderWin,
+    { sessionWindowsMock }
+  );
   const ipcMain = createIpcMainDouble();
   let ensureEditorWindowCalls = 0;
   const controller = readingTestSession.createController({
@@ -223,7 +239,7 @@ test('reading-test entry data reports hidden bundled unused entries as a distinc
         snapshotRelPath: '/reading_speed_test_pool/bundled.json',
         fileName: 'bundled.json',
         text: 'Bundled text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: false,
         isBundled: true,
       },
@@ -231,7 +247,7 @@ test('reading-test entry data reports hidden bundled unused entries as a distinc
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: true,
         isBundled: false,
       },
@@ -260,7 +276,7 @@ test('reading-test entry data keeps poolExhausted semantic for full-pool exhaust
         snapshotRelPath: '/reading_speed_test_pool/bundled.json',
         fileName: 'bundled.json',
         text: 'Bundled text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: true,
         isBundled: true,
       },
@@ -268,7 +284,7 @@ test('reading-test entry data keeps poolExhausted semantic for full-pool exhaust
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: true,
         isBundled: false,
       },
@@ -293,7 +309,7 @@ test('reading-test start returns hidden-bundled guidance when no visible unused 
         snapshotRelPath: '/reading_speed_test_pool/bundled.json',
         fileName: 'bundled.json',
         text: 'Bundled text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: false,
         isBundled: true,
       },
@@ -301,7 +317,7 @@ test('reading-test start returns hidden-bundled guidance when no visible unused 
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: true,
         isBundled: false,
       },
@@ -332,7 +348,7 @@ test('reading-test start keeps no-matching guidance for ordinary filter mismatch
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en', type: 'fiction' },
+        tags: { language: ['en'], type: ['fiction'] },
         used: false,
         isBundled: false,
       },
@@ -355,6 +371,53 @@ test('reading-test start keeps no-matching guidance for ordinary filter mismatch
   }
 });
 
+test('reading-test start matches all entry tag values with OR within and AND between categories', async () => {
+  const sessionWindowsMock = {
+    async openReadingSessionWindows() {
+      return {
+        editorWin: { isDestroyed() { return false; } },
+        flotanteWin: { isDestroyed() { return false; } },
+      };
+    },
+    setEditorPrestartVisible() {},
+    async waitForWindowVisible() {},
+  };
+  const harness = createControllerHarness({
+    entries: [
+      {
+        snapshotRelPath: '/reading_speed_test_pool/multi-tagged.json',
+        fileName: 'multi-tagged.json',
+        text: 'Multi-tagged text.',
+        tags: {
+          language: ['es', 'fr'],
+          type: ['fiction', 'non_fiction'],
+        },
+        used: false,
+        isBundled: false,
+      },
+    ],
+    sessionWindowsMock,
+  });
+
+  try {
+    const result = await harness.ipcMain.invoke(
+      'reading-test-start',
+      harness.senderEvent,
+      {
+        sourceMode: 'pool',
+        selection: {
+          language: ['fr'],
+          type: ['non_fiction'],
+        },
+      }
+    );
+    assert.deepEqual(result, { ok: true });
+    await flushAsyncWork();
+  } finally {
+    harness.restore();
+  }
+});
+
 test('reading-test bundled visibility setter updates persisted entry data contract', async () => {
   const harness = createControllerHarness({
     showBundledEntries: true,
@@ -363,7 +426,7 @@ test('reading-test bundled visibility setter updates persisted entry data contra
         snapshotRelPath: '/reading_speed_test_pool/bundled.json',
         fileName: 'bundled.json',
         text: 'Bundled text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: false,
         isBundled: true,
       },
@@ -371,7 +434,7 @@ test('reading-test bundled visibility setter updates persisted entry data contra
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: false,
         isBundled: false,
       },
@@ -401,7 +464,7 @@ test('reading-test reset reports pool_error when pool usage persistence fails', 
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: true,
         isBundled: false,
       },
@@ -433,7 +496,7 @@ test('reading-test start stays on the existing blocked path when the editor wind
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: false,
         isBundled: false,
       },
@@ -468,7 +531,7 @@ test('reading-test start stays blocked when the text time calculator window is a
         snapshotRelPath: '/reading_speed_test_pool/imported.json',
         fileName: 'imported.json',
         text: 'Imported text.',
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: false,
         isBundled: false,
       },
@@ -545,7 +608,7 @@ test('live Questions and Result windows remain settings targets until their actu
         snapshotRelPath: '/reading_speed_test_pool/questions.json',
         fileName: 'questions.json',
         text: 'word '.repeat(200),
-        tags: { language: 'en' },
+        tags: { language: ['en'] },
         used: false,
         hasValidQuestions: true,
         questions: [{ id: 'q1' }],

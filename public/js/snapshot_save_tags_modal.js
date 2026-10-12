@@ -9,7 +9,7 @@
 // - Persist editable snapshot-tag preferences through the settings-owned bridge.
 // - Provide inline custom-tag creation inside the searchable selectors.
 // - Host the shared snapshot-tag manager modal through window.Notify.
-// - Return normalized optional snapshot tags or null on cancel.
+// - Return normalized snapshot tag sets or null on cancel.
 
 (() => {
   // =============================================================================
@@ -46,6 +46,7 @@
   if (!snapshotTagCatalog
     || !Array.isArray(snapshotTagCatalog.TAG_KEYS)
     || typeof snapshotTagCatalog.createEmptySnapshotTagPreferences !== 'function'
+    || typeof snapshotTagCatalog.buildCustomTagValue !== 'function'
     || typeof snapshotTagCatalog.createCustomTag !== 'function'
     || typeof snapshotTagCatalog.deleteCustomTag !== 'function'
     || typeof snapshotTagCatalog.findKnownOptionByNormalizedLabel !== 'function'
@@ -54,7 +55,7 @@
     || typeof snapshotTagCatalog.moveVisibleTagValue !== 'function'
     || typeof snapshotTagCatalog.normalizeLabelForComparison !== 'function'
     || typeof snapshotTagCatalog.normalizeSnapshotTagPreferences !== 'function'
-    || typeof snapshotTagCatalog.normalizeTagsAgainstCatalog !== 'function'
+    || typeof snapshotTagCatalog.normalizeTags !== 'function'
     || typeof snapshotTagCatalog.resolveCategoryCatalog !== 'function'
     || typeof snapshotTagCatalog.restoreHiddenDefaultTags !== 'function'
     || typeof snapshotTagCatalog.sortVisibleTagValuesAlphabetically !== 'function'
@@ -63,7 +64,9 @@
   }
 
   const rendererIcons = window.RendererIcons || null;
-  if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
+  if (!rendererIcons
+    || typeof rendererIcons.applyIconToElement !== 'function'
+    || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[snapshot-save-tags-modal] RendererIcons unavailable; cannot continue');
   }
   const rendererCombobox = window.RendererCombobox || null;
@@ -96,6 +99,7 @@
   const SEARCH_NO_RESULTS_KEY = 'renderer.snapshots.search.no_results';
   const SEARCH_CREATE_KEY = 'renderer.snapshots.search.create';
   const MANAGE_BUTTON_LABEL_KEY = 'renderer.snapshots.buttons.manage';
+  const CHIP_REMOVE_ARIA_KEY = 'renderer.snapshots.chips.remove_aria';
   const INCLUDE_COUNT_LABEL_KEY = 'renderer.snapshots.metrics.include_count';
   const INCLUDE_READING_LABEL_KEY = 'renderer.snapshots.metrics.include_reading';
   const SNAPSHOT_NAME_LABEL_KEY = 'renderer.snapshots.labels.name';
@@ -111,23 +115,26 @@
     {
       key: 'language',
       labelKey: 'renderer.snapshots.labels.language',
-      emptyKey: 'renderer.snapshots.empty.language',
       labelEl: document.getElementById('snapshotSaveTagsLanguageLabel'),
+      selectedListEl: document.getElementById('snapshotSaveTagsLanguageSelected'),
       controlEl: document.getElementById('snapshotSaveTagsLanguageControl'),
+      pickerEl: document.getElementById('snapshotSaveTagsLanguagePicker'),
     },
     {
       key: 'type',
       labelKey: 'renderer.snapshots.labels.type',
-      emptyKey: 'renderer.snapshots.empty.type',
       labelEl: document.getElementById('snapshotSaveTagsTypeLabel'),
+      selectedListEl: document.getElementById('snapshotSaveTagsTypeSelected'),
       controlEl: document.getElementById('snapshotSaveTagsTypeControl'),
+      pickerEl: document.getElementById('snapshotSaveTagsTypePicker'),
     },
     {
       key: 'difficulty',
       labelKey: 'renderer.snapshots.labels.difficulty',
-      emptyKey: 'renderer.snapshots.empty.difficulty',
       labelEl: document.getElementById('snapshotSaveTagsDifficultyLabel'),
+      selectedListEl: document.getElementById('snapshotSaveTagsDifficultySelected'),
       controlEl: document.getElementById('snapshotSaveTagsDifficultyControl'),
+      pickerEl: document.getElementById('snapshotSaveTagsDifficultyPicker'),
     },
   ];
 
@@ -136,6 +143,7 @@
   // =============================================================================
   const modal = document.getElementById('snapshotSaveTagsModal');
   const backdrop = document.getElementById('snapshotSaveTagsModalBackdrop');
+  const panel = document.getElementById('snapshotSaveTagsModalPanel');
   const title = document.getElementById('snapshotSaveTagsModalTitle');
   const message = document.getElementById('snapshotSaveTagsModalMessage');
   const btnManage = document.getElementById('snapshotSaveTagsManageButton');
@@ -164,6 +172,7 @@
   const REQUIRED_MODAL_ELEMENTS = [
     modal,
     backdrop,
+    panel,
     title,
     message,
     btnManage,
@@ -189,7 +198,9 @@
     managerCloseButton,
     ...FIELD_DEFS.flatMap((field) => [
       field.labelEl,
+      field.selectedListEl,
       field.controlEl,
+      field.pickerEl,
     ]),
   ];
 
@@ -200,6 +211,7 @@
   let fieldComboboxesCreated = false;
   let metricChoiceEventsBound = false;
   let currentSnapshotTagPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  let activePromptState = null;
   const activePromptTranslationRefreshers = new Set();
 
   // =============================================================================
@@ -231,10 +243,12 @@
   function ensureFieldState(fieldKey) {
     if (!fieldStateByKey.has(fieldKey)) {
       fieldStateByKey.set(fieldKey, {
-        committedValue: '',
+        selectedValues: [],
         allOptions: [],
         pendingCreateLabel: '',
+        pendingCreateValues: new Set(),
         combobox: null,
+        inputEl: null,
       });
     }
     return fieldStateByKey.get(fieldKey);
@@ -308,21 +322,16 @@
       currentSnapshotTagPreferences,
       { getDefaultLabel }
     );
-    const clearLabel = tRenderer(field.emptyKey);
-    const clearOption = {
-      value: '',
-      label: clearLabel,
-      normalizedSearch: snapshotTagCatalog.normalizeLabelForComparison(clearLabel),
-      kind: 'clear',
-    };
-    const visibleOptions = resolvedCategory.visibleOptions.map((option) => ({
-      value: option.value,
-      label: option.label,
-      normalizedSearch: buildOptionSearchIndex(option.label, option.value),
-      kind: 'value',
-      origin: option.origin,
-    }));
-    return [clearOption, ...visibleOptions];
+    const selectedValues = new Set(ensureFieldState(field.key).selectedValues);
+    return resolvedCategory.visibleOptions
+      .filter((option) => !selectedValues.has(option.value))
+      .map((option) => ({
+        value: option.value,
+        label: option.label,
+        normalizedSearch: buildOptionSearchIndex(option.label, option.value),
+        kind: 'value',
+        origin: option.origin,
+      }));
   }
 
   function buildCreateOption(fieldKey, queryText) {
@@ -363,7 +372,6 @@
         : {
           value: option.value,
           label: option.label,
-          variant: option.kind === 'clear' ? 'clear' : '',
         }
     ));
   }
@@ -377,68 +385,181 @@
 
   function isFieldOpen(fieldKey) {
     const field = getFieldDef(fieldKey);
-    const trigger = field && field.controlEl ? field.controlEl.firstElementChild : null;
+    const trigger = field && field.pickerEl ? field.pickerEl.firstElementChild : null;
     return !!trigger && trigger.getAttribute('aria-expanded') === 'true';
   }
 
-  async function createCustomTagAndCommit(fieldKey, rawLabel) {
-    const createInfo = snapshotTagCatalog.createCustomTag(
-      currentSnapshotTagPreferences,
-      fieldKey,
-      rawLabel,
-      { getDefaultLabel }
-    );
-    if (!createInfo.ok) {
-      log.warn('Snapshot tag inline create rejected:', fieldKey, createInfo);
-      return;
+  function isFieldPickerFocused(fieldKey) {
+    const field = getFieldDef(fieldKey);
+    const input = field && field.pickerEl
+      ? field.pickerEl.querySelector('.renderer-combobox__input')
+      : null;
+    return !!input && isFieldOpen(fieldKey) && document.activeElement === input;
+  }
+
+  function refreshAllFields() {
+    FIELD_DEFS.forEach((field) => {
+      renderSelectedValues(field);
+      updateFieldPicker(field);
+    });
+  }
+
+  function settlePendingCatalogSave(promptState) {
+    promptState.pendingCatalogSaves -= 1;
+    if (promptState.pendingCatalogSaves === 0 && promptState.processDeferredAction) {
+      promptState.processDeferredAction();
     }
+  }
 
-    const persistedPreferences = await persistSnapshotTagPreferences(createInfo.preferences);
-    if (!persistedPreferences) return;
+  function enqueueCustomTagCreation(fieldKey, rawLabel) {
+    const promptState = activePromptState;
+    const fieldState = ensureFieldState(fieldKey);
+    const labelInfo = snapshotTagCatalog.validateCustomLabel(rawLabel);
+    const value = labelInfo.ok
+      ? snapshotTagCatalog.buildCustomTagValue(fieldKey, labelInfo.label)
+      : '';
+    if (!promptState || !value || fieldState.pendingCreateValues.has(value)) return;
 
-    currentSnapshotTagPreferences = persistedPreferences;
-    const nextTags = collectTags() || {};
-    nextTags[fieldKey] = createInfo.createdTag.value;
-    resetFields(nextTags);
+    fieldState.pendingCreateValues.add(value);
+    promptState.pendingCatalogSaves += 1;
+    const create = async () => {
+      try {
+        const createInfo = snapshotTagCatalog.createCustomTag(
+          currentSnapshotTagPreferences,
+          fieldKey,
+          labelInfo.label,
+          { getDefaultLabel }
+        );
+        if (!createInfo.ok) {
+          if (promptState.deferredAction === 'confirm') {
+            promptState.deferredConfirmSaveFailed = true;
+          }
+          log.warn('Snapshot tag inline create rejected:', fieldKey, createInfo);
+          return;
+        }
+
+        const persistedPreferences = await persistSnapshotTagPreferences(createInfo.preferences);
+        if (!persistedPreferences) {
+          if (promptState.deferredAction === 'confirm') {
+            promptState.deferredConfirmSaveFailed = true;
+          }
+          return;
+        }
+
+        currentSnapshotTagPreferences = persistedPreferences;
+        if (!fieldState.selectedValues.includes(createInfo.createdTag.value)) {
+          fieldState.selectedValues.push(createInfo.createdTag.value);
+        }
+        const keepPickerOpen = isFieldPickerFocused(fieldKey);
+        refreshAllFields();
+        updateFieldPicker(getFieldDef(fieldKey), { value: '' });
+        if (keepPickerOpen) fieldState.combobox.open();
+        scheduleOpenPickerVisibility(fieldKey);
+      } catch (err) {
+        if (promptState.deferredAction === 'confirm') {
+          promptState.deferredConfirmSaveFailed = true;
+        }
+        log.error('Snapshot tag inline create failed:', err);
+      } finally {
+        fieldState.pendingCreateValues.delete(value);
+        settlePendingCatalogSave(promptState);
+      }
+    };
+
+    promptState.catalogSaveChain = promptState.catalogSaveChain.then(create, create);
   }
 
   function onFieldValueChanged(fieldKey, value) {
     const fieldState = ensureFieldState(fieldKey);
-    fieldState.committedValue = value;
+    if (!fieldState.selectedValues.includes(value)) {
+      fieldState.selectedValues.push(value);
+    }
+    const field = getFieldDef(fieldKey);
+    renderSelectedValues(field);
+    updateFieldPicker(field, { value: '' });
+    fieldState.combobox.open();
+    scheduleOpenPickerVisibility(fieldKey);
   }
 
   function onFieldAction(fieldKey, option) {
     if (!option || option.action !== 'create') return;
     const createLabel = ensureFieldState(fieldKey).pendingCreateLabel;
-    if (createLabel) void createCustomTagAndCommit(fieldKey, createLabel);
+    if (createLabel) void enqueueCustomTagCreation(fieldKey, createLabel);
+  }
+
+  function getPickerOptions(fieldState) {
+    return fieldState.allOptions.map((option) => ({
+      value: option.value,
+      label: option.label,
+    }));
+  }
+
+  function updateFieldPicker(field, { value } = {}) {
+    const fieldState = ensureFieldState(field.key);
+    fieldState.allOptions = buildFieldOptions(field);
+    const update = {
+      options: getPickerOptions(fieldState),
+      placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
+      noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
+    };
+    if (typeof value === 'string') {
+      update.value = value;
+      if (fieldState.inputEl) fieldState.inputEl.value = value;
+    }
+    fieldState.combobox.update(update);
+  }
+
+  function renderSelectedValues(field) {
+    const fieldState = ensureFieldState(field.key);
+    field.selectedListEl.replaceChildren();
+    field.selectedListEl.hidden = fieldState.selectedValues.length === 0;
+
+    fieldState.selectedValues.forEach((value) => {
+      const label = snapshotTagCatalog.resolveTagLabel(
+        field.key,
+        value,
+        currentSnapshotTagPreferences,
+        { getDefaultLabel }
+      );
+      const item = document.createElement('li');
+      item.className = 'snapshot-save-tags-chip-item';
+      const button = document.createElement('button');
+      button.className = 'snapshot-save-tags-chip';
+      button.type = 'button';
+      button.textContent = label;
+      button.setAttribute('aria-label', msgRenderer(CHIP_REMOVE_ARIA_KEY, { label }));
+      rendererIcons.applyIconToElement(button, 'close', { preserveContent: true });
+      button.addEventListener('click', () => removeSelectedValue(field.key, value));
+      item.appendChild(button);
+      field.selectedListEl.appendChild(item);
+    });
+  }
+
+  function removeSelectedValue(fieldKey, value) {
+    const field = getFieldDef(fieldKey);
+    const fieldState = ensureFieldState(fieldKey);
+    fieldState.selectedValues = fieldState.selectedValues.filter((candidate) => candidate !== value);
+    renderSelectedValues(field);
+    updateFieldPicker(field, { value: '' });
+    focusElementWithoutScroll(fieldState.combobox);
   }
 
   function resetFields(initialTags) {
-    const normalizedInitialTags = snapshotTagCatalog.normalizeTagsAgainstCatalog(
-      initialTags,
-      currentSnapshotTagPreferences,
-      { getDefaultLabel }
-    );
+    const normalizedInitialTags = snapshotTagCatalog.normalizeTags(initialTags || {});
+    if (!normalizedInitialTags) {
+      throw new Error('[snapshot-save-tags-modal] invalid snapshot tag draft');
+    }
 
     FIELD_DEFS.forEach((field) => {
       const fieldState = ensureFieldState(field.key);
-      fieldState.allOptions = buildFieldOptions(field);
-      const normalizedValue = normalizedInitialTags
-        ? normalizeOptionalString(normalizedInitialTags[field.key])
-        : '';
-      fieldState.committedValue = normalizedValue;
+      fieldState.selectedValues = normalizedInitialTags[field.key]
+        ? normalizedInitialTags[field.key].slice()
+        : [];
       fieldState.pendingCreateLabel = '';
+      fieldState.pendingCreateValues.clear();
       field.labelEl.textContent = tRenderer(field.labelKey);
-      fieldState.combobox.update({
-        options: fieldState.allOptions.map((option) => ({
-          value: option.value,
-          label: option.label,
-          variant: option.kind === 'clear' ? 'clear' : '',
-        })),
-        value: normalizedValue,
-        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
-        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
-      });
+      renderSelectedValues(field);
+      updateFieldPicker(field, { value: '' });
       fieldState.combobox.close();
     });
   }
@@ -448,13 +569,12 @@
 
     FIELD_DEFS.forEach((field) => {
       const fieldState = ensureFieldState(field.key);
-      const value = normalizeOptionalString(fieldState.committedValue);
-      if (value) {
-        tags[field.key] = value;
+      if (fieldState.selectedValues.length) {
+        tags[field.key] = fieldState.selectedValues.slice();
       }
     });
 
-    return Object.keys(tags).length ? tags : null;
+    return snapshotTagCatalog.normalizeTags(tags);
   }
 
   function focusElementWithoutScroll(element) {
@@ -470,6 +590,24 @@
       );
       element.focus();
     }
+  }
+
+  function scrollOpenPickerIntoView(fieldKey) {
+    const field = getFieldDef(fieldKey);
+    if (!field || !isFieldOpen(fieldKey) || typeof panel.getBoundingClientRect !== 'function') return;
+    const listbox = field.pickerEl.querySelector('.renderer-combobox__listbox');
+    if (!listbox || typeof listbox.getBoundingClientRect !== 'function') return;
+
+    const panelRect = panel.getBoundingClientRect();
+    const listboxRect = listbox.getBoundingClientRect();
+    const bottomOverflow = listboxRect.bottom - panelRect.bottom;
+    if (bottomOverflow > 0) {
+      panel.scrollTop += bottomOverflow;
+    }
+  }
+
+  function scheduleOpenPickerVisibility(fieldKey) {
+    window.setTimeout(() => scrollOpenPickerIntoView(fieldKey), 0);
   }
 
   function resolveCopy(copy = {}) {
@@ -509,22 +647,9 @@
 
   function refreshFieldTranslations() {
     FIELD_DEFS.forEach((field) => {
-      const fieldState = ensureFieldState(field.key);
-      const preservedValue = fieldState.combobox && typeof fieldState.combobox.getValue === 'function'
-        ? fieldState.combobox.getValue()
-        : fieldState.committedValue;
-      fieldState.allOptions = buildFieldOptions(field);
       field.labelEl.textContent = tRenderer(field.labelKey);
-      fieldState.combobox.update({
-        options: fieldState.allOptions.map((option) => ({
-          value: option.value,
-          label: option.label,
-          variant: option.kind === 'clear' ? 'clear' : '',
-        })),
-        value: preservedValue,
-        placeholder: tRenderer(SEARCH_PLACEHOLDER_KEY),
-        noResultsLabel: tRenderer(SEARCH_NO_RESULTS_KEY),
-      });
+      renderSelectedValues(field);
+      updateFieldPicker(field);
     });
   }
 
@@ -575,7 +700,7 @@
     FIELD_DEFS.forEach((field) => {
       const fieldState = ensureFieldState(field.key);
       fieldState.combobox = rendererCombobox.create({
-        host: field.controlEl,
+        host: field.pickerEl,
         mode: 'editable',
         options: [],
         value: '',
@@ -586,6 +711,11 @@
         onChange: (value) => onFieldValueChanged(field.key, value),
         onAction: (option) => onFieldAction(field.key, option),
       });
+      const input = field.pickerEl.querySelector('.renderer-combobox__input');
+      fieldState.inputEl = input;
+      input.addEventListener('click', () => scheduleOpenPickerVisibility(field.key));
+      input.addEventListener('input', () => scheduleOpenPickerVisibility(field.key));
+      input.addEventListener('keydown', () => scheduleOpenPickerVisibility(field.key));
     });
 
     fieldComboboxesCreated = true;
@@ -1024,6 +1154,14 @@
 
     return await new Promise((resolve) => {
       let settled = false;
+      const promptState = {
+        catalogSaveChain: Promise.resolve(),
+        deferredAction: '',
+        deferredConfirmSaveFailed: false,
+        pendingCatalogSaves: 0,
+        processDeferredAction: null,
+      };
+      activePromptState = promptState;
       const refreshSnapshotTranslations = () => {
         populateCopy(options.copy);
         refreshFieldTranslations();
@@ -1039,6 +1177,9 @@
         closeAllFields();
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
+        if (activePromptState === promptState) {
+          activePromptState = null;
+        }
       }
 
       function finish(result) {
@@ -1048,7 +1189,7 @@
         resolve(result);
       }
 
-      function onConfirm() {
+      function completeConfirm() {
         const result = {
           tags: collectTags(),
         };
@@ -1063,11 +1204,11 @@
         finish(result);
       }
 
-      function onCancel() {
+      function completeCancel() {
         finish(null);
       }
 
-      async function onManage() {
+      async function completeManage() {
         closeAllFields();
         const currentTags = collectTags();
         const nextPreferences = await promptSnapshotTagManager({
@@ -1078,8 +1219,50 @@
         resetFields(currentTags);
       }
 
+      function processDeferredAction() {
+        if (settled || promptState.pendingCatalogSaves > 0 || !promptState.deferredAction) return;
+        const action = promptState.deferredAction;
+        promptState.deferredAction = '';
+        if (action === 'confirm' && promptState.deferredConfirmSaveFailed) {
+          promptState.deferredConfirmSaveFailed = false;
+          return;
+        }
+        if (action === 'confirm') {
+          completeConfirm();
+        } else if (action === 'cancel') {
+          completeCancel();
+        } else if (action === 'manage') {
+          void completeManage();
+        }
+      }
+
+      function requestAction(action) {
+        if (settled) return;
+        if (promptState.pendingCatalogSaves > 0) {
+          promptState.deferredAction = action;
+          return;
+        }
+        if (action === 'confirm') {
+          completeConfirm();
+        } else if (action === 'cancel') {
+          completeCancel();
+        } else if (action === 'manage') {
+          void completeManage();
+        }
+      }
+
+      promptState.processDeferredAction = processDeferredAction;
+
+      function onConfirm() {
+        requestAction('confirm');
+      }
+
+      function onCancel() {
+        requestAction('cancel');
+      }
+
       function onManageClick() {
-        void onManage();
+        requestAction('manage');
       }
 
       function onWindowKeyDown(ev) {
@@ -1094,7 +1277,7 @@
         }
 
         ev.preventDefault();
-        finish(null);
+        requestAction('cancel');
       }
 
       btnManage.addEventListener('click', onManageClick);
@@ -1108,7 +1291,7 @@
       modal.setAttribute('aria-hidden', 'false');
       const initialFocus = includeSaveFields
         ? snapshotNameInput
-        : FIELD_DEFS[0].controlEl.querySelector('.renderer-combobox__input');
+        : FIELD_DEFS[0].pickerEl.querySelector('.renderer-combobox__input');
       window.Notify.activateModalFocus(modal, {
         initialFocus,
         fallbackFocus: btnClose,

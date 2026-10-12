@@ -40,6 +40,33 @@ test('canonical text snapshots accept the optional readingTest field', () => {
   assert.deepEqual(readingTestInfo.snapshot.readingTest, readingTest);
 });
 
+test('canonical text snapshots require canonical non-empty tag arrays when a category is present', () => {
+  const validInfo = snapshotSchema.validateSnapshotDocument(createSnapshot({
+    tags: {
+      language: ['es-cl', 'fr-CA'],
+      type: ['custom:type:short-story'],
+    },
+  }));
+
+  assert.equal(validInfo.ok, true);
+  assert.deepEqual(validInfo.snapshot.tags, {
+    language: ['es-cl', 'fr-CA'],
+    type: ['custom:type:short-story'],
+  });
+
+  [
+    { language: 'es' },
+    { language: [] },
+    { language: ['es', 'es'] },
+    { difficulty: ['invalid'] },
+    { unknown: ['value'] },
+  ].forEach((tags) => {
+    const info = snapshotSchema.validateSnapshotDocument(createSnapshot({ tags }));
+    assert.equal(info.ok, false);
+    assert.equal(info.code, 'INVALID_SCHEMA');
+  });
+});
+
 test('canonical text snapshots accept count-only and count-plus-reading metrics', () => {
   const countOnlyInfo = snapshotSchema.validateSnapshotDocument(createSnapshot({
     metrics: {

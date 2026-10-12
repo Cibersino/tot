@@ -87,12 +87,17 @@
       }
 
       const normalizedTags = snapshotTagCatalog.normalizeTags(payload.tags);
+      if (!normalizedTags) {
+        log.error('Snapshot save prompt returned invalid tags.');
+        window.Notify.toastMain(TOAST_KEYS.saveError, { type: 'error' });
+        return { ok: false, code: 'INVALID_SCHEMA' };
+      }
       const includeCount = payload.includeCount === true;
       const includeReading = payload.includeReading === true;
       const savePayload = {
         includeCount,
         includeReading,
-        ...(normalizedTags ? { tags: normalizedTags } : {}),
+        tags: normalizedTags,
       };
       if (typeof payload.name === 'string' && payload.name.trim()) {
         savePayload.name = payload.name;

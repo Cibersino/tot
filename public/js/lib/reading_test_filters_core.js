@@ -69,15 +69,20 @@
     return entry && entry.tags ? entry.tags : {};
   }
 
+  function getEntryTagValues(entry, key) {
+    const values = getEntryTags(entry)[key];
+    return Array.isArray(values)
+      ? values.map((value) => normalizeValue(value)).filter(Boolean)
+      : [];
+  }
+
   function entryMatchesNormalizedSelection(entry, normalizedSelection) {
     if (!isUnusedEntry(entry)) return false;
 
-    const tags = getEntryTags(entry);
-
     for (const key of CATEGORY_KEYS) {
       if (!normalizedSelection[key].length) continue;
-      const entryValue = normalizeValue(tags[key]);
-      if (!entryValue || !normalizedSelection[key].includes(entryValue)) {
+      const entryValues = getEntryTagValues(entry, key);
+      if (!entryValues.some((value) => normalizedSelection[key].includes(value))) {
         return false;
       }
     }
@@ -105,10 +110,8 @@
 
     for (const entry of list) {
       if (!isUnusedEntry(entry)) continue;
-      const tags = getEntryTags(entry);
       for (const key of CATEGORY_KEYS) {
-        const value = normalizeValue(tags[key]);
-        if (value) valuesByCategory[key].add(value);
+        getEntryTagValues(entry, key).forEach((value) => valuesByCategory[key].add(value));
       }
     }
 
