@@ -359,6 +359,9 @@
         "no_results": "Inga matchande alternativ",
         "create": "Skapa \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Ta bort taggen \"{label}\""
+      },
       "labels": {
         "name": "Namn (valfritt)",
         "source_comment": "Ursprung (valfritt)",
@@ -399,11 +402,6 @@
           "too_long": "Taggnamnet får inte överstiga {max} tecken.",
           "duplicate": "Det finns redan en tagg med det namnet i den här kategorin."
         }
-      },
-      "empty": {
-        "language": "Ingen språktagg",
-        "type": "Ingen typtagg",
-        "difficulty": "Ingen svårighetsgradstagg"
       },
       "buttons": {
         "manage": "Hantera taggar",

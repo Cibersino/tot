@@ -359,6 +359,9 @@
         "no_results": "Aucune option correspondante",
         "create": "Créer « {label} »"
       },
+      "chips": {
+        "remove_aria": "Supprimer l’étiquette « {label} »"
+      },
       "labels": {
         "name": "Nom (facultatif)",
         "source_comment": "Origine (facultative)",
@@ -399,11 +402,6 @@
           "too_long": "Le nom de l’étiquette ne peut pas dépasser {max} caractères.",
           "duplicate": "Une étiquette portant ce nom existe déjà dans cette catégorie."
         }
-      },
-      "empty": {
-        "language": "Sans tag de langue",
-        "type": "Sans tag de type",
-        "difficulty": "Sans tag de difficulté"
       },
       "buttons": {
         "manage": "Gérer les étiquettes",

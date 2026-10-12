@@ -359,6 +359,9 @@
         "no_results": "Ndaipóri opción ojueheguáva",
         "create": "Ejapo \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Eipe’a etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Téra (ojeporavóva)",
         "source_comment": "Moõguipa ou (ojeporavóva)",
@@ -399,11 +402,6 @@
           "too_long": "Etiqueta réra ndaikatúi ohasa {max} caracteres.",
           "duplicate": "Ko categoría-pe oĩma etiqueta upe téra reheve."
         }
-      },
-      "empty": {
-        "language": "Ñe’ẽ etiqueta’ỹre",
-        "type": "Tipo etiqueta’ỹre",
-        "difficulty": "Hasýkue etiqueta’ỹre"
       },
       "buttons": {
         "manage": "Eñangareko etiqueta-kuérare",

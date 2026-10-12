@@ -359,6 +359,9 @@
         "no_results": "Không có tùy chọn phù hợp",
         "create": "Tạo \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Xóa thẻ \"{label}\""
+      },
       "labels": {
         "name": "Tên (không bắt buộc)",
         "source_comment": "Nguồn gốc (không bắt buộc)",
@@ -399,11 +402,6 @@
           "too_long": "Tên thẻ không được vượt quá {max} ký tự.",
           "duplicate": "Đã có thẻ với tên đó trong danh mục này."
         }
-      },
-      "empty": {
-        "language": "Không có thẻ ngôn ngữ",
-        "type": "Không có thẻ loại",
-        "difficulty": "Không có thẻ độ khó"
       },
       "buttons": {
         "manage": "Quản lý thẻ",

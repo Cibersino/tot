@@ -359,6 +359,9 @@
         "no_results": "Mana tinkuq akllanak kanchu",
         "create": "\"{label}\" kamay"
       },
+      "chips": {
+        "remove_aria": "\"{label}\" etiquetata qichuy"
+      },
       "labels": {
         "name": "Suti (munaspa)",
         "source_comment": "Maymanta (munaspa)",
@@ -399,11 +402,6 @@
           "too_long": "Etiqueta sutin mana {max} caracteres nisqamanta aswan achka kanmanchu.",
           "duplicate": "Kay categoría nisqapi chay sutiyuq etiqueta kachkanña."
         }
-      },
-      "empty": {
-        "language": "Mana rimay etiqueta",
-        "type": "Mana laya etiqueta",
-        "difficulty": "Mana sasa etiqueta"
       },
       "buttons": {
         "manage": "Etiquetankunata kamachiy",

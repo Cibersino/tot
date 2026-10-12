@@ -359,6 +359,9 @@
         "no_results": "Ngelay opciones trafkülelu",
         "create": "Dewma \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Entunge etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Üy (münafülchi)",
         "source_comment": "Mülewe (münafülchi)",
@@ -399,11 +402,6 @@
           "too_long": "Etiqueta ñi üy no pepi doy fütay {max} caracteres mew.",
           "duplicate": "Müley kiñe etiqueta feychi üy mew tüfachi categoría mew."
         }
-      },
-      "empty": {
-        "language": "Dungun tag mülenolu",
-        "type": "Az tag mülenolu",
-        "difficulty": "Rume newen tag mülenolu"
       },
       "buttons": {
         "manage": "Ngünen etiquetas",

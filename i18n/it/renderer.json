@@ -359,6 +359,9 @@
         "no_results": "Nessuna opzione corrispondente",
         "create": "Crea \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Rimuovi tag \"{label}\""
+      },
       "labels": {
         "name": "Nome (facoltativo)",
         "source_comment": "Origine (facoltativa)",
@@ -399,11 +402,6 @@
           "too_long": "Il nome del tag non può superare {max} caratteri.",
           "duplicate": "Esiste già un tag con questo nome in questa categoria."
         }
-      },
-      "empty": {
-        "language": "Nessun tag lingua",
-        "type": "Nessun tag tipo",
-        "difficulty": "Nessun tag difficoltà"
       },
       "buttons": {
         "manage": "Gestisci tag",

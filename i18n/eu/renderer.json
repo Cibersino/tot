@@ -359,6 +359,9 @@
         "no_results": "Ez dago bat datorren aukerarik",
         "create": "Sortu \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Kendu \"{label}\" etiketa"
+      },
       "labels": {
         "name": "Izena (aukerakoa)",
         "source_comment": "Jatorria (aukerakoa)",
@@ -399,11 +402,6 @@
           "too_long": "Etiketaren izenak ezin ditu {max} karaktere gainditu.",
           "duplicate": "Kategoria honetan izen hori duen etiketa bat badago dagoeneko."
         }
-      },
-      "empty": {
-        "language": "Hizkuntza-etiketarik gabe",
-        "type": "Mota-etiketarik gabe",
-        "difficulty": "Zailtasun-etiketarik gabe"
       },
       "buttons": {
         "manage": "Kudeatu etiketak",

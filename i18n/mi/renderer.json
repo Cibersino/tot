@@ -359,6 +359,9 @@
         "no_results": "Kāore he kōwhiringa ōrite",
         "create": "Waihanga \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Tangohia te tūtohu \"{label}\""
+      },
       "labels": {
         "name": "Ingoa (kōwhiringa)",
         "source_comment": "Takenga (kōwhiringa)",
@@ -399,11 +402,6 @@
           "too_long": "Kāore e taea kia neke ake te ingoa tūtohu i te {max} pūāhua.",
           "duplicate": "Kua tīari kē tētahi tūtohu me taua ingoa i tēnei kāwai."
         }
-      },
-      "empty": {
-        "language": "Kāore he tūtohu reo",
-        "type": "Kāore he tūtohu momo",
-        "difficulty": "Kāore he tūtohu uaua"
       },
       "buttons": {
         "manage": "Whakahaere tūtohu",

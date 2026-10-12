@@ -359,6 +359,9 @@
         "no_results": "Azikho izinketho ezifanayo",
         "create": "Dala \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Susa ithegi \"{label}\""
+      },
       "labels": {
         "name": "Igama (uma uthanda)",
         "source_comment": "Umsuka (uma uthanda)",
@@ -399,11 +402,6 @@
           "too_long": "Igama lethegi alikwazi ukudlula izinhlamvu ezingu-{max}.",
           "duplicate": "Ithegi enalelo gama isivele ikhona kulesi sigaba."
         }
-      },
-      "empty": {
-        "language": "Alikho ithegi lolimi",
-        "type": "Alikho ithegi lohlobo",
-        "difficulty": "Alikho ithegi lobunzima"
       },
       "buttons": {
         "manage": "Phatha amathegi",

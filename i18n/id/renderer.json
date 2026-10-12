@@ -359,6 +359,9 @@
         "no_results": "Tidak ada opsi yang cocok",
         "create": "Buat \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Hapus tag \"{label}\""
+      },
       "labels": {
         "name": "Nama (opsional)",
         "source_comment": "Asal (opsional)",
@@ -399,11 +402,6 @@
           "too_long": "Nama tag tidak boleh melebihi {max} karakter.",
           "duplicate": "Tag dengan nama tersebut sudah ada dalam kategori ini."
         }
-      },
-      "empty": {
-        "language": "Tanpa tag bahasa",
-        "type": "Tanpa tag jenis",
-        "difficulty": "Tanpa tag kesulitan"
       },
       "buttons": {
         "manage": "Kelola tag",

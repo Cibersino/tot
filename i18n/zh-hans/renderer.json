@@ -359,6 +359,9 @@
         "no_results": "没有匹配的选项",
         "create": "创建“{label}”"
       },
+      "chips": {
+        "remove_aria": "移除标签“{label}”"
+      },
       "labels": {
         "name": "名称（可选）",
         "source_comment": "来源（可选）",
@@ -399,11 +402,6 @@
           "too_long": "标签名称不能超过 {max} 个字符。",
           "duplicate": "此类别中已存在同名标签。"
         }
-      },
-      "empty": {
-        "language": "无语言标签",
-        "type": "无类型标签",
-        "difficulty": "无难度标签"
       },
       "buttons": {
         "manage": "管理标签",

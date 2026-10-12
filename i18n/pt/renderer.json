@@ -359,6 +359,9 @@
         "no_results": "Nenhuma opção correspondente",
         "create": "Criar \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Remover etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Nome (opcional)",
         "source_comment": "Origem (opcional)",
@@ -399,11 +402,6 @@
           "too_long": "O nome da etiqueta não pode exceder {max} caracteres.",
           "duplicate": "Já existe uma etiqueta com esse nome nesta categoria."
         }
-      },
-      "empty": {
-        "language": "Sem etiqueta de idioma",
-        "type": "Sem etiqueta de tipo",
-        "difficulty": "Sem etiqueta de dificuldade"
       },
       "buttons": {
         "manage": "Gerenciar etiquetas",

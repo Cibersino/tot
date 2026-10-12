@@ -359,6 +359,9 @@
         "no_results": "Hakuna chaguo zinazolingana",
         "create": "Unda \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Ondoa lebo \"{label}\""
+      },
       "labels": {
         "name": "Jina (hiari)",
         "source_comment": "Chanzo (hiari)",
@@ -399,11 +402,6 @@
           "too_long": "Jina la lebo haliwezi kuzidi vibambo {max}.",
           "duplicate": "Lebo yenye jina hilo tayari ipo katika kategoria hii."
         }
-      },
-      "empty": {
-        "language": "Hakuna lebo ya lugha",
-        "type": "Hakuna lebo ya aina",
-        "difficulty": "Hakuna lebo ya ugumu"
       },
       "buttons": {
         "manage": "Dhibiti lebo",

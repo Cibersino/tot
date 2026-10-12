@@ -359,6 +359,9 @@
         "no_results": "Janiw kikipa ajlliñanak utjkiti",
         "create": "\"{label}\" luraña"
       },
+      "chips": {
+        "remove_aria": "\"{label}\" etiqueta chhaqtayaña"
+      },
       "labels": {
         "name": "Suti (munata)",
         "source_comment": "Kawkhata juti (munata)",
@@ -399,11 +402,6 @@
           "too_long": "Etiqueta sutipax janiw {max} caracteres ukat jiläñapäkiti.",
           "duplicate": "Aka categoría ukan uka sutini etiqueta utjxiwa."
         }
-      },
-      "empty": {
-        "language": "Jan aru etiqueta",
-        "type": "Jan kasta etiqueta",
-        "difficulty": "Jan ch’amäwi etiqueta"
       },
       "buttons": {
         "manage": "Etiquetas apnaqaña",

@@ -359,6 +359,9 @@
         "no_results": "No hi ha opcions coincidents",
         "create": "Crea \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Elimina l’etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Nom (opcional)",
         "source_comment": "Origen (opcional)",
@@ -399,11 +402,6 @@
           "too_long": "El nom de l’etiqueta no pot superar els {max} caràcters.",
           "duplicate": "Ja existeix una etiqueta amb aquest nom en aquesta categoria."
         }
-      },
-      "empty": {
-        "language": "Sense etiqueta d’idioma",
-        "type": "Sense etiqueta de tipus",
-        "difficulty": "Sense etiqueta de dificultat"
       },
       "buttons": {
         "manage": "Gestiona etiquetes",

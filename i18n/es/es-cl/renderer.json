@@ -359,6 +359,9 @@
         "no_results": "No hay opciones coincidentes",
         "create": "Crear \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Quitar etiqueta \"{label}\""
+      },
       "labels": {
         "name": "Mote (si querís)",
         "source_comment": "Origen (si querís)",
@@ -399,11 +402,6 @@
           "too_long": "El nombre de etiqueta no puede superar los {max} caracteres.",
           "duplicate": "Ya existe una etiqueta con ese nombre en esta categoría."
         }
-      },
-      "empty": {
-        "language": "Sin etiqueta de idioma",
-        "type": "Sin etiqueta de tipo",
-        "difficulty": "Sin etiqueta de dificultad"
       },
       "buttons": {
         "manage": "Gestionar etiquetas",

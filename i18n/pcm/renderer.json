@@ -359,6 +359,9 @@
         "no_results": "No matching options",
         "create": "Create \"{label}\""
       },
+      "chips": {
+        "remove_aria": "Remove tag \"{label}\""
+      },
       "labels": {
         "name": "Name, if you want",
         "source_comment": "Where e come from, if you want",
@@ -399,11 +402,6 @@
           "too_long": "Tag label no fit pass {max} characters.",
           "duplicate": "Tag with dat label already dey for dis category."
         }
-      },
-      "empty": {
-        "language": "No language tag",
-        "type": "No type tag",
-        "difficulty": "No difficulty tag"
       },
       "buttons": {
         "manage": "Manage tags",

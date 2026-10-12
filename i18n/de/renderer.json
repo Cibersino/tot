@@ -359,6 +359,9 @@
         "no_results": "Keine passenden Optionen",
         "create": "\"{label}\" erstellen"
       },
+      "chips": {
+        "remove_aria": "Tag \"{label}\" entfernen"
+      },
       "labels": {
         "name": "Name (optional)",
         "source_comment": "Herkunft (optional)",
@@ -399,11 +402,6 @@
           "too_long": "Der Tag-Name darf höchstens {max} Zeichen lang sein.",
           "duplicate": "In dieser Kategorie gibt es bereits einen Tag mit diesem Namen."
         }
-      },
-      "empty": {
-        "language": "Kein Sprach-Tag",
-        "type": "Kein Typ-Tag",
-        "difficulty": "Kein Schwierigkeits-Tag"
       },
       "buttons": {
         "manage": "Tags verwalten",

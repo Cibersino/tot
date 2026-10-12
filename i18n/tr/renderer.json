@@ -359,6 +359,9 @@
         "no_results": "Eşleşen seçenek yok",
         "create": "\"{label}\" oluştur"
       },
+      "chips": {
+        "remove_aria": "\"{label}\" etiketini kaldır"
+      },
       "labels": {
         "name": "Ad (isteğe bağlı)",
         "source_comment": "Köken (isteğe bağlı)",
@@ -399,11 +402,6 @@
           "too_long": "Etiket adı {max} karakteri aşamaz.",
           "duplicate": "Bu kategoride bu ada sahip bir etiket zaten var."
         }
-      },
-      "empty": {
-        "language": "Dil etiketi yok",
-        "type": "Tür etiketi yok",
-        "difficulty": "Zorluk etiketi yok"
       },
       "buttons": {
         "manage": "Etiketleri yönet",

@@ -359,6 +359,9 @@
         "no_results": "一致するオプションはありません",
         "create": "「{label}」を作成"
       },
+      "chips": {
+        "remove_aria": "タグ「{label}」を削除"
+      },
       "labels": {
         "name": "名前（任意）",
         "source_comment": "由来（任意）",
@@ -399,11 +402,6 @@
           "too_long": "タグ名は {max} 文字を超えることはできません。",
           "duplicate": "このカテゴリには同じ名前のタグが既にあります。"
         }
-      },
-      "empty": {
-        "language": "言語タグなし",
-        "type": "種類タグなし",
-        "difficulty": "難易度タグなし"
       },
       "buttons": {
         "manage": "タグを管理",
