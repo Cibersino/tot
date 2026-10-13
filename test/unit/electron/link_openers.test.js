@@ -89,7 +89,7 @@ test('open-app-doc copies bundled public docs into the runtime temp root', async
   t.after(restore);
 
   const licenseDir = path.join(appRoot, 'public', 'third_party_licenses');
-  const sourceLicensePath = path.join(licenseDir, 'LICENSE_pdf-parse_1.1.1.txt');
+  const sourceLicensePath = path.join(licenseDir, 'LICENSE_pdfjs-dist_6.4.299.txt');
   fs.mkdirSync(licenseDir, { recursive: true });
   fs.writeFileSync(sourceLicensePath, 'fixture license');
 
@@ -118,6 +118,63 @@ test('open-app-doc copies bundled public docs into the runtime temp root', async
   assert.equal(appTempPaths.isInsideRuntimeTempRoot(openedPaths[0]), true);
   assert.notEqual(openedPaths[0], sourceLicensePath);
   assert.equal(fs.readFileSync(openedPaths[0], 'utf8'), 'fixture license');
+});
+
+test('open-app-doc resolves the PDF.js resource and canvas license docs', async (t) => {
+  const mockedTmpdir = createTestTempDir('link-openers-pdfjs-license-mocked-tmpdir');
+  const appRoot = createTestTempDir('link-openers-pdfjs-license-app-root');
+  t.after(() => fs.rmSync(mockedTmpdir, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(appRoot, { recursive: true, force: true }));
+
+  const { appTempPaths, linkOpeners, restore } = loadLinkOpenersWithMockedTmpdir(mockedTmpdir);
+  t.after(restore);
+
+  const licenseDir = path.join(appRoot, 'public', 'third_party_licenses');
+  fs.mkdirSync(licenseDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(licenseDir, 'NOTICE_pdfjs-dist_6.4.299_bundled_resources.txt'),
+    'pdfjs resources license'
+  );
+  fs.writeFileSync(
+    path.join(licenseDir, 'LICENSE_@napi-rs_canvas_1.0.11.txt'),
+    'canvas license'
+  );
+
+  const openedPaths = [];
+  const ipcMain = createIpcMainDouble();
+  linkOpeners.registerLinkIpc({
+    ipcMain,
+    app: {
+      isPackaged: true,
+      getAppPath() {
+        return appRoot;
+      },
+    },
+    shell: {
+      async openPath(filePath) {
+        openedPaths.push(filePath);
+        return '';
+      },
+    },
+  });
+
+  const resourceResult = await ipcMain.invoke(
+    'open-app-doc',
+    {},
+    'notice-text-extraction-pdf-resources'
+  );
+  const canvasResult = await ipcMain.invoke(
+    'open-app-doc',
+    {},
+    'license-text-extraction-pdf-canvas'
+  );
+
+  assert.deepEqual(resourceResult, { ok: true });
+  assert.deepEqual(canvasResult, { ok: true });
+  assert.equal(openedPaths.length, 2);
+  assert.ok(openedPaths.every((filePath) => appTempPaths.isInsideRuntimeTempRoot(filePath)));
+  assert.equal(fs.readFileSync(openedPaths[0], 'utf8'), 'pdfjs resources license');
+  assert.equal(fs.readFileSync(openedPaths[1], 'utf8'), 'canvas license');
 });
 
 test('open-app-doc resolves the EPUB parser bundled license doc key', async (t) => {

@@ -78,3 +78,43 @@ test('probeNativePdfSelectableText respects the selected page range', async (t) 
   assert.equal(selectableOnly.metadataSafeForLogs.probedToPage, 2);
   assert.equal(selectableOnly.metadataSafeForLogs.selectedPageCount, 1);
 });
+
+test('probeNativePdfSelectableText preserves the preparation cancellation checkpoints', async () => {
+  let cancellationChecks = 0;
+
+  const result = await probeNativePdfSelectableText({
+    filePath: SELECTABLE_PDF_FIXTURE,
+    pageRange: {
+      fromPage: 1,
+      toPage: 1,
+    },
+    isAborted: () => {
+      cancellationChecks += 1;
+      return cancellationChecks > 1;
+    },
+    log: silentLog,
+  });
+
+  assert.equal(cancellationChecks, 2);
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'aborted_by_user');
+  assert.equal(result.error.detailsSafeForLogs.stage, 'runtime');
+});
+
+test('probeNativePdfSelectableText preserves the local parser range safety result', async () => {
+  const result = await probeNativePdfSelectableText({
+    filePath: SELECTABLE_PDF_FIXTURE,
+    pageRange: {
+      fromPage: 13,
+      toPage: 13,
+    },
+    isAborted: () => false,
+    log: silentLog,
+  });
+
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'pdf_page_selection_invalid');
+  assert.equal(result.metadataSafeForLogs.totalPages, 12);
+  assert.equal(result.metadataSafeForLogs.probedFromPage, 13);
+  assert.equal(result.metadataSafeForLogs.probedToPage, 13);
+});

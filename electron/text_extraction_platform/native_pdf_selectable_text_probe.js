@@ -6,11 +6,10 @@
 // =============================================================================
 // Native PDF text-layer probe used during route preparation.
 // Responsibilities:
-// - Lazily load the PDF.js parser used for selectable-text detection.
 // - Probe PDF pages for visible text items without extracting full document text.
 // - Return a structured probe result for native-vs-OCR route triage.
 // - Classify parser failures into the probe error contract used by text extraction.
-// - Release the PDF document handle on exit, with best-effort cleanup logging.
+// - Preserve application-owned preflight, result, and error contracts.
 
 // =============================================================================
 // Imports
@@ -22,24 +21,9 @@ const {
   isPdfPasswordProtectedError,
   isUnreadableOrCorruptPdfError,
 } = require('./text_extraction_pdf_error_detection');
-
-// =============================================================================
-// Module-level parser state
-// =============================================================================
-
-let PDFJS = null;
-
-// =============================================================================
-// Parser loading
-// =============================================================================
-
-function getPdfJs() {
-  if (!PDFJS) {
-    PDFJS = require('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js');
-    PDFJS.disableWorker = true;
-  }
-  return PDFJS;
-}
+const {
+  probePdfSelectableText,
+} = require('./pdfjs_direct_text_engine');
 
 // =============================================================================
 // Source and error helpers
@@ -126,69 +110,6 @@ function validateProbeSourceFile(source, startedAt, baseMetadata) {
   return null;
 }
 
-function resolveProbePageRange(pageRange, totalPages, startedAt, baseMetadata) {
-  const requestedFromPage = pageRange && Number.isInteger(pageRange.fromPage)
-    ? pageRange.fromPage
-    : 1;
-  const requestedToPage = pageRange && Number.isInteger(pageRange.toPage)
-    ? pageRange.toPage
-    : totalPages;
-
-  if (requestedFromPage < 1
-    || requestedToPage < requestedFromPage
-    || requestedToPage > totalPages) {
-    return {
-      ok: false,
-      failure: buildFailure(
-        'unknown',
-        {
-          ...baseMetadata,
-          totalPages,
-          probedFromPage: requestedFromPage,
-          probedToPage: requestedToPage,
-          selectedPageCount: null,
-          elapsedMs: Date.now() - startedAt,
-        },
-        buildError(
-          'pdf_page_selection_invalid',
-          'Selected PDF page range is invalid for native probe.',
-          {
-            stage: 'parse',
-            reason: 'bounds_out_of_range',
-            fromPage: requestedFromPage,
-            toPage: requestedToPage,
-            totalPages,
-          }
-        )
-      ),
-    };
-  }
-
-  return {
-    ok: true,
-    requestedFromPage,
-    requestedToPage,
-    selectedPageCount: (requestedToPage - requestedFromPage) + 1,
-  };
-}
-
-// =============================================================================
-// Probe flow helpers
-// =============================================================================
-
-function ensureNotAborted(isAborted) {
-  if (typeof isAborted === 'function' && isAborted()) {
-    const abortError = new Error('Native PDF probe cancelled by user.');
-    abortError.code = 'aborted_by_user';
-    throw abortError;
-  }
-}
-
-function hasVisibleTextItem(item) {
-  const value = item && typeof item.str === 'string' ? item.str : '';
-  return value.trim().length > 0;
-}
-
 function buildSuccess(selectableText, metadataSafeForLogs) {
   return {
     state: 'success',
@@ -231,72 +152,47 @@ async function probeNativePdfSelectableText({
     return sourceValidationFailure;
   }
 
-  let documentHandle = null;
-
   try {
-    ensureNotAborted(isAborted);
+    const probe = await probePdfSelectableText({
+      filePath: source.absPath,
+      pageRange,
+      isAborted,
+    });
 
-    const pdfBuffer = fs.readFileSync(source.absPath);
-    const pdfjs = getPdfJs();
-    // Work around PDF.js 1.10.100 Node Buffer parsing bug.
-    // This adds a full-size in-memory copy of the PDF; revisit when upgrading the parser.
-    documentHandle = await pdfjs.getDocument(new Uint8Array(pdfBuffer));
-
-    const totalPages = Number.isFinite(documentHandle.numPages) ? documentHandle.numPages : 0;
-    const resolvedPageRange = resolveProbePageRange(pageRange, totalPages, startedAt, baseMetadata);
-    if (!resolvedPageRange.ok) {
-      return resolvedPageRange.failure;
-    }
-
-    const {
-      requestedFromPage,
-      requestedToPage,
-      selectedPageCount,
-    } = resolvedPageRange;
-    let pagesScanned = 0;
-    let foundAtPage = null;
-
-    for (let pageNumber = requestedFromPage; pageNumber <= requestedToPage; pageNumber += 1) {
-      ensureNotAborted(isAborted);
-
-      const page = await documentHandle.getPage(pageNumber);
-      const textContent = await page.getTextContent({
-        normalizeWhitespace: false,
-        disableCombineTextItems: false,
-      });
-
-      pagesScanned = pageNumber;
-
-      if (Array.isArray(textContent && textContent.items)
-        && textContent.items.some((item) => hasVisibleTextItem(item))) {
-        foundAtPage = pageNumber;
-        return buildSuccess(
-          'present',
+    if (probe.state === 'invalid_page_range') {
+      return buildFailure(
+        'unknown',
+        {
+          ...baseMetadata,
+          totalPages: probe.totalPages,
+          probedFromPage: probe.requestedFromPage,
+          probedToPage: probe.requestedToPage,
+          selectedPageCount: null,
+          elapsedMs: Date.now() - startedAt,
+        },
+        buildError(
+          'pdf_page_selection_invalid',
+          'Selected PDF page range is invalid for native probe.',
           {
-            pagesScanned,
-            totalPages,
-            foundAtPage,
-            probedFromPage: requestedFromPage,
-            probedToPage: requestedToPage,
-            selectedPageCount,
-            elapsedMs: Date.now() - startedAt,
+            stage: 'parse',
+            reason: 'bounds_out_of_range',
+            fromPage: probe.requestedFromPage,
+            toPage: probe.requestedToPage,
+            totalPages: probe.totalPages,
           }
-        );
-      }
+        )
+      );
     }
 
-    return buildSuccess(
-      'absent',
-      {
-        pagesScanned,
-        totalPages,
-        foundAtPage,
-        probedFromPage: requestedFromPage,
-        probedToPage: requestedToPage,
-        selectedPageCount,
-        elapsedMs: Date.now() - startedAt,
-      }
-    );
+    return buildSuccess(probe.selectableText, {
+      pagesScanned: probe.pagesScanned,
+      totalPages: probe.totalPages,
+      foundAtPage: probe.foundAtPage,
+      probedFromPage: probe.requestedFromPage,
+      probedToPage: probe.requestedToPage,
+      selectedPageCount: probe.selectedPageCount,
+      elapsedMs: Date.now() - startedAt,
+    });
   } catch (err) {
     if (String(err && err.code || '') === 'aborted_by_user') {
       return buildFailure(
@@ -352,17 +248,6 @@ async function probeNativePdfSelectableText({
         }
       )
     );
-  } finally {
-    if (documentHandle && typeof documentHandle.destroy === 'function') {
-      try {
-        documentHandle.destroy();
-      } catch (err) {
-        log.warn('Native PDF selectable-text probe cleanup failed (ignored):', {
-          sourceFileExt: source.fileExt,
-          errorName: String(err && err.name ? err.name : 'Error'),
-        });
-      }
-    }
   }
 }
 

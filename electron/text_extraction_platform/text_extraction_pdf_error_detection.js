@@ -34,7 +34,13 @@ function isUnreadableOrCorruptPdfError(err) {
   const code = String(err && err.code ? err.code : '').trim();
   const message = String(err && err.message ? err.message : '').toLowerCase();
 
-  if (code === 'ENOENT' || code === 'EISDIR' || code === 'EACCES' || code === 'EPERM') {
+  if (code === 'ENOENT'
+    || code === 'EISDIR'
+    || code === 'EACCES'
+    || code === 'EPERM'
+    || code === 'PDFJS_INVALID_FILE_SIZE'
+    || code === 'PDFJS_INVALID_READ_RESULT'
+    || code === 'PDFJS_PREMATURE_EOF') {
     return true;
   }
 

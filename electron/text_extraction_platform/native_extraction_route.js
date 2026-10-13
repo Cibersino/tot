@@ -20,8 +20,8 @@ const fs = require('fs');
 const path = require('path');
 const Log = require('../log');
 const mammoth = require('mammoth');
-const pdfParse = require('pdf-parse');
 const { extractEpubText } = require('./epub_text_extraction');
+const { extractPdfText } = require('./pdfjs_direct_text_engine');
 const {
   isPdfPasswordProtectedError,
   isUnreadableOrCorruptPdfError,
@@ -170,11 +170,10 @@ async function runNativeParser(parserType, absPath) {
   }
 
   if (parserType === 'pdf_text_layer') {
-    const pdfBuffer = fs.readFileSync(absPath);
-    const extraction = await pdfParse(pdfBuffer);
+    const extraction = await extractPdfText({ filePath: absPath });
     const warnings = [];
-    if (extraction && Number.isFinite(extraction.numpages) && extraction.numpages > 0) {
-      warnings.push(`pdf_pages:${extraction.numpages}`);
+    if (extraction && Number.isFinite(extraction.numPages) && extraction.numPages > 0) {
+      warnings.push(`pdf_pages:${extraction.numPages}`);
     }
     return {
       text: String(extraction && extraction.text ? extraction.text : ''),
