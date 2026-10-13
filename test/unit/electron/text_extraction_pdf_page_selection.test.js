@@ -221,6 +221,14 @@ test('materializePdfPageSelectionInput supplies selected pages to the native ext
     generatedPdfArtifactPolicy: { mode: 'delete' },
   });
   assert.equal(materialized.ok, true);
+
+  t.after(() => {
+    const runDir = path.dirname(materialized.effectiveFilePath);
+    if (fs.existsSync(runDir)) {
+      fs.rmSync(runDir, { recursive: true, force: true });
+    }
+  });
+
   assert.equal(materialized.materialized, true);
   assert.equal(materialized.processingInputSource, 'generated_pdf_subset');
   assert.equal(materialized.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
@@ -249,13 +257,6 @@ test('materializePdfPageSelectionInput supplies selected pages to the native ext
   const cleanupWarning = materialized.cleanupGeneratedArtifact();
   assert.equal(cleanupWarning, null);
   assert.equal(fs.existsSync(materialized.effectiveFilePath), false);
-
-  t.after(() => {
-    const runDir = path.dirname(materialized.effectiveFilePath);
-    if (fs.existsSync(runDir)) {
-      fs.rmSync(runDir, { recursive: true, force: true });
-    }
-  });
 });
 
 test('materializePdfPageSelectionInput retains subset PDFs under the caller-owned keep directory', async (t) => {
