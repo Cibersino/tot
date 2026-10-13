@@ -118,3 +118,26 @@ test('probeNativePdfSelectableText preserves the local parser range safety resul
   assert.equal(result.metadataSafeForLogs.probedFromPage, 13);
   assert.equal(result.metadataSafeForLogs.probedToPage, 13);
 });
+
+test('probeNativePdfSelectableText translates corrupt PDF parser failures', async (t) => {
+  const dir = createTestTempDir('native-pdf-probe-malformed-pdf');
+  const filePath = path.join(dir, 'malformed.pdf');
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.writeFileSync(filePath, '%PDF-1.7\nnot a complete PDF', 'utf8');
+
+  const result = await probeNativePdfSelectableText({
+    filePath,
+    isAborted: () => false,
+    log: silentLog,
+  });
+
+  assert.equal(result.state, 'failure');
+  assert.equal(result.selectableText, 'unknown');
+  assert.equal(result.error.code, 'unreadable_or_corrupt');
+  assert.equal(result.error.detailsSafeForLogs.stage, 'parse');
+  assert.equal(result.error.detailsSafeForLogs.nativeFailureType, 'corrupt_or_unreadable');
+  assert.equal(result.error.detailsSafeForLogs.sourceFileExt, 'pdf');
+  assert.equal(typeof result.error.detailsSafeForLogs.errorName, 'string');
+  assert.notEqual(result.error.detailsSafeForLogs.errorName, '');
+  assert.match(result.error.detailsSafeForLogs.errorMessage, /invalid pdf/i);
+});
