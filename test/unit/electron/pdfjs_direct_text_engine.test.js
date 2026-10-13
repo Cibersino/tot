@@ -4,6 +4,7 @@ process.env.TOT_LOG_LEVEL = 'silent';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { spawnSync } = require('node:child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -12,6 +13,9 @@ const ENGINE_MODULE_PATH = path.resolve(
   '../../../electron/text_extraction_platform/pdfjs_direct_text_engine.js'
 );
 const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
+const LIFECYCLE_PROBE_PATH = path.resolve(
+  'test/helpers/pdfjs_direct_text_engine_lifecycle_probe.js'
+);
 
 function loadPdfjsDirectTextEngineWithFs(fsOverrides = {}) {
   const fsModulePath = require.resolve('fs');
@@ -154,4 +158,78 @@ test('direct PDF.js input loading propagates rejected reads and still closes the
     (err) => err === readError
   );
   assert.equal(closed, true);
+});
+
+function assertTerminalLifecycle(result, expectedPageNumbers) {
+  assert.equal(result.loadingTaskDestroyCalls, 1);
+  assert.equal(result.loadingTaskDestroySettled, 1);
+  assert.equal(result.documentCleanupCalls, 0);
+  assert.equal(result.documentDestroyCalls, 0);
+  assert.equal(result.getDocumentCalls, 1);
+  assert.deepEqual(result.getPageCalls, expectedPageNumbers);
+
+  for (const pageNumber of expectedPageNumbers) {
+    assert.equal(result.pageCleanupCalls[pageNumber], 1);
+    assert.equal(result.cleanupAfterTextSettlement[pageNumber], true);
+    assert.ok(
+      result.events.indexOf(`page:${pageNumber}:cleanup`)
+        < result.events.indexOf('loading-task:destroy:start')
+    );
+  }
+}
+
+function getWarningMessages(result) {
+  return result.warnings.map(([message]) => message);
+}
+
+test('direct PDF.js adapter preserves its singular resource lifecycle across terminal outcomes', { concurrency: false }, () => {
+  const child = spawnSync(process.execPath, [LIFECYCLE_PROBE_PATH], {
+    cwd: path.resolve(__dirname, '..', '..', '..'),
+    encoding: 'utf8',
+    timeout: 10000,
+  });
+
+  assert.equal(child.error, undefined, child.error && child.error.message);
+  assert.equal(
+    child.status,
+    0,
+    `Lifecycle probe failed.\nSTDOUT:\n${child.stdout}\nSTDERR:\n${child.stderr}`
+  );
+
+  const results = JSON.parse(child.stdout);
+
+  assertTerminalLifecycle(results.normal, [1, 2]);
+  assert.equal(results.normal.outcome.numPages, 2);
+
+  assertTerminalLifecycle(results.loadFailure, []);
+  assert.equal(results.loadFailure.outcome.loadFailurePreserved, true);
+  assert.deepEqual(getWarningMessages(results.loadFailure), [
+    'PDF.js loading task destroy failed (ignored):',
+  ]);
+
+  assertTerminalLifecycle(results.textFailure, [1]);
+  assert.equal(results.textFailure.outcome.textFailurePreserved, true);
+  assert.deepEqual(getWarningMessages(results.textFailure), [
+    'PDF.js page cleanup failed (ignored):',
+    'PDF.js loading task destroy failed (ignored):',
+  ]);
+
+  assertTerminalLifecycle(results.earlyProbe, [1]);
+  assert.equal(results.earlyProbe.outcome.selectableText, 'present');
+  assert.equal(results.earlyProbe.outcome.foundAtPage, 1);
+
+  assertTerminalLifecycle(results.secondaryFailureSuccess, [1]);
+  assert.equal(results.secondaryFailureSuccess.outcome.numPages, 1);
+  assert.deepEqual(getWarningMessages(results.secondaryFailureSuccess), [
+    'PDF.js page cleanup failed (ignored):',
+    'PDF.js loading task destroy failed (ignored):',
+  ]);
+
+  assertTerminalLifecycle(results.cancellation, [1]);
+  assert.equal(results.cancellation.outcome.cancellationChecks, 3);
+  assert.equal(results.cancellation.outcome.cancellationPreserved, true);
+  assert.deepEqual(getWarningMessages(results.cancellation), [
+    'PDF.js page cleanup failed (ignored):',
+    'PDF.js loading task destroy failed (ignored):',
+  ]);
 });
