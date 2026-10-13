@@ -182,7 +182,7 @@ function getWarningMessages(result) {
   return result.warnings.map(([message]) => message);
 }
 
-test('direct PDF.js adapter preserves its singular resource lifecycle across terminal outcomes', { concurrency: false }, () => {
+test('direct PDF.js adapter preserves its singular lifecycle and approved raw-text serialization', { concurrency: false }, () => {
   const child = spawnSync(process.execPath, [LIFECYCLE_PROBE_PATH], {
     cwd: path.resolve(__dirname, '..', '..', '..'),
     encoding: 'utf8',
@@ -200,6 +200,7 @@ test('direct PDF.js adapter preserves its singular resource lifecycle across ter
 
   assertTerminalLifecycle(results.normal, [1, 2]);
   assert.equal(results.normal.outcome.numPages, 2);
+  assert.equal(results.normal.outcome.text, 'gamma alpha \nbeta\n\n\tdelta\n');
 
   assertTerminalLifecycle(results.loadFailure, []);
   assert.equal(results.loadFailure.outcome.loadFailurePreserved, true);

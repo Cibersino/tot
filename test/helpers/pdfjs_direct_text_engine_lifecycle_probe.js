@@ -162,8 +162,25 @@ async function runLifecycleProbe(engine) {
   const normal = createScenario({
     numPages: 2,
     pages: {
-      1: { textContent: { items: [{ str: 'One', hasEOL: true }] } },
-      2: { textContent: { items: [{ str: 'Two' }] } },
+      1: {
+        textContent: {
+          items: [
+            { str: 'gamma' },
+            { str: 73, hasEOL: true },
+            { str: ' alpha ', hasEOL: true },
+            { hasEOL: true, type: 'beginMarkedContent' },
+            { str: 'beta' },
+          ],
+        },
+      },
+      2: {
+        textContent: {
+          items: [
+            { str: '\tdelta', hasEOL: true },
+            { str: { ignored: true }, hasEOL: true },
+          ],
+        },
+      },
     },
   });
   const normalResult = await runScenario(engine, normal, (adapter) => (
