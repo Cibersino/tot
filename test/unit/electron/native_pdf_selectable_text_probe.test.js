@@ -78,3 +78,66 @@ test('probeNativePdfSelectableText respects the selected page range', async (t) 
   assert.equal(selectableOnly.metadataSafeForLogs.probedToPage, 2);
   assert.equal(selectableOnly.metadataSafeForLogs.selectedPageCount, 1);
 });
+
+test('probeNativePdfSelectableText preserves the preparation cancellation checkpoints', async () => {
+  let cancellationChecks = 0;
+
+  const result = await probeNativePdfSelectableText({
+    filePath: SELECTABLE_PDF_FIXTURE,
+    pageRange: {
+      fromPage: 1,
+      toPage: 1,
+    },
+    isAborted: () => {
+      cancellationChecks += 1;
+      return cancellationChecks > 1;
+    },
+    log: silentLog,
+  });
+
+  assert.equal(cancellationChecks, 2);
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'aborted_by_user');
+  assert.equal(result.error.detailsSafeForLogs.stage, 'runtime');
+});
+
+test('probeNativePdfSelectableText preserves the local parser range safety result', async () => {
+  const result = await probeNativePdfSelectableText({
+    filePath: SELECTABLE_PDF_FIXTURE,
+    pageRange: {
+      fromPage: 13,
+      toPage: 13,
+    },
+    isAborted: () => false,
+    log: silentLog,
+  });
+
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'pdf_page_selection_invalid');
+  assert.equal(result.metadataSafeForLogs.totalPages, 12);
+  assert.equal(result.metadataSafeForLogs.probedFromPage, 13);
+  assert.equal(result.metadataSafeForLogs.probedToPage, 13);
+});
+
+test('probeNativePdfSelectableText translates corrupt PDF parser failures', async (t) => {
+  const dir = createTestTempDir('native-pdf-probe-malformed-pdf');
+  const filePath = path.join(dir, 'malformed.pdf');
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.writeFileSync(filePath, '%PDF-1.7\nnot a complete PDF', 'utf8');
+
+  const result = await probeNativePdfSelectableText({
+    filePath,
+    isAborted: () => false,
+    log: silentLog,
+  });
+
+  assert.equal(result.state, 'failure');
+  assert.equal(result.selectableText, 'unknown');
+  assert.equal(result.error.code, 'unreadable_or_corrupt');
+  assert.equal(result.error.detailsSafeForLogs.stage, 'parse');
+  assert.equal(result.error.detailsSafeForLogs.nativeFailureType, 'corrupt_or_unreadable');
+  assert.equal(result.error.detailsSafeForLogs.sourceFileExt, 'pdf');
+  assert.equal(typeof result.error.detailsSafeForLogs.errorName, 'string');
+  assert.notEqual(result.error.detailsSafeForLogs.errorName, '');
+  assert.match(result.error.detailsSafeForLogs.errorMessage, /invalid pdf/i);
+});

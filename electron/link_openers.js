@@ -70,9 +70,25 @@ const APP_DOC_PUBLIC_FILES = Object.freeze({
     relativePath: path.join(
       'public',
       'third_party_licenses',
-      'LICENSE_pdf-parse_1.1.1.txt'
+      'LICENSE_pdfjs-dist_6.4.299.txt'
     ),
-    tempName: 'tot_LICENSE_pdf-parse_1.1.1.txt',
+    tempName: 'tot_LICENSE_pdfjs-dist_6.4.299.txt',
+  },
+  'notice-text-extraction-pdf-resources': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'NOTICE_pdfjs-dist_6.4.299_bundled_resources.txt'
+    ),
+    tempName: 'tot_NOTICE_pdfjs-dist_6.4.299_bundled_resources.txt',
+  },
+  'license-text-extraction-pdf-canvas': {
+    relativePath: path.join(
+      'public',
+      'third_party_licenses',
+      'LICENSE_@napi-rs_canvas_1.0.11.txt'
+    ),
+    tempName: 'tot_LICENSE_@napi-rs_canvas_1.0.11.txt',
   },
   'license-text-extraction-pdf-materialization': {
     relativePath: path.join(

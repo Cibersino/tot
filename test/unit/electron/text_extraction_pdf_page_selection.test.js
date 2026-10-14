@@ -24,6 +24,9 @@ const {
 const {
   isInsideRuntimeTempRoot,
 } = require('../../../electron/app_temp_paths');
+const {
+  runNativeExtractionRoute,
+} = require('../../../electron/text_extraction_platform/native_extraction_route');
 
 const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
 const CORE_MODULE_PATH = path.resolve(
@@ -201,7 +204,7 @@ test('inspectPdfFile returns page count for selectable fixture', async () => {
   assert.equal(inspection.error, null);
 });
 
-test('materializePdfPageSelectionInput creates and cleans up a temporary subset PDF', async (t) => {
+test('materializePdfPageSelectionInput supplies selected pages to the native extraction route and cleans up', async (t) => {
   const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
   const selection = canonicalizePdfPageSelection(
     {
@@ -218,6 +221,14 @@ test('materializePdfPageSelectionInput creates and cleans up a temporary subset 
     generatedPdfArtifactPolicy: { mode: 'delete' },
   });
   assert.equal(materialized.ok, true);
+
+  t.after(() => {
+    const runDir = path.dirname(materialized.effectiveFilePath);
+    if (fs.existsSync(runDir)) {
+      fs.rmSync(runDir, { recursive: true, force: true });
+    }
+  });
+
   assert.equal(materialized.materialized, true);
   assert.equal(materialized.processingInputSource, 'generated_pdf_subset');
   assert.equal(materialized.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
@@ -230,16 +241,22 @@ test('materializePdfPageSelectionInput creates and cleans up a temporary subset 
   assert.equal(subsetInspection.totalPages, 2);
   assert.equal(resolveProcessingInputFileName({ fileInfo, pdfPageSelection: selection }), materialized.processingInputFileName);
 
+  const nativeResult = await runNativeExtractionRoute({
+    filePath: materialized.effectiveFilePath,
+  });
+  assert.equal(nativeResult.state, 'success');
+  assert.equal(nativeResult.executedRoute, 'native');
+  assert.equal(nativeResult.provenance.sourceFileExt, 'pdf');
+  assert.equal(nativeResult.provenance.metadataSafeForLogs.parserType, 'pdf_text_layer');
+  assert.deepEqual(nativeResult.warnings, ['pdf_pages:2']);
+  assert.match(nativeResult.text, /Page 2 of 12/);
+  assert.match(nativeResult.text, /Page 3 of 12/);
+  assert.doesNotMatch(nativeResult.text, /Page 1 of 12/);
+  assert.doesNotMatch(nativeResult.text, /Page 4 of 12/);
+
   const cleanupWarning = materialized.cleanupGeneratedArtifact();
   assert.equal(cleanupWarning, null);
   assert.equal(fs.existsSync(materialized.effectiveFilePath), false);
-
-  t.after(() => {
-    const runDir = path.dirname(materialized.effectiveFilePath);
-    if (fs.existsSync(runDir)) {
-      fs.rmSync(runDir, { recursive: true, force: true });
-    }
-  });
 });
 
 test('materializePdfPageSelectionInput retains subset PDFs under the caller-owned keep directory', async (t) => {

@@ -19,6 +19,9 @@ const EPUB_MODULE_PATH = path.resolve(
   __dirname,
   '../../../electron/text_extraction_platform/epub_text_extraction.js'
 );
+const SELECTABLE_PDF_FIXTURE = path.resolve('test/fixtures/pdf/selectable_text_fixture_12_pages.pdf');
+const IMAGE_ONLY_PDF_FIXTURE = path.resolve('test/fixtures/pdf/image_only_fixture_12_pages.pdf');
+const ENCRYPTED_PDF_FIXTURE = path.resolve('test/fixtures/pdf/encrypted_selectable_text_fixture.pdf');
 
 function createMinimalEpub(t, xhtmlBody = '<p>Hello</p>') {
   const dir = createTestTempDir('native-extraction-route-epub');
@@ -157,4 +160,49 @@ test('runNativeExtractionRoute maps unexpected EPUB exceptions to native_extract
 
   assert.equal(result.state, 'failure');
   assert.equal(result.error.code, 'native_extraction_failed');
+});
+
+test('runNativeExtractionRoute extracts PDF text with the established warning and normalization contract', async () => {
+  const { runNativeExtractionRoute } = require('../../../electron/text_extraction_platform/native_extraction_route');
+
+  const result = await runNativeExtractionRoute({ filePath: SELECTABLE_PDF_FIXTURE });
+
+  assert.equal(result.state, 'success');
+  assert.equal(result.executedRoute, 'native');
+  assert.equal(result.provenance.sourceFileExt, 'pdf');
+  assert.equal(result.provenance.metadataSafeForLogs.parserType, 'pdf_text_layer');
+  assert.deepEqual(result.warnings, ['pdf_pages:12']);
+  assert.ok(result.text.length > 0);
+});
+
+test('runNativeExtractionRoute preserves F-01 for image-only PDFs', async () => {
+  const { runNativeExtractionRoute } = require('../../../electron/text_extraction_platform/native_extraction_route');
+
+  const result = await runNativeExtractionRoute({ filePath: IMAGE_ONLY_PDF_FIXTURE });
+
+  assert.equal(result.state, 'success');
+  assert.equal(result.text, '');
+  assert.deepEqual(result.warnings, ['pdf_pages:12', 'native_empty_text']);
+});
+
+test('runNativeExtractionRoute preserves encrypted-PDF classification', async () => {
+  const { runNativeExtractionRoute } = require('../../../electron/text_extraction_platform/native_extraction_route');
+
+  const result = await runNativeExtractionRoute({ filePath: ENCRYPTED_PDF_FIXTURE });
+
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'native_encrypted_or_password_protected');
+});
+
+test('runNativeExtractionRoute preserves F-02 for malformed PDFs', async (t) => {
+  const dir = createTestTempDir('native-extraction-route-malformed-pdf');
+  const filePath = path.join(dir, 'malformed.pdf');
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.writeFileSync(filePath, '%PDF-1.7\nnot a complete PDF', 'utf8');
+
+  const { runNativeExtractionRoute } = require('../../../electron/text_extraction_platform/native_extraction_route');
+  const result = await runNativeExtractionRoute({ filePath });
+
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'unreadable_or_corrupt');
 });

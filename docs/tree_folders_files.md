@@ -85,6 +85,7 @@ tot/
 │ │ ├── ocr_image_normalization.js
 │ │ ├── ocr_jp2_normalization.js
 │ │ ├── openjpeg_wasm_runtime.js
+│ │ ├── pdfjs_direct_text_engine.js
 │ │ ├── text_extraction_execute_prepared_ipc.js
 │ │ ├── text_extraction_file_picker_ipc.js
 │ │ ├── text_extraction_generated_pdf_reveal_ipc.js
