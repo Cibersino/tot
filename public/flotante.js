@@ -80,7 +80,7 @@ const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
-// Missing elements are logged; execution continues (assumes flotante.html provides these IDs).
+// flotante.html provides these IDs; #crono is tolerated, but either missing control terminates bootstrap.
 if (!cronoEl) {
   log.error('element #crono not found');
 }
@@ -283,8 +283,7 @@ function enqueueFlotanteSettingsApplication(settings) {
       reportFlotanteI18nFailure(err);
     }
   };
-  // Preload listeners do not await async callbacks. Admit full settings
-  // snapshots after the preceding root semantic operation has settled.
+  // Preload listeners do not await async callbacks. Admit full settings snapshots after the preceding root semantic operation has settled.
   return enqueueFlotanteSemanticWork(run);
 }
 
@@ -300,9 +299,8 @@ if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
   }
 }
 
-// Start state and settings delivery before the initial transition so the
-// main-owned stopwatch state remains current. Bind commands only after the
-// first required semantic presentation has completed successfully.
+// Start state and settings delivery before the initial transition so the main-owned stopwatch state remains current. 
+// Bind commands only after the first required semantic presentation has completed successfully.
 // Floating Stopwatch intentionally has no programmatic initial DOM focus.
 enqueueFlotanteSemanticWork(async () => {
   let lang = DEFAULT_LANG;
