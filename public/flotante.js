@@ -178,24 +178,6 @@ function renderState(state) {
   }
 }
 
-// =============================================================================
-// Bridge integration (flotanteAPI)
-// =============================================================================
-
-// onState now listens to 'crono-state' (main)
-try {
-  window.flotanteAPI.onState((state) => {
-    if (flotanteI18nTerminal) return;
-    try { renderState(state); } catch (err) { log.error(err); }
-  });
-} catch (err) {
-  terminateFlotanteBootstrap(
-    log,
-    'BOOTSTRAP: flotanteAPI.onState registration failed; closing Floating Stopwatch before normal interaction.',
-    err
-  );
-}
-
 async function applyFlotanteTranslations(lang) {
   const target = (lang || '').toLowerCase() || DEFAULT_LANG;
   await transitionRendererTranslations(target, {
@@ -252,6 +234,24 @@ function reportTerminalFlotanteI18nFailure(kind) {
     log.warn('flotanteAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
     if (typeof window.close === 'function') window.close();
   }
+}
+
+// =============================================================================
+// Bridge integration (flotanteAPI)
+// =============================================================================
+
+// onState now listens to 'crono-state' (main)
+try {
+  window.flotanteAPI.onState((state) => {
+    if (flotanteI18nTerminal) return;
+    try { renderState(state); } catch (err) { log.error(err); }
+  });
+} catch (err) {
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: flotanteAPI.onState registration failed; closing Floating Stopwatch before normal interaction.',
+    err
+  );
 }
 
 // =============================================================================
