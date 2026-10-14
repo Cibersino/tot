@@ -61,6 +61,7 @@ test('probeNativePdfSelectableText respects the selected page range', async (t) 
   assert.equal(scannedOnly.metadataSafeForLogs.probedFromPage, 1);
   assert.equal(scannedOnly.metadataSafeForLogs.probedToPage, 1);
   assert.equal(scannedOnly.metadataSafeForLogs.selectedPageCount, 1);
+  assert.equal(scannedOnly.metadataSafeForLogs.pagesScanned, 1);
 
   const selectableOnly = await probeNativePdfSelectableText({
     filePath: mixedPdfPath,
@@ -77,6 +78,7 @@ test('probeNativePdfSelectableText respects the selected page range', async (t) 
   assert.equal(selectableOnly.metadataSafeForLogs.probedFromPage, 2);
   assert.equal(selectableOnly.metadataSafeForLogs.probedToPage, 2);
   assert.equal(selectableOnly.metadataSafeForLogs.selectedPageCount, 1);
+  assert.equal(selectableOnly.metadataSafeForLogs.pagesScanned, 1);
 });
 
 test('probeNativePdfSelectableText preserves the preparation cancellation checkpoints', async () => {

@@ -235,7 +235,7 @@ async function probePdfSelectableText({ filePath, pageRange, isAborted } = {}) {
       for (let pageNumber = requestedFromPage; pageNumber <= requestedToPage; pageNumber += 1) {
         ensureNotAborted(isAborted);
         const textContent = await getTextContent(pageNumber);
-        pagesScanned = pageNumber;
+        pagesScanned += 1;
 
         if (Array.isArray(textContent && textContent.items)
           && textContent.items.some((item) => hasVisibleTextItem(item))) {
