@@ -96,8 +96,7 @@
 
   function initReadingTestResultWindow() {
     if (resultI18nTerminal) return;
-    // Keep the required DOM contract explicit so the window aborts early if
-    // the HTML shell drifts away from the renderer script expectations.
+    // Keep the required DOM contract explicit so the window aborts early if the HTML shell drifts away from the renderer script expectations.
     function getRequiredElements() {
       const requiredElements = {
         title: document.getElementById('readingTestResultTitle'),
@@ -120,59 +119,6 @@
     const elements = getRequiredElements();
     if (!elements) return;
 
-    // Keep event-driven updates and bootstrap settings on the same queued render
-    // path so translation loading and DOM writes stay serialized.
-    function handleInitData(payload) {
-      if (resultI18nTerminal) return;
-      enqueueUiSync(async () => {
-        applyPayloadState(payload);
-      }).then(() => {
-        if (resultI18nTerminal) return;
-        elements.btnContinue.focus({ preventScroll: true });
-      }).catch((err) => {
-        log.error('Reading-test result init failed:', err);
-        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
-      });
-    }
-
-    // Bootstrap may start before settings are available; this path applies the
-    // persisted language if possible and otherwise keeps the window on DEFAULT_LANG.
-    function loadInitialSettings() {
-      enqueueUiSync(async () => {
-        let nextSettings;
-        try {
-          nextSettings = await resultApi.getSettings() || {};
-        } catch (err) {
-          log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
-          nextSettings = {};
-        }
-        return {
-          language: normalizeLanguage(nextSettings.language),
-          settings: nextSettings,
-        };
-      }).catch((err) => {
-        log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
-        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
-      });
-    }
-
-    function handleSettingsChanged(settings) {
-      if (resultI18nTerminal) return;
-      enqueueUiSync(async () => {
-        const nextSettings = settings || {};
-        const nextLanguage = normalizeLanguage(nextSettings.language);
-        const languageChanged = nextLanguage !== state.currentLanguage;
-        const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
-        if (!languageChanged && !needsTranslationRetry) {
-          state.settingsCache = nextSettings;
-          return false;
-        }
-        return { language: nextLanguage, settings: nextSettings };
-      }).catch((err) => {
-        reportResultI18nFailure(err);
-      });
-    }
-
     // =============================================================================
     // Constants / shared state
     // =============================================================================
@@ -185,8 +131,7 @@
       elapsedMs: 0,
       wordCount: 0,
     };
-    // Chain UI updates so late preload replay and bootstrap settings do not race
-    // each other during first paint.
+    // Chain UI updates so late preload replay and bootstrap settings do not race each other during first paint.
     let uiSyncChain = Promise.resolve();
     // Summary metrics keep invariant values LTR even when the window language is RTL.
     let currentWindowLanguageDirection = null;
@@ -318,12 +263,10 @@
       elements.summary.appendChild(summaryRow);
     }
 
-    // Every state-changing entrypoint funnels through this queue so translation
-    // readiness and DOM rendering observe the same ordering.
+    // Every state-changing entrypoint funnels through this queue so translation readiness and DOM rendering observe the same ordering.
     function enqueueUiSync(updateFn) {
       const runUpdate = async () => {
-        // Main-process closure is asynchronous. Do not admit queued semantic
-        // work after this window has entered terminal i18n failure.
+        // Main-process closure is asynchronous. Do not admit queued semantic work after this window has entered terminal i18n failure.
         if (resultI18nTerminal) return;
         const transitionRequest = await updateFn();
         if (transitionRequest === false) return;
@@ -337,7 +280,61 @@
     }
 
     // =============================================================================
-    // UI wiring / bootstrap updates
+    // Event handlers / bootstrap updates
+    // =============================================================================
+    // Keep event-driven updates and bootstrap settings on the same queued render path so translation loading and DOM writes stay serialized.
+    function handleInitData(payload) {
+      if (resultI18nTerminal) return;
+      enqueueUiSync(async () => {
+        applyPayloadState(payload);
+      }).then(() => {
+        if (resultI18nTerminal) return;
+        elements.btnContinue.focus({ preventScroll: true });
+      }).catch((err) => {
+        log.error('Reading-test result init failed:', err);
+        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
+      });
+    }
+
+    // Bootstrap may start before settings are available; this path applies the persisted language if possible and otherwise keeps the window on DEFAULT_LANG.
+    function loadInitialSettings() {
+      enqueueUiSync(async () => {
+        let nextSettings;
+        try {
+          nextSettings = await resultApi.getSettings() || {};
+        } catch (err) {
+          log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
+          nextSettings = {};
+        }
+        return {
+          language: normalizeLanguage(nextSettings.language),
+          settings: nextSettings,
+        };
+      }).catch((err) => {
+        log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
+        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
+      });
+    }
+
+    function handleSettingsChanged(settings) {
+      if (resultI18nTerminal) return;
+      enqueueUiSync(async () => {
+        const nextSettings = settings || {};
+        const nextLanguage = normalizeLanguage(nextSettings.language);
+        const languageChanged = nextLanguage !== state.currentLanguage;
+        const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
+        if (!languageChanged && !needsTranslationRetry) {
+          state.settingsCache = nextSettings;
+          return false;
+        }
+        return { language: nextLanguage, settings: nextSettings };
+      }).catch((err) => {
+        reportResultI18nFailure(err);
+      });
+    }
+
+    // =============================================================================
+    // UI wiring
     // =============================================================================
     elements.btnContinue.addEventListener('click', () => {
       window.close();
