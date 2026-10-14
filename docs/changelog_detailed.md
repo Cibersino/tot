@@ -48,6 +48,7 @@ Reglas:
 
 ### Resumen de cambios
 
+- Extracción nativa de PDF (Issue #338 — migración del motor): la integración con `pdf-parse@1.1.1` y su PDF.js antiguo se reemplaza por el uso directo de `pdfjs-dist@6.4.299` en Electron Main. Un adaptador dedicado atiende tanto el sondeo de texto seleccionable como la extracción efectiva, sin introducir un parser alternativo ni modificar la selección de páginas mediante `pdf-lib` o los contratos externos de extracción.
 - Snapshots de texto / etiquetas múltiples por categoría (Issue #339): `language`, `type` y `difficulty` admiten cero, una o varias etiquetas independientes por categoría, con representación canónica exclusivamente mediante arrays. El guardado manual, las unidades batch, los snapshots generados y los filtros del pool de Reading Test conservan las asignaciones completas; el modal incorpora chips removibles y un selector de adición consecutiva, con mejoras de distribución, scroll y foco.
 - Extracción de texto (Issue #338, F-01): las extracciones NATIVE/OCR completadas correctamente distinguen texto aplicable de resultados vacíos o de solo espacios; estos últimos no pueden modificar el texto actual, reciben un modal informativo en el flujo individual y el sufijo «Sin texto» en el informe batch. Los splits de PDF pesado exigen éxito técnico de todos sus hijos antes de aplicar un agregado.
 - Ventanas secundarias / fallos terminales tempranos (Issue #335): ocho superficies —Text Editor, Task Editor, Calculadora rápida, Preset, selector de idioma, Cronómetro Flotante, Editor Find y Reading Test Result/Questions— dejan de poder quedar presentadas, inertes o reutilizables como si hubieran arrancado correctamente cuando falla un bootstrap requerido, el preload, el DOM mínimo o el documento inicial; cada owner conserva el diagnóstico y aplica disclosure/disposición según su lifecycle, sin introducir un manager, readiness protocol o mecanismo terminal común.
@@ -76,6 +77,10 @@ Reglas:
 
 ### Agregado
 
+- Integración directa con PDF.js (Issue #338):
+  - `electron/text_extraction_platform/pdfjs_direct_text_engine.js` incorpora el adaptador compartido para preparación y ejecución: importación ESM dinámica, lectura del PDF como `Uint8Array` propio mediante `FileHandle.read()` hasta completar los bytes, configuración de recursos para fuentes estándar y ciclo de vida delimitado con `page.cleanup()` y `loadingTask.destroy()`;
+  - el adaptador proporciona primitivas separadas para detectar texto seleccionable y serializar texto nativo por página, sin hacerse cargo de la inspección/materialización con `pdf-lib`, de la selección de ruta ni de la aplicación del texto;
+  - se incorpora cobertura automatizada del adaptador y una prueba smoke dedicada a cargar y ejecutar PDF.js dentro de Electron Main; se amplía la cobertura existente de preparación, extracción, selección de páginas, clasificación de errores y limpieza del ciclo de vida.
 - Selección múltiple de etiquetas de snapshots (Issue #339):
   - el modal compartido de guardado manual y edición de tags de unidades batch muestra las asignaciones de cada categoría como una lista semántica de chips individuales, con botón de eliminación y nombre accesible localizado; cada eliminación afecta solo al valor elegido y retirar el último deja la categoría sin asignación;
   - los chips se distribuyen centrados sobre el label y el combobox de su categoría, ocupan el ancho disponible con wrapping y no reservan espacio cuando la lista está vacía; su presentación final es compacta, plana y de extremos redondeados, con tipografía, color e icono `close` dimensionados mediante tokens existentes y sin crear un modificador global de `btn-standard`;
@@ -126,6 +131,12 @@ Reglas:
 
 ### Cambiado
 
+- Extracción nativa de PDF / sustitución del parser (Issue #338):
+  - `native_pdf_selectable_text_probe.js` y `native_extraction_route.js` delegan sus operaciones PDF en el adaptador directo de PDF.js, conservando los límites de preparación/ejecución, el manejo de cancelación y los resultados estructurados de cada etapa; los demás formatos nativos no cambian de parser;
+  - la extracción serializa los ítems textuales de `getTextContent()` en el orden recibido, agrega saltos de línea conforme a `hasEOL`, separa páginas mediante dos saltos y entrega el resultado al `normalizeTextPipeline()` existente; no se incorpora reconstrucción editorial de columnas, tablas ni tarjetas;
+  - el flujo mantiene la materialización de rangos y la inspección PDF mediante `pdf-lib`, procesa el PDF efectivo para la extracción nativa y conserva el diagnóstico `pdf_pages:<n>` referido a las páginas de esa entrada efectiva;
+  - `package.json` y `package-lock.json` incorporan `pdfjs-dist@6.4.299` como dependencia runtime directa y mantienen `pdf-lib`; las formas de error reconocidas del parser nuevo se tratan en las fronteras de preparación y ejecución, sin trasladar esa responsabilidad al adaptador;
+  - `public/info/acerca_de.es.html`, `electron/link_openers.js` y `public/third_party_licenses/` actualizan el componente PDF mostrado y las licencias/avisos de `pdfjs-dist`, sus recursos distribuidos y la dependencia opcional `@napi-rs/canvas`, conservando el enlace público `appdoc:license-text-extraction-pdf` y la documentación de `pdf-lib`.
 - Snapshots / representación y propagación de conjuntos de tags (Issue #339):
   - `SnapshotTagCatalog` valida cada categoría presente como un array no vacío de identificadores canónicos distintos; omite las categorías sin asignaciones, conserva valores válidos externos al catálogo visible y rechaza por la vía normal las formas escalares, arrays vacíos, elementos inválidos y duplicados tras normalización;
   - el guardado/carga/inspección de snapshots, el estado y los resúmenes de unidades batch, los snapshots automáticos y los metadatos del pool Reading Test transportan todas las etiquetas de cada categoría, también cuando existe una sola; los snapshots bundled incluidos en el repositorio y la cobertura correspondiente utilizan la nueva representación;
@@ -276,6 +287,12 @@ Reglas:
 - Task Editor / estado de validación:
   - al reutilizar la misma ventana para una tarea nueva o cargada, y después de borrar con éxito la tarea actual, Nombre deja de conservar el estado inválido de una sesión anterior; un payload de inicialización inválido continúa sin modificar la sesión activa.
 
+### Removido
+
+- Extracción nativa de PDF (Issue #338):
+  - se retiran `pdf-parse@1.1.1`, su carga directa y la importación profunda al PDF.js antiguo usado por el sondeo de texto seleccionable; `pdf-parse` deja de formar parte del manifiesto y del grafo resuelto en `package-lock.json`;
+  - se eliminan la licencia pública y las referencias vigentes a `pdf-parse` que correspondían al componente sustituido, sin conservar rutas de ejecución ni fallbacks hacia el parser anterior.
+
 ### Migración
 
 - Tags de snapshots (Issue #339): corte de compatibilidad sin migración automática. En el documento canónico, toda categoría `language`, `type` o `difficulty` presente dentro de `tags` debe contener un array no vacío, incluso si tiene un único valor. Los snapshots previos con categorías escalares o arrays vacíos son inválidos bajo la validación normal; no se convierten, reparan, deduplican ni reinterpretan al cargar o importar. Los archivos externos al repositorio que se quieran conservar deben adaptarse fuera de la app; los recursos bundled del repositorio se actualizan al formato canónico.
@@ -286,6 +303,9 @@ Reglas:
 
 ### Contratos tocados
 
+- Extracción nativa de PDF / continuidad contractual (Issue #338 — migración del motor):
+  - `probeNativePdfSelectableText(...)` y `runNativeExtractionRoute(...)` conservan sus interfaces y sus fronteras de resultado/error; la detección de texto seleccionable opera sobre el PDF de origen y la extracción sobre el archivo efectivo, incluido el subset materializado por rango;
+  - no se agregan canales IPC, métodos preload, opciones de interfaz ni formatos de persistencia por el reemplazo del motor; las reglas de F-01/F-02, el comportamiento NATIVE/OCR, el diagnóstico `pdf_pages:<n>` y la normalización/aplicación del texto permanecen bajo sus owners existentes.
 - Issue #339 / `tags` en snapshots y datos asociados:
   - la representación canónica es `tags: { language?: string[], type?: string[], difficulty?: string[] }`, con un subconjunto de claves conocidas; una categoría sin asignaciones se omite y un snapshot sin asignaciones conserva `tags: {}`. Cada array presente tiene al menos un identificador válido, normalizado y único; los valores escalares, arrays vacíos, duplicados tras normalización, identificadores inválidos y categorías desconocidas son errores ordinarios de schema;
   - el mismo contrato multivalor atraviesa el catálogo normalizador, los borradores renderer, el payload de los prompts de guardado/edición, la persistencia y validación de snapshots, el batch de extracción y el pool de Reading Test. `window.Notify.promptSnapshotSave(...)` y `promptSnapshotTags(...)` conservan sus entrypoints y resultados generales, pero el objeto `tags` contiene arrays en lugar de valores escalares;
