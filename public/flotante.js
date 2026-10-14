@@ -160,7 +160,7 @@ function renderState(state) {
       if (window.RendererCrono && typeof window.RendererCrono.formatCrono === 'function') {
         cronoEl.textContent = window.RendererCrono.formatCrono(state.elapsed);
       } else {
-        log.warnOnce('flotante.formatCrono.missing', 'formatCrono unavailable; using simple formatter (ignored).');
+        log.warn('formatCrono unavailable; using simple formatter (ignored).');
         // simple fallback
         const totalSeconds = Math.floor(state.elapsed / 1000);
         const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
@@ -244,7 +244,11 @@ function reportTerminalFlotanteI18nFailure(kind) {
 try {
   window.flotanteAPI.onState((state) => {
     if (flotanteI18nTerminal) return;
-    try { renderState(state); } catch (err) { log.error(err); }
+    try {
+      renderState(state);
+    } catch (err) {
+      log.error('Floating Stopwatch state render failed:', err);
+    }
   });
 } catch (err) {
   terminateFlotanteBootstrap(
