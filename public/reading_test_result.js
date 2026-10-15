@@ -94,28 +94,28 @@
     }
   }
 
-  function initReadingTestResultWindow() {
-    if (resultI18nTerminal) return;
-    // Keep the required DOM contract explicit so the window aborts early if the HTML shell drifts away from the renderer script expectations.
-    function getRequiredElements() {
-      const requiredElements = {
-        title: document.getElementById('readingTestResultTitle'),
-        wpmLabel: document.getElementById('readingTestResultWpmLabel'),
-        wpmValue: document.getElementById('readingTestResultWpmValue'),
-        summary: document.getElementById('readingTestResultSummary'),
-        summaryRegion: document.querySelector('.reading-test-result__meta'),
-        btnContinue: document.getElementById('readingTestResultContinue'),
-      };
+  // Keep the required DOM contract explicit so the window aborts early if the HTML shell drifts away from the renderer script expectations.
+  function getRequiredElements() {
+    const requiredElements = {
+      title: document.getElementById('readingTestResultTitle'),
+      wpmLabel: document.getElementById('readingTestResultWpmLabel'),
+      wpmValue: document.getElementById('readingTestResultWpmValue'),
+      summary: document.getElementById('readingTestResultSummary'),
+      summaryRegion: document.querySelector('.reading-test-result__meta'),
+      btnContinue: document.getElementById('readingTestResultContinue'),
+    };
 
-      if (Object.values(requiredElements).some((element) => !element)) {
-        log.error('Reading-test result window missing required DOM; script aborted.');
-        if (typeof window.close === 'function') window.close();
-        return null;
-      }
-
-      return requiredElements;
+    if (Object.values(requiredElements).some((element) => !element)) {
+      log.error('Reading-test result window missing required DOM; script aborted.');
+      if (typeof window.close === 'function') window.close();
+      return null;
     }
 
+    return requiredElements;
+  }
+
+  function initReadingTestResultWindow() {
+    if (resultI18nTerminal) return;
     const elements = getRequiredElements();
     if (!elements) return;
 
