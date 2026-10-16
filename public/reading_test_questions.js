@@ -118,8 +118,7 @@
   function initReadingTestQuestionsWindow() {
     if (questionsI18nTerminal || questionsBootstrapTerminal) return;
     function getRequiredElements() {
-      // Keep the required DOM contract explicit so the modal aborts before
-      // partial wiring if the HTML shell drifts from this renderer script.
+      // Keep the required DOM contract explicit so the modal aborts before partial wiring if the HTML shell drifts from this renderer script.
       const requiredElements = {
         title: document.getElementById('readingTestQuestionsTitle'),
         intro: document.getElementById('readingTestQuestionsIntro'),
@@ -433,8 +432,7 @@
     }
 
     function withAnchoredActionsScroll(updateFn) {
-      // Keep the action row visually anchored when status messages expand or
-      // collapse after interactive scoring updates.
+      // Keep the action row visually anchored when status messages expand or collapse after interactive scoring updates.
       const beforeTop = actions.getBoundingClientRect().top;
       Promise.resolve()
         .then(() => updateFn())
@@ -505,8 +503,7 @@
     }
 
     function rebuildQuestionsWithSafeFocus() {
-      // This check intentionally occurs immediately before form replacement:
-      // an async translation load may have allowed focus to move meanwhile.
+      // This check intentionally occurs immediately before form replacement: an async translation load may have allowed focus to move meanwhile.
       const focusedNode = document.activeElement;
       const replacingFocusedQuestionControl = !!(
         focusedNode
@@ -571,11 +568,9 @@
     }
 
     function enqueueUiSync(updateFn) {
-      // Funnel bootstrap, init-data, and settings updates through one queue so
-      // translation readiness and DOM rendering observe the same ordering.
+      // Funnel bootstrap, init-data, and settings updates through one queue so translation readiness and DOM rendering observe the same ordering.
       const runUpdate = async () => {
-        // Main-process closure is asynchronous. Do not admit queued semantic
-        // work after this window has entered a terminal state.
+        // Main-process closure is asynchronous. Do not admit queued semantic work after this window has entered a terminal state.
         if (questionsI18nTerminal || questionsBootstrapTerminal) return;
         const transitionRequest = await updateFn();
         if (transitionRequest === false) return;
@@ -589,8 +584,7 @@
     }
 
     function applyPayloadState(payload) {
-      // The shared core owns payload validation and question sanitation; this
-      // renderer only stores the accepted structure and local view state.
+      // The shared core owns payload validation and question sanitation; this renderer only stores the accepted structure and local view state.
       state.developerEmail = (payload && typeof payload.developerEmail === 'string' && payload.developerEmail.trim())
         ? payload.developerEmail.trim()
         : state.developerEmail;
@@ -646,8 +640,7 @@
     }
 
     function loadInitialSettings() {
-      // Bootstrap may start before persisted settings are available; this path
-      // applies the stored language when possible and otherwise keeps DEFAULT_LANG.
+      // Bootstrap may start before persisted settings are available; this path applies the stored language when possible and otherwise keeps DEFAULT_LANG.
       enqueueUiSync(async () => {
         let nextSettings;
         if (typeof questionsApi.getSettings !== 'function') {
