@@ -115,37 +115,38 @@
     }
   }
 
+  function getRequiredElements() {
+    // Keep the required DOM contract explicit so the modal aborts before partial wiring if the HTML shell drifts from this renderer script.
+    const requiredElements = {
+      title: document.getElementById('readingTestQuestionsTitle'),
+      intro: document.getElementById('readingTestQuestionsIntro'),
+      randomTitle: document.getElementById('readingTestQuestionsRandomTitle'),
+      randomValue: document.getElementById('readingTestQuestionsRandomValue'),
+      feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
+      feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
+      feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
+      summaryRegion: document.querySelector('.reading-test-questions__meta'),
+      incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
+      resultMessage: document.getElementById('readingTestQuestionsResult'),
+      chanceMessage: document.getElementById('readingTestQuestionsChance'),
+      fatalMessage: document.getElementById('readingTestQuestionsFatal'),
+      form: document.getElementById('readingTestQuestionsForm'),
+      btnCheck: document.getElementById('readingTestQuestionsCheck'),
+      btnContinue: document.getElementById('readingTestQuestionsContinue'),
+      actions: document.querySelector('.reading-test-questions__actions'),
+    };
+
+    if (Object.values(requiredElements).some((element) => !element)) {
+      log.error('Reading-test questions window missing required DOM; script aborted.');
+      if (typeof window.close === 'function') window.close();
+      return null;
+    }
+
+    return requiredElements;
+  }
+
   function initReadingTestQuestionsWindow() {
     if (questionsI18nTerminal || questionsBootstrapTerminal) return;
-    function getRequiredElements() {
-      // Keep the required DOM contract explicit so the modal aborts before partial wiring if the HTML shell drifts from this renderer script.
-      const requiredElements = {
-        title: document.getElementById('readingTestQuestionsTitle'),
-        intro: document.getElementById('readingTestQuestionsIntro'),
-        randomTitle: document.getElementById('readingTestQuestionsRandomTitle'),
-        randomValue: document.getElementById('readingTestQuestionsRandomValue'),
-        feedbackTitle: document.getElementById('readingTestQuestionsFeedbackTitle'),
-        feedbackPrefix: document.getElementById('readingTestQuestionsFeedbackPrefix'),
-        feedbackLink: document.getElementById('readingTestQuestionsFeedbackLink'),
-        summaryRegion: document.querySelector('.reading-test-questions__meta'),
-        incompleteMessage: document.getElementById('readingTestQuestionsIncomplete'),
-        resultMessage: document.getElementById('readingTestQuestionsResult'),
-        chanceMessage: document.getElementById('readingTestQuestionsChance'),
-        fatalMessage: document.getElementById('readingTestQuestionsFatal'),
-        form: document.getElementById('readingTestQuestionsForm'),
-        btnCheck: document.getElementById('readingTestQuestionsCheck'),
-        btnContinue: document.getElementById('readingTestQuestionsContinue'),
-        actions: document.querySelector('.reading-test-questions__actions'),
-      };
-
-      if (Object.values(requiredElements).some((element) => !element)) {
-        log.error('Reading-test questions window missing required DOM; script aborted.');
-        if (typeof window.close === 'function') window.close();
-        return null;
-      }
-
-      return requiredElements;
-    }
 
     const elements = getRequiredElements();
     if (!elements) return;
@@ -172,15 +173,15 @@
     // =============================================================================
     // Constants / shared state
     // =============================================================================
-    const DEFAULT_LANG = appConstants.DEFAULT_LANG.trim();
-    const DEFAULT_DEVELOPER_EMAIL = 'cibersino@gmail.com';
-    const INVALID_PAYLOAD_KEY = 'renderer.reading_test.questions.fatal_invalid';
+    const defaultLanguage = appConstants.DEFAULT_LANG.trim();
+    const defaultDeveloperEmail = 'cibersino@gmail.com';
+    const invalidPayloadKey = 'renderer.reading_test.questions.fatal_invalid';
 
     const state = {
-      currentLanguage: DEFAULT_LANG,
+      currentLanguage: defaultLanguage,
       translationsLoadedFor: '',
       settingsCache: {},
-      developerEmail: DEFAULT_DEVELOPER_EMAIL,
+      developerEmail: defaultDeveloperEmail,
       questions: [],
       answersByQuestionId: {},
       lastScore: null,
@@ -202,14 +203,14 @@
       return msgRenderer(path, params);
     }
 
-    function normalizeLanguage(language, fallback = DEFAULT_LANG) {
+    function normalizeLanguage(language, fallback = defaultLanguage) {
       const normalized = typeof language === 'string'
         ? language.trim().toLowerCase()
         : '';
       return normalized || fallback;
     }
 
-    function readSettingsLanguage(settings, fallback = DEFAULT_LANG) {
+    function readSettingsLanguage(settings, fallback = defaultLanguage) {
       return settings && typeof settings.language === 'string'
         ? settings.language
         : fallback;
@@ -219,7 +220,7 @@
       const numeric = Number(value);
       const safe = Number.isFinite(numeric) ? numeric : 0;
       const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
-        state.currentLanguage || DEFAULT_LANG,
+        state.currentLanguage || defaultLanguage,
         state.settingsCache
       );
       return formatearNumero(safe, separadorMiles, separadorDecimal, 2);
@@ -309,7 +310,7 @@
       state.questions = [];
       state.answersByQuestionId = {};
       resetEvaluationState();
-      state.fatalKey = INVALID_PAYLOAD_KEY;
+      state.fatalKey = invalidPayloadKey;
     }
 
     function collectSelectedAnswer(questionId) {
@@ -426,7 +427,7 @@
 
       setMessage(
         fatalMessage,
-        tr(state.fatalKey || INVALID_PAYLOAD_KEY),
+        tr(state.fatalKey || invalidPayloadKey),
         { tone: 'error', visible: !!state.fatalKey }
       );
     }
