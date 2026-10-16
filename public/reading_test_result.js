@@ -10,7 +10,7 @@
 // - Resolve bootstrap settings and late init payloads through one render path.
 // - Load renderer translations for the active window language.
 // - Render the measured WPM summary and invariant numeric values.
-// - Keep the window self-contained after the preload hands off init data.
+// - Handle translation failure reporting and local closure when reporting is unavailable.
 
 (() => {
   // =============================================================================
@@ -89,7 +89,7 @@
   }
 
   // =============================================================================
-  // App lifecycle / bootstrapping
+  // Bootstrap helpers / lifecycle wiring
   // =============================================================================
   document.addEventListener('DOMContentLoaded', initReadingTestResultWindow);
 
@@ -281,7 +281,7 @@
     // Every state-changing entrypoint funnels through this queue so translation readiness and DOM rendering observe the same ordering.
     function enqueueUiSync(updateFn) {
       const runUpdate = async () => {
-        // Main-process closure is asynchronous. Do not admit queued semantic work after this window has entered a terminal state.
+        // Window closure can be asynchronous. Do not admit queued semantic work after the terminal state is recorded.
         if (resultI18nTerminal || resultBootstrapTerminal) return;
         const transitionRequest = await updateFn();
         if (transitionRequest === false) return;
@@ -354,7 +354,7 @@
     }
 
     // =============================================================================
-    // UI wiring
+    // UI and bridge wiring
     // =============================================================================
     elements.btnContinue.addEventListener('click', () => {
       window.close();
