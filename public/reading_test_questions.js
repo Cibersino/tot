@@ -40,13 +40,16 @@
   }
 
   const questionsApi = window.readingTestQuestionsAPI || null;
-  if (!questionsApi
-    || typeof questionsApi.getSettings !== 'function'
-    || typeof questionsApi.onInitData !== 'function'
-    || typeof questionsApi.onSettingsChanged !== 'function') {
+  if (!questionsApi) {
     failClosedQuestionsBootstrap(new Error('[reading-test-questions] readingTestQuestionsAPI unavailable; cannot continue'));
   }
+  if (typeof questionsApi.onInitData !== 'function') {
+    failClosedQuestionsBootstrap(new Error(
+      '[reading-test-questions] readingTestQuestionsAPI.onInitData unavailable or non-callable; cannot continue'
+    ));
+  }
   let questionsI18nTerminal = false;
+  let questionsBootstrapTerminal = false;
   let setQuestionsTerminalUnavailable = () => {};
   const i18nApi = window.RendererI18n || null;
   if (!i18nApi
@@ -78,6 +81,18 @@
     failClosedQuestionsBootstrap(new Error('[reading-test-questions] ReadingTestQuestionsCore unavailable; cannot continue'));
   }
 
+  if (typeof questionsApi.onSettingsChanged !== 'function') {
+    const error = new Error(
+      '[reading-test-questions] readingTestQuestionsAPI.onSettingsChanged unavailable; required settings synchronization cannot be established'
+    );
+    log.error(
+      'Reading-test questions bootstrap failed: readingTestQuestionsAPI.onSettingsChanged unavailable; required settings synchronization cannot be established.',
+      error
+    );
+    reportTerminalQuestionsI18nFailure('settings-listener');
+    throw error;
+  }
+
   // =============================================================================
   // App lifecycle / bootstrapping
   // =============================================================================
@@ -101,7 +116,7 @@
   }
 
   function initReadingTestQuestionsWindow() {
-    if (questionsI18nTerminal) return;
+    if (questionsI18nTerminal || questionsBootstrapTerminal) return;
     function getRequiredElements() {
       // Keep the required DOM contract explicit so the modal aborts before
       // partial wiring if the HTML shell drifts from this renderer script.
@@ -560,8 +575,8 @@
       // translation readiness and DOM rendering observe the same ordering.
       const runUpdate = async () => {
         // Main-process closure is asynchronous. Do not admit queued semantic
-        // work after this window has entered terminal i18n failure.
-        if (questionsI18nTerminal) return;
+        // work after this window has entered a terminal state.
+        if (questionsI18nTerminal || questionsBootstrapTerminal) return;
         const transitionRequest = await updateFn();
         if (transitionRequest === false) return;
         await transitionQuestionsTranslations(
@@ -613,12 +628,12 @@
     }
 
     function handleInitData(payload) {
-      if (questionsI18nTerminal) return;
+      if (questionsI18nTerminal || questionsBootstrapTerminal) return;
       let acceptedPayload = false;
       enqueueUiSync(async () => {
         acceptedPayload = applyPayloadState(payload);
       }).then(() => {
-        if (questionsI18nTerminal) return;
+        if (questionsI18nTerminal || questionsBootstrapTerminal) return;
         if (acceptedPayload) {
           state.initialValidPayloadRendered = true;
           renderControls();
@@ -635,11 +650,16 @@
       // applies the stored language when possible and otherwise keeps DEFAULT_LANG.
       enqueueUiSync(async () => {
         let nextSettings;
-        try {
-          nextSettings = await questionsApi.getSettings() || {};
-        } catch (err) {
-          log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+        if (typeof questionsApi.getSettings !== 'function') {
+          log.warn('BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; using default renderer settings.');
           nextSettings = {};
+        } else {
+          try {
+            nextSettings = await questionsApi.getSettings() || {};
+          } catch (err) {
+            log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+            nextSettings = {};
+          }
         }
         return {
           language: normalizeLanguage(readSettingsLanguage(nextSettings)),
@@ -692,8 +712,23 @@
       window.close();
     });
 
-    questionsApi.onInitData(handleInitData);
-    questionsApi.onSettingsChanged(handleSettingsChanged);
+    try {
+      questionsApi.onInitData(handleInitData);
+    } catch (err) {
+      questionsBootstrapTerminal = true;
+      setQuestionsTerminalUnavailable();
+      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onInitData:', err);
+      if (typeof window.close === 'function') window.close();
+      return;
+    }
+
+    try {
+      questionsApi.onSettingsChanged(handleSettingsChanged);
+    } catch (err) {
+      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onSettingsChanged:', err);
+      reportTerminalQuestionsI18nFailure('settings-listener');
+      return;
+    }
     loadInitialSettings();
   }
 })();

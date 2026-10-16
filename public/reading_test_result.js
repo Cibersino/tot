@@ -40,13 +40,16 @@
   }
 
   const resultApi = window.readingTestResultAPI || null;
-  if (!resultApi
-    || typeof resultApi.getSettings !== 'function'
-    || typeof resultApi.onInitData !== 'function'
-    || typeof resultApi.onSettingsChanged !== 'function') {
+  if (!resultApi) {
     failClosedResultBootstrap(new Error('[reading-test-result] readingTestResultAPI unavailable; cannot continue'));
   }
+  if (typeof resultApi.onInitData !== 'function') {
+    failClosedResultBootstrap(new Error(
+      '[reading-test-result] readingTestResultAPI.onInitData unavailable or non-callable; cannot continue'
+    ));
+  }
   let resultI18nTerminal = false;
+  let resultBootstrapTerminal = false;
   const i18nApi = window.RendererI18n || null;
   if (!i18nApi
     || typeof i18nApi.transitionRendererTranslations !== 'function'
@@ -72,6 +75,18 @@
     failClosedResultBootstrap(new Error('[reading-test-result] FormatUtils unavailable; cannot continue'));
   }
   const { obtenerSeparadoresDeNumeros, formatearNumero } = formatUtils;
+
+  if (typeof resultApi.onSettingsChanged !== 'function') {
+    const error = new Error(
+      '[reading-test-result] readingTestResultAPI.onSettingsChanged unavailable; required settings synchronization cannot be established'
+    );
+    log.error(
+      'Reading-test result bootstrap failed: readingTestResultAPI.onSettingsChanged unavailable; required settings synchronization cannot be established.',
+      error
+    );
+    reportTerminalResultI18nFailure('settings-listener');
+    throw error;
+  }
 
   // =============================================================================
   // App lifecycle / bootstrapping
@@ -115,7 +130,7 @@
   }
 
   function initReadingTestResultWindow() {
-    if (resultI18nTerminal) return;
+    if (resultI18nTerminal || resultBootstrapTerminal) return;
     const elements = getRequiredElements();
     if (!elements) return;
 
@@ -266,8 +281,8 @@
     // Every state-changing entrypoint funnels through this queue so translation readiness and DOM rendering observe the same ordering.
     function enqueueUiSync(updateFn) {
       const runUpdate = async () => {
-        // Main-process closure is asynchronous. Do not admit queued semantic work after this window has entered terminal i18n failure.
-        if (resultI18nTerminal) return;
+        // Main-process closure is asynchronous. Do not admit queued semantic work after this window has entered a terminal state.
+        if (resultI18nTerminal || resultBootstrapTerminal) return;
         const transitionRequest = await updateFn();
         if (transitionRequest === false) return;
         await transitionResultTranslations(
@@ -284,11 +299,11 @@
     // =============================================================================
     // Keep event-driven updates and bootstrap settings on the same queued render path so translation loading and DOM writes stay serialized.
     function handleInitData(payload) {
-      if (resultI18nTerminal) return;
+      if (resultI18nTerminal || resultBootstrapTerminal) return;
       enqueueUiSync(async () => {
         applyPayloadState(payload);
       }).then(() => {
-        if (resultI18nTerminal) return;
+        if (resultI18nTerminal || resultBootstrapTerminal) return;
         elements.btnContinue.focus({ preventScroll: true });
       }).catch((err) => {
         log.error('Reading-test result init failed:', err);
@@ -300,11 +315,16 @@
     function loadInitialSettings() {
       enqueueUiSync(async () => {
         let nextSettings;
-        try {
-          nextSettings = await resultApi.getSettings() || {};
-        } catch (err) {
-          log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
+        if (typeof resultApi.getSettings !== 'function') {
+          log.warn('BOOTSTRAP: readingTestResultAPI.getSettings unavailable; using default renderer settings.');
           nextSettings = {};
+        } else {
+          try {
+            nextSettings = await resultApi.getSettings() || {};
+          } catch (err) {
+            log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
+            nextSettings = {};
+          }
         }
         return {
           language: normalizeLanguage(nextSettings.language),
@@ -340,8 +360,22 @@
       window.close();
     });
 
-    resultApi.onInitData(handleInitData);
-    resultApi.onSettingsChanged(handleSettingsChanged);
+    try {
+      resultApi.onInitData(handleInitData);
+    } catch (err) {
+      resultBootstrapTerminal = true;
+      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onInitData:', err);
+      if (typeof window.close === 'function') window.close();
+      return;
+    }
+
+    try {
+      resultApi.onSettingsChanged(handleSettingsChanged);
+    } catch (err) {
+      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onSettingsChanged:', err);
+      reportTerminalResultI18nFailure('settings-listener');
+      return;
+    }
     loadInitialSettings();
   }
 })();

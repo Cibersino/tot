@@ -212,6 +212,10 @@ function createElement(tagName, ownerDocument) {
 
 function createRendererHarness({
   includeI18nFailureReporter = true,
+  missingGetSettings = false,
+  onInitDataRegistrationError = null,
+  onInitDataThrowBeforeRegister = false,
+  onSettingsChangedRegistrationError = null,
   rejectBeforeApplyLanguage = '',
   rejectTransitionRequestNumber = 0,
   rejectionHadEstablishedState = true,
@@ -224,9 +228,12 @@ function createRendererHarness({
   const dom = createDocumentHarness();
   if (missingRequiredElement) dom.removeElement(missingRequiredElement);
   const callbacks = {};
+  const logEntries = { error: [], warn: [] };
   const translationRequests = [];
   const deferredLoads = new Map();
   let closeCalls = 0;
+  let getSettingsCalls = 0;
+  let settingsListenerRegistrations = 0;
   let reporterCalls = 0;
   let activeLanguage = 'en';
   const translations = {
@@ -331,12 +338,17 @@ function createRendererHarness({
     getLogger() {
       return {
         debug() {},
-        error() {},
-        warn() {},
+        error(...args) {
+          logEntries.error.push(args);
+        },
+        warn(...args) {
+          logEntries.warn.push(args);
+        },
       };
     },
     readingTestQuestionsAPI: {
       async getSettings() {
+        getSettingsCalls += 1;
         return {
           language: 'en',
           numberFormatting: {
@@ -345,11 +357,17 @@ function createRendererHarness({
         };
       },
       onInitData(callback) {
+        if (onInitDataRegistrationError && onInitDataThrowBeforeRegister) {
+          throw onInitDataRegistrationError;
+        }
         callbacks.initData = callback;
         if (initPayloadOnSubscribe) callback(initPayloadOnSubscribe);
+        if (onInitDataRegistrationError) throw onInitDataRegistrationError;
       },
       onSettingsChanged(callback) {
+        settingsListenerRegistrations += 1;
         callbacks.settingsChanged = callback;
+        if (onSettingsChangedRegistrationError) throw onSettingsChangedRegistrationError;
       },
     },
     requestAnimationFrame(callback) {
@@ -368,6 +386,7 @@ function createRendererHarness({
       }
     };
   }
+  if (missingGetSettings) delete window.readingTestQuestionsAPI.getSettings;
 
   const sandbox = {
     console,
@@ -401,8 +420,116 @@ function createRendererHarness({
     getCloseCalls() {
       return closeCalls;
     },
+    getErrorLogEntries() {
+      return logEntries.error;
+    },
+    getGetSettingsCalls() {
+      return getSettingsCalls;
+    },
     getReporterCalls() {
       return reporterCalls;
+    },
+    getSettingsListenerRegistrations() {
+      return settingsListenerRegistrations;
+    },
+    getWarnLogEntries() {
+      return logEntries.warn;
+    },
+  };
+}
+
+function createMissingSettingsListenerBootstrapHarness({
+  file,
+  apiName,
+  missingGetSettings = false,
+  reporterMode,
+}) {
+  const errorLogEntries = [];
+  const warnLogEntries = [];
+  const reporterPayloads = [];
+  let closeCalls = 0;
+  let domContentLoadedListeners = 0;
+  let getSettingsCalls = 0;
+  const api = {
+    onInitData() {},
+  };
+  if (!missingGetSettings) {
+    api.getSettings = () => {
+      getSettingsCalls += 1;
+    };
+  }
+  if (reporterMode !== 'absent') {
+    api.reportRendererI18nFailure = (payload) => {
+      reporterPayloads.push(payload);
+      if (reporterMode === 'throws') throw new Error('reporter failure');
+    };
+  }
+  const window = {
+    AppConstants: { DEFAULT_LANG: 'en' },
+    FormatUtils: {
+      formatearNumero() {},
+      obtenerSeparadoresDeNumeros() {},
+    },
+    RendererI18n: {
+      msgRenderer() {},
+      renderLocalizedLabelWithInvariantValue() {},
+      tRenderer() {},
+      transitionRendererTranslations() {},
+    },
+    ReadingTestQuestionsCore: {
+      computeRandomGuessPercentage() {},
+      scoreQuestions() {},
+      validateQuestionsPayload() {},
+    },
+    getLogger() {
+      return {
+        debug() {},
+        error(...args) {
+          errorLogEntries.push(args);
+        },
+        warn(...args) {
+          warnLogEntries.push(args);
+        },
+      };
+    },
+    [apiName]: api,
+    close() {
+      closeCalls += 1;
+    },
+  };
+  const sandbox = {
+    console,
+    document: {
+      addEventListener() {
+        domContentLoadedListeners += 1;
+      },
+    },
+    window,
+  };
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(path.resolve(__dirname, `../../../public/${file}`), 'utf8');
+
+  return {
+    getCloseCalls() {
+      return closeCalls;
+    },
+    getDomContentLoadedListeners() {
+      return domContentLoadedListeners;
+    },
+    getErrorLogEntries() {
+      return errorLogEntries;
+    },
+    getGetSettingsCalls() {
+      return getSettingsCalls;
+    },
+    getReporterPayloads() {
+      return reporterPayloads;
+    },
+    getWarnLogEntries() {
+      return warnLogEntries;
+    },
+    run() {
+      vm.runInContext(source, sandbox, { filename: `public/${file}` });
     },
   };
 }
@@ -540,17 +667,197 @@ test('Reading Test renderer scripts fail-close direct pre-wiring bootstrap abort
         },
         [apiName]: {
           getSettings() {},
-          onInitData() {},
+          onSettingsChanged() {},
         },
         close() {
           incompleteApiCloseCalls += 1;
         },
       }),
-      new RegExp(`\\[${errorPrefix}\\] ${apiName} unavailable`, 'u')
+      new RegExp(`\\[${errorPrefix}\\] ${apiName}\\.onInitData unavailable or non-callable`, 'u')
     );
     assert.equal(incompleteApiCloseCalls, 1);
     assert.equal(apiErrors.length, 1);
   });
+});
+
+test('Reading Test renderer scripts report an unavailable settings listener before DOM wiring', () => {
+  const rendererScripts = [
+    {
+      apiName: 'readingTestQuestionsAPI',
+      errorPrefix: 'reading-test-questions',
+      file: 'reading_test_questions.js',
+    },
+    {
+      apiName: 'readingTestResultAPI',
+      errorPrefix: 'reading-test-result',
+      file: 'reading_test_result.js',
+    },
+  ];
+
+  rendererScripts.forEach(({ apiName, errorPrefix, file }) => {
+    ['normal', 'absent', 'throws'].forEach((reporterMode) => {
+      const harness = createMissingSettingsListenerBootstrapHarness({
+        apiName,
+        file,
+        reporterMode,
+      });
+
+      assert.throws(
+        () => harness.run(),
+        new RegExp(`\\[${errorPrefix}\\].*onSettingsChanged unavailable`, 'u')
+      );
+      assert.equal(harness.getDomContentLoadedListeners(), 0);
+      assert.match(
+        harness.getErrorLogEntries()[0][0],
+        /onSettingsChanged unavailable; required settings synchronization/u
+      );
+
+      if (reporterMode === 'normal') {
+        assert.equal(harness.getCloseCalls(), 0);
+        assert.equal(harness.getReporterPayloads().length, 1);
+        assert.equal(harness.getReporterPayloads()[0].kind, 'settings-listener');
+      } else {
+        assert.equal(harness.getCloseCalls(), 1);
+        assert.equal(harness.getWarnLogEntries().length, 1);
+      }
+    });
+  });
+});
+
+test('missing initial settings does not recover after the settings-listener bootstrap abort', () => {
+  const rendererScripts = [
+    {
+      apiName: 'readingTestQuestionsAPI',
+      errorPrefix: 'reading-test-questions',
+      file: 'reading_test_questions.js',
+    },
+    {
+      apiName: 'readingTestResultAPI',
+      errorPrefix: 'reading-test-result',
+      file: 'reading_test_result.js',
+    },
+  ];
+
+  rendererScripts.forEach(({ apiName, errorPrefix, file }) => {
+    const harness = createMissingSettingsListenerBootstrapHarness({
+      apiName,
+      file,
+      missingGetSettings: true,
+      reporterMode: 'normal',
+    });
+
+    assert.throws(
+      () => harness.run(),
+      new RegExp(`\\[${errorPrefix}\\].*onSettingsChanged unavailable`, 'u')
+    );
+    assert.equal(harness.getDomContentLoadedListeners(), 0);
+    assert.equal(harness.getGetSettingsCalls(), 0);
+    assert.equal(harness.getReporterPayloads().length, 1);
+    assert.equal(harness.getReporterPayloads()[0].kind, 'settings-listener');
+    assert.equal(harness.getCloseCalls(), 0);
+    assert.equal(harness.getWarnLogEntries().length, 0);
+  });
+});
+
+test('Questions uses defaults when getSettings is unavailable', async () => {
+  const harness = createRendererHarness({ missingGetSettings: true });
+  await flushRendererWork();
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Question one?',
+      correctOptionId: 'a',
+      options: [
+        { id: 'a', text: 'Answer A' },
+        { id: 'b', text: 'Answer B' },
+      ],
+    }],
+  });
+  await flushRendererWork();
+
+  assert.equal(harness.getGetSettingsCalls(), 0);
+  assert.deepEqual(harness.translationRequests, ['en', 'en']);
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.equal(harness.getReporterCalls(), 0);
+  assert.equal(harness.elements.title.textContent, 'Questions');
+  assert.match(harness.elements.randomValue.textContent, /25\.00\[,\.\]%/u);
+  assert.equal(harness.elements.btnCheck.disabled, false);
+  const inputs = harness.getInputs();
+  assert.equal(inputs.length, 2);
+  assert.ok(inputs.every((input) => input.disabled === false));
+  inputs[0].checked = true;
+  inputs[0].dispatch('change');
+  harness.elements.btnCheck.dispatch('click');
+  await flushRendererWork();
+  assert.match(harness.elements.resultMessage.textContent, /1\/1 \(100\.00\[,\.\]%\)/u);
+  assert.equal(harness.getWarnLogEntries().filter(([message]) => (
+    message === 'BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; using default renderer settings.'
+  )).length, 1);
+});
+
+test('Questions stops replay work when settings-listener registration throws', async () => {
+  const questionPayload = {
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Question one?',
+      options: [{ id: 'a', text: 'Answer A' }],
+    }],
+  };
+  const registrationError = new Error('settings listener registration failed');
+  const harness = createRendererHarness({
+    initPayloadOnSubscribe: questionPayload,
+    onSettingsChangedRegistrationError: registrationError,
+  });
+  await flushRendererWork();
+
+  assert.equal(harness.getGetSettingsCalls(), 0);
+  assert.equal(harness.getReporterCalls(), 1);
+  assert.equal(harness.getSettingsListenerRegistrations(), 1);
+  assert.ok(harness.getErrorLogEntries().some(([message, error]) => (
+    /onSettingsChanged/u.test(message) && error === registrationError
+  )));
+  assert.equal(harness.elements.btnCheck.disabled, true);
+  assert.equal(harness.getInputs().length, 0);
+});
+
+test('Questions contains synchronous init-listener registration failures', async () => {
+  const questionPayload = {
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Question one?',
+      options: [{ id: 'a', text: 'Answer A' }],
+    }],
+  };
+  const scenarios = [
+    { name: 'before callback acceptance', onInitDataThrowBeforeRegister: true },
+    { name: 'after callback retention', deliverPayloadAfterFailure: true },
+    { name: 'after replay delivery', replayPayload: true },
+  ];
+
+  for (const scenario of scenarios) {
+    const registrationError = new Error(`init listener registration failed ${scenario.name}`);
+    const harness = createRendererHarness({
+      initPayloadOnSubscribe: scenario.replayPayload ? questionPayload : null,
+      onInitDataRegistrationError: registrationError,
+      onInitDataThrowBeforeRegister: !!scenario.onInitDataThrowBeforeRegister,
+    });
+    if (scenario.deliverPayloadAfterFailure) harness.callbacks.initData(questionPayload);
+    await flushRendererWork();
+
+    assert.equal(harness.getCloseCalls(), 1);
+    assert.equal(harness.getGetSettingsCalls(), 0);
+    assert.equal(harness.getReporterCalls(), 0);
+    assert.equal(harness.getSettingsListenerRegistrations(), 0);
+    assert.ok(harness.getErrorLogEntries().some(([message, error]) => (
+      /onInitData/u.test(message) && error === registrationError
+    )));
+    assert.equal(harness.elements.btnCheck.disabled, true);
+    assert.equal(harness.getInputs().length, 0);
+  }
 });
 
 test('Questions closes locally when its required DOM contract is unavailable', () => {
