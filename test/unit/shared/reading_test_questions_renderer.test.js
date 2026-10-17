@@ -222,6 +222,7 @@ function createRendererHarness({
   rejectionRestorationFailed = false,
   reporterThrows = false,
   initPayloadOnSubscribe = null,
+  messageOverrides = {},
   questionsCoreOverride = null,
   missingRequiredElement = '',
 } = {}) {
@@ -272,7 +273,9 @@ function createRendererHarness({
   };
 
   function renderMessage(key, params = {}) {
-    const template = translations[activeLanguage][key] || key;
+    const template = messageOverrides[activeLanguage]?.[key]
+      || translations[activeLanguage][key]
+      || key;
     return Object.entries(params).reduce(
       (message, [name, value]) => message.replace(`{${name}}`, String(value)),
       template
@@ -795,6 +798,64 @@ test('Questions uses defaults when getSettings is unavailable', async () => {
   assert.equal(harness.getWarnLogEntries().filter(([message]) => (
     message === 'BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; using default renderer settings.'
   )).length, 1);
+});
+
+test('Questions continues percentage processing when a translation omits its placeholder', async () => {
+  const harness = createRendererHarness({
+    messageOverrides: {
+      en: {
+        'renderer.reading_test.questions.random_value': 'Random',
+        'renderer.reading_test.questions.result_summary': '{correct}/{total} complete',
+        'renderer.reading_test.questions.chance_at_least_observed': 'Chance',
+      },
+    },
+  });
+  await flushRendererWork();
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Question one?',
+      options: [
+        { id: 'a', text: 'Answer A' },
+        { id: 'b', text: 'Answer B' },
+      ],
+    }],
+  });
+  await flushRendererWork();
+
+  const [firstInput] = harness.getInputs();
+  firstInput.checked = true;
+  firstInput.dispatch('change');
+  harness.elements.btnCheck.dispatch('click');
+  await flushRendererWork();
+
+  const percentageMessages = [
+    [harness.elements.randomValue, '25.00[,.]%'],
+    [harness.elements.resultMessage, '100.00[,.]%'],
+    [harness.elements.chanceMessage, '25.00[,.]%'],
+  ];
+  percentageMessages.forEach(([element, percentageText]) => {
+    const percentageNodes = element.childNodes.filter((node) => (
+      node.nodeType === 1 && node.tagName === 'BDI'
+    ));
+    assert.notEqual(element.textContent, '');
+    assert.equal(percentageNodes.length, 1);
+    assert.equal(percentageNodes[0].dir, 'ltr');
+    assert.equal(percentageNodes[0].textContent, percentageText);
+  });
+
+  assert.equal(harness.elements.resultMessage.dataset.visible, 'true');
+  assert.equal(harness.elements.chanceMessage.dataset.visible, 'true');
+  assert.match(harness.elements.resultMessage.textContent, /1\/1/u);
+
+  const missingPlaceholderTemplates = harness.getWarnLogEntries()
+    .filter(([message]) => message === 'reading-test questions template missing {percentage} placeholder:')
+    .map(([, template]) => template);
+  assert.ok(missingPlaceholderTemplates.includes('Random'));
+  assert.ok(missingPlaceholderTemplates.includes('1/1 complete'));
+  assert.ok(missingPlaceholderTemplates.includes('Chance'));
 });
 
 test('Questions stops replay work when settings-listener registration throws', async () => {

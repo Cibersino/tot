@@ -255,7 +255,6 @@
       const markerIndex = templateText.indexOf(marker);
       if (markerIndex === -1) {
         log.warn('reading-test questions template missing {percentage} placeholder:', templateText);
-        return null;
       }
 
       let beforeText = templateText.slice(0, markerIndex);
@@ -294,7 +293,7 @@
     function setStructuredMessage(element, structuredContent, { tone = 'info', visible = false } = {}) {
       element.dataset.tone = tone;
       element.dataset.visible = visible ? 'true' : 'false';
-      if (!visible || !structuredContent) {
+      if (!visible) {
         element.textContent = '';
         return;
       }
@@ -368,12 +367,10 @@
         'renderer.reading_test.questions.random_value',
         { percentage: '{percentage}' }
       );
-      const structuredSummary = buildStructuredPercentageMessage(summaryTemplate, `${percentageText}%`);
-      if (!structuredSummary) {
-        randomValue.textContent = summaryTemplate.replace('{percentage}', `${percentageText}%`);
-        return;
-      }
-      renderStructuredInlineText(randomValue, structuredSummary);
+      renderStructuredInlineText(
+        randomValue,
+        buildStructuredPercentageMessage(summaryTemplate, `${percentageText}%`)
+      );
     }
 
     async function renderStatusMessages() {
