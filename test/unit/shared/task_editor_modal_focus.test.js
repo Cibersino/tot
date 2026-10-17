@@ -19,6 +19,9 @@ function createTaskMeta(name = 'Task') {
 
 function createHarness(options = {}) {
   const bootstrapProbe = options.bootstrapProbe || null;
+  const snapshotPathTemplate = Object.prototype.hasOwnProperty.call(options, 'snapshotPathTemplate')
+    ? options.snapshotPathTemplate
+    : 'Associated text snapshot path: {path}';
   const focusCalls = Array.isArray(options.focusCalls) ? options.focusCalls : null;
   const failInitialI18nTransition = options.failInitialI18nTransition === true;
   const terminalTransitionLanguage = options.terminalTransitionLanguage || '';
@@ -291,7 +294,7 @@ function createHarness(options = {}) {
       },
       tRenderer(key) {
         if (key === 'renderer.tasks.columns.descriptions.snapshot_path') {
-          return 'Associated text snapshot path: {path}';
+          return snapshotPathTemplate;
         }
         return key;
       },
@@ -971,6 +974,19 @@ test('Task Editor displays a canonical Snapshot path in the second table column'
   assert.match(styles, /\.task-table \.task-cell--comment > \.cell-actions\s*\{\s*justify-content: center;\s*\}/);
   assert.match(styles, /\.task-table \.task-cell--remaining\s*\{\s*white-space: nowrap;\s*text-align: right;\s*\}/);
   assert.doesNotMatch(styles, /\.task-table td:nth-child\(/);
+});
+
+test('Task Editor leaves a snapshot-path translation without {path} malformed without relocating the path', async () => {
+  const harness = createHarness({
+    snapshotPathTemplate: 'Associated text snapshot path.',
+  });
+  await harness.initializeRow({ snapshotRelPath: '/canonical-target.txt' });
+
+  const commentControls = harness.elements.taskTableBody._children[0]._children[1]._children[0]._children;
+  const snapshotDescription = commentControls[1];
+
+  assert.equal(snapshotDescription.textContent, 'Associated text snapshot path.');
+  assert.doesNotMatch(snapshotDescription.textContent, /canonical-target\.txt/);
 });
 
 test('Task Editor assigns expanded names and visual tooltips to abbreviated headers', async () => {

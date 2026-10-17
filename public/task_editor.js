@@ -1197,21 +1197,21 @@ function buildActionButton(iconName, nameKey, onClick, { className = 'btn-standa
 
 function renderTechnicalValueDescription(container, template, token, value) {
   const placeholder = `{${token}}`;
-  const placeholderIndex = template.indexOf(placeholder);
-  const prefix = document.createElement('span');
-  const technicalValue = document.createElement('bdi');
-  const suffix = document.createElement('span');
+  const parts = template.split(placeholder);
 
   container.textContent = '';
-  prefix.textContent = placeholderIndex >= 0 ? template.slice(0, placeholderIndex) : template;
-  technicalValue.setAttribute('dir', 'ltr');
-  technicalValue.textContent = value;
-  suffix.textContent = placeholderIndex >= 0
-    ? template.slice(placeholderIndex + placeholder.length)
-    : '';
-  container.appendChild(prefix);
-  container.appendChild(technicalValue);
-  container.appendChild(suffix);
+  parts.forEach((part, index) => {
+    const text = document.createElement('span');
+    text.textContent = part;
+    container.appendChild(text);
+
+    if (index < parts.length - 1) {
+      const technicalValue = document.createElement('bdi');
+      technicalValue.setAttribute('dir', 'ltr');
+      technicalValue.textContent = value;
+      container.appendChild(technicalValue);
+    }
+  });
 }
 
 function renderRow(row) {
