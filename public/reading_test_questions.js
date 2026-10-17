@@ -592,6 +592,7 @@
       });
 
       if (!questionsInfo.ok) {
+        log.error('Reading-test questions init payload failed validation:', questionsInfo.code);
         setInvalidPayloadState();
         return false;
       }

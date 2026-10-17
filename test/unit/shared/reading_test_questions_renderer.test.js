@@ -1213,6 +1213,28 @@ test('Questions renders the invalid-payload state after a non-i18n initializatio
   assert.equal(harness.elements.btnCheck.disabled, true);
 });
 
+test('Questions logs rejected init payloads with the validator code', async () => {
+  const harness = createRendererHarness({
+    questionsCoreOverride: {
+      computeRandomGuessPercentage() { return 0; },
+      scoreQuestions() { return {}; },
+      validateQuestionsPayload() {
+        return { ok: false, code: 'QUESTIONS_INVALID' };
+      },
+    },
+  });
+  await flushRendererWork();
+
+  harness.callbacks.initData({ questions: [] });
+  await flushRendererWork();
+
+  assert.equal(harness.elements.fatalMessage.textContent, 'Invalid questions.');
+  assert.ok(harness.getErrorLogEntries().some(([message, code]) => (
+    message === 'Reading-test questions init payload failed validation:'
+    && code === 'QUESTIONS_INVALID'
+  )));
+});
+
 test('Questions can establish translation state when the native i18n diagnostic bridge is unavailable', async () => {
   const harness = createRendererHarness({ includeI18nFailureReporter: false });
   await flushRendererWork();
