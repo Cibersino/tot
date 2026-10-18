@@ -28,7 +28,7 @@
     && typeof textTimeCalculatorApi.getSettings === 'function';
   const canWatchSettings = !!textTimeCalculatorApi
     && typeof textTimeCalculatorApi.onSettingsChanged === 'function';
-  let calculatorI18nTerminal = false;
+  let calculatorTerminal = false;
   // The earliest required-dependency failure occurs before the field constants
   // exist. Static markup already keeps those fields disabled at that point;
   // defer the dynamic lock until the normal-control surface has been created.
@@ -225,7 +225,7 @@
         value: 'wpm',
         ariaLabelledBy: 'textTimeCalculatorTargetLabel',
         onChange: () => {
-          if (!calculatorI18nTerminal) renderCalculator();
+          if (!calculatorTerminal) renderCalculator();
         },
       });
     } else {
@@ -281,7 +281,7 @@
     const entry = fields[field];
     entry.input.setAttribute('aria-invalid', 'false');
     entry.input.addEventListener('input', () => {
-      if (calculatorI18nTerminal) return;
+      if (calculatorTerminal) return;
       rawValues[field] = entry.input.value;
       renderCalculator();
     });
@@ -294,7 +294,7 @@
   }
 
   function setCalculatorNormalInteractionAvailable(available) {
-    const interactive = available === true && !calculatorI18nTerminal;
+    const interactive = available === true && !calculatorTerminal;
     setCalculatorFieldsInteractive(interactive);
     if (targetHost) {
       targetHost.inert = !interactive;
@@ -327,8 +327,8 @@
   function enqueueCalculatorSemanticWork(work) {
     const run = async () => {
       // Main-process closure is asynchronous. Do not admit queued semantic
-      // work after this window has entered terminal i18n failure.
-      if (calculatorI18nTerminal) return;
+      // work after this window has entered a terminal failure state.
+      if (calculatorTerminal) return;
       return work();
     };
     settingsApplicationQueue = settingsApplicationQueue.then(run, run);
@@ -361,23 +361,50 @@
     reportTerminalCalculatorI18nFailure(startup ? 'startup' : 'transition-restoration');
   }
 
-  function reportTerminalCalculatorI18nFailure(kind) {
-    if (calculatorI18nTerminal) return;
-    calculatorI18nTerminal = true;
-    if (calculatorInteractionControlsInitialized) {
-      setCalculatorNormalInteractionAvailable(false);
+  function closeCalculatorAfterTerminalFailure() {
+    if (typeof window.close !== 'function') {
+      log.error('Text-time calculator local window close unavailable; terminal state remains active.');
+      return;
     }
+    try {
+      window.close();
+    } catch (closeErr) {
+      log.error('Text-time calculator local window close failed; terminal state remains active:', closeErr);
+    }
+  }
+
+  function enterCalculatorTerminalState() {
+    if (calculatorTerminal) return false;
+    calculatorTerminal = true;
+    if (calculatorInteractionControlsInitialized) {
+      try {
+        setCalculatorNormalInteractionAvailable(false);
+      } catch (lockErr) {
+        log.error('Text-time calculator terminal interaction lock failed (ignored); continuing terminal handling:', lockErr);
+      }
+    }
+    return true;
+  }
+
+  function terminateCalculatorAfterUnexpectedFailure(message, err) {
+    log.error(message, err);
+    enterCalculatorTerminalState();
+    closeCalculatorAfterTerminalFailure();
+  }
+
+  function reportTerminalCalculatorI18nFailure(kind) {
+    if (!enterCalculatorTerminalState()) return;
     if (textTimeCalculatorApi && typeof textTimeCalculatorApi.reportRendererI18nFailure === 'function') {
       try {
         textTimeCalculatorApi.reportRendererI18nFailure({ kind });
       } catch (reportErr) {
         log.warn('textTimeCalculatorAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
-        if (typeof window.close === 'function') window.close();
+        closeCalculatorAfterTerminalFailure();
       }
       return;
     }
     log.warn('textTimeCalculatorAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
-    if (typeof window.close === 'function') window.close();
+    closeCalculatorAfterTerminalFailure();
   }
 
   // =============================================================================
@@ -417,17 +444,34 @@
 
       try {
         await applySettings(initialSettings);
-        setCalculatorNormalInteractionAvailable(true);
-        focusInitialWordsInput();
       } catch (err) {
         reportCalculatorI18nFailure(err, { startup: true });
+        return;
+      }
+
+      try {
+        setCalculatorNormalInteractionAvailable(true);
+      } catch (err) {
+        terminateCalculatorAfterUnexpectedFailure(
+          'BOOTSTRAP: Text-time calculator normal interaction initialization failed; closing calculator:',
+          err
+        );
+        return;
+      }
+
+      try {
+        focusInitialWordsInput();
+      } catch (err) {
+        log.warn('BOOTSTRAP: Text-time calculator initial Words focus failed (ignored):', err);
       }
     });
   }
 
   bootstrap().catch((err) => {
-    log.error('BOOTSTRAP: text-time calculator initialization failed:', err);
-    reportCalculatorI18nFailure(err, { startup: true });
+    terminateCalculatorAfterUnexpectedFailure(
+      'BOOTSTRAP: text-time calculator initialization failed; closing calculator:',
+      err
+    );
   });
 })();
 

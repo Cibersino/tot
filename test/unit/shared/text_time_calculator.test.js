@@ -142,6 +142,9 @@ async function createHarness({
   initialLanguage = 'es',
   failTranslationApplicationLanguage = '',
   terminalTransitionLanguage = '',
+  failInitialFocus = false,
+  comboboxUpdateFailureDisabledValues = [],
+  fieldInputBindingFailure = false,
   liveSettingsDuringInitialLoad = null,
   initialSettingsGate = null,
   includeRendererI18n = true,
@@ -153,10 +156,14 @@ async function createHarness({
   let activeLanguage = initialLanguage;
   let failingTranslationApplicationLanguage = failTranslationApplicationLanguage;
   const terminalLanguage = String(terminalTransitionLanguage || '').trim().toLowerCase();
+  const comboboxDisabledFailureValues = new Set(comboboxUpdateFailureDisabledValues);
   let rendererTransitionQueue = Promise.resolve();
   const transitionLanguages = [];
   let initialLiveSettingsDelivered = false;
   let reporterCalls = 0;
+  let closeCalls = 0;
+  const errors = [];
+  const warnings = [];
   const subscriptions = {};
   const comboboxCreateConfigs = [];
   const comboboxUpdateCalls = [];
@@ -183,6 +190,18 @@ async function createHarness({
     createOption('time'),
     createOption('wpm'),
   ];
+  if (failInitialFocus) {
+    elements.textTimeCalculatorWordsInput.focus = () => {
+      throw new Error('initial Words focus failed');
+    };
+  }
+  if (fieldInputBindingFailure) {
+    elements.textTimeCalculatorWordsInput.addEventListener = (type) => {
+      if (type === 'input') {
+        throw new Error('Words input binding failed');
+      }
+    };
+  }
 
   const body = createElement('body', 'body');
   const document = {
@@ -203,10 +222,13 @@ async function createHarness({
     window: {
       getLogger() {
         return {
-          warn() {},
+          warn(...args) { warnings.push(args); },
           warnOnce() {},
-          error() {},
+          error(...args) { errors.push(args); },
         };
+      },
+      close() {
+        closeCalls += 1;
       },
       textTimeCalculatorAPI: {
         reportRendererI18nFailure() {
@@ -307,6 +329,10 @@ async function createHarness({
           const controller = {
             update(nextConfig = {}) {
               comboboxUpdateCalls.push({ ...nextConfig });
+              if (Object.prototype.hasOwnProperty.call(nextConfig, 'disabled')
+                && comboboxDisabledFailureValues.has(nextConfig.disabled)) {
+                throw new Error(`combobox disabled update failed: ${nextConfig.disabled}`);
+              }
               if (Object.prototype.hasOwnProperty.call(nextConfig, 'options')) {
                 host.options = nextConfig.options.map((option) => ({ ...option, textContent: option.label }));
               }
@@ -361,12 +387,17 @@ async function createHarness({
     subscriptions,
     comboboxCreateConfigs,
     comboboxUpdateCalls,
+    errors,
+    warnings,
     getInitialLiveSettingsDelivered() {
       return initialLiveSettingsDelivered;
     },
     transitionLanguages,
     getReporterCalls() {
       return reporterCalls;
+    },
+    getCloseCalls() {
+      return closeCalls;
     },
     startupError,
     setFailTranslationApplicationLanguage(language) {
@@ -405,6 +436,68 @@ test('text_time_calculator preserves focus established before initial presentati
 
   assert.equal(harness.elements.textTimeCalculatorWordsInput.focusCalls.length, 0);
   assert.equal(harness.document.activeElement, existingFocus);
+});
+
+test('text_time_calculator logs an initial focus failure without disabling normal interaction', async () => {
+  const harness = await createHarness({ failInitialFocus: true });
+
+  [
+    harness.elements.textTimeCalculatorWordsInput,
+    harness.elements.textTimeCalculatorTimeInput,
+    harness.elements.textTimeCalculatorWpmInput,
+  ].forEach((input) => {
+    assert.equal(input.disabled, false);
+  });
+  assert.equal(harness.comboboxUpdateCalls.at(-1).disabled, false);
+  assert.equal(harness.getReporterCalls(), 0);
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.match(harness.warnings[0][0], /BOOTSTRAP: Text-time calculator initial Words focus failed \(ignored\)/);
+});
+
+test('text_time_calculator closes and blocks later settings after normal interaction initialization fails', async () => {
+  const harness = await createHarness({
+    comboboxUpdateFailureDisabledValues: [false, true],
+  });
+
+  [
+    harness.elements.textTimeCalculatorWordsInput,
+    harness.elements.textTimeCalculatorTimeInput,
+    harness.elements.textTimeCalculatorWpmInput,
+  ].forEach((input) => {
+    assert.equal(input.disabled, true);
+  });
+  assert.equal(harness.getReporterCalls(), 0);
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.match(harness.errors[0][0], /normal interaction initialization failed/);
+  assert.match(harness.errors[1][0], /terminal interaction lock failed \(ignored\)/);
+
+  await harness.subscriptions.onSettingsChanged({ language: 'en' });
+  await flushAsyncWork();
+  assert.deepEqual(harness.transitionLanguages, ['es']);
+});
+
+test('text_time_calculator reports terminal i18n failure despite a terminal interaction-lock failure', async () => {
+  const harness = await createHarness({
+    initialLanguage: 'en',
+    terminalTransitionLanguage: 'es',
+    comboboxUpdateFailureDisabledValues: [true],
+  });
+
+  await harness.subscriptions.onSettingsChanged({ language: 'es' });
+  await flushAsyncWork();
+
+  assert.equal(harness.getReporterCalls(), 1);
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.match(harness.errors.at(-1)[0], /terminal interaction lock failed \(ignored\)/);
+});
+
+test('text_time_calculator closes when required field binding fails', async () => {
+  const harness = await createHarness({ fieldInputBindingFailure: true });
+
+  assert.equal(harness.getReporterCalls(), 0);
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.match(harness.errors[0][0], /text-time calculator initialization failed/);
+  assert.equal(harness.elements.textTimeCalculatorWordsInput.disabled, true);
 });
 
 test('text_time_calculator reports earliest required i18n failure before DOM control setup', async () => {
