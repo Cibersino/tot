@@ -416,8 +416,7 @@
         const nextEnabled = previewSpoilerToggle.checked;
         const previousEnabled = !nextEnabled;
         if (!persistPreviewSpoilerEnabled) {
-          previewSpoilerToggle.checked = previousEnabled;
-          renderPreviewFromState();
+          setPreviewSpoilerEnabled(previousEnabled);
           applyPreviewSpoilerToggleControlState();
           return;
         }
@@ -428,8 +427,7 @@
           await persistPreviewSpoilerEnabled(nextEnabled);
         } catch (err) {
           log.error('Preview spoiler setting persistence failed; restoring previous value:', err);
-          previewSpoilerToggle.checked = previousEnabled;
-          renderPreviewFromState();
+          setPreviewSpoilerEnabled(previousEnabled);
         } finally {
           previewSpoilerSavePending = false;
           applyPreviewSpoilerToggleControlState();
