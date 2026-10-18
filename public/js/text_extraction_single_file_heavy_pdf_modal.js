@@ -105,11 +105,9 @@
     container.textContent = '';
     if (parts.length < 2) {
       log.warn(
-        'Single-file heavy PDF modal translation placeholder missing; rendering template without isolated value:',
+        'Single-file heavy PDF modal translation placeholder missing:',
         { key, placeholderToken, tokenSuffix }
       );
-      container.textContent = template;
-      return;
     }
 
     parts.forEach((part, index) => {

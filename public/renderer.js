@@ -2103,14 +2103,9 @@ function bindHelpAction() {
       const tipKey = helpTipKeys[idx];
 
       try {
-        try {
-          window.Notify.toastMain(tipKey);
-        } catch (err) {
-          log.warn('Help tip toast failed; falling back to notifyMain:', err);
-          window.Notify.notifyMain(tipKey);
-        }
+        window.Notify.toastMain(tipKey);
       } catch (err) {
-        log.error('Help tip fallback failed:', err);
+        log.error('Help tip notification failed:', err);
       }
     });
   }

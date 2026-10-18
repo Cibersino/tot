@@ -80,7 +80,7 @@ const cronoEl = document.getElementById('crono');
 const btnToggle = document.getElementById('toggle');
 const btnReset = document.getElementById('reset');
 
-// Missing elements are logged; execution continues (assumes flotante.html provides these IDs).
+// flotante.html provides these IDs; #crono is tolerated, but either missing control terminates bootstrap.
 if (!cronoEl) {
   log.error('element #crono not found');
 }
@@ -127,7 +127,7 @@ let lastState = { elapsed: 0, running: false, display: '00:00:00' };
 let playIconName = 'play';
 let pauseIconName = 'pause';
 let translationsLoadedFor = null;
-let flotanteI18nTerminal = false;
+let flotanteTerminal = false;
 let flotanteSemanticQueue = Promise.resolve();
 const { transitionRendererTranslations, tRenderer } = window.RendererI18n || {};
 if (!transitionRendererTranslations || !tRenderer) {
@@ -135,7 +135,15 @@ if (!transitionRendererTranslations || !tRenderer) {
   throw new Error('[flotante] RendererI18n unavailable; cannot continue');
 }
 
-setFlotanteControlsLocked(true);
+try {
+  setFlotanteControlsLocked(true);
+} catch (err) {
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: Floating Stopwatch initial control lock failed; closing window before normal interaction.',
+    err
+  );
+}
 
 // =============================================================================
 // Helpers
@@ -149,7 +157,7 @@ function setFlotanteControlsLocked(locked) {
 
 // Refresh view (expected to receive { elapsed, running, display })
 function renderState(state) {
-  if (flotanteI18nTerminal) return;
+  if (flotanteTerminal) return;
   if (!state) return;
   lastState = Object.assign({}, lastState, state || {});
   // We prefer display if you send it
@@ -160,7 +168,7 @@ function renderState(state) {
       if (window.RendererCrono && typeof window.RendererCrono.formatCrono === 'function') {
         cronoEl.textContent = window.RendererCrono.formatCrono(state.elapsed);
       } else {
-        log.warnOnce('flotante.formatCrono.missing', 'formatCrono unavailable; using simple formatter (ignored).');
+        log.warn('formatCrono unavailable; using simple formatter (ignored).');
         // simple fallback
         const totalSeconds = Math.floor(state.elapsed / 1000);
         const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
@@ -176,24 +184,6 @@ function renderState(state) {
       preserveContent: false,
     });
   }
-}
-
-// =============================================================================
-// Bridge integration (flotanteAPI)
-// =============================================================================
-
-// onState now listens to 'crono-state' (main)
-try {
-  window.flotanteAPI.onState((state) => {
-    if (flotanteI18nTerminal) return;
-    try { renderState(state); } catch (err) { log.error(err); }
-  });
-} catch (err) {
-  terminateFlotanteBootstrap(
-    log,
-    'BOOTSTRAP: flotanteAPI.onState registration failed; closing Floating Stopwatch before normal interaction.',
-    err
-  );
 }
 
 async function applyFlotanteTranslations(lang) {
@@ -237,21 +227,70 @@ function reportFlotanteI18nFailure(err, { startup = false } = {}) {
   reportTerminalFlotanteI18nFailure(startup ? 'startup' : 'transition-restoration');
 }
 
+function closeFlotanteAfterTerminalFailure() {
+  if (typeof window.close !== 'function') {
+    log.error('Floating Stopwatch local window close unavailable; terminal state remains active.');
+    return;
+  }
+  try {
+    window.close();
+  } catch (closeErr) {
+    log.error('Floating Stopwatch local window close failed; terminal state remains active:', closeErr);
+  }
+}
+
+function enterFlotanteTerminalState() {
+  if (flotanteTerminal) return false;
+  flotanteTerminal = true;
+  try {
+    setFlotanteControlsLocked(true);
+  } catch (lockErr) {
+    log.error('Floating Stopwatch terminal control lock failed (ignored); continuing terminal handling:', lockErr);
+  }
+  return true;
+}
+
+function terminateFlotanteAfterUnexpectedFailure(message, err) {
+  log.error(message, err);
+  enterFlotanteTerminalState();
+  closeFlotanteAfterTerminalFailure();
+}
+
 function reportTerminalFlotanteI18nFailure(kind) {
-  if (flotanteI18nTerminal) return;
-  flotanteI18nTerminal = true;
-  setFlotanteControlsLocked(true);
+  if (!enterFlotanteTerminalState()) return;
   if (typeof window.flotanteAPI.reportRendererI18nFailure !== 'function') {
     log.warn('flotanteAPI.reportRendererI18nFailure unavailable (ignored); closing failed renderer locally.');
-    if (typeof window.close === 'function') window.close();
+    closeFlotanteAfterTerminalFailure();
     return;
   }
   try {
     window.flotanteAPI.reportRendererI18nFailure({ kind });
   } catch (reportErr) {
     log.warn('flotanteAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
-    if (typeof window.close === 'function') window.close();
+    closeFlotanteAfterTerminalFailure();
   }
+}
+
+// =============================================================================
+// Bridge integration (flotanteAPI)
+// =============================================================================
+
+// onState now listens to 'crono-state' (main)
+try {
+  window.flotanteAPI.onState((state) => {
+    if (flotanteTerminal) return;
+    try {
+      renderState(state);
+    } catch (err) {
+      log.error('Floating Stopwatch state render failed:', err);
+    }
+  });
+} catch (err) {
+  terminateFlotanteBootstrap(
+    log,
+    'BOOTSTRAP: flotanteAPI.onState registration failed; closing Floating Stopwatch before normal interaction.',
+    err
+  );
 }
 
 // =============================================================================
@@ -261,8 +300,8 @@ function reportTerminalFlotanteI18nFailure(kind) {
 function enqueueFlotanteSemanticWork(work) {
   const run = async () => {
     // Main-process closure is asynchronous. Do not admit queued semantic
-    // work after this window has entered terminal i18n failure.
-    if (flotanteI18nTerminal) return;
+    // work after this window has entered a terminal failure state.
+    if (flotanteTerminal) return;
     return work();
   };
   flotanteSemanticQueue = flotanteSemanticQueue.then(run, run);
@@ -279,8 +318,7 @@ function enqueueFlotanteSettingsApplication(settings) {
       reportFlotanteI18nFailure(err);
     }
   };
-  // Preload listeners do not await async callbacks. Admit full settings
-  // snapshots after the preceding root semantic operation has settled.
+  // Preload listeners do not await async callbacks. Admit full settings snapshots after the preceding root semantic operation has settled.
   return enqueueFlotanteSemanticWork(run);
 }
 
@@ -296,9 +334,8 @@ if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
   }
 }
 
-// Start state and settings delivery before the initial transition so the
-// main-owned stopwatch state remains current. Bind commands only after the
-// first required semantic presentation has completed successfully.
+// Start state and settings delivery before the initial transition so the main-owned stopwatch state remains current. 
+// Bind commands only after the first required semantic presentation has completed successfully.
 // Floating Stopwatch intentionally has no programmatic initial DOM focus.
 enqueueFlotanteSemanticWork(async () => {
   let lang = DEFAULT_LANG;
@@ -313,10 +350,28 @@ enqueueFlotanteSemanticWork(async () => {
 
   try {
     await applyFlotanteTranslations(lang);
-    bindFlotanteControls();
-    setFlotanteControlsLocked(false);
   } catch (err) {
     reportFlotanteI18nFailure(err, { startup: true });
+    return;
+  }
+
+  try {
+    bindFlotanteControls();
+  } catch (err) {
+    terminateFlotanteAfterUnexpectedFailure(
+      'BOOTSTRAP: Floating Stopwatch control binding failed; closing window:',
+      err
+    );
+    return;
+  }
+
+  try {
+    setFlotanteControlsLocked(false);
+  } catch (err) {
+    terminateFlotanteAfterUnexpectedFailure(
+      'BOOTSTRAP: Floating Stopwatch control unlock failed; closing window:',
+      err
+    );
   }
 });
 
@@ -326,17 +381,17 @@ enqueueFlotanteSemanticWork(async () => {
 
 function bindFlotanteControls() {
   btnToggle.addEventListener('click', () => {
-    if (flotanteI18nTerminal) return;
+    if (flotanteTerminal) return;
     window.flotanteAPI.sendCommand({ cmd: 'toggle' });
   });
   btnReset.addEventListener('click', () => {
-    if (flotanteI18nTerminal) return;
+    if (flotanteTerminal) return;
     window.flotanteAPI.sendCommand({ cmd: 'reset' });
   });
 
   // Local keyboard: when the window has focus
   window.addEventListener('keydown', (ev) => {
-    if (flotanteI18nTerminal) return;
+    if (flotanteTerminal) return;
     if (ev.code === 'Space' || ev.key === ' ' || ev.key === 'Enter') {
       ev.preventDefault();
       window.flotanteAPI.sendCommand({ cmd: 'toggle' });

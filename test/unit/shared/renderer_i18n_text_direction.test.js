@@ -304,6 +304,210 @@ test('failed post-bootstrap transition restores the last bundle and root languag
   assert.deepEqual(applied, ['en:English', 'ar:Arabic', 'en:English']);
 });
 
+test('a post-bootstrap state-capture failure preserves the established state and permits a later transition', async () => {
+  const { i18n, documentElement } = createHarness('ltr', {
+    defaultLang: 'en',
+    async fetchImpl(pathname) {
+      const labels = {
+        '../i18n/en/renderer.json': 'English',
+        '../i18n/fr/renderer.json': 'French',
+        '../i18n/de/renderer.json': 'German',
+      };
+      if (labels[pathname]) {
+        return { ok: true, text: async () => JSON.stringify({ renderer: { label: labels[pathname] } }) };
+      }
+      return { ok: false, status: 404, text: async () => '' };
+    },
+  });
+
+  const applied = [];
+  await i18n.transitionRendererTranslations('en', {
+    applyTranslations: ({ language }) => applied.push(language),
+  });
+
+  const originalGetAttribute = documentElement.getAttribute;
+  let captureFails = true;
+  documentElement.getAttribute = function getAttribute(name) {
+    if (captureFails && name === 'lang') {
+      captureFails = false;
+      throw new Error('root language capture failed');
+    }
+    return originalGetAttribute.call(this, name);
+  };
+
+  await assert.rejects(() => i18n.transitionRendererTranslations('fr', {
+    applyTranslations: ({ language }) => applied.push(language),
+  }), (err) => {
+    assert.equal(err.rendererI18nTransition.hadEstablishedState, true);
+    assert.equal(err.rendererI18nTransition.restorationFailed, false);
+    return true;
+  });
+
+  assert.equal(i18n.tRenderer('renderer.label'), 'English');
+  assert.equal(documentElement.getAttribute('lang'), 'en');
+  assert.equal(documentElement.getAttribute('dir'), 'ltr');
+  assert.equal(documentElement.getAttribute('data-language-direction'), 'ltr');
+  assert.deepEqual(applied, ['en']);
+
+  await i18n.transitionRendererTranslations('de', {
+    applyTranslations: ({ language }) => applied.push(language),
+  });
+
+  assert.equal(i18n.tRenderer('renderer.label'), 'German');
+  assert.deepEqual(applied, ['en', 'de']);
+});
+
+test('a partial root-attribute update restores shared state without reapplying consumer semantics', async () => {
+  const { i18n, documentElement } = createHarness('ltr', {
+    defaultLang: 'en',
+    async fetchImpl(pathname) {
+      const labels = {
+        '../i18n/en/renderer.json': 'English',
+        '../i18n/ar/renderer.json': 'Arabic',
+        '../i18n/de/renderer.json': 'German',
+      };
+      if (labels[pathname]) {
+        return { ok: true, text: async () => JSON.stringify({ renderer: { label: labels[pathname] } }) };
+      }
+      return { ok: false, status: 404, text: async () => '' };
+    },
+  });
+
+  const applied = [];
+  await i18n.transitionRendererTranslations('en', {
+    applyTranslations: ({ language, restoring }) => applied.push({ language, restoring }),
+  });
+
+  const originalSetAttribute = documentElement.setAttribute;
+  let attributeUpdateFails = true;
+  documentElement.setAttribute = function setAttribute(name, value) {
+    if (attributeUpdateFails && name === 'dir') {
+      attributeUpdateFails = false;
+      throw new Error('root direction update failed');
+    }
+    return originalSetAttribute.call(this, name, value);
+  };
+
+  await assert.rejects(() => i18n.transitionRendererTranslations('ar', {
+    applyTranslations: ({ language, restoring }) => applied.push({ language, restoring }),
+  }), (err) => {
+    assert.equal(err.rendererI18nTransition.hadEstablishedState, true);
+    assert.equal(err.rendererI18nTransition.restorationFailed, false);
+    return true;
+  });
+
+  assert.equal(i18n.tRenderer('renderer.label'), 'English');
+  assert.equal(documentElement.getAttribute('lang'), 'en');
+  assert.equal(documentElement.getAttribute('dir'), 'ltr');
+  assert.equal(documentElement.getAttribute('data-language-direction'), 'ltr');
+  assert.deepEqual(applied, [{ language: 'en', restoring: false }]);
+
+  await i18n.transitionRendererTranslations('de', {
+    applyTranslations: ({ language, restoring }) => applied.push({ language, restoring }),
+  });
+
+  assert.equal(i18n.tRenderer('renderer.label'), 'German');
+  assert.deepEqual(applied, [
+    { language: 'en', restoring: false },
+    { language: 'de', restoring: false },
+  ]);
+});
+
+test('an initial root-attribute failure is terminal and blocks queued transitions', async () => {
+  const { i18n, documentElement } = createHarness('ltr', {
+    defaultLang: 'en',
+    async fetchImpl(pathname) {
+      const labels = {
+        '../i18n/en/renderer.json': 'English',
+        '../i18n/fr/renderer.json': 'French',
+        '../i18n/de/renderer.json': 'German',
+      };
+      if (labels[pathname]) {
+        return { ok: true, text: async () => JSON.stringify({ renderer: { label: labels[pathname] } }) };
+      }
+      return { ok: false, status: 404, text: async () => '' };
+    },
+  });
+
+  const originalSetAttribute = documentElement.setAttribute;
+  let attributeUpdateFails = true;
+  documentElement.setAttribute = function setAttribute(name, value) {
+    if (attributeUpdateFails && name === 'lang') {
+      attributeUpdateFails = false;
+      throw new Error('initial root language update failed');
+    }
+    return originalSetAttribute.call(this, name, value);
+  };
+
+  const applied = [];
+  const terminal = i18n.transitionRendererTranslations('fr', {
+    applyTranslations: ({ language }) => applied.push(language),
+  });
+  const queued = i18n.transitionRendererTranslations('de', {
+    applyTranslations: ({ language }) => applied.push(language),
+  });
+
+  const assertTerminalFailure = (err) => {
+    assert.equal(err.rendererI18nTransition.hadEstablishedState, false);
+    assert.equal(err.rendererI18nTransition.restorationFailed, false);
+    return true;
+  };
+  await assert.rejects(terminal, assertTerminalFailure);
+  await assert.rejects(queued, assertTerminalFailure);
+
+  assert.deepEqual(applied, []);
+  assert.equal(documentElement.getAttribute('lang'), 'en');
+  assert.throws(() => i18n.tRenderer('renderer.label'), /before renderer translation state/);
+});
+
+test('a root-attribute restoration failure is terminal and blocks queued transitions', async () => {
+  const { i18n, documentElement } = createHarness('ltr', {
+    defaultLang: 'en',
+    async fetchImpl(pathname) {
+      const labels = {
+        '../i18n/en/renderer.json': 'English',
+        '../i18n/ar/renderer.json': 'Arabic',
+        '../i18n/de/renderer.json': 'German',
+      };
+      if (labels[pathname]) {
+        return { ok: true, text: async () => JSON.stringify({ renderer: { label: labels[pathname] } }) };
+      }
+      return { ok: false, status: 404, text: async () => '' };
+    },
+  });
+
+  const applied = [];
+  await i18n.transitionRendererTranslations('en', {
+    applyTranslations: ({ language }) => applied.push(language),
+  });
+
+  const originalSetAttribute = documentElement.setAttribute;
+  documentElement.setAttribute = function setAttribute(name, value) {
+    if (name === 'dir') {
+      throw new Error('root direction restoration failed');
+    }
+    return originalSetAttribute.call(this, name, value);
+  };
+
+  const terminal = i18n.transitionRendererTranslations('ar', {
+    applyTranslations: ({ language }) => applied.push(language),
+  });
+  const queued = i18n.transitionRendererTranslations('de', {
+    applyTranslations: ({ language }) => applied.push(language),
+  });
+
+  const assertTerminalFailure = (err) => {
+    assert.equal(err.rendererI18nTransition.hadEstablishedState, true);
+    assert.equal(err.rendererI18nTransition.restorationFailed, true);
+    return true;
+  };
+  await assert.rejects(terminal, assertTerminalFailure);
+  await assert.rejects(queued, assertTerminalFailure);
+
+  assert.deepEqual(applied, ['en']);
+  assert.equal(i18n.tRenderer('renderer.label'), 'English');
+});
+
 test('renderer language transitions serialize overlapping requests and converge to the newest successful request', async () => {
   const { i18n } = createHarness('ltr', {
     defaultLang: 'en',

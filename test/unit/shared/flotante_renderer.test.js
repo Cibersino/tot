@@ -161,6 +161,21 @@ test('Floating Stopwatch fail-closes direct required bootstrap failures', () => 
       },
       error: /flotanteAPI\.onState registration failed/,
     },
+    {
+      name: 'initial control lock failure',
+      configure(harness) {
+        Object.defineProperty(harness.elements.toggle, 'disabled', {
+          configurable: true,
+          get() {
+            return false;
+          },
+          set() {
+            throw new Error('initial control lock failed');
+          },
+        });
+      },
+      error: /Floating Stopwatch initial control lock failed/,
+    },
   ];
 
   for (const failure of cases) {
@@ -563,4 +578,151 @@ test('Floating Stopwatch stops state, settings, and commands after terminal i18n
   assert.equal(commandCalls, 0);
   assert.equal(elements.crono.textContent, '');
   assert.equal(elements.toggle.disabled, true);
+});
+
+test('Floating Stopwatch closes and blocks later callbacks after control binding fails', async () => {
+  const harness = createBootstrapHarness();
+  const subscriptions = {};
+  const transitionLanguages = [];
+  let commandCalls = 0;
+  harness.sandbox.window.RendererI18n.transitionRendererTranslations = async (language, { applyTranslations } = {}) => {
+    transitionLanguages.push(language);
+    if (typeof applyTranslations === 'function') await applyTranslations({ language });
+  };
+  harness.sandbox.window.flotanteAPI.onState = (callback) => {
+    subscriptions.stateChanged = callback;
+  };
+  harness.sandbox.window.flotanteAPI.onSettingsChanged = (callback) => {
+    subscriptions.settingsChanged = callback;
+  };
+  harness.sandbox.window.flotanteAPI.sendCommand = () => {
+    commandCalls += 1;
+  };
+  harness.elements.reset.addEventListener = () => {
+    throw new Error('reset listener binding failed');
+  };
+
+  runFlotante(harness.sandbox);
+  await tick();
+  await tick();
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.equal(harness.elements.toggle.disabled, true);
+  assert.equal(harness.elements.reset.disabled, true);
+  assert.match(harness.errors[0][0], /BOOTSTRAP: Floating Stopwatch control binding failed/);
+
+  subscriptions.settingsChanged({ language: 'es' });
+  subscriptions.stateChanged({ elapsed: 1000, display: '00:00:01' });
+  harness.elements.toggle.dispatch('click');
+  await tick();
+
+  assert.deepEqual(transitionLanguages, ['en']);
+  assert.equal(harness.elements.crono.textContent, '');
+  assert.equal(commandCalls, 0);
+});
+
+test('Floating Stopwatch closes and blocks commands after control unlock fails', async () => {
+  const harness = createBootstrapHarness();
+  const subscriptions = {};
+  const transitionLanguages = [];
+  let commandCalls = 0;
+  const toggleDisabledAssignments = [];
+  let toggleDisabled = false;
+  Object.defineProperty(harness.elements.toggle, 'disabled', {
+    configurable: true,
+    get() {
+      return toggleDisabled;
+    },
+    set(value) {
+      toggleDisabledAssignments.push(value);
+      toggleDisabled = value;
+    },
+  });
+  let resetDisabled = false;
+  Object.defineProperty(harness.elements.reset, 'disabled', {
+    configurable: true,
+    get() {
+      return resetDisabled;
+    },
+    set(value) {
+      if (value === false) {
+        throw new Error('reset unlock failed');
+      }
+      resetDisabled = value;
+    },
+  });
+  harness.sandbox.window.RendererI18n.transitionRendererTranslations = async (language, { applyTranslations } = {}) => {
+    transitionLanguages.push(language);
+    if (typeof applyTranslations === 'function') await applyTranslations({ language });
+  };
+  harness.sandbox.window.flotanteAPI.onSettingsChanged = (callback) => {
+    subscriptions.settingsChanged = callback;
+  };
+  harness.sandbox.window.flotanteAPI.sendCommand = () => {
+    commandCalls += 1;
+  };
+
+  runFlotante(harness.sandbox);
+  await tick();
+  await tick();
+
+  assert.equal(harness.getCloseCalls(), 1);
+  assert.match(harness.errors[0][0], /BOOTSTRAP: Floating Stopwatch control unlock failed/);
+  assert.deepEqual(toggleDisabledAssignments, [true, false, true]);
+  assert.equal(harness.elements.toggle.disabled, true);
+
+  harness.elements.toggle.dispatch('click');
+  subscriptions.settingsChanged({ language: 'es' });
+  await tick();
+
+  assert.equal(commandCalls, 0);
+  assert.deepEqual(transitionLanguages, ['en']);
+});
+
+test('Floating Stopwatch reports terminal i18n failure despite a terminal control-lock failure', async () => {
+  const harness = createBootstrapHarness();
+  const terminalFailure = new Error('cannot establish translations');
+  terminalFailure.rendererI18nTransition = {
+    hadEstablishedState: false,
+    restorationFailed: false,
+  };
+  let transitionCalls = 0;
+  let reporterCalls = 0;
+  let disabledAssignments = 0;
+  let disabled = false;
+  let settingsChanged;
+  harness.sandbox.window.RendererI18n.transitionRendererTranslations = async (language, { applyTranslations } = {}) => {
+    transitionCalls += 1;
+    if (transitionCalls > 1) throw terminalFailure;
+    if (typeof applyTranslations === 'function') await applyTranslations({ language });
+  };
+  harness.sandbox.window.flotanteAPI.onSettingsChanged = (callback) => {
+    settingsChanged = callback;
+  };
+  harness.sandbox.window.flotanteAPI.reportRendererI18nFailure = () => {
+    reporterCalls += 1;
+  };
+  Object.defineProperty(harness.elements.toggle, 'disabled', {
+    configurable: true,
+    get() {
+      return disabled;
+    },
+    set(value) {
+      disabledAssignments += 1;
+      if (disabledAssignments >= 3) {
+        throw new Error('toggle terminal lock failed');
+      }
+      disabled = value;
+    },
+  });
+
+  runFlotante(harness.sandbox);
+  await tick();
+  await tick();
+  settingsChanged({ language: 'es' });
+  await tick();
+
+  assert.equal(reporterCalls, 1);
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.match(harness.errors.at(-1)[0], /terminal control lock failed \(ignored\)/);
 });

@@ -338,6 +338,57 @@ test('single-file heavy PDF modal includes provider limit in Case A intro', asyn
   assert.equal(result, 'return_to_pages');
 });
 
+test('single-file heavy PDF modal leaves missing provider-limit placeholders malformed on the normal structural path', async () => {
+  const cases = [
+    {
+      key: 'renderer.text_extraction.single_file_heavy.case_a_message',
+      caseKind: 'case_a',
+      template: 'The full PDF exceeds the OCR provider limit.',
+      options: {
+        totalPages: 516,
+      },
+    },
+    {
+      key: 'renderer.text_extraction.single_file_heavy.case_b_message',
+      caseKind: 'case_b',
+      template: 'The generated PDF exceeds the OCR provider limit.',
+      options: {
+        selectedRangeFromPage: 100,
+        selectedRangeToPage: 220,
+        generatedPdfFileName: 'book_pages_100_220.pdf',
+        generatedPdfSizeBytes: 72.4 * 1024 * 1024,
+      },
+    },
+  ];
+
+  for (const scenario of cases) {
+    const harness = createHarness();
+    harness.translations[scenario.key] = scenario.template;
+
+    const promptPromise = harness.prompt({
+      caseKind: scenario.caseKind,
+      sourceFileName: 'book.pdf',
+      sourceFileSizeBytes: 458 * 1024 * 1024,
+      providerLimitBytes: 50 * 1024 * 1024,
+      ...scenario.options,
+    });
+
+    assert.equal(
+      harness.elements.textExtractionSingleFileHeavyPdfModalMessage.textContent,
+      scenario.template,
+      `${scenario.caseKind} preserves the malformed translated message`
+    );
+    assert.doesNotMatch(
+      harness.elements.textExtractionSingleFileHeavyPdfModalMessage.innerHTML,
+      /50 MB/,
+      `${scenario.caseKind} does not relocate the value when its placeholder is absent`
+    );
+
+    harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');
+    assert.equal(await promptPromise, 'cancel');
+  }
+});
+
 test('single-file heavy PDF modal shows generated PDF filename only when a retained generated PDF exists', async () => {
   const harness = createHarness();
 

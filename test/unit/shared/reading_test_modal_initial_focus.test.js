@@ -335,6 +335,210 @@ test('reading-test result focuses Continue after result data renders', async () 
   assert.equal(dom.getActiveElement(), dom.elements.readingTestResultContinue);
 });
 
+test('reading-test result uses defaults when getSettings is unavailable', async () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultWpmValue',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  const errors = [];
+  const formatRequests = [];
+  const translationRequests = [];
+  const warnings = [];
+  let closeCalls = 0;
+  let onInitData = null;
+  let onSettingsChanged = null;
+  let reporterCalls = 0;
+  const baseWindow = createBaseWindow();
+  const window = {
+    ...baseWindow,
+    FormatUtils: {
+      async obtenerSeparadoresDeNumeros(language, settings) {
+        formatRequests.push({ language, settingsKeys: Object.keys(settings || {}) });
+        return { separadorMiles: ',', separadorDecimal: '.' };
+      },
+      formatearNumero(value, thousands, decimal) {
+        return `${value}[${thousands}${decimal}]`;
+      },
+    },
+    RendererI18n: {
+      ...baseWindow.RendererI18n,
+      async transitionRendererTranslations(language, options) {
+        translationRequests.push(language);
+        await baseWindow.RendererI18n.transitionRendererTranslations(language, options);
+      },
+    },
+    getLogger() {
+      return {
+        ...baseWindow.getLogger(),
+        error(...args) {
+          errors.push(args);
+        },
+        warn(...args) {
+          warnings.push(args);
+        },
+      };
+    },
+    readingTestResultAPI: {
+      onInitData(handler) {
+        onInitData = handler;
+      },
+      onSettingsChanged(handler) {
+        onSettingsChanged = handler;
+      },
+      reportRendererI18nFailure() {
+        reporterCalls += 1;
+      },
+    },
+    close() {
+      closeCalls += 1;
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+  onInitData({ elapsedMs: 62000, measuredWpm: 237, wordCount: 6543 });
+  await flushAsyncWork();
+
+  assert.equal(typeof onSettingsChanged, 'function');
+  assert.deepEqual(translationRequests, ['en', 'en']);
+  assert.equal(dom.elements.readingTestResultWpmValue.textContent, '237[,.]');
+  assert.match(dom.elements.readingTestResultSummary.textContent, /6543\[,\.\]/u);
+  assert.ok(formatRequests.length >= 4);
+  assert.ok(formatRequests.every(({ language, settingsKeys }) => (
+    language === 'en' && settingsKeys.length === 0
+  )));
+  assert.equal(closeCalls, 0);
+  assert.equal(reporterCalls, 0);
+  assert.equal(errors.length, 0);
+  assert.equal(warnings.filter(([message]) => (
+    message === 'BOOTSTRAP: readingTestResultAPI.getSettings unavailable; using default renderer settings.'
+  )).length, 1);
+});
+
+test('reading-test result stops replay work when settings-listener registration throws', async () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultWpmValue',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  const errors = [];
+  const registrationError = new Error('settings listener registration failed');
+  let getSettingsCalls = 0;
+  let reporterCalls = 0;
+  const baseWindow = createBaseWindow();
+  const window = {
+    ...baseWindow,
+    getLogger() {
+      return {
+        ...baseWindow.getLogger(),
+        error(...args) {
+          errors.push(args);
+        },
+      };
+    },
+    readingTestResultAPI: {
+      async getSettings() {
+        getSettingsCalls += 1;
+        return { language: 'en' };
+      },
+      onInitData(handler) {
+        handler({ measuredWpm: 200, elapsedMs: 60000, wordCount: 200 });
+      },
+      onSettingsChanged() {
+        throw registrationError;
+      },
+      reportRendererI18nFailure() {
+        reporterCalls += 1;
+      },
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+  await flushAsyncWork();
+
+  assert.equal(getSettingsCalls, 0);
+  assert.equal(reporterCalls, 1);
+  assert.ok(errors.some(([message, error]) => (
+    /onSettingsChanged/u.test(message) && error === registrationError
+  )));
+  assert.equal(dom.elements.readingTestResultWpmValue.textContent, '');
+});
+
+test('reading-test result contains replayed init work when registration throws', async () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultWpmValue',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  const errors = [];
+  const registrationError = new Error('init listener registration failed');
+  let closeCalls = 0;
+  let getSettingsCalls = 0;
+  let reporterCalls = 0;
+  let settingsListenerRegistrations = 0;
+  const baseWindow = createBaseWindow();
+  const window = {
+    ...baseWindow,
+    getLogger() {
+      return {
+        ...baseWindow.getLogger(),
+        error(...args) {
+          errors.push(args);
+        },
+      };
+    },
+    readingTestResultAPI: {
+      async getSettings() {
+        getSettingsCalls += 1;
+        return { language: 'en' };
+      },
+      onInitData(handler) {
+        handler({ measuredWpm: 200, elapsedMs: 60000, wordCount: 200 });
+        throw registrationError;
+      },
+      onSettingsChanged() {
+        settingsListenerRegistrations += 1;
+      },
+      reportRendererI18nFailure() {
+        reporterCalls += 1;
+      },
+    },
+    close() {
+      closeCalls += 1;
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+  await flushAsyncWork();
+
+  assert.equal(closeCalls, 1);
+  assert.equal(getSettingsCalls, 0);
+  assert.equal(reporterCalls, 0);
+  assert.equal(settingsListenerRegistrations, 0);
+  assert.ok(errors.some(([message, error]) => (
+    /onInitData/u.test(message) && error === registrationError
+  )));
+  assert.equal(dom.elements.readingTestResultWpmValue.textContent, '');
+});
+
 test('reading-test result closes locally when its required DOM contract is unavailable', () => {
   const dom = createDomHarness([
     'readingTestResultTitle',
