@@ -361,7 +361,11 @@
   // =============================================================================
   function notifyMain(key, params = {}) {
     const msg = resolveText(key, params);
-    alert(msg);
+    alertText(msg);
+  }
+
+  function alertText(text) {
+    alert(text);
   }
 
   function confirmMain(key, params = {}) {
@@ -388,9 +392,9 @@
     try {
       toastText(msg, { containerId: 'totMainToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      log.warn('toastMain failed; falling back to notifyMain:', err);
+      log.warn('toastMain failed; falling back to alert:', err);
       try {
-        notifyMain(key);
+        alertText(msg);
       } catch (fallbackErr) {
         log.error('toastMain fallback failed:', fallbackErr);
       }
@@ -401,9 +405,9 @@
     try {
       toastText(text, { containerId: 'totEditorToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      log.warn('toastEditorText failed; falling back to notifyMain:', err);
+      log.warn('toastEditorText failed; falling back to alert:', err);
       try {
-        notifyMain(text);
+        alertText(text);
       } catch (fallbackErr) {
         log.error('toastEditorText fallback failed:', fallbackErr);
       }

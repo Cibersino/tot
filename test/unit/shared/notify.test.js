@@ -9,6 +9,7 @@ const vm = require('node:vm');
 function loadNotify({
   document: documentOverride = {},
   logger = null,
+  alertHandler = () => {},
   setTimeoutHandler = (handler) => {
     if (typeof handler === 'function') handler();
     return 0;
@@ -35,7 +36,7 @@ function loadNotify({
       ...windowOverrides,
     },
     document: documentOverride,
-    alert() {},
+    alert: alertHandler,
     confirm() {
       return true;
     },
@@ -312,6 +313,48 @@ test('notify toasts expose semantic state without inline presentation', () => {
   assert.equal(toast.dataset.state, 'visible');
   assert.deepEqual(toast.style, {});
   assert.equal(harness.pendingTimers.length, 1);
+});
+
+test('toast fallback preserves a resolved main message including interpolation', () => {
+  const alerts = [];
+  const notify = loadNotify({
+    alertHandler(message) {
+      alerts.push(message);
+    },
+    windowOverrides: {
+      RendererI18n: {
+        msgRenderer(key, params) {
+          return `${key}: ${params.imported}`;
+        },
+      },
+    },
+  });
+
+  notify.toastMain('renderer.reading_test.entry.import.import_summary', {
+    params: { imported: 3 },
+  });
+
+  assert.deepEqual(alerts, ['renderer.reading_test.entry.import.import_summary: 3']);
+});
+
+test('toastEditorText fallback does not treat display text as an i18n key', () => {
+  const alerts = [];
+  const notify = loadNotify({
+    alertHandler(message) {
+      alerts.push(message);
+    },
+    windowOverrides: {
+      RendererI18n: {
+        msgRenderer(key) {
+          return key === 'renderer.already_resolved' ? 'incorrectly re-resolved' : key;
+        },
+      },
+    },
+  });
+
+  notify.toastEditorText('renderer.already_resolved');
+
+  assert.deepEqual(alerts, ['renderer.already_resolved']);
 });
 
 test('toast stylesheet owns the modal-safe visual contract and the Arial font change', () => {
