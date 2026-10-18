@@ -257,6 +257,11 @@
       && deferredBootstrapSettleRequestId === normalizePositiveInteger(requestId);
   }
 
+  function resetDerivedDegradedState() {
+    degradedRequestId = 0;
+    standaloneDerivedDegraded = false;
+  }
+
   function normalizeStandaloneFullRefreshPendingState(rawState) {
     const state = rawState && typeof rawState === 'object' ? rawState : {};
     const ownerSequence = normalizePositiveInteger(state.ownerSequence);
@@ -506,8 +511,7 @@
   }
 
   function applySettledDerivedState(derivedState) {
-    degradedRequestId = 0;
-    standaloneDerivedDegraded = false;
+    resetDerivedDegradedState();
     applyDisplayDerivedState(derivedState, {
       previewMode: 'always',
       persistStats: true,
@@ -835,8 +839,7 @@
     bumpRenderAuthoritySequence();
     currentTextProcessingState = nextProcessingState;
     if (nextProcessingState.active) {
-      degradedRequestId = 0;
-      standaloneDerivedDegraded = false;
+      resetDerivedDegradedState();
       clearQueuedStandaloneFollowup();
       // Bootstrap may expose current text as pending before READY, but its derived settle is intentionally armed here and kicked off only after the startup unlock.
       armDeferredBootstrapSettle(nextProcessingState.requestId);
@@ -861,8 +864,7 @@
     }
     if (nextState.active) {
       bumpRenderAuthoritySequence();
-      degradedRequestId = 0;
-      standaloneDerivedDegraded = false;
+      resetDerivedDegradedState();
       clearStandaloneFullRefreshPending({
         force: true,
         source: `standalone_full_refresh_taken_over:${source}`,
@@ -914,8 +916,7 @@
     }
 
     if (isActivePendingRequest(requestId)) {
-      degradedRequestId = 0;
-      standaloneDerivedDegraded = false;
+      resetDerivedDegradedState();
       clearStandaloneFullRefreshPending({
         force: true,
         source: 'standalone_full_refresh_taken_over:current_text_updated',
