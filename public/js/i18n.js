@@ -4,13 +4,14 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Renderer i18n helper for UI bundles.
+// Renderer i18n owner for shared renderer surfaces.
 // Responsibilities:
-// - Normalize language tags and derive base tags.
-// - Load renderer.json bundles with a fallback chain.
-// - Merge default bundle with optional overlay data.
-// - Resolve translation keys and parameterized messages.
-// - Expose the RendererI18n API on window.
+// - Normalize language tags and maintain document language and direction attributes.
+// - Load and merge renderer.json through requested, base, and DEFAULT_LANG candidates.
+// - Serialize translation transitions and attempt restoration when an update fails after state changes begin.
+// - Load registered full-document i18n resources.
+// - Expose the RendererI18n API for renderer consumers.
+// - Resolve translation keys and parameterized messages for renderer consumers.
 
 (() => {
   // =============================================================================
@@ -44,7 +45,7 @@
   let userTextDirectionProbe = null;
 
   // =============================================================================
-  // Helpers (pure utilities)
+  // Helpers / document language state
   // =============================================================================
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {
@@ -308,8 +309,11 @@
     };
   }
 
+  // =============================================================================
+  // Renderer translation transitions
+  // =============================================================================
   function commitRendererTranslations(candidate) {
-    // Read the candidate completely before changing either part of the established translation state. This keeps a future candidate-validation or preparation change from leaving a half-committed state.
+    // Read both fields before mutation so the established state cannot split between language and translations.
     const nextTranslations = candidate.translations;
     const nextLanguage = candidate.language;
     rendererTranslations = nextTranslations;
