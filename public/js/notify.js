@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Resolve renderer i18n keys to displayable text.
-// - Show blocking alerts and confirms for main-window notices.
+// - Show blocking alerts and confirms for renderer notices.
 // - Show toast notifications for main and Text Editor contexts.
 // - Own stack-aware renderer modal focus containment and per-open restoration.
 // - Provide a small, stable window.Notify surface for callers.
@@ -356,13 +356,14 @@
   }
 
   // =============================================================================
-  // Entry points (public API)
+  // Dialog helpers and public entry points
   // =============================================================================
   function notifyMain(key, params = {}) {
     const msg = resolveText(key, params);
     alertText(msg);
   }
 
+  // Toast fallbacks receive display text, not i18n keys, so they must not resolve it again.
   function alertText(text) {
     alert(text);
   }
