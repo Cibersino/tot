@@ -319,9 +319,12 @@
   }
 
   function commitRendererTranslations(candidate) {
-    rendererTranslations = candidate.translations;
-    rendererTranslationsLang = candidate.language;
-    return rendererTranslations;
+    // Read the candidate completely before changing either part of the established translation state. This keeps a future candidate-validation or preparation change from leaving a half-committed state.
+    const nextTranslations = candidate.translations;
+    const nextLanguage = candidate.language;
+    rendererTranslations = nextTranslations;
+    rendererTranslationsLang = nextLanguage;
+    return nextLanguage;
   }
 
   function captureRendererTranslationState() {
@@ -332,11 +335,15 @@
     };
   }
 
-  async function restoreRendererTranslationState(snapshot, applyTranslations) {
+  async function restoreRendererTranslationState(
+    snapshot,
+    applyTranslations,
+    { restoreConsumerSemantics = true } = {}
+  ) {
     rendererTranslations = snapshot.translations;
     rendererTranslationsLang = snapshot.language;
     restoreWindowLanguageAttributes(snapshot.windowAttributes);
-    if (rendererTranslations) {
+    if (restoreConsumerSemantics && rendererTranslations) {
       await applyTranslations({ language: snapshot.language, restoring: true });
     }
   }
@@ -370,12 +377,43 @@
         });
       }
 
-      const previousState = captureRendererTranslationState();
-      commitRendererTranslations(candidate);
-      applyWindowLanguageAttributes(candidate.language);
+      let previousState;
+      try {
+        previousState = captureRendererTranslationState();
+      } catch (err) {
+        // State capture is read-only. The existing state remains authoritative when it was already established, so no restoration callback runs.
+        throw markRendererTransitionError(err, {
+          hadEstablishedState: !!rendererTranslations,
+        });
+      }
+
+      let candidateLanguage = null;
+      try {
+        candidateLanguage = commitRendererTranslations(candidate);
+        applyWindowLanguageAttributes(candidateLanguage);
+      } catch (err) {
+        try {
+          await restoreRendererTranslationState(previousState, applyTranslations, {
+            restoreConsumerSemantics: false,
+          });
+        } catch (restoreErr) {
+          log.error(
+            'Renderer translation transition restoration failed:',
+            { requestedLanguage: candidateLanguage, previousLanguage: previousState.language },
+            restoreErr
+          );
+          throw markRendererTransitionError(restoreErr, {
+            hadEstablishedState: !!previousState.translations,
+            restorationFailed: true,
+          });
+        }
+        throw markRendererTransitionError(err, {
+          hadEstablishedState: !!previousState.translations,
+        });
+      }
 
       try {
-        await applyTranslations({ language: candidate.language, restoring: false });
+        await applyTranslations({ language: candidateLanguage, restoring: false });
       } catch (err) {
         try {
           await restoreRendererTranslationState(previousState, applyTranslations);
@@ -403,8 +441,7 @@
         throw err;
       }
     });
-    // Observe a terminal queue rejection without converting it back into a
-    // resolved queue. Later transitions must not run after fail-closed state.
+    // Observe a terminal queue rejection without converting it back into a resolved queue. Later transitions must not run after fail-closed state.
     rendererTransitionQueue.catch(() => {});
     return scheduled;
   }
