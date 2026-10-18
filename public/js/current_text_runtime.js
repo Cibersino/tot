@@ -4,16 +4,17 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-window current-text runtime owner.
+// Main-window runtime for current-text display and derived results.
 // Responsibilities:
-// - Own authoritative current-text preview/result rendering in the main window.
-// - Merge derived-only recalculations into the latest in-flight text settle.
-// - Report latest-settle success/failure back to the main-owned pending lifecycle.
-// - Keep degraded derived UI explicit when settle fails after current text changed.
+// - Maintain renderer-local current text, derived stats, and presentation status.
+// - Render the current-text preview and result values through configured collaborators.
+// - Coordinate refresh requests with pending main-owned current-text processing.
+// - Acknowledge the active request's settled or unavailable result through its resolver.
+// - Keep pending and unavailable presentation distinct when derived work cannot settle.
 
 (() => {
   // =============================================================================
-  // Logger / dependencies / DOM
+  // Logger, dependencies, and DOM references
   // =============================================================================
 
   if (typeof window.getLogger !== 'function') {
@@ -61,7 +62,7 @@
   const resultsSection = document.querySelector('.results');
 
   // =============================================================================
-  // Shared state
+  // Refresh kinds and shared state
   // =============================================================================
 
   const REFRESH_KIND_NONE = 'none';
@@ -102,10 +103,8 @@
   let terminalPresentationUnavailable = false;
 
   // =============================================================================
-  // Helpers
+  // Dependency and state normalization
   // =============================================================================
-
-  // Dependency / normalization helpers
 
   function configure(nextDeps = {}) {
     deps = {
@@ -306,7 +305,9 @@
     return 0;
   }
 
-  // Pending / follow-up state helpers
+  // =============================================================================
+  // Refresh coordination
+  // =============================================================================
 
   function mergeRefreshKind(currentKind, nextKind) {
     return getRefreshKindPriority(nextKind) > getRefreshKindPriority(currentKind)
@@ -350,7 +351,9 @@
     }
   }
 
-  // Rendering helpers
+  // =============================================================================
+  // Rendering and display-state application
+  // =============================================================================
 
   function renderPreview() {
     if (terminalPresentationUnavailable) return;
@@ -525,7 +528,9 @@
     });
   }
 
+  // =============================================================================
   // Derived-state builders
+  // =============================================================================
 
   async function buildDisplayDerivedStateFromNormalizedStats(stats, countArgs = getCountArgs()) {
     const { getSettingsCache, getWpm } = requireDeps();
@@ -560,7 +565,9 @@
     return buildDisplayDerivedStateFromNormalizedStats(normalizedStats);
   }
 
+  // =============================================================================
   // Pending authoritative-settle lifecycle
+  // =============================================================================
 
   function isActivePendingRequest(requestId) {
     return currentTextProcessingState.active === true
@@ -720,7 +727,9 @@
       });
   }
 
+  // =============================================================================
   // Standalone derived-refresh lifecycle
+  // =============================================================================
 
   function runQueuedStandaloneFollowup(refreshSequence) {
     if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
