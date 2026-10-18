@@ -175,7 +175,7 @@ const renderList = () => {
 const selectLanguage = async (lang) => {
   if (!lang || isBusy) return;
   if (!window.languageAPI || typeof window.languageAPI.setLanguage !== 'function') {
-    log.warnOnce('language_window.api.setLanguage.unavailable', 'setLanguage unavailable; language selection ignored.');
+    log.warn('setLanguage unavailable; language selection ignored.');
     setStatus(STATUS_IDS.SELECTION_ERROR, true);
     return;
   }
@@ -185,7 +185,7 @@ const selectLanguage = async (lang) => {
     await window.languageAPI.setLanguage(lang);
     window.close();
   } catch (e) {
-    log.error('Error setLanguage:', e);
+    log.error('Language selection request or window close failed:', e);
     setBusy(false);
     setStatus(STATUS_IDS.SELECTION_ERROR, true);
   }
@@ -317,7 +317,7 @@ const loadCurrentLanguage = async () => {
     await loadLanguages();
     langFilter.focus();
   } catch (e) {
-    log.error('BOOTSTRAP: loadLanguages failed; falling back to local list:', e);
+    log.error('BOOTSTRAP: language window initialization failed; attempting local-list recovery:', e);
     languages = FALLBACK_LANGUAGES.slice();
     selectedLanguageTag = '';
     filteredLanguages = languages.slice();
