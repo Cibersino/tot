@@ -700,8 +700,7 @@
 
   function runStandaloneStatsDisplayRefresh(reason, refreshSequence = bumpRenderAuthoritySequence()) {
     if (!currentTextStats) {
-      log.warnOnce(
-        'current_text_runtime.statsDisplay.noStats',
+      log.warn(
         'Display-only refresh requested without current text stats; results not updated.'
       );
       return;
