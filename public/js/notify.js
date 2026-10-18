@@ -403,14 +403,7 @@
     } catch (err) {
       log.warn('toastEditorText failed; falling back to notifyMain:', err);
       try {
-        if (typeof notifyMain === 'function') {
-          notifyMain(text);
-        } else {
-          log.errorOnce(
-            'notify.toastEditorText.notifyMain.missing',
-            'toastEditorText fallback unavailable: notifyMain missing; notice dropped.'
-          );
-        }
+        notifyMain(text);
       } catch (fallbackErr) {
         log.error('toastEditorText fallback failed:', fallbackErr);
       }
