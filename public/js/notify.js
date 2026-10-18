@@ -201,8 +201,7 @@
     try {
       element.focus({ preventScroll: true });
     } catch (err) {
-      log.warnOnce(
-        'notify.focus.preventScroll.failed',
+      log.warn(
         'focus({ preventScroll: true }) failed; falling back to focus().',
         err
       );

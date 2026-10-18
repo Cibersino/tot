@@ -399,7 +399,7 @@ test('toast stylesheet loads only in the current toast-rendering windows', () =>
   });
 });
 
-test('notify modal focus falls back to plain focus and lets warnOnce deduplicate the diagnostic', () => {
+test('notify modal focus falls back to plain focus and logs each failed focus option application', () => {
   const rendererLogger = createRendererLoggerHarness();
   const harness = createModalFocusHarness({ logger: rendererLogger.logger });
   const modal = harness.createElement('modal');
@@ -423,13 +423,19 @@ test('notify modal focus falls back to plain focus and lets warnOnce deduplicate
   assert.equal(focusCalls.length, 4);
   assert.equal(focusCalls[2].preventScroll, true);
   assert.equal(focusCalls[3], undefined);
-  assert.equal(rendererLogger.warnings.length, 1);
+  assert.equal(rendererLogger.warnings.length, 2);
   assert.equal(rendererLogger.warnings[0][0], '[WARN][notify]');
   assert.equal(
     rendererLogger.warnings[0][1],
     'focus({ preventScroll: true }) failed; falling back to focus().'
   );
   assert.equal(rendererLogger.warnings[0][2], focusFailure);
+  assert.equal(rendererLogger.warnings[1][0], '[WARN][notify]');
+  assert.equal(
+    rendererLogger.warnings[1][1],
+    'focus({ preventScroll: true }) failed; falling back to focus().'
+  );
+  assert.equal(rendererLogger.warnings[1][2], focusFailure);
 });
 
 test('notify modal focus wraps forward and backward and re-enters from outside', () => {
