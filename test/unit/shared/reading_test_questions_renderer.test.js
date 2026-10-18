@@ -24,7 +24,7 @@ function createDeferred() {
   return { promise, resolve };
 }
 
-function createDocumentHarness() {
+function createDocumentHarness({ focusError = null } = {}) {
   const elements = new Map();
   const documentListeners = new Map();
   const document = {
@@ -33,7 +33,7 @@ function createDocumentHarness() {
       documentListeners.set(type, listener);
     },
     createElement(tagName) {
-      return createElement(String(tagName || 'div'), document);
+      return createElement(String(tagName || 'div'), document, { focusError });
     },
     createTextNode(text) {
       return {
@@ -55,11 +55,11 @@ function createDocumentHarness() {
       return null;
     },
   };
-  const body = createElement('body', document);
+  const body = createElement('body', document, { focusError });
   document.body = body;
 
   function addElement(id, tagName = 'div') {
-    const element = createElement(tagName, document);
+    const element = createElement(tagName, document, { focusError });
     element.id = id;
     elements.set(id, element);
     body.appendChild(element);
@@ -98,7 +98,7 @@ function createDocumentHarness() {
   };
 }
 
-function createElement(tagName, ownerDocument) {
+function createElement(tagName, ownerDocument, { focusError = null } = {}) {
   const attributes = {};
   const listeners = new Map();
   const childNodes = [];
@@ -162,6 +162,7 @@ function createElement(tagName, ownerDocument) {
     },
     focus() {
       this.focusCount += 1;
+      if (focusError) throw focusError;
       ownerDocument.activeElement = this;
     },
     getAttribute(name) {
@@ -225,8 +226,9 @@ function createRendererHarness({
   messageOverrides = {},
   questionsCoreOverride = null,
   missingRequiredElement = '',
+  focusError = null,
 } = {}) {
-  const dom = createDocumentHarness();
+  const dom = createDocumentHarness({ focusError });
   if (missingRequiredElement) dom.removeElement(missingRequiredElement);
   const callbacks = {};
   const logEntries = { error: [], warn: [] };
@@ -798,6 +800,51 @@ test('Questions uses defaults when getSettings is unavailable', async () => {
   assert.equal(harness.getWarnLogEntries().filter(([message]) => (
     message === 'BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; using default renderer settings.'
   )).length, 1);
+});
+
+test('Questions retains a rendered questionnaire when initial focus fails', async () => {
+  const focusError = new Error('initial focus failed');
+  const harness = createRendererHarness({ focusError });
+  await flushRendererWork();
+
+  harness.callbacks.initData({
+    developerEmail: 'support@example.test',
+    questions: [{
+      id: 'q1',
+      prompt: 'Question one?',
+      correctOptionId: 'a',
+      options: [
+        { id: 'a', text: 'Answer A' },
+        { id: 'b', text: 'Answer B' },
+      ],
+    }],
+  });
+  await flushRendererWork();
+
+  const inputs = harness.getInputs();
+  assert.equal(harness.elements.title.textContent, 'Questions');
+  assert.equal(inputs.length, 2);
+  assert.ok(inputs.every((input) => input.disabled === false));
+  assert.equal(harness.elements.btnCheck.disabled, false);
+  assert.equal(harness.elements.fatalMessage.textContent, '');
+  assert.equal(harness.getReporterCalls(), 0);
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.ok(harness.getWarnLogEntries().some(([message, error]) => (
+    message === 'Reading-test questions initial focus failed (ignored):'
+    && error === focusError
+  )));
+  assert.equal(harness.getErrorLogEntries().filter(([message]) => (
+    message === 'Reading-test questions init failed:'
+  )).length, 0);
+
+  inputs[0].checked = true;
+  inputs[0].dispatch('change');
+  harness.elements.btnCheck.dispatch('click');
+  await flushRendererWork();
+  assert.match(harness.elements.resultMessage.textContent, /1\/1 \(100\.00\[,\.\]%\)/u);
+
+  harness.elements.btnContinue.dispatch('click');
+  assert.equal(harness.getCloseCalls(), 1);
 });
 
 test('Questions continues percentage processing when a translation omits its placeholder', async () => {

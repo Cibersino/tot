@@ -632,7 +632,12 @@
           renderControls();
         }
         const firstAnswer = form.querySelector('input[type="radio"]');
-        ((acceptedPayload && firstAnswer) || btnContinue).focus({ preventScroll: true });
+        const focusTarget = (acceptedPayload && firstAnswer) || btnContinue;
+        try {
+          focusTarget.focus({ preventScroll: true });
+        } catch (err) {
+          log.warn('Reading-test questions initial focus failed (ignored):', err);
+        }
       }).catch((err) => {
         handleInitFailure(err);
       });
