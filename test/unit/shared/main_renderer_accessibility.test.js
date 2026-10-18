@@ -110,6 +110,7 @@ async function createRendererHarness({
   focusCalls = null,
   loadLocalizedDocument = null,
   browserExtensionModalOverrides = {},
+  notifyOverrides = {},
   mainLogoLinksAvailable = true,
   mainLogoLinksOverride = null,
   statusUiOverrides = {},
@@ -422,6 +423,7 @@ async function createRendererHarness({
       deactivateModalFocus() {},
       notifyMain(key) { notifications.push(key); },
       toastMain(key) { notifications.push(key); },
+      ...notifyOverrides,
     }),
     ReadingSpeedTestUi: readingSpeedTestUi,
     RendererCombobox: { create() { return presetsCombobox; } },
@@ -579,6 +581,48 @@ test('Main startup has no programmatic initial DOM focus', async () => {
   await createRendererHarness({ focusCalls });
 
   assert.deepEqual(focusCalls, []);
+});
+
+test('main renderer delivers Help tips through Notify toastMain', async () => {
+  const toastKeys = [];
+  const notifyKeys = [];
+  const harness = await createRendererHarness({
+    notifyOverrides: {
+      notifyMain(key) { notifyKeys.push(key); },
+      toastMain(key) { toastKeys.push(key); },
+    },
+  });
+
+  harness.getElement('btnHelp').dispatch('click');
+
+  assert.equal(toastKeys.length, 1);
+  assert.match(toastKeys[0], /^renderer\.tips\.tip\d+$/);
+  assert.deepEqual(notifyKeys, []);
+  assert.deepEqual(harness.errors, []);
+});
+
+test('main renderer logs Help-tip toast failures without a feature-local dialog fallback', async () => {
+  const toastFailure = new Error('toast unavailable');
+  const toastKeys = [];
+  const notifyKeys = [];
+  const harness = await createRendererHarness({
+    notifyOverrides: {
+      notifyMain(key) { notifyKeys.push(key); },
+      toastMain(key) {
+        toastKeys.push(key);
+        throw toastFailure;
+      },
+    },
+  });
+
+  harness.getElement('btnHelp').dispatch('click');
+
+  assert.equal(toastKeys.length, 1);
+  assert.match(toastKeys[0], /^renderer\.tips\.tip\d+$/);
+  assert.deepEqual(notifyKeys, []);
+  assert.equal(harness.errors.length, 1);
+  assert.equal(harness.errors[0][0], 'Help tip notification failed:');
+  assert.equal(harness.errors[0][1], toastFailure);
 });
 
 test('main renderer settings lifecycle updates precise-mode description and visual help together', async () => {
