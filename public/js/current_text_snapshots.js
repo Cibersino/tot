@@ -42,13 +42,23 @@
   // =============================================================================
   // Helpers
   // =============================================================================
-  function handleSaveResult(result) {
-    if (!result) {
-      log.error('Snapshot save IPC returned a falsey result.');
+  function isSnapshotIpcResult(result) {
+    if (!result || typeof result !== 'object' || typeof result.ok !== 'boolean') {
+      return false;
     }
-    if (!result || result.ok === false) {
-      const code = result && result.code ? result.code : 'WRITE_FAILED';
-      if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
+    return result.ok === true
+      || (result.ok === false && typeof result.code === 'string' && result.code.length > 0);
+  }
+
+  function handleSaveResult(result) {
+    if (!isSnapshotIpcResult(result)) {
+      log.error('Snapshot save IPC returned an invalid result:', result);
+      window.Notify.toastMain(TOAST_KEYS.saveError, { type: 'error' });
+      return;
+    }
+    if (result.ok !== true) {
+      const code = result.code;
+      if (code === 'CANCELLED') return;
       if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
         window.Notify.toastMain(TOAST_KEYS.outside, { type: 'warn' });
         return;
@@ -60,11 +70,13 @@
   }
 
   function handleLoadResult(result) {
-    if (!result) {
-      log.error('Snapshot load IPC returned a falsey result.');
+    if (!isSnapshotIpcResult(result)) {
+      log.error('Snapshot load IPC returned an invalid result:', result);
+      window.Notify.toastMain(TOAST_KEYS.loadError, { type: 'error' });
+      return;
     }
-    if (!result || result.ok === false) {
-      const code = result && result.code ? result.code : 'READ_FAILED';
+    if (result.ok !== true) {
+      const code = result.code;
       if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
       if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
         window.Notify.toastMain(TOAST_KEYS.outside, { type: 'warn' });

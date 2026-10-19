@@ -96,6 +96,19 @@ test('task editor preload sends the selected task-row snapshot path for inspecti
   ]);
 });
 
+test('task editor preload sends the selected task-row snapshot path for loading', () => {
+  const { exposedApi, invoked } = loadTaskEditorPreload();
+
+  exposedApi.api.loadTaskRowSnapshot('/reading.json');
+
+  assert.deepEqual(JSON.parse(JSON.stringify(invoked)), [
+    {
+      channel: 'current-text-snapshot-load',
+      payload: { snapshotRelPath: '/reading.json' },
+    },
+  ]);
+});
+
 test('task editor preload sends an exact library-entry payload', () => {
   const { exposedApi, invoked } = loadTaskEditorPreload();
   const entry = {

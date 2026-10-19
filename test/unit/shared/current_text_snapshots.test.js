@@ -150,7 +150,7 @@ test('manual snapshot save logs an invalid falsey IPC result while preserving th
   }]);
   assert.deepEqual(logCalls.filter(({ level }) => level === 'error'), [{
     level: 'error',
-    args: ['Snapshot save IPC returned a falsey result.'],
+    args: ['Snapshot save IPC returned an invalid result:', null],
   }]);
 });
 
@@ -166,6 +166,101 @@ test('manual snapshot load logs an invalid falsey IPC result while preserving th
   }]);
   assert.deepEqual(logCalls.filter(({ level }) => level === 'error'), [{
     level: 'error',
-    args: ['Snapshot load IPC returned a falsey result.'],
+    args: ['Snapshot load IPC returned an invalid result:', null],
   }]);
+});
+
+test('manual snapshot operations reject malformed responses with operation-specific error feedback', async () => {
+  const promptResult = {
+    tags: {},
+    includeCount: false,
+    includeReading: false,
+  };
+  const saveHarness = loadSnapshotsModule({
+    promptResult,
+    saveResult: { code: 'CANCELLED' },
+  });
+  const loadHarness = loadSnapshotsModule({
+    loadResult: { code: 'CONFIRM_DENIED' },
+  });
+
+  const saveResult = await saveHarness.snapshots.saveSnapshot();
+  const loadResult = await loadHarness.snapshots.loadSnapshot();
+
+  assert.deepEqual(saveResult, { code: 'CANCELLED' });
+  assert.deepEqual(loadResult, { code: 'CONFIRM_DENIED' });
+  assert.deepEqual(JSON.parse(JSON.stringify(saveHarness.toastCalls)), [{
+    key: 'renderer.snapshots.alerts.save_error',
+    options: { type: 'error' },
+  }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(loadHarness.toastCalls)), [{
+    key: 'renderer.snapshots.alerts.load_error',
+    options: { type: 'error' },
+  }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(saveHarness.logCalls.filter(({ level }) => level === 'error'))), [{
+    level: 'error',
+    args: ['Snapshot save IPC returned an invalid result:', { code: 'CANCELLED' }],
+  }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(loadHarness.logCalls.filter(({ level }) => level === 'error'))), [{
+    level: 'error',
+    args: ['Snapshot load IPC returned an invalid result:', { code: 'CONFIRM_DENIED' }],
+  }]);
+});
+
+test('manual snapshot operations log malformed failure envelopes while using generic error feedback', async () => {
+  const promptResult = {
+    tags: {},
+    includeCount: false,
+    includeReading: false,
+  };
+  const saveHarness = loadSnapshotsModule({
+    promptResult,
+    saveResult: { ok: false },
+  });
+  const loadHarness = loadSnapshotsModule({
+    loadResult: { ok: false, code: 123 },
+  });
+
+  const saveResult = await saveHarness.snapshots.saveSnapshot();
+  const loadResult = await loadHarness.snapshots.loadSnapshot();
+
+  assert.deepEqual(saveResult, { ok: false });
+  assert.deepEqual(loadResult, { ok: false, code: 123 });
+  assert.deepEqual(JSON.parse(JSON.stringify(saveHarness.toastCalls)), [{
+    key: 'renderer.snapshots.alerts.save_error',
+    options: { type: 'error' },
+  }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(loadHarness.toastCalls)), [{
+    key: 'renderer.snapshots.alerts.load_error',
+    options: { type: 'error' },
+  }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(saveHarness.logCalls.filter(({ level }) => level === 'error'))), [{
+    level: 'error',
+    args: ['Snapshot save IPC returned an invalid result:', { ok: false }],
+  }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(loadHarness.logCalls.filter(({ level }) => level === 'error'))), [{
+    level: 'error',
+    args: ['Snapshot load IPC returned an invalid result:', { ok: false, code: 123 }],
+  }]);
+});
+
+test('manual snapshot operations preserve valid caller-specific cancellation responses', async () => {
+  const promptResult = {
+    tags: {},
+    includeCount: false,
+    includeReading: false,
+  };
+  const saveHarness = loadSnapshotsModule({
+    promptResult,
+    saveResult: { ok: false, code: 'CANCELLED' },
+  });
+  const loadHarness = loadSnapshotsModule({
+    loadResult: { ok: false, code: 'CONFIRM_DENIED' },
+  });
+
+  await saveHarness.snapshots.saveSnapshot();
+  await loadHarness.snapshots.loadSnapshot();
+
+  assert.deepEqual(saveHarness.toastCalls, []);
+  assert.deepEqual(loadHarness.toastCalls, []);
 });

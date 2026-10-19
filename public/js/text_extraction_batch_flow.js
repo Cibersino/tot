@@ -974,23 +974,31 @@
         text: formatSnapshotResultText('renderer.text_extraction.batch_report.snapshot_not_created'),
       };
     }
-    if (unitSnapshotResult.result && unitSnapshotResult.result.ok === true) {
+    const snapshotResult = unitSnapshotResult.result;
+    if (snapshotResult && snapshotResult.ok === true) {
       return {
         state: 'saved',
         text: formatSnapshotResultText(
           'renderer.text_extraction.batch_report.snapshot_created',
-          { filename: unitSnapshotResult.result.filename }
+          { filename: snapshotResult.filename }
         ),
       };
+    }
+    const failureCode = snapshotResult
+      && snapshotResult.ok === false
+      && typeof snapshotResult.code === 'string'
+      && snapshotResult.code
+      ? snapshotResult.code
+      : null;
+    if (!failureCode) {
+      log.error('Batch snapshot save returned an invalid result:', snapshotResult);
     }
     return {
       state: 'failed',
       text: formatSnapshotResultText(
         'renderer.text_extraction.batch_report.snapshot_creation_failed',
         {
-          code: unitSnapshotResult.result && unitSnapshotResult.result.code
-            ? unitSnapshotResult.result.code
-            : 'WRITE_FAILED',
+          code: failureCode || 'WRITE_FAILED',
         }
       ),
     };

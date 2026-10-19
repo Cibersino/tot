@@ -18,6 +18,7 @@ function createHarness({
   promptBatchFinalReportImpl = null,
   applyTextViaCanonicalPathImpl = null,
   snapshotTagsPromptResult = { tags: { language: ['en'] } },
+  snapshotSaveResult = { ok: true, filename: 'snapshot.json' },
   settingsCache = null,
 }) {
   let capturedViewModel = null;
@@ -31,6 +32,7 @@ function createHarness({
   let finalReportPromptAbortFinalizationActive = null;
   let syncMainInteractionLockUiCallCount = 0;
   const executionEvents = [];
+  const errorLogs = [];
 
   function buildAllPagesSelection(totalPages) {
     const safeTotalPages = Number(totalPages) || 1;
@@ -126,7 +128,9 @@ function createHarness({
           info() {},
           warn() {},
           warnOnce() {},
-          error() {},
+          error(...args) {
+            errorLogs.push(args);
+          },
         };
       },
       RendererI18n: {
@@ -143,6 +147,7 @@ function createHarness({
             'renderer.snapshots.options.type.non_fiction': 'No ficción',
             'renderer.text_extraction.batch_plan.unit_label': 'Unit {index}',
             'renderer.text_extraction.batch_report.snapshot_created': 'Snapshot created: {filename}',
+            'renderer.text_extraction.batch_report.snapshot_creation_failed': 'Snapshot creation failed: {code}',
             'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
           };
           return translations[key] || key;
@@ -182,7 +187,7 @@ function createHarness({
           executionEvents.push({ type: 'snapshot', payload });
           savedSnapshotPayload = payload;
           savedSnapshotPayloads.push(payload);
-          return { ok: true, filename: 'snapshot.json' };
+          return snapshotSaveResult;
         },
         async openCurrentTextSnapshotsFolder() {
           return { ok: true };
@@ -303,6 +308,9 @@ function createHarness({
     },
     getExecutionEvents() {
       return executionEvents.map((event) => JSON.parse(JSON.stringify(event)));
+    },
+    getErrorLogs() {
+      return errorLogs.map((args) => JSON.parse(JSON.stringify(args)));
     },
     textExtractionStatusUi,
     notifications,
@@ -883,6 +891,50 @@ test('batch execution autosaves unnamed ordinary single-input units from source 
   );
   assert.ok(report.units.every((unit) => unit.snapshotResult.state === 'saved'));
   assert.ok(report.units.every((unit) => /snapshot\.json/.test(unit.snapshotResult.text)));
+});
+
+test('batch execution reports malformed autosave results as failed without trusting their code', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({
+      fileName: 'first.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\second.pdf': createPreparation({
+      fileName: 'second.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'first.pdf': { ok: true, result: { state: 'success', text: 'First text', generatedPdfArtifact: null } },
+      'second.pdf': { ok: true, result: { state: 'success', text: 'Second text', generatedPdfArtifact: null } },
+    },
+    snapshotSaveResult: { code: 'CANCELLED' },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-malformed-snapshot-result',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    report.units.map((unit) => unit.snapshotResult),
+    [
+      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
+      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
+    ]
+  );
+  assert.deepEqual(
+    harness.getErrorLogs().filter(([message]) => message === 'Batch snapshot save returned an invalid result:'),
+    [
+      ['Batch snapshot save returned an invalid result:', { code: 'CANCELLED' }],
+      ['Batch snapshot save returned an invalid result:', { code: 'CANCELLED' }],
+    ]
+  );
 });
 
 test('single-unit full-PDF split execution does not create an automatic snapshot', async () => {

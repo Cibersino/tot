@@ -496,13 +496,9 @@ function isFailedTaskEditorResult(result) {
 }
 
 function getTaskEditorResultCode(result, fallbackCode) {
-  return result && typeof result.code === 'string' && result.code
+  return result && result.ok === false && typeof result.code === 'string' && result.code
     ? result.code
     : fallbackCode;
-}
-
-function isCancelledTaskEditorResultCode(code) {
-  return code === 'CANCELLED' || code === 'CONFIRM_DENIED';
 }
 
 function setCommentSaveInFlight(inFlight) {
@@ -930,7 +926,7 @@ async function selectSnapshotForPendingCommentRow() {
   const res = await api.selectTaskRowSnapshot();
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'READ_FAILED');
-    if (isCancelledTaskEditorResultCode(code)) return;
+    if (code === 'CANCELLED') return;
     log.warn('selectTaskRowSnapshot failed:', { code, response: res || null });
     if (code === 'PATH_OUTSIDE_SNAPSHOTS') {
       window.Notify.notifyEditor('renderer.tasks.alerts.link_blocked');
@@ -964,7 +960,7 @@ async function loadSnapshotForRow(row) {
   const res = await api.loadTaskRowSnapshot(snapshotRelPath);
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'READ_FAILED');
-    if (isCancelledTaskEditorResultCode(code)) return;
+    if (code === 'CONFIRM_DENIED') return;
     log.warn('loadTaskRowSnapshot failed:', { code, snapshotRelPath, response: res || null });
     if (code === 'NOT_FOUND') {
       window.Notify.notifyEditor('renderer.tasks.alerts.link_missing');
@@ -997,7 +993,7 @@ async function selectTaskFileForRow(row, { textoInput, enlaceInput } = {}) {
   const res = await api.selectTaskFile();
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'READ_FAILED');
-    if (isCancelledTaskEditorResultCode(code)) return;
+    if (code === 'CANCELLED') return;
     log.warn('selectTaskFile failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
@@ -1517,7 +1513,7 @@ async function addRowsFromSelectedFiles() {
   const res = await api.selectTaskFiles();
   if (isFailedTaskEditorResult(res)) {
     const code = getTaskEditorResultCode(res, 'READ_FAILED');
-    if (isCancelledTaskEditorResultCode(code)) return;
+    if (code === 'CANCELLED') return;
     log.warn('selectTaskFiles failed:', { code, response: res || null });
     window.Notify.notifyEditor('renderer.tasks.alerts.file_select_error');
     return;
