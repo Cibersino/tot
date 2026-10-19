@@ -13,7 +13,7 @@
 
 (() => {
   // =============================================================================
-  // Imports / logger
+  // Runtime dependencies / logger
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[current-text-snapshots] window.getLogger unavailable; cannot continue');
@@ -91,6 +91,9 @@
     }
   }
 
+  // =============================================================================
+  // Snapshot operations
+  // =============================================================================
   async function saveSnapshot() {
     try {
       if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
