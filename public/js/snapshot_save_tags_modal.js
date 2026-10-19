@@ -411,6 +411,12 @@
     }
   }
 
+  function recordDeferredConfirmSaveFailure(promptState) {
+    if (promptState.deferredAction === 'confirm') {
+      promptState.deferredConfirmSaveFailed = true;
+    }
+  }
+
   function enqueueCustomTagCreation(fieldKey, rawLabel) {
     const promptState = activePromptState;
     const fieldState = ensureFieldState(fieldKey);
@@ -431,18 +437,14 @@
           { getDefaultLabel }
         );
         if (!createInfo.ok) {
-          if (promptState.deferredAction === 'confirm') {
-            promptState.deferredConfirmSaveFailed = true;
-          }
+          recordDeferredConfirmSaveFailure(promptState);
           log.warn('Snapshot tag inline create rejected:', fieldKey, createInfo);
           return;
         }
 
         const persistedPreferences = await persistSnapshotTagPreferences(createInfo.preferences);
         if (!persistedPreferences) {
-          if (promptState.deferredAction === 'confirm') {
-            promptState.deferredConfirmSaveFailed = true;
-          }
+          recordDeferredConfirmSaveFailure(promptState);
           return;
         }
 
@@ -456,9 +458,7 @@
         if (keepPickerOpen) fieldState.combobox.open();
         scheduleOpenPickerVisibility(fieldKey);
       } catch (err) {
-        if (promptState.deferredAction === 'confirm') {
-          promptState.deferredConfirmSaveFailed = true;
-        }
+        recordDeferredConfirmSaveFailure(promptState);
         log.error('Snapshot tag inline create failed:', err);
       } finally {
         fieldState.pendingCreateValues.delete(value);
