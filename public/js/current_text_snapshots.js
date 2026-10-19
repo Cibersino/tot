@@ -43,6 +43,9 @@
   // Helpers
   // =============================================================================
   function handleSaveResult(result) {
+    if (!result) {
+      log.error('Snapshot save IPC returned a falsey result.');
+    }
     if (!result || result.ok === false) {
       const code = result && result.code ? result.code : 'WRITE_FAILED';
       if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;
@@ -57,6 +60,9 @@
   }
 
   function handleLoadResult(result) {
+    if (!result) {
+      log.error('Snapshot load IPC returned a falsey result.');
+    }
     if (!result || result.ok === false) {
       const code = result && result.code ? result.code : 'READ_FAILED';
       if (code === 'CANCELLED' || code === 'CONFIRM_DENIED') return;

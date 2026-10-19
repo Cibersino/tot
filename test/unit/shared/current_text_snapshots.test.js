@@ -8,16 +8,28 @@ const vm = require('node:vm');
 
 const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
 
-function loadSnapshotsModule({ promptResult, getCurrentWpm = null } = {}) {
+function loadSnapshotsModule({
+  promptResult,
+  getCurrentWpm = null,
+  saveResult = { ok: true },
+  loadResult = { ok: true },
+} = {}) {
   const saveCalls = [];
   const toastCalls = [];
+  const logCalls = [];
   const sandbox = {
     window: {
       getLogger() {
         return {
-          debug() {},
-          warn() {},
-          error() {},
+          debug(...args) {
+            logCalls.push({ level: 'debug', args });
+          },
+          warn(...args) {
+            logCalls.push({ level: 'warn', args });
+          },
+          error(...args) {
+            logCalls.push({ level: 'error', args });
+          },
         };
       },
       SnapshotTagCatalog: snapshotTagCatalog,
@@ -32,10 +44,10 @@ function loadSnapshotsModule({ promptResult, getCurrentWpm = null } = {}) {
       electronAPI: {
         async saveCurrentTextSnapshot(payload) {
           saveCalls.push(payload);
-          return { ok: true };
+          return saveResult;
         },
         async loadCurrentTextSnapshot() {
-          return { ok: true };
+          return loadResult;
         },
       },
     },
@@ -53,7 +65,7 @@ function loadSnapshotsModule({ promptResult, getCurrentWpm = null } = {}) {
   if (typeof getCurrentWpm === 'function') {
     snapshots.configure({ getCurrentWpm });
   }
-  return { snapshots, saveCalls, toastCalls };
+  return { snapshots, saveCalls, toastCalls, logCalls };
 }
 
 test('manual snapshot save forwards selected count and reading metadata with active WPM', async () => {
@@ -116,5 +128,44 @@ test('manual snapshot save forwards optional snapshot name and source comment', 
     includeCount: false,
     includeReading: false,
     tags: {},
+  }]);
+});
+
+test('manual snapshot save logs an invalid falsey IPC result while preserving the error response', async () => {
+  const { snapshots, toastCalls, logCalls } = loadSnapshotsModule({
+    promptResult: {
+      tags: {},
+      includeCount: false,
+      includeReading: false,
+    },
+    saveResult: null,
+  });
+
+  const result = await snapshots.saveSnapshot();
+
+  assert.equal(result, null);
+  assert.deepEqual(JSON.parse(JSON.stringify(toastCalls)), [{
+    key: 'renderer.snapshots.alerts.save_error',
+    options: { type: 'error' },
+  }]);
+  assert.deepEqual(logCalls.filter(({ level }) => level === 'error'), [{
+    level: 'error',
+    args: ['Snapshot save IPC returned a falsey result.'],
+  }]);
+});
+
+test('manual snapshot load logs an invalid falsey IPC result while preserving the error response', async () => {
+  const { snapshots, toastCalls, logCalls } = loadSnapshotsModule({ loadResult: null });
+
+  const result = await snapshots.loadSnapshot();
+
+  assert.equal(result, null);
+  assert.deepEqual(JSON.parse(JSON.stringify(toastCalls)), [{
+    key: 'renderer.snapshots.alerts.load_error',
+    options: { type: 'error' },
+  }]);
+  assert.deepEqual(logCalls.filter(({ level }) => level === 'error'), [{
+    level: 'error',
+    args: ['Snapshot load IPC returned a falsey result.'],
   }]);
 });
