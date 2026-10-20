@@ -263,6 +263,9 @@
     return tRenderer(errorKey);
   }
 
+  // =============================================================================
+  // Snapshot-tag preference bridge
+  // =============================================================================
   async function loadSnapshotTagPreferences(initialPreferences = null) {
     if (snapshotTagCatalog.isPlainObject(initialPreferences)) {
       return snapshotTagCatalog.normalizeSnapshotTagPreferences(initialPreferences);
@@ -311,6 +314,9 @@
     return null;
   }
 
+  // =============================================================================
+  // Tag selector state and rendering
+  // =============================================================================
   function buildFieldOptions(field) {
     const resolvedCategory = snapshotTagCatalog.resolveCategoryCatalog(
       field.key,
@@ -572,6 +578,9 @@
     return snapshotTagCatalog.normalizeTags(tags);
   }
 
+  // =============================================================================
+  // Prompt presentation and interaction
+  // =============================================================================
   function focusElementWithoutScroll(element) {
     if (!element || typeof element.focus !== 'function') return;
 
