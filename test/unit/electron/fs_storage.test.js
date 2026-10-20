@@ -41,6 +41,35 @@ test('saveJsonStrict creates parent directories and persists JSON content', (t) 
   );
 });
 
+test('loadJsonWithStatus distinguishes recoverable absence from unusable stored content', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const fallback = { language: 'es' };
+  const targetPath = path.join(tempDir, 'state.json');
+
+  assert.deepEqual(
+    fsStorage.loadJsonWithStatus(targetPath, fallback),
+    { status: 'missing', value: fallback }
+  );
+
+  fs.writeFileSync(targetPath, '   ', 'utf8');
+  assert.deepEqual(
+    fsStorage.loadJsonWithStatus(targetPath, fallback),
+    { status: 'empty', value: fallback }
+  );
+
+  fs.writeFileSync(targetPath, '{not-json', 'utf8');
+  const invalidJsonResult = fsStorage.loadJsonWithStatus(targetPath, fallback);
+  assert.equal(invalidJsonResult.status, 'failed');
+  assert.equal(invalidJsonResult.value, fallback);
+
+  fs.writeFileSync(targetPath, '{"language":"en"}', 'utf8');
+  assert.deepEqual(
+    fsStorage.loadJsonWithStatus(targetPath, fallback),
+    { status: 'loaded', value: { language: 'en' } }
+  );
+});
+
 test('createJsonStrict creates only a new file in an existing parent directory', (t) => {
   const tempDir = createTempDir(t);
   const fsStorage = loadFreshFsStorage();

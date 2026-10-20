@@ -184,6 +184,7 @@ function interpolate(template, params = {}) {
 function createHarness({
   storedPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences(),
   confirmResult = true,
+  getSnapshotTagPreferencesImpl = null,
   setSnapshotTagPreferencesImpl = null,
 } = {}) {
   activeElementRef = null;
@@ -357,6 +358,9 @@ function createHarness({
       },
       electronAPI: {
         async getSnapshotTagPreferences() {
+          if (typeof getSnapshotTagPreferencesImpl === 'function') {
+            return getSnapshotTagPreferencesImpl();
+          }
           return { ok: true, snapshotTags: currentStoredPreferences };
         },
         async setSnapshotTagPreferences(payload) {
@@ -557,6 +561,20 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
+});
+
+test('snapshot tag prompt stays usable with default tags after a non-ok preference read', async () => {
+  const harness = createHarness({
+    getSnapshotTagPreferencesImpl() {
+      return { ok: false, error: 'storage unavailable' };
+    },
+  });
+
+  const promptPromise = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  assert.deepEqual(JSON.parse(JSON.stringify(await promptPromise)), { tags: {} });
 });
 
 test('snapshot save modal returns optional name and source-comment fields', async () => {

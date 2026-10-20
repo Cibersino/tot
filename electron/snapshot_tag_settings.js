@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Load and normalize persisted snapshot-tag preferences.
 // - Keep the latest normalized preferences in memory.
-// - Repair bootstrap persistence through best-effort saveJson(...).
+// - Repair normal bootstrap persistence through best-effort saveJson(...).
 // - Persist user-triggered mutations through verified saveJsonStrict(...).
 // - Own the snapshot-tag IPC handlers.
 // - Request a follow-up settings publish after confirmed writes.
@@ -27,7 +27,7 @@ log.debug('Snapshot tag settings starting...');
 // Shared state
 // =============================================================================
 
-let _loadJson = null;
+let _loadJsonWithStatus = null;
 let _saveJson = null;
 let _saveJsonStrict = null;
 let _snapshotTagsFile = null;
@@ -55,7 +55,7 @@ function normalizeSnapshotTagPreferences(rawSnapshotTags) {
 }
 
 function assertInitialized(apiName) {
-  if (!_loadJson || !_saveJson || !_snapshotTagsFile) {
+  if (!_loadJsonWithStatus || !_saveJson || !_snapshotTagsFile) {
     throw new Error(`[snapshot-tag-settings] ${apiName} called before init`);
   }
 }
@@ -69,12 +69,29 @@ function assertStrictInitialized(apiName) {
 function loadSnapshotTagPreferencesFromDisk() {
   assertInitialized('loadSnapshotTagPreferencesFromDisk');
 
-  const rawSnapshotTags = _loadJson(
+  const loadResult = _loadJsonWithStatus(
     _snapshotTagsFile,
     createDefaultSnapshotTagPreferences()
   );
-  _currentSnapshotTagPreferences = normalizeSnapshotTagPreferences(rawSnapshotTags);
-  return _currentSnapshotTagPreferences;
+  _currentSnapshotTagPreferences = normalizeSnapshotTagPreferences(loadResult.value);
+  return {
+    snapshotTags: _currentSnapshotTagPreferences,
+    storageReadStatus: loadResult.status,
+  };
+}
+
+function isSnapshotTagStorageReadUsable(storageReadStatus) {
+  return storageReadStatus === 'loaded' || storageReadStatus === 'missing';
+}
+
+function loadUsableSnapshotTagPreferences() {
+  const loadResult = loadSnapshotTagPreferencesFromDisk();
+  if (!isSnapshotTagStorageReadUsable(loadResult.storageReadStatus)) {
+    throw new Error(
+      `Snapshot-tag preferences unavailable after ${loadResult.storageReadStatus} storage read.`
+    );
+  }
+  return loadResult.snapshotTags;
 }
 
 function saveSnapshotTagPreferencesStrict(nextSnapshotTags) {
@@ -86,37 +103,45 @@ function saveSnapshotTagPreferencesStrict(nextSnapshotTags) {
   return _currentSnapshotTagPreferences;
 }
 
-function init({ loadJson, saveJson, saveJsonStrict, snapshotTagsFile }) {
+function init({ loadJsonWithStatus, saveJson, saveJsonStrict, snapshotTagsFile }) {
   if (
-    typeof loadJson !== 'function'
+    typeof loadJsonWithStatus !== 'function'
     || typeof saveJson !== 'function'
     || typeof saveJsonStrict !== 'function'
   ) {
     throw new Error(
-      '[snapshot-tag-settings] init requires loadJson, saveJson, and saveJsonStrict'
+      '[snapshot-tag-settings] init requires loadJsonWithStatus, saveJson, and saveJsonStrict'
     );
   }
   if (!snapshotTagsFile) {
     throw new Error('[snapshot-tag-settings] init requires snapshotTagsFile');
   }
 
-  _loadJson = loadJson;
+  _loadJsonWithStatus = loadJsonWithStatus;
   _saveJson = saveJson;
   _saveJsonStrict = saveJsonStrict;
   _snapshotTagsFile = snapshotTagsFile;
 
-  const snapshotTags = loadSnapshotTagPreferencesFromDisk();
-  try {
-    _saveJson(_snapshotTagsFile, snapshotTags);
-  } catch (err) {
+  const loadResult = loadSnapshotTagPreferencesFromDisk();
+  if (isSnapshotTagStorageReadUsable(loadResult.storageReadStatus)) {
+    try {
+      _saveJson(_snapshotTagsFile, loadResult.snapshotTags);
+    } catch (err) {
+      log.warn(
+        'BOOTSTRAP: Snapshot-tag init normalization persist failed (ignored):',
+        _snapshotTagsFile,
+        err
+      );
+    }
+  } else {
     log.warn(
-      'BOOTSTRAP: Snapshot-tag init normalization persist failed (ignored):',
+      'BOOTSTRAP: Snapshot-tag init persistence skipped after degraded storage read:',
       _snapshotTagsFile,
-      err
+      loadResult.storageReadStatus
     );
   }
 
-  return snapshotTags;
+  return loadResult.snapshotTags;
 }
 
 // =============================================================================
@@ -125,7 +150,7 @@ function init({ loadJson, saveJson, saveJsonStrict, snapshotTagsFile }) {
 
 function getSnapshotTagPreferences() {
   assertInitialized('getSnapshotTagPreferences');
-  return loadSnapshotTagPreferencesFromDisk();
+  return loadSnapshotTagPreferencesFromDisk().snapshotTags;
 }
 
 // =============================================================================
@@ -146,7 +171,7 @@ function registerIpc(
     try {
       return {
         ok: true,
-        snapshotTags: getSnapshotTagPreferences(),
+        snapshotTags: loadUsableSnapshotTagPreferences(),
       };
     } catch (err) {
       log.errorOnce(
@@ -174,7 +199,7 @@ function registerIpc(
       }
 
       const nextSnapshotTags = normalizeSnapshotTagPreferences(rawSnapshotTags);
-      const currentSnapshotTags = getSnapshotTagPreferences();
+      const currentSnapshotTags = loadUsableSnapshotTagPreferences();
       if (JSON.stringify(currentSnapshotTags) === JSON.stringify(nextSnapshotTags)) {
         return { ok: true, snapshotTags: currentSnapshotTags };
       }

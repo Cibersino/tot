@@ -273,7 +273,7 @@ function getLoadJsonMissingNote(filePath) {
   return metadata ? metadata.missingNote : '';
 }
 
-function loadJson(filePath, fallback = {}) {
+function loadJsonWithStatus(filePath, fallback = {}) {
   try {
     // Missing file is recoverable: callers decide what the fallback should be.
     if (!fs.existsSync(filePath)) {
@@ -281,7 +281,7 @@ function loadJson(filePath, fallback = {}) {
         `loadJson missing (using fallback):${getLoadJsonMissingNote(filePath)}`,
         filePath
       );
-      return fallback;
+      return { status: 'missing', value: fallback };
     }
 
     let raw = fs.readFileSync(filePath, 'utf8');
@@ -295,18 +295,22 @@ function loadJson(filePath, fallback = {}) {
         'loadJson empty file (using fallback):',
         filePath
       );
-      return fallback;
+      return { status: 'empty', value: fallback };
     }
 
-    return JSON.parse(raw);
+    return { status: 'loaded', value: JSON.parse(raw) };
   } catch (err) {
     log.warn(
       'loadJson failed (using fallback):',
       filePath,
       err
     );
-    return fallback;
+    return { status: 'failed', value: fallback };
   }
+}
+
+function loadJson(filePath, fallback = {}) {
+  return loadJsonWithStatus(filePath, fallback).value;
 }
 
 // Best-effort JSON persistence for runtime/config state:
@@ -384,6 +388,7 @@ module.exports = {
   ensureOcrGoogleDriveDir,
 
   loadJson,
+  loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
   createJsonStrict,
