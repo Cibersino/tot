@@ -5,15 +5,15 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Host the shared Issue 266 batch planning surface.
-// - Render planner-controlled units/inputs without moving batch business logic
-//   into renderer.js.
-// - Expose the maintained public prompt through window.Notify.
+// - Render the planner controller's view model and forward user actions to it.
+// - Own modal DOM, local page-selection drafts, event wiring, and rerender state.
+// - Register the public prompt through window.Notify and refresh an active prompt
+//   when renderer translations change.
 
 (() => {
 
   // =============================================================================
-  // Imports / logger
+  // Dependencies / logger
   // =============================================================================
 
   if (typeof window.getLogger !== 'function') {
@@ -49,7 +49,7 @@
   }
 
   // =============================================================================
-  // DOM references
+  // DOM references / shared state
   // =============================================================================
 
   const modal = document.getElementById('textExtractionBatchPlanModal');
@@ -70,7 +70,7 @@
   let activePromptTranslations = null;
 
   // =============================================================================
-  // Helpers
+  // DOM and focus helpers
   // =============================================================================
 
   function hasRequiredElements() {
@@ -229,6 +229,10 @@
       }
     }
   }
+
+  // =============================================================================
+  // Input and unit rendering
+  // =============================================================================
 
   function createActionButton({
     labelKey,
@@ -733,6 +737,10 @@
     unitNodes.forEach((node) => body.appendChild(node));
   }
 
+  // =============================================================================
+  // Translation updates
+  // =============================================================================
+
   function renderCopy(model) {
     title.textContent = model.flowKind === 'single_file_split'
       ? tRenderer('renderer.text_extraction.batch_plan.single_file_title')
@@ -770,6 +778,7 @@
       let currentModel = controller.getViewModel();
       let rootListenerBound = false;
       let startValidationInFlight = false;
+      // Preserve incomplete page-range edits across rerenders until they resolve.
       const pageSelectionDrafts = new Map();
       const pageSelectionRoots = new Map();
       const keepControlRoots = new Map();
@@ -967,6 +976,7 @@
         applyResolvedPageSelection(inputId, uiState.pdfPageSelection);
       };
 
+      // Every exit path settles once, then releases modal-local resources.
       const finish = (result) => {
         if (settled) return;
         settled = true;
@@ -1055,6 +1065,7 @@
         finish(null);
       };
 
+      // Delegate body events because rerender replaces all unit nodes.
       const onBodyClick = async (event) => {
         const target = event.target && event.target.closest ? event.target.closest('[data-action]') : null;
         if (!target) return;
