@@ -268,6 +268,7 @@ function findNodesByAttributes(node, expectedAttributes = {}, matches = []) {
 function createHarness() {
   activeElementRef = null;
   const registeredPromptNames = [];
+  const loggerCalls = [];
   const modalOpeners = new Map();
   const modalFocusStack = [];
   const elements = {
@@ -393,11 +394,21 @@ function createHarness() {
       },
       getLogger() {
         return {
-          debug() {},
-          info() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
+          debug(...args) {
+            loggerCalls.push({ level: 'debug', args });
+          },
+          info(...args) {
+            loggerCalls.push({ level: 'info', args });
+          },
+          warn(...args) {
+            loggerCalls.push({ level: 'warn', args });
+          },
+          warnOnce(...args) {
+            loggerCalls.push({ level: 'warnOnce', args });
+          },
+          error(...args) {
+            loggerCalls.push({ level: 'error', args });
+          },
         };
       },
       AppConstants: {
@@ -587,6 +598,9 @@ function createHarness() {
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
+    getLoggerCalls() {
+      return loggerCalls.slice();
+    },
     getActiveElement() {
       return activeElementRef;
     },
@@ -654,6 +668,87 @@ test('batch planning Escape leaves the prompt open while a nested modal claims i
   const plannerEscape = harness.dispatchWindowKeydown({ key: 'Escape' });
   assert.equal(plannerEscape.defaultPrevented, true);
   assert.equal(await promptPromise, null);
+});
+
+test('batch planning logs a focus restoration retry without deduplication', async () => {
+  const harness = createHarness();
+  const controller = {
+    getViewModel() {
+      return {
+        flowKind: 'batch',
+        failurePolicy: 'finish_unit_after_last_success',
+        startDisabled: false,
+        unitCount: 1,
+        units: [],
+      };
+    },
+    applyAction() {},
+  };
+  const focusError = new Error('preventScroll unsupported');
+  const promptPromise = harness.prompt({ controller });
+
+  harness.elements.outsideLauncher.focus = (options) => {
+    if (options && options.preventScroll) throw focusError;
+    activeElementRef = harness.elements.outsideLauncher;
+  };
+  harness.elements.outsideLauncher.focus();
+  harness.elements.textExtractionBatchPlanPresetAll.dispatch('click');
+
+  assert.equal(harness.getActiveElement(), harness.elements.outsideLauncher);
+  assert.deepEqual(
+    harness.getLoggerCalls().filter((call) => call.level === 'warn'),
+    [{
+      level: 'warn',
+      args: [
+        'focus({ preventScroll: true }) failed; falling back to focus().',
+        focusError,
+      ],
+    }]
+  );
+
+  harness.elements.textExtractionBatchPlanCancel.dispatch('click');
+  await promptPromise;
+});
+
+test('batch planning logs an ignored selection restoration failure without deduplication', async () => {
+  const harness = createHarness();
+  const controller = {
+    getViewModel() {
+      return {
+        flowKind: 'batch',
+        failurePolicy: 'finish_unit_after_last_success',
+        startDisabled: false,
+        unitCount: 1,
+        units: [],
+      };
+    },
+    applyAction() {},
+  };
+  const selectionError = new Error('selection unavailable');
+  const promptPromise = harness.prompt({ controller });
+
+  harness.elements.outsideLauncher.selectionStart = 2;
+  harness.elements.outsideLauncher.selectionEnd = 2;
+  harness.elements.outsideLauncher.setSelectionRange = () => {
+    throw selectionError;
+  };
+  harness.elements.outsideLauncher.focus();
+  harness.elements.textExtractionBatchPlanPresetAll.dispatch('click');
+
+  assert.equal(harness.getActiveElement(), harness.elements.outsideLauncher);
+  assert.deepEqual(
+    harness.getLoggerCalls().filter((call) => call.level === 'warn'),
+    [{
+      level: 'warn',
+      args: [
+        'Batch planning selection restoration failed (ignored):',
+        selectionError,
+      ],
+    }]
+  );
+
+  harness.elements.textExtractionBatchPlanCancel.dispatch('click');
+  await promptPromise;
 });
 
 test('batch planning modal keeps each heavy preview under its groupable source input in a mixed unit', async () => {

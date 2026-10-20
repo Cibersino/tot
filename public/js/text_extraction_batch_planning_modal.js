@@ -215,7 +215,8 @@
     }
     try {
       target.focus({ preventScroll: true });
-    } catch (_err) {
+    } catch (err) {
+      log.warn('focus({ preventScroll: true }) failed; falling back to focus().', err);
       target.focus();
     }
     if (typeof target.setSelectionRange === 'function'
@@ -223,8 +224,8 @@
       && typeof descriptor.selectionEnd === 'number') {
       try {
         target.setSelectionRange(descriptor.selectionStart, descriptor.selectionEnd);
-      } catch (_err) {
-        // Ignore unsupported selection restoration.
+      } catch (err) {
+        log.warn('Batch planning selection restoration failed (ignored):', err);
       }
     }
   }
