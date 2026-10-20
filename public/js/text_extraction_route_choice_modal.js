@@ -115,10 +115,8 @@
       const onCancel = () => finish('');
       const onWindowKeyDown = (ev) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
-        if (ev.key === 'Escape') {
-          ev.preventDefault();
-          finish('');
-        }
+        if (!window.Notify.claimModalEscape(ev, modal)) return;
+        finish('');
       };
 
       btnNative.addEventListener('click', onNative);

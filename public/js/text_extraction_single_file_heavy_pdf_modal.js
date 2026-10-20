@@ -310,10 +310,8 @@
       };
       const onWindowKeyDown = (event) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          finish('cancel');
-        }
+        if (!window.Notify.claimModalEscape(event, modal)) return;
+        finish('cancel');
       };
 
       btnSplit.addEventListener('click', onSplit);

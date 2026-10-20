@@ -299,18 +299,32 @@ function createHarness({
   const warningOnceKeys = new Set();
   const registeredPromptNames = [];
   const modalOpeners = new Map();
+  const modalFocusStack = [];
 
   const sandbox = {
     window: {
       Notify: {
         activateModalFocus(modal, { initialFocus }) {
           modalOpeners.set(modal, activeElementRef);
+          if (!modalFocusStack.includes(modal)) modalFocusStack.push(modal);
           initialFocus.focus();
         },
         deactivateModalFocus(modal) {
           const opener = modalOpeners.get(modal);
           modalOpeners.delete(modal);
+          const modalIndex = modalFocusStack.indexOf(modal);
+          if (modalIndex >= 0) modalFocusStack.splice(modalIndex);
           if (opener) opener.focus();
+        },
+        claimModalEscape(event, modal) {
+          if (!event
+            || event.key !== 'Escape'
+            || event.defaultPrevented
+            || modalFocusStack[modalFocusStack.length - 1] !== modal) {
+            return false;
+          }
+          event.preventDefault();
+          return true;
         },
         confirmMain(key, params) {
           confirmCalls.push({ key, params });
@@ -1080,6 +1094,28 @@ test('snapshot tag manager moves focus into the modal on open', async () => {
 
   harness.elements.snapshotTagManagerModalDone.dispatch('click');
   await managerPromise;
+});
+
+test('snapshot tag manager Escape closes only the active manager modal', async () => {
+  const harness = createHarness();
+  const promptPromise = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+
+  harness.elements.snapshotSaveTagsManageButton.dispatch('click');
+  await flushMicrotasks();
+
+  assert.equal(harness.elements.snapshotSaveTagsModal.getAttribute('aria-hidden'), 'false');
+  assert.equal(harness.elements.snapshotTagManagerModal.getAttribute('aria-hidden'), 'false');
+
+  const event = harness.dispatchWindowEvent('keydown', { key: 'Escape' });
+  await flushMicrotasks();
+
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(harness.elements.snapshotTagManagerModal.getAttribute('aria-hidden'), 'true');
+  assert.equal(harness.elements.snapshotSaveTagsModal.getAttribute('aria-hidden'), 'false');
+
+  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
+  assert.equal(await promptPromise, null);
 });
 
 test('snapshot tag manager translation refresh retains its draft and uses the modal fallback only for replaced focus', async () => {

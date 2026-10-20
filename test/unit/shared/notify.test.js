@@ -575,6 +575,48 @@ test('notify modal focus gives nested children precedence and restores each per-
   assert.equal(harness.document.activeElement, topOpener);
 });
 
+test('notify claims Escape only for the active modal, regardless of listener order', () => {
+  function runScenario(listenerOrder) {
+    const harness = createModalFocusHarness();
+    const parent = harness.createElement('parent');
+    const parentFocus = harness.createElement('parent-focus', { tabIndex: 0 });
+    const child = harness.createElement('child');
+    const childFocus = harness.createElement('child-focus', { tabIndex: 0 });
+    parent.appendChild(parentFocus);
+    child.appendChild(childFocus);
+    harness.notify.activateModalFocus(parent, { initialFocus: parentFocus, fallbackFocus: parent });
+    harness.notify.activateModalFocus(child, { initialFocus: childFocus, fallbackFocus: child });
+
+    const event = {
+      key: 'Escape',
+      defaultPrevented: false,
+      preventDefault() {
+        this.defaultPrevented = true;
+      },
+    };
+    const claims = { parent: 0, child: 0 };
+    const handlers = {
+      parent() {
+        if (harness.notify.claimModalEscape(event, parent)) claims.parent += 1;
+      },
+      child() {
+        if (!harness.notify.claimModalEscape(event, child)) return;
+        claims.child += 1;
+        harness.notify.deactivateModalFocus(child);
+      },
+    };
+
+    listenerOrder.forEach((name) => handlers[name]());
+    return { claims, event };
+  }
+
+  [['parent', 'child'], ['child', 'parent']].forEach((listenerOrder) => {
+    const { claims, event } = runScenario(listenerOrder);
+    assert.deepEqual(claims, { parent: 0, child: 1 });
+    assert.equal(event.defaultPrevented, true);
+  });
+});
+
 test('notify modal focus activation is idempotent and does not duplicate handling', () => {
   const harness = createModalFocusHarness();
   const opener = harness.createElement('opener', { tabIndex: 0 });

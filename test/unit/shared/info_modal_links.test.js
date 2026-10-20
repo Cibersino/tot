@@ -11,6 +11,7 @@ function createHarness() {
   let screenshots = [];
   const windowListeners = new Map();
   const modalOpeners = new Map();
+  const modalFocusStack = [];
 
   function createElement(tagName = 'div') {
     const attributes = {};
@@ -149,12 +150,25 @@ function createHarness() {
     Notify: {
       activateModalFocus(modal, { initialFocus }) {
         modalOpeners.set(modal, activeElement);
+        if (!modalFocusStack.includes(modal)) modalFocusStack.push(modal);
         initialFocus.focus();
       },
       deactivateModalFocus(modal) {
         const opener = modalOpeners.get(modal);
         modalOpeners.delete(modal);
+        const modalIndex = modalFocusStack.indexOf(modal);
+        if (modalIndex >= 0) modalFocusStack.splice(modalIndex);
         if (opener) opener.focus();
+      },
+      claimModalEscape(event, modal) {
+        if (!event
+          || event.key !== 'Escape'
+          || event.defaultPrevented
+          || modalFocusStack[modalFocusStack.length - 1] !== modal) {
+          return false;
+        }
+        event.preventDefault();
+        return true;
       },
       notifyMain() {},
     },
@@ -209,10 +223,12 @@ function createHarness() {
     pressEscape() {
       const event = {
         key: 'Escape',
-        preventDefault() {},
+        defaultPrevented: false,
+        preventDefault() { this.defaultPrevented = true; },
         stopImmediatePropagation() {},
       };
       (windowListeners.get('keydown') || []).forEach((handler) => handler(event));
+      return event;
     },
   };
 }

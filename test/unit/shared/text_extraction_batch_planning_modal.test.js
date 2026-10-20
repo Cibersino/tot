@@ -269,6 +269,7 @@ function createHarness() {
   activeElementRef = null;
   const registeredPromptNames = [];
   const modalOpeners = new Map();
+  const modalFocusStack = [];
   const elements = {
     outsideLauncher: createElement('outsideLauncher'),
     textExtractionBatchPlanModal: createElement('textExtractionBatchPlanModal'),
@@ -364,12 +365,25 @@ function createHarness() {
       Notify: {
         activateModalFocus(modal, { initialFocus }) {
           modalOpeners.set(modal, activeElementRef);
+          if (!modalFocusStack.includes(modal)) modalFocusStack.push(modal);
           initialFocus.focus();
         },
         deactivateModalFocus(modal) {
           const opener = modalOpeners.get(modal);
           modalOpeners.delete(modal);
+          const modalIndex = modalFocusStack.indexOf(modal);
+          if (modalIndex >= 0) modalFocusStack.splice(modalIndex);
           if (opener) opener.focus();
+        },
+        claimModalEscape(event, modal) {
+          if (!event
+            || event.key !== 'Escape'
+            || event.defaultPrevented
+            || modalFocusStack[modalFocusStack.length - 1] !== modal) {
+            return false;
+          }
+          event.preventDefault();
+          return true;
         },
         notifyMain() {},
         registerCustomPrompt(name, handler) {
@@ -576,6 +590,21 @@ function createHarness() {
     getActiveElement() {
       return activeElementRef;
     },
+    notify: sandbox.window.Notify,
+    addWindowKeydownListener(handler) {
+      sandbox.window.addEventListener('keydown', handler);
+    },
+    dispatchWindowKeydown(event = {}) {
+      const safeEvent = {
+        defaultPrevented: false,
+        preventDefault() {
+          this.defaultPrevented = true;
+        },
+        ...event,
+      };
+      (windowListeners.get('keydown') || []).slice().forEach((handler) => handler(safeEvent));
+      return safeEvent;
+    },
     prompt: sandbox.window.Notify.promptTextExtractionBatchPlan,
   };
 }
@@ -587,6 +616,44 @@ test('batch planning modal registers its public prompt through window.Notify.reg
     'promptTextExtractionBatchPlan',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('batch planning Escape leaves the prompt open while a nested modal claims it', async () => {
+  const harness = createHarness();
+  const controller = {
+    getViewModel() {
+      return {
+        flowKind: 'batch',
+        failurePolicy: 'finish_unit_after_last_success',
+        startDisabled: false,
+        unitCount: 1,
+        units: [],
+      };
+    },
+    applyAction() {},
+  };
+
+  const promptPromise = harness.prompt({ controller });
+  const nestedModal = createElement('nestedModal');
+  const nestedClose = createElement('nestedClose', 'button');
+  harness.notify.activateModalFocus(nestedModal, { initialFocus: nestedClose });
+  let nestedCloseCount = 0;
+  harness.addWindowKeydownListener((event) => {
+    if (!harness.notify.claimModalEscape(event, nestedModal)) return;
+    nestedCloseCount += 1;
+    harness.notify.deactivateModalFocus(nestedModal);
+  });
+
+  const nestedEscape = harness.dispatchWindowKeydown({ key: 'Escape' });
+  await Promise.resolve();
+
+  assert.equal(nestedEscape.defaultPrevented, true);
+  assert.equal(nestedCloseCount, 1);
+  assert.equal(harness.elements.textExtractionBatchPlanModal.getAttribute('aria-hidden'), 'false');
+
+  const plannerEscape = harness.dispatchWindowKeydown({ key: 'Escape' });
+  assert.equal(plannerEscape.defaultPrevented, true);
+  assert.equal(await promptPromise, null);
 });
 
 test('batch planning modal keeps each heavy preview under its groupable source input in a mixed unit', async () => {

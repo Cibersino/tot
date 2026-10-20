@@ -159,10 +159,8 @@
       };
       const onWindowKeyDown = (ev) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
-        if (ev.key === 'Escape') {
-          ev.preventDefault();
-          finish(false);
-        }
+        if (!window.Notify.claimModalEscape(ev, modal)) return;
+        finish(false);
       };
 
       btnProceed.addEventListener('click', onProceed);
