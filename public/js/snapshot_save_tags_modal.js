@@ -107,9 +107,6 @@
   const SNAPSHOT_NAME_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.name';
   const SNAPSHOT_SOURCE_COMMENT_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.source_comment';
   const MANAGER_UNAVAILABLE_ALERT_KEY = 'renderer.snapshots.alerts.catalog_update_error';
-  const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
-  const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
-  const FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY = 'snapshot-save-tags-modal.focus.preventScroll.fallback';
 
   const FIELD_DEFS = [
     {
@@ -272,8 +269,7 @@
     }
 
     if (!getSnapshotTagPreferences) {
-      log.warnOnce(
-        LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY,
+      log.warn(
         'Snapshot-tag preference bridge unavailable; using empty preferences.'
       );
       return snapshotTagCatalog.createEmptySnapshotTagPreferences();
@@ -294,8 +290,7 @@
 
   async function persistSnapshotTagPreferences(nextPreferences) {
     if (!setSnapshotTagPreferences) {
-      log.warnOnce(
-        SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY,
+      log.warn(
         'Snapshot-tag preference bridge unavailable; cannot persist snapshot-tag preferences.'
       );
       window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
@@ -583,8 +578,7 @@
     try {
       element.focus({ preventScroll: true });
     } catch (err) {
-      log.warnOnce(
-        FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY,
+      log.warn(
         'focus({ preventScroll: true }) failed; falling back to focus().',
         err
       );
