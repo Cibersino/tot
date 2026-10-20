@@ -52,6 +52,8 @@
   const ROUTE_OCR = 'ocr';
   const GROUP_NEW_SENTINEL = '__new__';
   const { BATCH_UNIT_NAME_MAX } = AppConstants;
+  const LTR_ISOLATE = '\u2066';
+  const POP_DIRECTIONAL_ISOLATE = '\u2069';
 
   // =============================================================================
   // Shared state
@@ -1003,9 +1005,6 @@
       ),
     };
   }
-
-  const LTR_ISOLATE = '\u2066';
-  const POP_DIRECTIONAL_ISOLATE = '\u2069';
 
   function formatIsolatedPageRangeToken(pdfPageSelection) {
     const totalPages = pdfPageSelection && Number.isInteger(Number(pdfPageSelection.totalPages))
