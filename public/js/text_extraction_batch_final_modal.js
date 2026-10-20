@@ -343,8 +343,7 @@
       body.replaceChildren(...unitNodes);
       return;
     }
-    log.warnOnce(
-      'text-extraction.batch-final.replace-children-body-unavailable',
+    log.warn(
       'Batch final report: replaceChildren unavailable; using DOM fallback.'
     );
     while (body.firstChild) {
@@ -408,7 +407,7 @@
       return;
     }
     if (!report || typeof report !== 'object' || !Array.isArray(report.units)) {
-      log.warn('Batch final modal received invalid report payload; rendering fallback report.');
+      log.warn('Batch final modal received invalid report payload; rendering normalized report.');
     }
     const safeReport = normalizeReport(report);
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
@@ -470,7 +469,7 @@
         try {
           await onRevealGeneratedPdf(target.getAttribute('data-artifact-path') || '');
         } catch (err) {
-          log.error('Generated PDF reveal failed from final modal:', err);
+          log.error('Generated PDF reveal failed (ignored):', err);
           window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         }
       };
@@ -478,7 +477,7 @@
         try {
           await copyReportText(reportText);
         } catch (err) {
-          log.error('Batch report copy failed:', err);
+          log.error('Batch report copy failed (ignored):', err);
         }
       };
       const onOpenSnapshots = async () => {
@@ -489,7 +488,7 @@
         try {
           await onOpenSnapshotsFolder();
         } catch (err) {
-          log.error('Open snapshots folder failed:', err);
+          log.error('Open snapshots folder failed (ignored):', err);
         }
       };
       const onOk = () => finish();
