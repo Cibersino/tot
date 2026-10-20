@@ -131,6 +131,12 @@
     };
   }
 
+  function getReportTitle(report) {
+    return report.flowKind === 'single_file_split'
+      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
+      : tRenderer('renderer.text_extraction.batch_report.title');
+  }
+
   function buildSummaryText(report) {
     const parts = [
       report && report.hadOutput
@@ -349,9 +355,7 @@
 
   function buildReportText(report, elapsedValueText = '') {
     const lines = [];
-    lines.push(report.flowKind === 'single_file_split'
-      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
-      : tRenderer('renderer.text_extraction.batch_report.title'));
+    lines.push(getReportTitle(report));
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
     if (normalizedElapsedValueText) {
       lines.push(`${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`);
@@ -411,9 +415,7 @@
     let reportText = '';
     const renderModalCopy = () => {
       reportText = buildReportText(safeReport, normalizedElapsedValueText);
-      title.textContent = safeReport.flowKind === 'single_file_split'
-        ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
-        : tRenderer('renderer.text_extraction.batch_report.title');
+      title.textContent = getReportTitle(safeReport);
       summary.textContent = buildSummaryText(safeReport);
       if (normalizedElapsedValueText) {
         elapsed.textContent = `${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`;
