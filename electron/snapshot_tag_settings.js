@@ -7,10 +7,10 @@
 // Snapshot-tag preference owner for config/snapshot_tags.json.
 // Responsibilities:
 // - Load and normalize persisted snapshot-tag preferences.
-// - Keep the latest normalized preferences in memory.
+// - Reload public reads from disk while keeping the latest normalized value in memory.
 // - Repair normal bootstrap persistence through best-effort saveJson(...).
 // - Persist user-triggered mutations through verified saveJsonStrict(...).
-// - Own the snapshot-tag IPC handlers.
+// - Own direct snapshot-tag IPC operations that require usable storage before reporting success or saving.
 // - Request a follow-up settings publish after confirmed writes.
 
 // =============================================================================
@@ -85,6 +85,7 @@ function isSnapshotTagStorageReadUsable(storageReadStatus) {
 
 function loadUsableSnapshotTagPreferences() {
   const loadResult = loadSnapshotTagPreferencesFromDisk();
+  // Fallback-shaped data after an empty or failed read must not become a write baseline.
   if (!isSnapshotTagStorageReadUsable(loadResult.storageReadStatus)) {
     throw new Error(
       `Snapshot-tag preferences unavailable after ${loadResult.storageReadStatus} storage read.`
@@ -122,6 +123,7 @@ function init({ loadJsonWithStatus, saveJson, saveJsonStrict, snapshotTagsFile }
   _snapshotTagsFile = snapshotTagsFile;
 
   const loadResult = loadSnapshotTagPreferencesFromDisk();
+  // Do not repair an unreadable catalog by persisting the fallback used for its degraded read.
   if (isSnapshotTagStorageReadUsable(loadResult.storageReadStatus)) {
     try {
       _saveJson(_snapshotTagsFile, loadResult.snapshotTags);
