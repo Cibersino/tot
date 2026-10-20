@@ -43,8 +43,7 @@ function createDefaultSnapshotTagPreferences() {
 
 function normalizeSnapshotTagPreferences(rawSnapshotTags) {
   if (!snapshotTagCatalog.isPlainObject(rawSnapshotTags)) {
-    log.warnOnce(
-      'snapshot-tag-settings.normalize.invalid-root',
+    log.warn(
       'Invalid snapshot-tag preferences root; using empty preferences:',
       { type: typeof rawSnapshotTags, isArray: Array.isArray(rawSnapshotTags) }
     );
@@ -174,8 +173,7 @@ function registerIpc(
         snapshotTags: loadUsableSnapshotTagPreferences(),
       };
     } catch (err) {
-      log.errorOnce(
-        'snapshot-tag-settings.ipc.get',
+      log.error(
         'IPC get-snapshot-tag-preferences failed (using safe fallback):',
         err
       );
@@ -190,8 +188,7 @@ function registerIpc(
   ipcMain.handle('set-snapshot-tag-preferences', async (_event, rawSnapshotTags) => {
     try {
       if (!snapshotTagCatalog.isPlainObject(rawSnapshotTags)) {
-        log.warnOnce(
-          'snapshot-tag-settings.ipc.set.invalid',
+        log.warn(
           'set-snapshot-tag-preferences called with invalid payload (ignored).',
           { type: typeof rawSnapshotTags, isArray: Array.isArray(rawSnapshotTags) }
         );
@@ -209,16 +206,14 @@ function registerIpc(
         try {
           publishSettingsUpdate();
         } catch (err) {
-          log.warnOnce(
-            'snapshot-tag-settings.ipc.set.publish-failed',
+          log.warn(
             'Snapshot-tag settings publish callback failed (ignored):',
             err
           );
         }
       } else {
-        log.warnOnce(
-          'snapshot-tag-settings.ipc.set.publish-unavailable',
-          'Snapshot-tag settings publish callback unavailable; settings-updated skipped.'
+        log.warn(
+          'Snapshot-tag settings publish callback unavailable; settings-updated publish failed (ignored).'
         );
       }
 
