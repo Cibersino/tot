@@ -143,23 +143,6 @@
     return parts.join(' ');
   }
 
-  function createRevealGeneratedPdfButton(artifactPath) {
-    if (typeof artifactPath !== 'string' || !artifactPath.trim()) {
-      return null;
-    }
-    const label = tRenderer('renderer.text_extraction.batch_report.reveal_generated_pdf');
-    const button = rendererIcons.createIconButton({
-      iconName: 'open-target',
-      className: 'btn-standard btn-standard--square-half',
-      ariaLabel: label,
-      type: 'button',
-    });
-    button.setAttribute('data-tot-tooltip', label);
-    button.setAttribute('data-action', 'reveal-generated-pdf');
-    button.setAttribute('data-artifact-path', artifactPath);
-    return button;
-  }
-
   function normalizeReportState(state) {
     const normalizedState = typeof state === 'string' ? state : '';
     if (normalizedState === 'success') return 'success';
@@ -241,6 +224,35 @@
     return normalizedState;
   }
 
+  function getRetainedArtifactPath(item) {
+    return item
+      && item.generatedPdfArtifact
+      && item.generatedPdfArtifact.retainedArtifactPath;
+  }
+
+  function getSnapshotResultText(unit) {
+    return unit && unit.snapshotResult
+      ? unit.snapshotResult.text
+      : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
+  }
+
+  function createRevealGeneratedPdfButton(artifactPath) {
+    if (typeof artifactPath !== 'string' || !artifactPath.trim()) {
+      return null;
+    }
+    const label = tRenderer('renderer.text_extraction.batch_report.reveal_generated_pdf');
+    const button = rendererIcons.createIconButton({
+      iconName: 'open-target',
+      className: 'btn-standard btn-standard--square-half',
+      ariaLabel: label,
+      type: 'button',
+    });
+    button.setAttribute('data-tot-tooltip', label);
+    button.setAttribute('data-action', 'reveal-generated-pdf');
+    button.setAttribute('data-artifact-path', artifactPath);
+    return button;
+  }
+
   function createReportItemLabel(displayName, item) {
     const label = createDomElement('span', {
       className: 'text-extraction-batch-final-item-label',
@@ -258,18 +270,6 @@
       }));
     }
     return label;
-  }
-
-  function getRetainedArtifactPath(item) {
-    return item
-      && item.generatedPdfArtifact
-      && item.generatedPdfArtifact.retainedArtifactPath;
-  }
-
-  function getSnapshotResultText(unit) {
-    return unit && unit.snapshotResult
-      ? unit.snapshotResult.text
-      : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
   }
 
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
