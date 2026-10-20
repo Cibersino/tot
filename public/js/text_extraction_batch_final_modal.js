@@ -5,14 +5,14 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Host the shared Issue 266/267 unit-based final report modal.
-// - Render retained generated-artifact reveal actions through window.Notify.
-// - Expose a copy-report and open-snapshots-folder action without creating a
-//   second reporting surface.
+// - Render the caller-supplied batch report as a modal and copied text.
+// - Own report-body rendering, action wiring, modal cleanup, and focus handoff.
+// - Register the public prompt through window.Notify and refresh an active prompt
+//   when renderer translations change.
 
 (() => {
   // =============================================================================
-  // Imports / logger
+  // Dependencies / logger
   // =============================================================================
 
   if (typeof window.getLogger !== 'function') {
@@ -30,7 +30,7 @@
   const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
-  // DOM references
+  // DOM references / shared state
   // =============================================================================
 
   const modal = document.getElementById('textExtractionBatchFinalModal');
@@ -47,7 +47,7 @@
   let activePromptTranslations = null;
 
   // =============================================================================
-  // Helpers
+  // DOM and report helpers
   // =============================================================================
 
   function hasRequiredElements() {
@@ -242,6 +242,10 @@
       : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
   }
 
+  // =============================================================================
+  // Report rendering
+  // =============================================================================
+
   function createRevealGeneratedPdfButton(artifactPath) {
     if (typeof artifactPath !== 'string' || !artifactPath.trim()) {
       return null;
@@ -352,6 +356,10 @@
     unitNodes.forEach((node) => body.appendChild(node));
   }
 
+  // =============================================================================
+  // Copy report / translation refresh
+  // =============================================================================
+
   function buildReportText(report, elapsedValueText = '') {
     const lines = [];
     lines.push(getReportTitle(report));
@@ -432,6 +440,7 @@
 
     return new Promise((resolve) => {
       let settled = false;
+      // A refresh replaces report-body nodes, so return body focus to a stable control.
       const refreshModalTranslations = () => {
         const scrollTop = typeof panel.scrollTop === 'number' ? panel.scrollTop : 0;
         const hadBodyFocus = !!(document.activeElement && body.contains(document.activeElement));
@@ -452,6 +461,7 @@
         window.Notify.deactivateModalFocus(modal);
       };
 
+      // Settle once so every completion path removes prompt-local listeners and focus state.
       const finish = () => {
         if (settled) return;
         settled = true;
@@ -459,6 +469,7 @@
         resolve();
       };
 
+      // Delegate because renderModalCopy replaces report-body nodes.
       const onBodyClick = async (event) => {
         const target = event.target && event.target.closest ? event.target.closest('[data-action="reveal-generated-pdf"]') : null;
         if (!target) return;
