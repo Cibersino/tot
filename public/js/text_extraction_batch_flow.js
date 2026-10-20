@@ -137,6 +137,12 @@
     return value === ROUTE_NATIVE || value === ROUTE_OCR ? value : '';
   }
 
+  function normalizeRouteList(rawRoutes) {
+    return Array.isArray(rawRoutes)
+      ? rawRoutes.map((value) => normalizeRoute(value)).filter(Boolean)
+      : [];
+  }
+
   function constrainFileName(rawValue) {
     const value = normalizeNonEmptyString(rawValue);
     if (!value) return '';
@@ -271,16 +277,14 @@
     if (!preparation || preparation.ok !== true) return '';
     const chosenRoute = normalizeRoute(preparation.routeMetadata && preparation.routeMetadata.chosenRoute);
     if (chosenRoute) return chosenRoute;
-    const routeOptions = Array.isArray(preparation.routeChoiceOptions)
-      ? preparation.routeChoiceOptions.map((value) => normalizeRoute(value)).filter(Boolean)
-      : [];
+    const routeOptions = normalizeRouteList(preparation.routeChoiceOptions);
     if (routeOptions.includes(ROUTE_NATIVE) && routeOptions.includes(ROUTE_OCR)) {
       return ROUTE_OCR;
     }
     if (routeOptions.length === 1) return routeOptions[0];
-    const availableRoutes = Array.isArray(preparation.routeMetadata && preparation.routeMetadata.availableRoutes)
-      ? preparation.routeMetadata.availableRoutes.map((value) => normalizeRoute(value)).filter(Boolean)
-      : [];
+    const availableRoutes = normalizeRouteList(
+      preparation.routeMetadata && preparation.routeMetadata.availableRoutes
+    );
     if (availableRoutes.includes(ROUTE_NATIVE) && availableRoutes.includes(ROUTE_OCR)) {
       return ROUTE_OCR;
     }
@@ -371,10 +375,8 @@
       prepareErrorCode: normalizeNonEmptyString(safePreparation && safePreparation.error && safePreparation.error.code),
       preparation: safePreparation,
       routeOptions: Array.isArray(safePreparation && safePreparation.routeChoiceOptions)
-        ? safePreparation.routeChoiceOptions.map((value) => normalizeRoute(value)).filter(Boolean)
-        : (Array.isArray(routeMetadata.availableRoutes)
-          ? routeMetadata.availableRoutes.map((value) => normalizeRoute(value)).filter(Boolean)
-          : []),
+        ? normalizeRouteList(safePreparation.routeChoiceOptions)
+        : normalizeRouteList(routeMetadata.availableRoutes),
       activeRoute: getInputDefaultRoute(safePreparation),
       pdfPageSelection,
       generatedPdfArtifactPolicy,
@@ -1092,24 +1094,20 @@
     });
   }
 
-  function mapExecutionResultStateToReportState(executionResult) {
-    const state = executionResult && typeof executionResult.state === 'string'
-      ? executionResult.state
-      : '';
+  function mapReportState(rawState) {
+    const state = typeof rawState === 'string' ? rawState : '';
     if (state === 'success') return 'success';
     if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
     if (state === 'omitted') return 'omitted';
     return 'failed';
   }
 
+  function mapExecutionResultStateToReportState(executionResult) {
+    return mapReportState(executionResult && executionResult.state);
+  }
+
   function mapGeneratedInputStateToReportState(generatedInputState) {
-    const state = typeof generatedInputState === 'string'
-      ? generatedInputState
-      : '';
-    if (state === 'success') return 'success';
-    if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
-    if (state === 'omitted') return 'omitted';
-    return 'failed';
+    return mapReportState(generatedInputState);
   }
 
   function getSuccessfulTextApplicability(executionResult) {
