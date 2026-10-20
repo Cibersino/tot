@@ -5,10 +5,12 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own the full current-text selector section UI in the main window.
-// - Render the selector title and current-text preview.
-// - Own selector-toolbar DOM bindings, lock state, and event wiring.
-// - Own clipboard-repeat input normalization and visual state for that section.
+// - Own main-window selector controls, local state, and DOM listener wiring.
+// - Render the current-text preview with direction-safe text fragments.
+// - Normalize clipboard-repeat input and expose its value to apply flows.
+// - Apply translated selector names, descriptions, and visual-tooltip values.
+// - Keep the preview-spoiler control unavailable when persistence, locking, or saving requires it.
+// - Expose the selector surface consumed by renderer orchestration.
 
 (() => {
   // =============================================================================
@@ -102,6 +104,7 @@
     setControlInteractionLocked(btnEdit, locked);
   }
 
+  // Prevent preference changes that cannot persist or race an in-flight save.
   function applyPreviewSpoilerToggleControlState() {
     setControlInteractionLocked(
       previewSpoilerToggle,
@@ -416,8 +419,7 @@
         const nextEnabled = previewSpoilerToggle.checked;
         const previousEnabled = !nextEnabled;
         if (!persistPreviewSpoilerEnabled) {
-          previewSpoilerToggle.checked = previousEnabled;
-          renderPreviewFromState();
+          setPreviewSpoilerEnabled(previousEnabled);
           applyPreviewSpoilerToggleControlState();
           return;
         }
@@ -428,8 +430,7 @@
           await persistPreviewSpoilerEnabled(nextEnabled);
         } catch (err) {
           log.error('Preview spoiler setting persistence failed; restoring previous value:', err);
-          previewSpoilerToggle.checked = previousEnabled;
-          renderPreviewFromState();
+          setPreviewSpoilerEnabled(previousEnabled);
         } finally {
           previewSpoilerSavePending = false;
           applyPreviewSpoilerToggleControlState();

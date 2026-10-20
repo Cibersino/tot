@@ -4,16 +4,17 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-window current-text runtime owner.
+// Main-window runtime for current-text display and derived results.
 // Responsibilities:
-// - Own authoritative current-text preview/result rendering in the main window.
-// - Merge derived-only recalculations into the latest in-flight text settle.
-// - Report latest-settle success/failure back to the main-owned pending lifecycle.
-// - Keep degraded derived UI explicit when settle fails after current text changed.
+// - Maintain renderer-local current text, derived stats, and presentation status.
+// - Render the current-text preview and result values through configured collaborators.
+// - Coordinate refresh requests with pending main-owned current-text processing.
+// - Acknowledge the active request's settled or unavailable result through its resolver.
+// - Keep pending and unavailable presentation distinct when derived work cannot settle.
 
 (() => {
   // =============================================================================
-  // Logger / dependencies / DOM
+  // Logger, dependencies, and DOM references
   // =============================================================================
 
   if (typeof window.getLogger !== 'function') {
@@ -61,7 +62,7 @@
   const resultsSection = document.querySelector('.results');
 
   // =============================================================================
-  // Shared state
+  // Refresh kinds and shared state
   // =============================================================================
 
   const REFRESH_KIND_NONE = 'none';
@@ -102,10 +103,8 @@
   let terminalPresentationUnavailable = false;
 
   // =============================================================================
-  // Helpers
+  // Dependency and state normalization
   // =============================================================================
-
-  // Dependency / normalization helpers
 
   function configure(nextDeps = {}) {
     deps = {
@@ -257,6 +256,11 @@
       && deferredBootstrapSettleRequestId === normalizePositiveInteger(requestId);
   }
 
+  function resetDerivedDegradedState() {
+    degradedRequestId = 0;
+    standaloneDerivedDegraded = false;
+  }
+
   function normalizeStandaloneFullRefreshPendingState(rawState) {
     const state = rawState && typeof rawState === 'object' ? rawState : {};
     const ownerSequence = normalizePositiveInteger(state.ownerSequence);
@@ -301,7 +305,9 @@
     return 0;
   }
 
-  // Pending / follow-up state helpers
+  // =============================================================================
+  // Refresh coordination
+  // =============================================================================
 
   function mergeRefreshKind(currentKind, nextKind) {
     return getRefreshKindPriority(nextKind) > getRefreshKindPriority(currentKind)
@@ -345,7 +351,9 @@
     }
   }
 
-  // Rendering helpers
+  // =============================================================================
+  // Rendering and display-state application
+  // =============================================================================
 
   function renderPreview() {
     if (terminalPresentationUnavailable) return;
@@ -506,8 +514,7 @@
   }
 
   function applySettledDerivedState(derivedState) {
-    degradedRequestId = 0;
-    standaloneDerivedDegraded = false;
+    resetDerivedDegradedState();
     applyDisplayDerivedState(derivedState, {
       previewMode: 'always',
       persistStats: true,
@@ -521,7 +528,9 @@
     });
   }
 
+  // =============================================================================
   // Derived-state builders
+  // =============================================================================
 
   async function buildDisplayDerivedStateFromNormalizedStats(stats, countArgs = getCountArgs()) {
     const { getSettingsCache, getWpm } = requireDeps();
@@ -556,7 +565,9 @@
     return buildDisplayDerivedStateFromNormalizedStats(normalizedStats);
   }
 
+  // =============================================================================
   // Pending authoritative-settle lifecycle
+  // =============================================================================
 
   function isActivePendingRequest(requestId) {
     return currentTextProcessingState.active === true
@@ -696,8 +707,7 @@
 
   function runStandaloneStatsDisplayRefresh(reason, refreshSequence = bumpRenderAuthoritySequence()) {
     if (!currentTextStats) {
-      log.warnOnce(
-        'current_text_runtime.statsDisplay.noStats',
+      log.warn(
         'Display-only refresh requested without current text stats; results not updated.'
       );
       return;
@@ -717,7 +727,9 @@
       });
   }
 
+  // =============================================================================
   // Standalone derived-refresh lifecycle
+  // =============================================================================
 
   function runQueuedStandaloneFollowup(refreshSequence) {
     if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
@@ -835,8 +847,7 @@
     bumpRenderAuthoritySequence();
     currentTextProcessingState = nextProcessingState;
     if (nextProcessingState.active) {
-      degradedRequestId = 0;
-      standaloneDerivedDegraded = false;
+      resetDerivedDegradedState();
       clearQueuedStandaloneFollowup();
       // Bootstrap may expose current text as pending before READY, but its derived settle is intentionally armed here and kicked off only after the startup unlock.
       armDeferredBootstrapSettle(nextProcessingState.requestId);
@@ -861,8 +872,7 @@
     }
     if (nextState.active) {
       bumpRenderAuthoritySequence();
-      degradedRequestId = 0;
-      standaloneDerivedDegraded = false;
+      resetDerivedDegradedState();
       clearStandaloneFullRefreshPending({
         force: true,
         source: `standalone_full_refresh_taken_over:${source}`,
@@ -914,8 +924,7 @@
     }
 
     if (isActivePendingRequest(requestId)) {
-      degradedRequestId = 0;
-      standaloneDerivedDegraded = false;
+      resetDerivedDegradedState();
       clearStandaloneFullRefreshPending({
         force: true,
         source: 'standalone_full_refresh_taken_over:current_text_updated',

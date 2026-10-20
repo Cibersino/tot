@@ -107,9 +107,6 @@
   const SNAPSHOT_NAME_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.name';
   const SNAPSHOT_SOURCE_COMMENT_PLACEHOLDER_KEY = 'renderer.snapshots.placeholders.source_comment';
   const MANAGER_UNAVAILABLE_ALERT_KEY = 'renderer.snapshots.alerts.catalog_update_error';
-  const LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.load.unavailable';
-  const SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY = 'snapshot-save-tags-modal.preferenceBridge.save.unavailable';
-  const FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY = 'snapshot-save-tags-modal.focus.preventScroll.fallback';
 
   const FIELD_DEFS = [
     {
@@ -266,14 +263,16 @@
     return tRenderer(errorKey);
   }
 
+  // =============================================================================
+  // Snapshot-tag preference bridge
+  // =============================================================================
   async function loadSnapshotTagPreferences(initialPreferences = null) {
     if (snapshotTagCatalog.isPlainObject(initialPreferences)) {
       return snapshotTagCatalog.normalizeSnapshotTagPreferences(initialPreferences);
     }
 
     if (!getSnapshotTagPreferences) {
-      log.warnOnce(
-        LOAD_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY,
+      log.warn(
         'Snapshot-tag preference bridge unavailable; using empty preferences.'
       );
       return snapshotTagCatalog.createEmptySnapshotTagPreferences();
@@ -294,8 +293,7 @@
 
   async function persistSnapshotTagPreferences(nextPreferences) {
     if (!setSnapshotTagPreferences) {
-      log.warnOnce(
-        SAVE_PREFERENCES_BRIDGE_UNAVAILABLE_LOG_KEY,
+      log.warn(
         'Snapshot-tag preference bridge unavailable; cannot persist snapshot-tag preferences.'
       );
       window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
@@ -316,6 +314,9 @@
     return null;
   }
 
+  // =============================================================================
+  // Tag selector state and rendering
+  // =============================================================================
   function buildFieldOptions(field) {
     const resolvedCategory = snapshotTagCatalog.resolveCategoryCatalog(
       field.key,
@@ -411,6 +412,12 @@
     }
   }
 
+  function recordDeferredConfirmSaveFailure(promptState) {
+    if (promptState.deferredAction === 'confirm') {
+      promptState.deferredConfirmSaveFailed = true;
+    }
+  }
+
   function enqueueCustomTagCreation(fieldKey, rawLabel) {
     const promptState = activePromptState;
     const fieldState = ensureFieldState(fieldKey);
@@ -431,18 +438,14 @@
           { getDefaultLabel }
         );
         if (!createInfo.ok) {
-          if (promptState.deferredAction === 'confirm') {
-            promptState.deferredConfirmSaveFailed = true;
-          }
+          recordDeferredConfirmSaveFailure(promptState);
           log.warn('Snapshot tag inline create rejected:', fieldKey, createInfo);
           return;
         }
 
         const persistedPreferences = await persistSnapshotTagPreferences(createInfo.preferences);
         if (!persistedPreferences) {
-          if (promptState.deferredAction === 'confirm') {
-            promptState.deferredConfirmSaveFailed = true;
-          }
+          recordDeferredConfirmSaveFailure(promptState);
           return;
         }
 
@@ -456,9 +459,7 @@
         if (keepPickerOpen) fieldState.combobox.open();
         scheduleOpenPickerVisibility(fieldKey);
       } catch (err) {
-        if (promptState.deferredAction === 'confirm') {
-          promptState.deferredConfirmSaveFailed = true;
-        }
+        recordDeferredConfirmSaveFailure(promptState);
         log.error('Snapshot tag inline create failed:', err);
       } finally {
         fieldState.pendingCreateValues.delete(value);
@@ -577,14 +578,16 @@
     return snapshotTagCatalog.normalizeTags(tags);
   }
 
+  // =============================================================================
+  // Prompt presentation and interaction
+  // =============================================================================
   function focusElementWithoutScroll(element) {
     if (!element || typeof element.focus !== 'function') return;
 
     try {
       element.focus({ preventScroll: true });
     } catch (err) {
-      log.warnOnce(
-        FOCUS_PREVENT_SCROLL_FALLBACK_LOG_KEY,
+      log.warn(
         'focus({ preventScroll: true }) failed; falling back to focus().',
         err
       );

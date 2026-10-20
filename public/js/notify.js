@@ -6,7 +6,7 @@
 // =============================================================================
 // Responsibilities:
 // - Resolve renderer i18n keys to displayable text.
-// - Show blocking alerts and confirms for main-window notices.
+// - Show blocking alerts and confirms for renderer notices.
 // - Show toast notifications for main and Text Editor contexts.
 // - Own stack-aware renderer modal focus containment and per-open restoration.
 // - Provide a small, stable window.Notify surface for callers.
@@ -201,8 +201,7 @@
     try {
       element.focus({ preventScroll: true });
     } catch (err) {
-      log.warnOnce(
-        'notify.focus.preventScroll.failed',
+      log.warn(
         'focus({ preventScroll: true }) failed; falling back to focus().',
         err
       );
@@ -357,11 +356,16 @@
   }
 
   // =============================================================================
-  // Entry points (public API)
+  // Dialog helpers and public entry points
   // =============================================================================
   function notifyMain(key, params = {}) {
     const msg = resolveText(key, params);
-    alert(msg);
+    alertText(msg);
+  }
+
+  // Toast fallbacks receive display text, not i18n keys, so they must not resolve it again.
+  function alertText(text) {
+    alert(text);
   }
 
   function confirmMain(key, params = {}) {
@@ -388,9 +392,9 @@
     try {
       toastText(msg, { containerId: 'totMainToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      log.warn('toastMain failed; falling back to notifyMain:', err);
+      log.warn('toastMain failed; falling back to alert:', err);
       try {
-        notifyMain(key);
+        alertText(msg);
       } catch (fallbackErr) {
         log.error('toastMain fallback failed:', fallbackErr);
       }
@@ -401,16 +405,9 @@
     try {
       toastText(text, { containerId: 'totEditorToastContainer', position: 'top-right', type, duration });
     } catch (err) {
-      log.warn('toastEditorText failed; falling back to notifyMain:', err);
+      log.warn('toastEditorText failed; falling back to alert:', err);
       try {
-        if (typeof notifyMain === 'function') {
-          notifyMain(text);
-        } else {
-          log.errorOnce(
-            'notify.toastEditorText.notifyMain.missing',
-            'toastEditorText fallback unavailable: notifyMain missing; notice dropped.'
-          );
-        }
+        alertText(text);
       } catch (fallbackErr) {
         log.error('toastEditorText fallback failed:', fallbackErr);
       }

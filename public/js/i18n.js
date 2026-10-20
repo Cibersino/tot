@@ -4,13 +4,14 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Renderer i18n helper for UI bundles.
+// Renderer i18n owner for shared renderer surfaces.
 // Responsibilities:
-// - Normalize language tags and derive base tags.
-// - Load renderer.json bundles with a fallback chain.
-// - Merge default bundle with optional overlay data.
-// - Resolve translation keys and parameterized messages.
-// - Expose the RendererI18n API on window.
+// - Normalize language tags and maintain document language and direction attributes.
+// - Load and merge renderer.json through requested, base, and DEFAULT_LANG candidates.
+// - Serialize translation transitions and attempt restoration when an update fails after state changes begin.
+// - Load registered full-document i18n resources.
+// - Expose the RendererI18n API for renderer consumers.
+// - Resolve translation keys and parameterized messages for renderer consumers.
 
 (() => {
   // =============================================================================
@@ -44,7 +45,7 @@
   let userTextDirectionProbe = null;
 
   // =============================================================================
-  // Helpers (pure utilities)
+  // Helpers / document language state
   // =============================================================================
   const normalizeLangTag = (lang) => (lang || '').trim().toLowerCase().replace(/_/g, '-');
   const getLangBase = (lang) => {
@@ -201,12 +202,10 @@
 
     for (let idx = 0; idx < paths.length; idx += 1) {
       const p = paths[idx];
-      const variant = (idx === 0 && langCode.includes('-')) ? 'full' : 'base';
       try {
         const resp = await fetch(p);
         if (!resp || !resp.ok) {
-          log.warnOnce(
-            `i18n.renderer.bundle.unavailable:${langCode || 'unknown'}:${variant}`,
+          log.warn(
             'renderer.json unavailable (trying fallback):',
             { requested, langCode, path: p, status: resp && resp.status }
           );
@@ -215,8 +214,7 @@
         const raw = await resp.text();
         const cleaned = raw.replace(/^\uFEFF/, ''); // strip BOM if present
         if (!cleaned.trim()) {
-          log.warnOnce(
-            `i18n.renderer.bundle.empty:${langCode || 'unknown'}:${variant}`,
+          log.warn(
             'renderer.json is empty (trying fallback):',
             { requested, langCode, path: p }
           );
@@ -225,8 +223,7 @@
         try {
           const parsed = JSON.parse(cleaned);
           if (!isPlainObject(parsed)) {
-            log.warnOnce(
-              `i18n.renderer.bundle.invalidShape:${langCode || 'unknown'}:${variant}`,
+            log.warn(
               'renderer.json root must be a JSON object (trying fallback):',
               { requested, langCode, path: p }
             );
@@ -234,16 +231,14 @@
           }
           return parsed;
         } catch (err) {
-          log.warnOnce(
-            `i18n.renderer.bundle.parse:${langCode || 'unknown'}:${variant}`,
+          log.warn(
             'Failed to parse renderer.json (trying fallback):',
             { requested, langCode, path: p },
             err
           );
         }
       } catch (err) {
-        log.warnOnce(
-          `i18n.renderer.bundle.fetch:${langCode || 'unknown'}:${variant}`,
+        log.warn(
           'Failed to fetch renderer.json (trying fallback):',
           { requested, langCode, path: p },
           err
@@ -252,8 +247,7 @@
     }
 
     if (required) {
-      log.errorOnce(
-        `i18n.loadRendererTranslations.requiredMissing:${langCode}`,
+      log.error(
         'Required renderer.json missing/invalid:',
         { langCode, paths }
       );
@@ -279,8 +273,7 @@
   async function prepareRendererTranslations(lang) {
     const requested = normalizeLangTag(lang);
     if (!requested) {
-      log.warnOnce(
-        'i18n.loadRendererTranslations.emptyLang',
+      log.warn(
         'Invalid language tag; using default bundle only.'
       );
     }
@@ -290,8 +283,7 @@
     if (!rendererDefaultTranslations) {
       const defaults = await loadBundle(DEFAULT_LANG, DEFAULT_LANG, true);
       if (!defaults) {
-        log.errorOnce(
-          `i18n.loadRendererTranslations.defaultMissing:${DEFAULT_LANG}`,
+        log.error(
           'Default renderer.json missing or invalid; renderer translation state cannot be established:',
           DEFAULT_LANG
         );
@@ -304,8 +296,7 @@
     if (selected && selected !== DEFAULT_LANG) {
       overlay = await loadOverlay(selected, getLangBase(selected));
       if (!overlay) {
-        log.warnOnce(
-          `i18n.loadRendererTranslations.overlayMissing:${selected}`,
+        log.warn(
           'No overlay renderer.json found (using default only):',
           { selected }
         );
@@ -318,8 +309,11 @@
     };
   }
 
+  // =============================================================================
+  // Renderer translation transitions
+  // =============================================================================
   function commitRendererTranslations(candidate) {
-    // Read the candidate completely before changing either part of the established translation state. This keeps a future candidate-validation or preparation change from leaving a half-committed state.
+    // Read both fields before mutation so the established state cannot split between language and translations.
     const nextTranslations = candidate.translations;
     const nextLanguage = candidate.language;
     rendererTranslations = nextTranslations;
@@ -476,8 +470,7 @@
       try {
         const response = await fetch(candidate.path, { cache: 'no-store' });
         if (!response || !response.ok) {
-          log.warnOnce(
-            `i18n.localizedDocument.unavailable:${documentId}:${candidate.language}`,
+          log.warn(
             'Localized document unavailable (trying fallback):',
             { documentId, language: candidate.language, path: candidate.path }
           );
@@ -486,8 +479,7 @@
 
         const html = await response.text();
         if (!html.trim()) {
-          log.warnOnce(
-            `i18n.localizedDocument.empty:${documentId}:${candidate.language}`,
+          log.warn(
             'Localized document is empty (trying fallback):',
             { documentId, language: candidate.language, path: candidate.path }
           );
@@ -499,8 +491,7 @@
           language: candidate.language,
         };
       } catch (err) {
-        log.warnOnce(
-          `i18n.localizedDocument.fetch:${documentId}:${candidate.language}`,
+        log.warn(
           'Localized document fetch failed (trying fallback):',
           { documentId, language: candidate.language, path: candidate.path },
           err
@@ -508,8 +499,7 @@
       }
     }
 
-    log.errorOnce(
-      `i18n.localizedDocument.requiredMissing:${documentId}`,
+    log.error(
       'Required localized document missing or invalid:',
       { documentId, candidates }
     );

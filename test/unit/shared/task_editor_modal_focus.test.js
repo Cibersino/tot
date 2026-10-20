@@ -38,16 +38,19 @@ function createHarness(options = {}) {
   const windowListeners = new Map();
   const notifications = [];
   const errorLogs = [];
+  const warningLogs = [];
   const dirtyStateCalls = [];
   const terminalStateCalls = options.terminalStateCalls || [];
   const closeResponseCalls = [];
   const savedLibraryEntries = [];
   const openTaskLinkCalls = [];
   const snapshotInspectionCalls = [];
+  const snapshotLoadCalls = [];
   const taskFileSelectionCalls = [];
   let nextInitId = 1;
   let openTaskLinkResult = { ok: true };
   let selectedTaskRowSnapshotResult = { ok: false, code: 'CANCELLED' };
+  let taskRowSnapshotLoadResult = { ok: true };
   let taskFileSelectionResult = { ok: false, code: 'CANCELLED' };
   let libraryListResult = { ok: true, items: [] };
   let taskRowSnapshotInspectionResult = {
@@ -250,7 +253,9 @@ function createHarness(options = {}) {
   const window = {
     getLogger() {
       return {
-        debug() {}, info() {}, warn() {}, warnOnce() {},
+        debug() {}, info() {},
+        warn(...args) { warningLogs.push(args); },
+        warnOnce() {},
         error(...args) { errorLogs.push(args); },
         errorOnce() {},
       };
@@ -398,6 +403,10 @@ function createHarness(options = {}) {
       async selectTaskRowSnapshot() {
         return selectedTaskRowSnapshotResult;
       },
+      async loadTaskRowSnapshot(snapshotRelPath) {
+        snapshotLoadCalls.push(snapshotRelPath);
+        return taskRowSnapshotLoadResult;
+      },
       async inspectTaskRowSnapshot(snapshotRelPath) {
         snapshotInspectionCalls.push(snapshotRelPath);
         return taskRowSnapshotInspectionResult;
@@ -470,15 +479,20 @@ function createHarness(options = {}) {
     findInputByHeaderId,
     notifications,
     errorLogs,
+    warningLogs,
     savedLibraryEntries,
     openTaskLinkCalls,
     snapshotInspectionCalls,
+    snapshotLoadCalls,
     taskFileSelectionCalls,
     setOpenTaskLinkResult(result) {
       openTaskLinkResult = result;
     },
     setSelectedTaskRowSnapshotResult(result) {
       selectedTaskRowSnapshotResult = result;
+    },
+    setTaskRowSnapshotLoadResult(result) {
+      taskRowSnapshotLoadResult = result;
     },
     setTaskFileSelectionResult(result) {
       taskFileSelectionResult = result;
@@ -1281,6 +1295,77 @@ test('Task Editor selects a local file directly when snapshot-source inspection 
   assert.equal(invalidSnapshotHarness.elements.snapshotSourceReminderModal.getAttribute('aria-hidden'), 'true');
   assert.deepEqual(invalidSnapshotHarness.taskFileSelectionCalls, [true]);
   assert.equal(invalidSnapshotLinkInput.value, 'C:\\Books\\replacement.pdf');
+});
+
+test('Task Editor trusts snapshot cancellation codes only from canonical failure responses', async () => {
+  const malformedSelectionHarness = createHarness();
+  await malformedSelectionHarness.initializeRow();
+  malformedSelectionHarness.setSelectedTaskRowSnapshotResult({ code: 'CANCELLED' });
+  malformedSelectionHarness.findByIcon('task-comment').dispatch('click');
+  malformedSelectionHarness.elements.commentSnapshotSelect.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(
+    malformedSelectionHarness.notifications,
+    ['renderer.tasks.alerts.library_load_error']
+  );
+  assert.deepEqual(JSON.parse(JSON.stringify(malformedSelectionHarness.warningLogs)), [[
+    'selectTaskRowSnapshot failed:',
+    { code: 'READ_FAILED', response: { code: 'CANCELLED' } },
+  ]]);
+
+  const cancelledSelectionHarness = createHarness();
+  await cancelledSelectionHarness.initializeRow();
+  cancelledSelectionHarness.setSelectedTaskRowSnapshotResult({ ok: false, code: 'CANCELLED' });
+  cancelledSelectionHarness.findByIcon('task-comment').dispatch('click');
+  cancelledSelectionHarness.elements.commentSnapshotSelect.dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(cancelledSelectionHarness.notifications, []);
+
+  const malformedLoadHarness = createHarness();
+  await malformedLoadHarness.initializeRow({ snapshotRelPath: '/snapshot.json' });
+  malformedLoadHarness.setTaskRowSnapshotLoadResult({ code: 'CANCELLED' });
+  malformedLoadHarness.findByIcon('task-text-snapshot-load').dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(malformedLoadHarness.snapshotLoadCalls, ['/snapshot.json']);
+  assert.deepEqual(malformedLoadHarness.notifications, ['renderer.tasks.alerts.link_error']);
+  assert.deepEqual(JSON.parse(JSON.stringify(malformedLoadHarness.warningLogs)), [[
+    'loadTaskRowSnapshot failed:',
+    {
+      code: 'READ_FAILED',
+      snapshotRelPath: '/snapshot.json',
+      response: { code: 'CANCELLED' },
+    },
+  ]]);
+
+  const codeLessLoadHarness = createHarness();
+  await codeLessLoadHarness.initializeRow({ snapshotRelPath: '/snapshot.json' });
+  codeLessLoadHarness.setTaskRowSnapshotLoadResult({ ok: false });
+  codeLessLoadHarness.findByIcon('task-text-snapshot-load').dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(codeLessLoadHarness.snapshotLoadCalls, ['/snapshot.json']);
+  assert.deepEqual(codeLessLoadHarness.notifications, ['renderer.tasks.alerts.link_error']);
+  assert.deepEqual(JSON.parse(JSON.stringify(codeLessLoadHarness.warningLogs)), [[
+    'loadTaskRowSnapshot failed:',
+    {
+      code: 'READ_FAILED',
+      snapshotRelPath: '/snapshot.json',
+      response: { ok: false },
+    },
+  ]]);
+
+  const deniedLoadHarness = createHarness();
+  await deniedLoadHarness.initializeRow({ snapshotRelPath: '/snapshot.json' });
+  deniedLoadHarness.setTaskRowSnapshotLoadResult({ ok: false, code: 'CONFIRM_DENIED' });
+  deniedLoadHarness.findByIcon('task-text-snapshot-load').dispatch('click');
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(deniedLoadHarness.snapshotLoadCalls, ['/snapshot.json']);
+  assert.deepEqual(deniedLoadHarness.notifications, []);
+  assert.deepEqual(deniedLoadHarness.warningLogs, []);
 });
 
 test('Task Editor applies the changed snapshot estimate only after confirmation', async () => {

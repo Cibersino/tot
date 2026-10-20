@@ -41,6 +41,7 @@ const {
   getOcrGoogleDriveCredentialsFile,
   getOcrGoogleDriveTokenFile,
   loadJson,
+  loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
 } = require('./fs_storage');
@@ -2355,7 +2356,7 @@ app.whenReady().then(() => {
   });
 
   snapshotTagSettings.init({
-    loadJson,
+    loadJsonWithStatus,
     saveJson,
     saveJsonStrict,
     snapshotTagsFile,

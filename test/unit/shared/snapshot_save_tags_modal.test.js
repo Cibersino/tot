@@ -184,7 +184,9 @@ function interpolate(template, params = {}) {
 function createHarness({
   storedPreferences = snapshotTagCatalog.createEmptySnapshotTagPreferences(),
   confirmResult = true,
+  getSnapshotTagPreferencesImpl = null,
   setSnapshotTagPreferencesImpl = null,
+  includeSnapshotTagPreferencesBridge = true,
 } = {}) {
   activeElementRef = null;
 
@@ -293,6 +295,8 @@ function createHarness({
   const savedPreferences = [];
   const confirmCalls = [];
   const notifications = [];
+  const diagnostics = [];
+  const warningOnceKeys = new Set();
   const registeredPromptNames = [];
   const modalOpeners = new Map();
 
@@ -322,11 +326,23 @@ function createHarness({
       },
       getLogger() {
         return {
-          debug() {},
-          info() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
+          debug(...args) {
+            diagnostics.push({ level: 'debug', args });
+          },
+          info(...args) {
+            diagnostics.push({ level: 'info', args });
+          },
+          warn(...args) {
+            diagnostics.push({ level: 'warn', args });
+          },
+          warnOnce(key, ...args) {
+            if (warningOnceKeys.has(key)) return;
+            warningOnceKeys.add(key);
+            diagnostics.push({ level: 'warnOnce', args: [key, ...args] });
+          },
+          error(...args) {
+            diagnostics.push({ level: 'error', args });
+          },
         };
       },
       RendererI18n: {
@@ -355,8 +371,11 @@ function createHarness({
           return button;
         },
       },
-      electronAPI: {
+      electronAPI: includeSnapshotTagPreferencesBridge ? {
         async getSnapshotTagPreferences() {
+          if (typeof getSnapshotTagPreferencesImpl === 'function') {
+            return getSnapshotTagPreferencesImpl();
+          }
           return { ok: true, snapshotTags: currentStoredPreferences };
         },
         async setSnapshotTagPreferences(payload) {
@@ -367,7 +386,7 @@ function createHarness({
           savedPreferences.push(JSON.parse(JSON.stringify(currentStoredPreferences)));
           return { ok: true, snapshotTags: currentStoredPreferences };
         },
-      },
+      } : undefined,
       addEventListener(type, handler) {
         if (!windowListeners.has(type)) {
           windowListeners.set(type, []);
@@ -506,6 +525,7 @@ function createHarness({
     getActiveElement() {
       return activeElementRef;
     },
+    diagnostics,
     notifications,
     findInManagerByAriaLabel,
     findInManagerByText,
@@ -557,6 +577,40 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
   harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, null);
+});
+
+test('snapshot tag prompt stays usable with default tags after a non-ok preference read', async () => {
+  const harness = createHarness({
+    getSnapshotTagPreferencesImpl() {
+      return { ok: false, error: 'storage unavailable' };
+    },
+  });
+
+  const promptPromise = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+
+  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
+  assert.deepEqual(JSON.parse(JSON.stringify(await promptPromise)), { tags: {} });
+});
+
+test('missing snapshot-tag preference bridge warns for each prompt', async () => {
+  const harness = createHarness({ includeSnapshotTagPreferencesBridge: false });
+
+  const firstPrompt = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
+  await firstPrompt;
+
+  const secondPrompt = harness.promptTags({ initialTags: null });
+  await flushMicrotasks();
+  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
+  await secondPrompt;
+
+  const bridgeWarnings = harness.diagnostics.filter(({ level, args }) => {
+    return level === 'warn'
+      && args[0] === 'Snapshot-tag preference bridge unavailable; using empty preferences.';
+  });
+  assert.equal(bridgeWarnings.length, 2);
 });
 
 test('snapshot save modal returns optional name and source-comment fields', async () => {

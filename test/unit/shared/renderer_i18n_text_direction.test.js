@@ -113,9 +113,9 @@ function createHarness(uiDirection = 'ltr', { fetchImpl = null, defaultLang = 'e
       getLogger() {
         return {
           debug() {},
-          warn() {},
+          warn(...args) { logEntries.push(args); },
           warnOnce(...args) { logEntries.push(args); },
-          error() {},
+          error(...args) { logEntries.push(args); },
           errorOnce(...args) { logEntries.push(args); },
         };
       },
@@ -245,8 +245,14 @@ test('renderer bundles diagnose requested-resource failures and continue through
   ]);
   assert.equal(i18n.tRenderer('renderer.defaultLabel'), 'English');
   assert.equal(i18n.tRenderer('renderer.localizedLabel'), 'Français');
-  assert.ok(logEntries.some(([key]) => key === 'i18n.renderer.bundle.invalidShape:fr-ca:full'));
-  assert.ok(logEntries.some(([key]) => key === 'i18n.renderer.bundle.unavailable:fr-ca:base'));
+  assert.ok(logEntries.some(([message, details]) => (
+    message === 'renderer.json root must be a JSON object (trying fallback):'
+      && details && details.path === '../i18n/fr/fr-ca/renderer.json'
+  )));
+  assert.ok(logEntries.some(([message, details]) => (
+    message === 'renderer.json unavailable (trying fallback):'
+      && details && details.path === '../i18n/fr-ca/renderer.json'
+  )));
 });
 
 test('renderer bundles reject invalid shapes and the default bundle is terminal when unusable', async () => {

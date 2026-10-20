@@ -5,20 +5,23 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Render a language list with search and keyboard navigation.
-// - Fetch available languages via the preload-exposed API.
-// - Apply a selected language and close the window on success.
-// - Maintain busy/disabled UI state during async actions.
-// - Fall back to a local list when IPC data is unavailable.
+// - Render shipped language autonyms with filtering and keyboard navigation.
+// - Read the current selection and available languages through languageAPI.
+// - Keep the selected language separate from roving keyboard focus.
+// - Apply a selection and close after the preload operation succeeds.
+// - Display a minimal local list when languageAPI cannot provide a valid language list.
+// - Attempt local closure after a first-run bootstrap failure so main can resolve startup language.
 
 // =============================================================================
-// Logger and DOM references
+// Startup context, logger, and DOM references
 // =============================================================================
 const locationSearch = window.location && typeof window.location.search === 'string'
   ? window.location.search
   : '';
 const isFirstRunLanguageChooser = /(?:^|[?&])languageChooserFirstRun=1(?:&|$)/.test(locationSearch);
 
+// First-run bootstrap failure attempts to close this window so main can finish language resolution.
+// See createLanguageWindow() in electron/main.js.
 const closeFirstRunChooserAfterBootstrapFailure = () => {
   if (!isFirstRunLanguageChooser) return;
   try {
@@ -62,11 +65,12 @@ if (!langFilter || !langList) {
 // =============================================================================
 // Constants and shared state
 // =============================================================================
-// Minimal local Spanish/English autonym fallback used when the manifest cannot provide a valid language list.
+// Autonyms normally come from i18n/languages.json; keep this recovery list bounded for cases where languageAPI cannot provide a valid list.
 const FALLBACK_LANGUAGES = Object.freeze([
   Object.freeze({ tag: 'es', label: 'Español' }),
   Object.freeze({ tag: 'en', label: 'English' }),
 ]);
+// Status IDs select pre-authored bilingual nodes in language_window.html.
 const STATUS_IDS = Object.freeze({
   NONE: '',
   NO_MATCHES: 'noMatches',
@@ -81,7 +85,7 @@ let isBusy = false;
 let selectedLanguageTag = '';
 
 // =============================================================================
-// Helpers
+// Language list rendering and selection
 // =============================================================================
 const getItems = () => Array.from(langList.querySelectorAll('.lang-item'));
 
@@ -175,7 +179,7 @@ const renderList = () => {
 const selectLanguage = async (lang) => {
   if (!lang || isBusy) return;
   if (!window.languageAPI || typeof window.languageAPI.setLanguage !== 'function') {
-    log.warnOnce('language_window.api.setLanguage.unavailable', 'setLanguage unavailable; language selection ignored.');
+    log.warn('setLanguage unavailable; language selection ignored.');
     setStatus(STATUS_IDS.SELECTION_ERROR, true);
     return;
   }
@@ -185,7 +189,7 @@ const selectLanguage = async (lang) => {
     await window.languageAPI.setLanguage(lang);
     window.close();
   } catch (e) {
-    log.error('Error setLanguage:', e);
+    log.error('Language selection request or window close failed:', e);
     setBusy(false);
     setStatus(STATUS_IDS.SELECTION_ERROR, true);
   }
@@ -258,7 +262,7 @@ langList.addEventListener('focusin', (event) => {
 });
 
 // =============================================================================
-// Data loading and bootstrap
+// Language data loading and bootstrap
 // =============================================================================
 const loadLanguages = async () => {
   let available = [];
@@ -317,7 +321,7 @@ const loadCurrentLanguage = async () => {
     await loadLanguages();
     langFilter.focus();
   } catch (e) {
-    log.error('BOOTSTRAP: loadLanguages failed; falling back to local list:', e);
+    log.error('BOOTSTRAP: language window initialization failed; attempting local-list recovery:', e);
     languages = FALLBACK_LANGUAGES.slice();
     selectedLanguageTag = '';
     filteredLanguages = languages.slice();
@@ -325,7 +329,7 @@ const loadCurrentLanguage = async () => {
     langFilter.focus();
   }
 })();
-// Note: If the user closes the window without selecting anything, main applies fallback only if settings.language is empty.
+// Main owns no-selection fallback during first-run startup; see createLanguageWindow() in electron/main.js.
 // =============================================================================
 // End of public/language_window.js
 // =============================================================================

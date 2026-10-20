@@ -9,6 +9,7 @@ const vm = require('node:vm');
 function loadNotify({
   document: documentOverride = {},
   logger = null,
+  alertHandler = () => {},
   setTimeoutHandler = (handler) => {
     if (typeof handler === 'function') handler();
     return 0;
@@ -35,7 +36,7 @@ function loadNotify({
       ...windowOverrides,
     },
     document: documentOverride,
-    alert() {},
+    alert: alertHandler,
     confirm() {
       return true;
     },
@@ -314,6 +315,48 @@ test('notify toasts expose semantic state without inline presentation', () => {
   assert.equal(harness.pendingTimers.length, 1);
 });
 
+test('toast fallback preserves a resolved main message including interpolation', () => {
+  const alerts = [];
+  const notify = loadNotify({
+    alertHandler(message) {
+      alerts.push(message);
+    },
+    windowOverrides: {
+      RendererI18n: {
+        msgRenderer(key, params) {
+          return `${key}: ${params.imported}`;
+        },
+      },
+    },
+  });
+
+  notify.toastMain('renderer.reading_test.entry.import.import_summary', {
+    params: { imported: 3 },
+  });
+
+  assert.deepEqual(alerts, ['renderer.reading_test.entry.import.import_summary: 3']);
+});
+
+test('toastEditorText fallback does not treat display text as an i18n key', () => {
+  const alerts = [];
+  const notify = loadNotify({
+    alertHandler(message) {
+      alerts.push(message);
+    },
+    windowOverrides: {
+      RendererI18n: {
+        msgRenderer(key) {
+          return key === 'renderer.already_resolved' ? 'incorrectly re-resolved' : key;
+        },
+      },
+    },
+  });
+
+  notify.toastEditorText('renderer.already_resolved');
+
+  assert.deepEqual(alerts, ['renderer.already_resolved']);
+});
+
 test('toast stylesheet owns the modal-safe visual contract and the Arial font change', () => {
   const stylesheet = fs.readFileSync(path.resolve(__dirname, '../../../public/toasts.css'), 'utf8');
 
@@ -356,7 +399,7 @@ test('toast stylesheet loads only in the current toast-rendering windows', () =>
   });
 });
 
-test('notify modal focus falls back to plain focus and lets warnOnce deduplicate the diagnostic', () => {
+test('notify modal focus falls back to plain focus and logs each failed focus option application', () => {
   const rendererLogger = createRendererLoggerHarness();
   const harness = createModalFocusHarness({ logger: rendererLogger.logger });
   const modal = harness.createElement('modal');
@@ -380,13 +423,19 @@ test('notify modal focus falls back to plain focus and lets warnOnce deduplicate
   assert.equal(focusCalls.length, 4);
   assert.equal(focusCalls[2].preventScroll, true);
   assert.equal(focusCalls[3], undefined);
-  assert.equal(rendererLogger.warnings.length, 1);
+  assert.equal(rendererLogger.warnings.length, 2);
   assert.equal(rendererLogger.warnings[0][0], '[WARN][notify]');
   assert.equal(
     rendererLogger.warnings[0][1],
     'focus({ preventScroll: true }) failed; falling back to focus().'
   );
   assert.equal(rendererLogger.warnings[0][2], focusFailure);
+  assert.equal(rendererLogger.warnings[1][0], '[WARN][notify]');
+  assert.equal(
+    rendererLogger.warnings[1][1],
+    'focus({ preventScroll: true }) failed; falling back to focus().'
+  );
+  assert.equal(rendererLogger.warnings[1][2], focusFailure);
 });
 
 test('notify modal focus wraps forward and backward and re-enters from outside', () => {
