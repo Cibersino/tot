@@ -5,10 +5,13 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own batch text-extraction planning/execution state in the renderer.
-// - Reuse the existing prepare/execute/apply/snapshot contracts for multi-file work.
-// - Keep automatic heavy-PDF splitting local to its logical source input while
-//   using the normal unit model for planning and reporting.
+// - Turn selected files into a mutable batch plan and hand it to the planning modal.
+// - Validate the approved plan, run each unit through the canonical
+//   prepare/execute/apply flow, and assemble its final report.
+// - Reuse the current-text, snapshot, and processing-session contracts instead
+//   of owning parallel state.
+// - Keep automatic heavy-PDF splitting attached to its logical source input for
+//   planning, execution, and reporting.
 
 (() => {
   // =============================================================================
@@ -122,7 +125,7 @@
   }
 
   // =============================================================================
-  // Generic helpers
+  // Input and planner model helpers
   // =============================================================================
 
   function normalizeFilePath(rawValue) {
@@ -389,6 +392,10 @@
     };
   }
 
+  // =============================================================================
+  // Planner state and plan mutations
+  // =============================================================================
+
   function syncUnitMetadata(state) {
     const visibleUnitKeys = [];
     state.inputs.forEach((input) => {
@@ -640,6 +647,10 @@
     input.pdfPageSelection = canonicalSelection;
   }
 
+  // =============================================================================
+  // Planner view model and modal controller
+  // =============================================================================
+
   function buildPlannerViewModel(state) {
     syncUnitMetadata(state);
     const units = getVisibleUnits(state);
@@ -757,7 +768,7 @@
   }
 
   // =============================================================================
-  // Planning / execution helpers
+  // Batch planning and start validation
   // =============================================================================
 
   async function preparePlanInputs(filePaths) {
@@ -891,6 +902,10 @@
     }
     return window.Notify.confirmMain('renderer.text_extraction.alerts.overwrite_confirm');
   }
+
+  // =============================================================================
+  // Execution results and final report helpers
+  // =============================================================================
 
   function mapPreparedIdInvalidReason(execution) {
     if (!execution || execution.code !== 'PREPARED_ID_INVALID') {
@@ -1314,6 +1329,10 @@
     }
   }
 
+  // =============================================================================
+  // Batch execution lifecycle
+  // =============================================================================
+
   async function runBatchExecution(state) {
     const {
       getOcrLanguage,
@@ -1711,6 +1730,10 @@
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }
+
+  // =============================================================================
+  // Batch entrypoints
+  // =============================================================================
 
   async function startFromSelectedFiles({
     filePaths = [],
