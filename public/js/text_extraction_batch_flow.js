@@ -1635,6 +1635,7 @@
           }
         }
 
+        // Automatic snapshot failures are reported per unit without stopping the batch. A later unit may overwrite unsaved text, requiring re-extraction.
         const snapshotRequired = units.length > 1 && unitProducedText;
         const snapshotResult = snapshotRequired
           ? await autoSaveUnitSnapshot(
