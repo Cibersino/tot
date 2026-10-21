@@ -1658,6 +1658,7 @@
       }
     } finally {
       textExtractionStatusUi.clearPendingExecutionContext();
+      // Main owns the processing lock. A failed exit does not authorize the renderer to release it; NOT_ACTIVE may follow an abort. Final reporting proceeds without assuming the lock was released.
       try {
         await exitTextExtractionProcessingSession({
           source: 'text_extraction_batch_execution',
