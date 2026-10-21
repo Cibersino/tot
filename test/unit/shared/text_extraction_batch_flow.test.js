@@ -17,12 +17,20 @@ function createHarness({
   normalizeExecutionResultApplicability = true,
   promptBatchFinalReportImpl = null,
   applyTextViaCanonicalPathImpl = null,
+  applyTextViaCanonicalPathDependency = undefined,
+  getOcrLanguageImpl = undefined,
+  guardUserActionImpl = undefined,
+  hasBlockingModalOpenImpl = undefined,
+  hasCurrentTextSubscriptionImpl = undefined,
+  saveCurrentTextSnapshotImpl = undefined,
   snapshotTagsPromptResult = { tags: { language: ['en'] } },
   snapshotSaveResult = { ok: true, filename: 'snapshot.json' },
   processingSessionStateResult = { ok: true, state: { active: true } },
   processingSessionUpdateResult = { ok: true },
   processingSessionExitResult = { ok: true },
   settingsCache = null,
+  syncMainInteractionLockUiImpl = undefined,
+  unavailableOptionalElectronMethods = [],
 }) {
   let capturedViewModel = null;
   let capturedController = null;
@@ -39,6 +47,10 @@ function createHarness({
   const executionEvents = [];
   const processingSessionEvents = [];
   const errorLogs = [];
+  const errorOnceLogs = [];
+  const warnLogs = [];
+  const warnOnceLogs = [];
+  const preparationRequests = [];
 
   function buildAllPagesSelection(totalPages) {
     const safeTotalPages = Number(totalPages) || 1;
@@ -99,6 +111,23 @@ function createHarness({
     },
   };
 
+  const electronAPI = {
+    async openCurrentTextSnapshotsFolder() {
+      return { ok: true };
+    },
+  };
+  if (saveCurrentTextSnapshotImpl !== null) {
+    electronAPI.saveCurrentTextSnapshot = async (payload) => {
+      executionEvents.push({ type: 'snapshot', payload });
+      savedSnapshotPayload = payload;
+      savedSnapshotPayloads.push(payload);
+      if (typeof saveCurrentTextSnapshotImpl === 'function') {
+        return saveCurrentTextSnapshotImpl(payload);
+      }
+      return snapshotSaveResult;
+    };
+  }
+
   const sandbox = {
     window: {
       Notify: {
@@ -132,10 +161,17 @@ function createHarness({
         return {
           debug() {},
           info() {},
-          warn() {},
-          warnOnce() {},
+          warn(...args) {
+            warnLogs.push(args);
+          },
+          warnOnce(...args) {
+            warnOnceLogs.push(args);
+          },
           error(...args) {
             errorLogs.push(args);
+          },
+          errorOnce(...args) {
+            errorOnceLogs.push(args);
           },
         };
       },
@@ -188,17 +224,7 @@ function createHarness({
       AppConstants: {
         BATCH_UNIT_NAME_MAX: 25,
       },
-      electronAPI: {
-        async saveCurrentTextSnapshot(payload) {
-          executionEvents.push({ type: 'snapshot', payload });
-          savedSnapshotPayload = payload;
-          savedSnapshotPayloads.push(payload);
-          return snapshotSaveResult;
-        },
-        async openCurrentTextSnapshotsFolder() {
-          return { ok: true };
-        },
-      },
+      electronAPI,
     },
     console,
   };
@@ -212,13 +238,12 @@ function createHarness({
 
   const batchFlow = sandbox.window.TextExtractionBatchFlow;
   batchFlow.configure({
-    guardUserAction() {
-      return true;
-    },
-    hasBlockingModalOpen() {
-      return false;
-    },
+    guardUserAction: guardUserActionImpl === undefined ? () => true : guardUserActionImpl,
+    hasBlockingModalOpen: hasBlockingModalOpenImpl === undefined ? () => false : hasBlockingModalOpenImpl,
     getOptionalElectronMethod(methodName) {
+      if (unavailableOptionalElectronMethods.includes(methodName)) {
+        return null;
+      }
       if (methodName === 'checkTextExtractionPreconditions') {
         return async () => ({ ok: true, canStart: true });
       }
@@ -268,28 +293,33 @@ function createHarness({
       }
       return null;
     },
-    requestPreparedImport: async ({ preparationRequest }) => ({
-      preparation: preparationsByPath[preparationRequest.filePath] || null,
-    }),
-    getOcrLanguage() {
-      return 'en';
+    requestPreparedImport: async ({ preparationRequest }) => {
+      preparationRequests.push(JSON.parse(JSON.stringify(preparationRequest)));
+      return {
+        preparation: preparationsByPath[preparationRequest.filePath] || null,
+      };
     },
+    getOcrLanguage: getOcrLanguageImpl === undefined ? () => 'en' : getOcrLanguageImpl,
     getSettingsCache() {
       return settingsCache || {};
     },
-    applyTextViaCanonicalPath: async (payload) => {
-      executionEvents.push({ type: 'apply', payload });
-      if (typeof applyTextViaCanonicalPathImpl === 'function') {
-        return applyTextViaCanonicalPathImpl(payload);
+    applyTextViaCanonicalPath: applyTextViaCanonicalPathDependency === undefined
+      ? async (payload) => {
+        executionEvents.push({ type: 'apply', payload });
+        if (typeof applyTextViaCanonicalPathImpl === 'function') {
+          return applyTextViaCanonicalPathImpl(payload);
+        }
+        return { ok: true };
       }
-      return { ok: true };
-    },
-    hasCurrentTextSubscription() {
-      return true;
-    },
-    syncMainInteractionLockUi() {
-      syncMainInteractionLockUiCallCount += 1;
-    },
+      : applyTextViaCanonicalPathDependency,
+    hasCurrentTextSubscription: hasCurrentTextSubscriptionImpl === undefined
+      ? () => true
+      : hasCurrentTextSubscriptionImpl,
+    syncMainInteractionLockUi: syncMainInteractionLockUiImpl === undefined
+      ? () => {
+        syncMainInteractionLockUiCallCount += 1;
+      }
+      : syncMainInteractionLockUiImpl,
     textExtractionStatusUi,
   });
 
@@ -334,8 +364,20 @@ function createHarness({
     getProcessingSessionEvents() {
       return processingSessionEvents.map((event) => JSON.parse(JSON.stringify(event)));
     },
+    getPreparationRequests() {
+      return preparationRequests.map((request) => JSON.parse(JSON.stringify(request)));
+    },
     getErrorLogs() {
       return errorLogs.map((args) => JSON.parse(JSON.stringify(args)));
+    },
+    getErrorOnceLogs() {
+      return errorOnceLogs.map((args) => JSON.parse(JSON.stringify(args)));
+    },
+    getWarnLogs() {
+      return warnLogs.map((args) => JSON.parse(JSON.stringify(args)));
+    },
+    getWarnOnceLogs() {
+      return warnOnceLogs.map((args) => JSON.parse(JSON.stringify(args)));
     },
     textExtractionStatusUi,
     notifications,
@@ -2924,4 +2966,286 @@ test('batch rejects a nominally successful heavy parent with a failed child', as
   assert.equal(parent.code, 'invalid_execution_result');
   assert.equal(parent.executionState, 'success');
   assert.deepEqual(parent.generatedInputs.map((input) => input.state), ['success', 'failed']);
+});
+
+test('batch logs every blocked applicable apply when applyTextViaCanonicalPath is unavailable', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({ fileName: 'first.pdf', chosenRoute: 'native' }),
+    'C:\\docs\\second.pdf': createPreparation({ fileName: 'second.pdf', chosenRoute: 'native' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    applyTextViaCanonicalPathDependency: null,
+    executionResultsByProcessingInputFileName: {
+      'first.pdf': { ok: true, result: { state: 'success', text: 'First text', generatedPdfArtifact: null } },
+      'second.pdf': { ok: true, result: { state: 'success', text: 'Second text', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-apply-dependency-unavailable',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    harness.getErrorLogs().filter(([message]) => message === 'Batch text apply blocked: applyTextViaCanonicalPath dependency unavailable.'),
+    [
+      ['Batch text apply blocked: applyTextViaCanonicalPath dependency unavailable.'],
+      ['Batch text apply blocked: applyTextViaCanonicalPath dependency unavailable.'],
+    ]
+  );
+  assert.deepEqual(harness.getErrorOnceLogs(), []);
+  assert.deepEqual(report.units.map((unit) => unit.inputs[0].code), ['apply_unavailable', 'apply_unavailable']);
+});
+
+test('batch logs every blocked applicable apply when the current-text subscription is unavailable', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({ fileName: 'first.pdf', chosenRoute: 'native' }),
+    'C:\\docs\\second.pdf': createPreparation({ fileName: 'second.pdf', chosenRoute: 'native' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    hasCurrentTextSubscriptionImpl: null,
+    executionResultsByProcessingInputFileName: {
+      'first.pdf': { ok: true, result: { state: 'success', text: 'First text', generatedPdfArtifact: null } },
+      'second.pdf': { ok: true, result: { state: 'success', text: 'Second text', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-current-text-subscription-unavailable',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    harness.getErrorLogs().filter(([message]) => message === 'Batch text apply blocked: current-text-updated subscription unavailable.'),
+    [
+      ['Batch text apply blocked: current-text-updated subscription unavailable.'],
+      ['Batch text apply blocked: current-text-updated subscription unavailable.'],
+    ]
+  );
+  assert.deepEqual(harness.getErrorOnceLogs(), []);
+  assert.deepEqual(report.units.map((unit) => unit.inputs[0].code), ['apply_unavailable', 'apply_unavailable']);
+});
+
+test('batch logs missing OCR-language getters without logging valid empty OCR-language values', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\document.pdf': createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }),
+  };
+  const executionResultsByProcessingInputFileName = {
+    'document.pdf': { ok: true, result: { state: 'success', text: 'Document text', generatedPdfArtifact: null } },
+  };
+  const missingGetterHarness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    getOcrLanguageImpl: null,
+    executionResultsByProcessingInputFileName,
+  });
+
+  await missingGetterHarness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-ocr-language-getter-unavailable',
+  });
+
+  assert.deepEqual(
+    missingGetterHarness.getWarnLogs().filter(([message]) => message === 'getOcrLanguage dependency unavailable; using empty OCR language fallback.'),
+    [
+      ['getOcrLanguage dependency unavailable; using empty OCR language fallback.'],
+      ['getOcrLanguage dependency unavailable; using empty OCR language fallback.'],
+    ]
+  );
+  assert.deepEqual(
+    missingGetterHarness.getPreparationRequests().map((request) => request.ocrLanguage),
+    ['', '']
+  );
+
+  const emptyLanguageHarness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    getOcrLanguageImpl: () => '',
+    executionResultsByProcessingInputFileName,
+  });
+
+  await emptyLanguageHarness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-empty-ocr-language',
+  });
+
+  assert.deepEqual(
+    emptyLanguageHarness.getWarnLogs().filter(([message]) => message === 'getOcrLanguage dependency unavailable; using empty OCR language fallback.'),
+    []
+  );
+  assert.deepEqual(
+    emptyLanguageHarness.getPreparationRequests().map((request) => request.ocrLanguage),
+    ['', '']
+  );
+});
+
+test('batch distinguishes a missing action guard from a normal rejection and intentional guard bypass', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\document.pdf': createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }),
+  };
+  const missingGuardHarness = createHarness({
+    preparationsByPath,
+    guardUserActionImpl: null,
+  });
+
+  await missingGuardHarness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-missing-guard',
+  });
+
+  assert.deepEqual(
+    missingGuardHarness.getErrorLogs(),
+    [['guardUserAction dependency missing; batch entrypoint blocked:', 'test-batch-missing-guard']]
+  );
+  assert.equal(missingGuardHarness.getCapturedViewModel(), null);
+
+  const rejectedGuardHarness = createHarness({
+    preparationsByPath,
+    guardUserActionImpl: () => false,
+  });
+
+  await rejectedGuardHarness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-rejected-guard',
+  });
+
+  assert.deepEqual(rejectedGuardHarness.getErrorLogs(), []);
+  assert.equal(rejectedGuardHarness.getCapturedViewModel(), null);
+
+  const bypassedGuardHarness = createHarness({
+    preparationsByPath,
+    guardUserActionImpl: null,
+  });
+
+  await bypassedGuardHarness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-bypassed-guard',
+    skipGuard: true,
+  });
+
+  assert.deepEqual(bypassedGuardHarness.getErrorLogs(), []);
+  assert.ok(bypassedGuardHarness.getCapturedViewModel());
+});
+
+test('batch logs an ignored interaction-lock sync when its dependency is unavailable', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\document.pdf': createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    syncMainInteractionLockUiImpl: null,
+    executionResultsByProcessingInputFileName: {
+      'document.pdf': { ok: true, result: { state: 'success', text: 'Document text', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-interaction-lock-sync-unavailable',
+  });
+
+  assert.deepEqual(
+    harness.getWarnLogs().filter(([message]) => message === 'syncMainInteractionLockUi failed (ignored): dependency unavailable; main interaction lock UI sync skipped.'),
+    [['syncMainInteractionLockUi failed (ignored): dependency unavailable; main interaction lock UI sync skipped.']]
+  );
+  assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 0);
+});
+
+test('batch logs every ignored snapshot auto-save when the API is unavailable', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({ fileName: 'first.pdf', chosenRoute: 'native' }),
+    'C:\\docs\\second.pdf': createPreparation({ fileName: 'second.pdf', chosenRoute: 'native' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    saveCurrentTextSnapshotImpl: null,
+    executionResultsByProcessingInputFileName: {
+      'first.pdf': { ok: true, result: { state: 'success', text: 'First text', generatedPdfArtifact: null } },
+      'second.pdf': { ok: true, result: { state: 'success', text: 'Second text', generatedPdfArtifact: null } },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-snapshot-api-unavailable',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    harness.getWarnLogs().filter(([message]) => message === 'saveCurrentTextSnapshot failed (ignored): method unavailable; batch snapshot auto-save skipped.'),
+    [
+      ['saveCurrentTextSnapshot failed (ignored): method unavailable; batch snapshot auto-save skipped.'],
+      ['saveCurrentTextSnapshot failed (ignored): method unavailable; batch snapshot auto-save skipped.'],
+    ]
+  );
+  assert.deepEqual(
+    report.units.map((unit) => unit.snapshotResult),
+    [
+      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
+      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
+    ]
+  );
+});
+
+test('batch logs a missing modal-open guard while preserving the existing permissive entry path', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\document.pdf': createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    hasBlockingModalOpenImpl: null,
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-modal-guard-unavailable',
+  });
+
+  assert.deepEqual(
+    harness.getWarnLogs().filter(([message]) => message === 'hasBlockingModalOpen dependency unavailable; proceeding without modal-open guard.'),
+    [['hasBlockingModalOpen dependency unavailable; proceeding without modal-open guard.']]
+  );
+  assert.ok(harness.getCapturedViewModel());
+});
+
+test('batch does not claim an execution OCR-language fallback when execution preparation is unavailable', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\document.pdf': createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    getOcrLanguageImpl: null,
+    unavailableOptionalElectronMethods: ['executePreparedTextExtraction'],
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-execution-ocr-language-fallback-unreached',
+  });
+
+  assert.deepEqual(
+    harness.getWarnLogs().filter(([message]) => message === 'getOcrLanguage dependency unavailable; using empty OCR language fallback.'),
+    [['getOcrLanguage dependency unavailable; using empty OCR language fallback.']]
+  );
+  assert.deepEqual(harness.getPreparationRequests().map((request) => request.ocrLanguage), ['']);
 });

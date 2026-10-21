@@ -114,9 +114,11 @@
 
   function syncMainInteractionLockUi() {
     const { syncMainInteractionLockUi: syncUi } = requireDeps();
-    if (typeof syncUi === 'function') {
-      syncUi();
+    if (typeof syncUi !== 'function') {
+      log.warn('syncMainInteractionLockUi failed (ignored): dependency unavailable; main interaction lock UI sync skipped.');
+      return;
     }
+    syncUi();
   }
 
   // =============================================================================
@@ -764,7 +766,6 @@
       requestPreparedImport,
     } = requireDeps();
     const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
-      dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
       unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; batch planning cannot continue.',
     });
     if (!prepareTextExtractionSelectedFile) {
@@ -772,6 +773,10 @@
     }
     if (typeof requestPreparedImport !== 'function') {
       throw new Error('[text-extraction-batch-flow] requestPreparedImport dependency missing');
+    }
+    const hasOcrLanguageGetter = typeof getOcrLanguage === 'function';
+    if (!hasOcrLanguageGetter) {
+      log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
     }
 
     const inputs = [];
@@ -782,7 +787,7 @@
           prepareTextExtractionSelectedFile,
           preparationRequest: {
             filePath,
-            ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
+            ocrLanguage: hasOcrLanguageGetter ? (getOcrLanguage() || '') : '',
             planningMode: 'batch',
             pdfPageSelection: null,
             generatedPdfArtifactPolicy: null,
@@ -837,7 +842,6 @@
     const plannedOcrInputs = getPlannedOcrInputs(state);
     if (plannedOcrInputs.length) {
       const checkTextExtractionOcrAvailability = getOptionalElectronMethod('checkTextExtractionOcrAvailability', {
-        dedupeKey: 'renderer.ipc.checkTextExtractionOcrAvailability.unavailable',
         unavailableMessage: 'checkTextExtractionOcrAvailability unavailable; batch OCR start check cannot continue.',
       });
       if (!checkTextExtractionOcrAvailability) {
@@ -866,7 +870,6 @@
     }
 
     const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
       unavailableMessage: 'getCurrentText unavailable; batch overwrite confirmation check cannot continue.',
     });
     if (!getCurrentText) {
@@ -905,17 +908,11 @@
       hasCurrentTextSubscription,
     } = requireDeps();
     if (typeof applyTextViaCanonicalPath !== 'function') {
-      log.warnOnce(
-        'renderer.batch.applyTextViaCanonicalPath.unavailable',
-        'applyTextViaCanonicalPath unavailable; extracted text apply skipped.'
-      );
+      log.error('Batch text apply blocked: applyTextViaCanonicalPath dependency unavailable.');
       return { ok: false, code: 'apply_unavailable' };
     }
     if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
-      log.warnOnce(
-        'renderer.batch.currentTextSubscription.unavailable',
-        'current-text-updated subscription unavailable; extracted text apply skipped.'
-      );
+      log.error('Batch text apply blocked: current-text-updated subscription unavailable.');
       return { ok: false, code: 'apply_unavailable' };
     }
     try {
@@ -940,10 +937,7 @@
 
   async function autoSaveUnitSnapshot(fileBaseSource, tags, name, sourceComment) {
     if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
-      log.warnOnce(
-        'renderer.ipc.saveCurrentTextSnapshot.unavailable',
-        'saveCurrentTextSnapshot unavailable; batch snapshot auto-save skipped.'
-      );
+      log.warn('saveCurrentTextSnapshot failed (ignored): method unavailable; batch snapshot auto-save skipped.');
       return { ok: false, code: 'WRITE_FAILED' };
     }
     try {
@@ -1329,28 +1323,23 @@
     if (typeof requestPreparedImport !== 'function') {
       throw new Error('[text-extraction-batch-flow] requestPreparedImport dependency missing');
     }
+    const hasOcrLanguageGetter = typeof getOcrLanguage === 'function';
     const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
-      dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
       unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; batch execution cannot continue.',
     });
     const executePreparedTextExtraction = getOptionalElectronMethod('executePreparedTextExtraction', {
-      dedupeKey: 'renderer.ipc.executePreparedTextExtraction.unavailable',
       unavailableMessage: 'executePreparedTextExtraction unavailable; batch execution cannot continue.',
     });
     const getTextExtractionProcessingMode = getOptionalElectronMethod('getTextExtractionProcessingMode', {
-      dedupeKey: 'renderer.ipc.getTextExtractionProcessingMode.unavailable',
       unavailableMessage: 'getTextExtractionProcessingMode unavailable; batch execution cannot continue.',
     });
     const enterTextExtractionProcessingSession = getOptionalElectronMethod('enterTextExtractionProcessingSession', {
-      dedupeKey: 'renderer.ipc.enterTextExtractionProcessingSession.unavailable',
       unavailableMessage: 'enterTextExtractionProcessingSession unavailable; batch execution cannot continue.',
     });
     const updateTextExtractionProcessingSession = getOptionalElectronMethod('updateTextExtractionProcessingSession', {
-      dedupeKey: 'renderer.ipc.updateTextExtractionProcessingSession.unavailable',
       unavailableMessage: 'updateTextExtractionProcessingSession unavailable; batch execution cannot continue.',
     });
     const exitTextExtractionProcessingSession = getOptionalElectronMethod('exitTextExtractionProcessingSession', {
-      dedupeKey: 'renderer.ipc.exitTextExtractionProcessingSession.unavailable',
       unavailableMessage: 'exitTextExtractionProcessingSession unavailable; batch execution cannot continue.',
     });
     if (!prepareTextExtractionSelectedFile
@@ -1400,7 +1389,7 @@
     }
     if (!sessionEnterResult || sessionEnterResult.ok !== true) {
       if (!sessionEnterThrew) {
-        log.warn('Batch processing session start returned non-ok result; batch execution cannot continue:', sessionEnterResult);
+        log.error('Batch processing session start failed:', sessionEnterResult);
       }
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
@@ -1467,9 +1456,12 @@
           const executionSelection = isHeavySplitActive(input)
             ? pdfPageSelectionHelper.buildAllPagesSelection(input.pdfPageSelection && input.pdfPageSelection.totalPages)
             : cloneSelection(input.pdfPageSelection);
+          if (!hasOcrLanguageGetter) {
+            log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
+          }
           const preparationRequest = {
             filePath: input.filePath,
-            ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
+            ocrLanguage: hasOcrLanguageGetter ? (getOcrLanguage() || '') : '',
             planningMode: 'batch',
             forceHeavySplitFullSource: isHeavySplitActive(input),
             pdfPageSelection: executionSelection,
@@ -1671,10 +1663,7 @@
 
     const openSnapshotsFolder = async () => {
       if (!window.electronAPI || typeof window.electronAPI.openCurrentTextSnapshotsFolder !== 'function') {
-        log.warnOnce(
-          'renderer.ipc.openCurrentTextSnapshotsFolder.unavailable',
-          'openCurrentTextSnapshotsFolder unavailable; snapshots-folder action skipped.'
-        );
+        log.warn('openCurrentTextSnapshotsFolder failed (ignored): method unavailable.');
         return;
       }
       try {
@@ -1693,7 +1682,6 @@
         elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
         onRevealGeneratedPdf: async (artifactPath) => {
           const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-            dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
             unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; reveal action disabled.',
           });
           if (!revealTextExtractionGeneratedPdf) {
@@ -1741,17 +1729,22 @@
     if (!normalizedFilePaths.length) return;
 
     if (!skipGuard) {
-      if (typeof guardUserAction !== 'function' || !guardUserAction(actionId)) {
+      if (typeof guardUserAction !== 'function') {
+        log.error('guardUserAction dependency missing; batch entrypoint blocked:', actionId);
+        return;
+      }
+      if (!guardUserAction(actionId)) {
         return;
       }
     }
-    if (typeof hasBlockingModalOpen === 'function' && hasBlockingModalOpen() === true) {
+    if (typeof hasBlockingModalOpen !== 'function') {
+      log.warn('hasBlockingModalOpen dependency unavailable; proceeding without modal-open guard.');
+    } else if (hasBlockingModalOpen() === true) {
       log.info('Batch planning blocked because a main-window modal is open:', { source });
       return;
     }
 
     const checkTextExtractionPreconditions = getOptionalElectronMethod('checkTextExtractionPreconditions', {
-      dedupeKey: 'renderer.ipc.checkTextExtractionPreconditions.unavailable',
       unavailableMessage: 'checkTextExtractionPreconditions unavailable; batch entrypoint skipped.',
     });
     if (!checkTextExtractionPreconditions) {
