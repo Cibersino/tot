@@ -1260,20 +1260,63 @@
     }
   }
 
-  async function isProcessingSessionActive(getTextExtractionProcessingMode) {
+  function getProcessingSessionFailureCode(result, fallbackCode) {
+    const code = result && typeof result.code === 'string' ? result.code.trim() : '';
+    return code ? code.toLowerCase() : fallbackCode;
+  }
+
+  function isUserCancelledProcessingSession(result) {
+    return !!(
+      result
+      && result.code === 'NOT_ACTIVE'
+      && result.state
+      && result.state.active === false
+    );
+  }
+
+  function getBatchProcessingSessionExitReason(batchTermination) {
+    if (batchTermination === 'cancelled') return 'batch_execution_cancelled';
+    if (batchTermination === 'failed') return 'batch_execution_failed';
+    return 'batch_execution_completed';
+  }
+
+  async function getProcessingSessionStatus(getTextExtractionProcessingMode) {
     if (typeof getTextExtractionProcessingMode !== 'function') {
-      return false;
+      log.error('Batch processing session state check unavailable.');
+      return {
+        status: 'failed',
+        code: 'processing_session_state_unavailable',
+      };
     }
     try {
       const stateResult = await getTextExtractionProcessingMode();
       if (!stateResult || stateResult.ok !== true) {
-        log.warn('Batch processing session state returned non-ok result; treating batch as cancelled:', stateResult);
-        return false;
+        log.error('Batch processing session state check failed:', stateResult);
+        return {
+          status: 'failed',
+          code: getProcessingSessionFailureCode(
+            stateResult,
+            'processing_session_state_failed'
+          ),
+        };
       }
-      return !!(stateResult.state && stateResult.state.active === true);
+      if (stateResult.state && stateResult.state.active === true) {
+        return { status: 'active' };
+      }
+      if (stateResult.state && stateResult.state.active === false) {
+        return { status: 'cancelled', code: 'aborted_by_user' };
+      }
+      log.error('Batch processing session state returned an invalid successful result:', stateResult);
+      return {
+        status: 'failed',
+        code: 'processing_session_state_invalid',
+      };
     } catch (err) {
       log.error('Batch processing session state check failed unexpectedly:', err);
-      return false;
+      return {
+        status: 'failed',
+        code: 'processing_session_state_failed',
+      };
     }
   }
 
@@ -1363,7 +1406,7 @@
       return;
     }
 
-    let batchCancelled = false;
+    let batchTermination = 'completed';
 
     try {
       for (let unitIndex = 0; unitIndex < units.length; unitIndex += 1) {
@@ -1403,13 +1446,19 @@
             log.error('Batch processing session update failed unexpectedly:', err);
           }
           if (!sessionUpdateResult || sessionUpdateResult.ok !== true) {
-            if (!sessionUpdateThrew) {
-              log.warn('Batch processing session update returned non-ok result; treating batch as cancelled:', sessionUpdateResult);
+            const sessionCancelled = isUserCancelledProcessingSession(sessionUpdateResult);
+            if (!sessionUpdateThrew && !sessionCancelled) {
+              log.error('Batch processing session update failed:', sessionUpdateResult);
             }
-            batchCancelled = true;
+            batchTermination = sessionCancelled ? 'cancelled' : 'failed';
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
-              state: 'cancelled',
-              code: 'aborted_by_user',
+              state: sessionCancelled ? 'cancelled' : 'failed',
+              code: sessionCancelled
+                ? 'aborted_by_user'
+                : getProcessingSessionFailureCode(
+                  sessionUpdateResult,
+                  'processing_session_update_failed'
+                ),
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
@@ -1436,11 +1485,15 @@
           } catch (err) {
             log.error('Batch execution preparation failed unexpectedly:', err);
           }
-          if (!(await isProcessingSessionActive(getTextExtractionProcessingMode))) {
-            batchCancelled = true;
+          const processingSessionStatus = await getProcessingSessionStatus(
+            getTextExtractionProcessingMode
+          );
+          if (processingSessionStatus.status !== 'active') {
+            const sessionCancelled = processingSessionStatus.status === 'cancelled';
+            batchTermination = sessionCancelled ? 'cancelled' : 'failed';
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
-              state: 'cancelled',
-              code: 'aborted_by_user',
+              state: sessionCancelled ? 'cancelled' : 'failed',
+              code: processingSessionStatus.code,
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
@@ -1499,7 +1552,7 @@
               code: failureCode,
             }));
             if (failureCode === 'active_session_required') {
-              batchCancelled = true;
+              batchTermination = 'cancelled';
               appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
               break;
             }
@@ -1572,7 +1625,7 @@
           });
 
           if (isCancelled) {
-            batchCancelled = true;
+            batchTermination = 'cancelled';
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
           }
@@ -1597,7 +1650,7 @@
         });
         finalReport.units.push(unitReport);
 
-        if (batchCancelled) {
+        if (batchTermination !== 'completed') {
           appendRemainingOmittedUnits(finalReport, units, unitIndex + 1);
           break;
         }
@@ -1607,7 +1660,7 @@
       try {
         await exitTextExtractionProcessingSession({
           source: 'text_extraction_batch_execution',
-          reason: batchCancelled ? 'batch_execution_cancelled' : 'batch_execution_completed',
+          reason: getBatchProcessingSessionExitReason(batchTermination),
         });
       } catch (err) {
         log.warn('Batch processing session exit failed (ignored):', err);

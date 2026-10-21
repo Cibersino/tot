@@ -19,6 +19,9 @@ function createHarness({
   applyTextViaCanonicalPathImpl = null,
   snapshotTagsPromptResult = { tags: { language: ['en'] } },
   snapshotSaveResult = { ok: true, filename: 'snapshot.json' },
+  processingSessionStateResult = { ok: true, state: { active: true } },
+  processingSessionUpdateResult = { ok: true },
+  processingSessionExitResult = { ok: true },
   settingsCache = null,
 }) {
   let capturedViewModel = null;
@@ -31,7 +34,10 @@ function createHarness({
   const savedSnapshotPayloads = [];
   let finalReportPromptAbortFinalizationActive = null;
   let syncMainInteractionLockUiCallCount = 0;
+  let enterTextExtractionProcessingSessionCallCount = 0;
+  let executePreparedTextExtractionCallCount = 0;
   const executionEvents = [];
+  const processingSessionEvents = [];
   const errorLogs = [];
 
   function buildAllPagesSelection(totalPages) {
@@ -227,6 +233,7 @@ function createHarness({
       }
       if (methodName === 'executePreparedTextExtraction') {
         return async ({ processingContext }) => {
+          executePreparedTextExtractionCallCount += 1;
           const processingInputFileName = processingContext && processingContext.processingInputFileName
             ? processingContext.processingInputFileName
             : '';
@@ -236,19 +243,28 @@ function createHarness({
         };
       }
       if (methodName === 'getTextExtractionProcessingMode') {
-        return async () => ({ ok: true, state: { active: true } });
+        return async () => processingSessionStateResult;
       }
       if (methodName === 'getCurrentText') {
         return async () => currentText;
       }
       if (methodName === 'enterTextExtractionProcessingSession') {
-        return async () => ({ ok: true });
+        return async () => {
+          enterTextExtractionProcessingSessionCallCount += 1;
+          return { ok: true };
+        };
       }
       if (methodName === 'updateTextExtractionProcessingSession') {
-        return async () => ({ ok: true });
+        return async (payload) => {
+          processingSessionEvents.push({ type: 'update', payload });
+          return processingSessionUpdateResult;
+        };
       }
       if (methodName === 'exitTextExtractionProcessingSession') {
-        return async () => ({ ok: true });
+        return async (payload) => {
+          processingSessionEvents.push({ type: 'exit', payload });
+          return processingSessionExitResult;
+        };
       }
       return null;
     },
@@ -306,8 +322,17 @@ function createHarness({
     getSyncMainInteractionLockUiCallCount() {
       return syncMainInteractionLockUiCallCount;
     },
+    getEnterTextExtractionProcessingSessionCallCount() {
+      return enterTextExtractionProcessingSessionCallCount;
+    },
+    getExecutePreparedTextExtractionCallCount() {
+      return executePreparedTextExtractionCallCount;
+    },
     getExecutionEvents() {
       return executionEvents.map((event) => JSON.parse(JSON.stringify(event)));
+    },
+    getProcessingSessionEvents() {
+      return processingSessionEvents.map((event) => JSON.parse(JSON.stringify(event)));
     },
     getErrorLogs() {
       return errorLogs.map((args) => JSON.parse(JSON.stringify(args)));
@@ -933,6 +958,205 @@ test('batch execution reports malformed autosave results as failed without trust
     [
       ['Batch snapshot save returned an invalid result:', { code: 'CANCELLED' }],
       ['Batch snapshot save returned an invalid result:', { code: 'CANCELLED' }],
+    ]
+  );
+});
+
+test('batch reports a technical processing-session update failure as failed and closes the session as failed', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({
+      fileName: 'first.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\second.pdf': createPreparation({
+      fileName: 'second.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    processingSessionUpdateResult: { ok: false, code: 'SESSION_UPDATE_FAILED' },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-processing-session-update-failure',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    report.units.map((unit) => unit.inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    }))),
+    [
+      [{ fileName: 'first.pdf', state: 'failed', code: 'session_update_failed' }],
+      [{ fileName: 'second.pdf', state: 'omitted', code: 'omitted' }],
+    ]
+  );
+  assert.deepEqual(
+    harness.getProcessingSessionEvents().map((event) => ({
+      type: event.type,
+      reason: event.payload.reason,
+    })),
+    [
+      { type: 'update', reason: undefined },
+      { type: 'exit', reason: 'batch_execution_failed' },
+    ]
+  );
+  assert.deepEqual(harness.getExecutionEvents(), []);
+});
+
+test('batch reports a technical processing-session state failure as failed', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({
+      fileName: 'first.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\second.pdf': createPreparation({
+      fileName: 'second.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    processingSessionStateResult: { ok: false, code: 'STATE_READ_FAILED' },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-processing-session-state-failure',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    report.units.map((unit) => unit.inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    }))),
+    [
+      [{ fileName: 'first.pdf', state: 'failed', code: 'state_read_failed' }],
+      [{ fileName: 'second.pdf', state: 'omitted', code: 'omitted' }],
+    ]
+  );
+  assert.deepEqual(
+    harness.getProcessingSessionEvents().map((event) => ({
+      type: event.type,
+      reason: event.payload.reason,
+    })),
+    [
+      { type: 'update', reason: undefined },
+      { type: 'exit', reason: 'batch_execution_failed' },
+    ]
+  );
+  assert.deepEqual(harness.getExecutionEvents(), []);
+});
+
+test('batch preserves user-cancelled reporting when the processing session is inactive', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({
+      fileName: 'first.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\second.pdf': createPreparation({
+      fileName: 'second.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    processingSessionUpdateResult: {
+      ok: false,
+      code: 'NOT_ACTIVE',
+      state: { active: false, reason: 'user_abort_button' },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-processing-session-user-cancel',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.deepEqual(
+    report.units.map((unit) => unit.inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    }))),
+    [
+      [{ fileName: 'first.pdf', state: 'cancelled', code: 'aborted_by_user' }],
+      [{ fileName: 'second.pdf', state: 'omitted', code: 'omitted' }],
+    ]
+  );
+  assert.deepEqual(
+    harness.getProcessingSessionEvents().map((event) => ({
+      type: event.type,
+      reason: event.payload.reason,
+    })),
+    [
+      { type: 'update', reason: undefined },
+      { type: 'exit', reason: 'batch_execution_cancelled' },
+    ]
+  );
+});
+
+test('batch preserves user cancellation when the session becomes inactive after preparation', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\first.pdf': createPreparation({
+      fileName: 'first.pdf',
+      chosenRoute: 'native',
+    }),
+    'C:\\docs\\second.pdf': createPreparation({
+      fileName: 'second.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    processingSessionStateResult: {
+      ok: true,
+      state: { active: false, reason: 'user_abort_button' },
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-processing-session-post-prepare-user-cancel',
+  });
+
+  const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(harness.getEnterTextExtractionProcessingSessionCallCount(), 1);
+  assert.deepEqual(
+    report.units.map((unit) => unit.inputs.map((input) => ({
+      fileName: input.fileName,
+      state: input.state,
+      code: input.code,
+    }))),
+    [
+      [{ fileName: 'first.pdf', state: 'cancelled', code: 'aborted_by_user' }],
+      [{ fileName: 'second.pdf', state: 'omitted', code: 'omitted' }],
+    ]
+  );
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  assert.deepEqual(
+    harness.getProcessingSessionEvents().map((event) => ({
+      type: event.type,
+      reason: event.payload.reason,
+    })),
+    [
+      { type: 'update', reason: undefined },
+      { type: 'exit', reason: 'batch_execution_cancelled' },
     ]
   );
 });
