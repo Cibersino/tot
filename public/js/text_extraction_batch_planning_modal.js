@@ -765,12 +765,10 @@
 
   async function promptBatchPlan({ controller } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Batch planning modal DOM elements missing.');
-      return null;
+      throw new Error('Batch planning modal DOM elements missing.');
     }
     if (!controller || typeof controller.getViewModel !== 'function' || typeof controller.applyAction !== 'function') {
-      log.error('Batch planning modal controller missing.');
-      return null;
+      throw new Error('Batch planning modal controller missing.');
     }
 
     return new Promise((resolve) => {

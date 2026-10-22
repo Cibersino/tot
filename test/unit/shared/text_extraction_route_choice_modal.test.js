@@ -40,7 +40,7 @@ function createElement(id) {
   };
 }
 
-function createHarness() {
+function createHarness({ missingElementIds = [] } = {}) {
   const registeredPromptNames = [];
   const elements = {
     textExtractionRouteModal: createElement('textExtractionRouteModal'),
@@ -52,6 +52,9 @@ function createHarness() {
     textExtractionRouteModalCancel: createElement('textExtractionRouteModalCancel'),
     textExtractionRouteModalClose: createElement('textExtractionRouteModalClose'),
   };
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
 
   const windowListeners = new Map();
   const translations = {
@@ -197,4 +200,19 @@ test('route-choice modal skips prompting when there is no real route choice', as
 
   assert.equal(result, '');
   assert.equal(harness.elements.textExtractionRouteModal.getAttribute('aria-hidden'), null);
+});
+
+test('route-choice modal rejects when required DOM is unavailable', async () => {
+  const harness = createHarness({
+    missingElementIds: ['textExtractionRouteModalClose'],
+  });
+
+  await assert.rejects(
+    harness.prompt({
+      preparation: {
+        routeChoiceOptions: ['native', 'ocr'],
+      },
+    }),
+    /Route-choice modal DOM elements missing/
+  );
 });

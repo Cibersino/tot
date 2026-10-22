@@ -11,6 +11,7 @@ function createHarness({
   pdfOptionsImpl = null,
   pdfOptionsResponses = null,
   routeChoiceImpl = null,
+  singleFileHeavyImpl = null,
   singleFileHeavyResponses = null,
   requestPreparedImportResult = null,
   requestPreparedImportImpl = null,
@@ -89,6 +90,9 @@ function createHarness({
         async promptTextExtractionSingleFileHeavyPdf(options) {
           capturedSingleFileHeavyOptions = options;
           singleFileHeavyPromptCount += 1;
+          if (typeof singleFileHeavyImpl === 'function') {
+            return singleFileHeavyImpl(options);
+          }
           if (nextSingleFileHeavyResponses && nextSingleFileHeavyResponses.length) {
             return nextSingleFileHeavyResponses.shift();
           }
@@ -500,6 +504,94 @@ test('stale preparation discard releases admission for the next independent requ
     source: 'test',
   });
   assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+});
+
+test('route-choice prompt failure is reported instead of treated as cancellation', async () => {
+  const routeChoiceError = new Error('Route-choice modal DOM elements missing.');
+  const harness = createHarness({
+    routeChoiceImpl() {
+      throw routeChoiceError;
+    },
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true,
+        prepareReady: true,
+        prepareFailed: false,
+        prepareId: 'prepare-1',
+        requiresRouteChoice: true,
+        fileInfo: {
+          fileName: 'book.pdf',
+          sourceFileSizeBytes: 0,
+        },
+        routeChoiceOptions: ['native', 'ocr'],
+        routeMetadata: {
+          chosenRoute: null,
+          availableRoutes: ['native', 'ocr'],
+          heavySplitEligible: false,
+        },
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.route_choice_error']);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+});
+
+test('PDF-options and apply prompt failures are reported instead of treated as cancellation', async () => {
+  const pdfOptionsHarness = createHarness({
+    pdfOptionsImpl() {
+      throw new Error('PDF options modal DOM elements missing.');
+    },
+  });
+  await pdfOptionsHarness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+  assert.deepEqual(pdfOptionsHarness.notifications, ['renderer.text_extraction.alerts.start_error']);
+  assert.equal(pdfOptionsHarness.getExecutePreparedTextExtractionCallCount(), 0);
+
+  const applyHarness = createHarness({
+    applyChoiceImpl() {
+      throw new Error('Apply modal DOM elements missing.');
+    },
+    executePreparedTextExtractionResult: {
+      ok: true,
+      result: {
+        state: 'success',
+        text: 'Extracted text',
+        textApplicability: 'applicable',
+        error: null,
+      },
+    },
+  });
+  await applyHarness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+  assert.deepEqual(applyHarness.notifications, ['renderer.text_extraction.alerts.apply_error']);
+  assert.deepEqual(applyHarness.getApplyPayloads(), []);
+});
+
+test('Case B heavy-PDF recovery prompt failures use recovery-specific reporting', async () => {
+  const harness = createHarness({
+    singleFileHeavyImpl() {
+      throw new Error('Single-file heavy PDF modal DOM elements missing.');
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.heavy_pdf_recovery_error']);
+  assert.equal(harness.getSingleFileHeavyPromptCount(), 1);
 });
 
 test('entry releases admission when an unexpected Batch continuation rejection escapes', async () => {

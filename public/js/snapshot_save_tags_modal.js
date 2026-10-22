@@ -730,7 +730,7 @@
   async function promptSnapshotTagManager(options = {}) {
     if (!hasRequiredElements()) {
       log.error('Snapshot tag manager DOM elements missing.');
-      return null;
+      throw new Error('Snapshot tag manager DOM elements missing.');
     }
 
     let managerPreferences = await loadSnapshotTagPreferences(options.initialPreferences || null);
@@ -1141,8 +1141,7 @@
   // =============================================================================
   async function promptSnapshot(options = {}, { includeSaveFields } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Snapshot prompt DOM elements missing.');
-      return null;
+      throw new Error('Snapshot prompt DOM elements missing.');
     }
 
     ensureFieldEventsBound();

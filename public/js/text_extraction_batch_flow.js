@@ -780,7 +780,8 @@
             },
           });
         } catch (err) {
-          log.warn('Batch unit tags dialog failed (ignored):', err);
+          log.error('Batch unit tags dialog failed:', err);
+          window.Notify.notifyMain('renderer.text_extraction.alerts.batch_tags_error');
           return;
         }
         if (!nextTags) return;

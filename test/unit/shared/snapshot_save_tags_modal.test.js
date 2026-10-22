@@ -187,6 +187,7 @@ function createHarness({
   getSnapshotTagPreferencesImpl = null,
   setSnapshotTagPreferencesImpl = null,
   includeSnapshotTagPreferencesBridge = true,
+  missingElementIds = [],
 } = {}) {
   activeElementRef = null;
 
@@ -236,6 +237,9 @@ function createHarness({
     snapshotTagManagerModalDone: createElement('snapshotTagManagerModalDone', 'button'),
     snapshotTagManagerModalClose: createElement('snapshotTagManagerModalClose', 'button'),
   };
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
 
   const windowListeners = new Map();
   const documentListeners = new Map();
@@ -558,6 +562,16 @@ test('snapshot save tags modal registers public prompts through window.Notify.re
   ]);
   assert.equal(typeof harness.prompt, 'function');
   assert.equal(typeof harness.promptManager, 'function');
+});
+
+test('snapshot prompts reject when required DOM is unavailable', async () => {
+  const harness = createHarness({
+    missingElementIds: ['snapshotSaveTagsModalClose'],
+  });
+
+  await assert.rejects(harness.prompt(), /Snapshot prompt DOM elements missing/);
+  await assert.rejects(harness.promptTags(), /Snapshot prompt DOM elements missing/);
+  await assert.rejects(harness.promptManager(), /Snapshot tag manager DOM elements missing/);
 });
 
 test('snapshot save tags modal keeps snapshot-save wording by default', async () => {

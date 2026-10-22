@@ -265,7 +265,7 @@ function findNodesByAttributes(node, expectedAttributes = {}, matches = []) {
   return matches;
 }
 
-function createHarness() {
+function createHarness({ missingElementIds = [] } = {}) {
   activeElementRef = null;
   const registeredPromptNames = [];
   const loggerCalls = [];
@@ -289,6 +289,9 @@ function createHarness() {
     textExtractionBatchPlanCancel: createElement('textExtractionBatchPlanCancel'),
     textExtractionBatchPlanClose: createElement('textExtractionBatchPlanClose'),
   };
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
 
   const windowListeners = new Map();
   const translations = {
@@ -630,6 +633,22 @@ test('batch planning modal registers its public prompt through window.Notify.reg
     'promptTextExtractionBatchPlan',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('batch planning modal rejects unavailable DOM and an incomplete controller', async () => {
+  const missingDomHarness = createHarness({
+    missingElementIds: ['textExtractionBatchPlanClose'],
+  });
+  await assert.rejects(
+    missingDomHarness.prompt({ controller: {} }),
+    /Batch planning modal DOM elements missing/
+  );
+
+  const incompleteControllerHarness = createHarness();
+  await assert.rejects(
+    incompleteControllerHarness.prompt({ controller: {} }),
+    /Batch planning modal controller missing/
+  );
 });
 
 test('batch planning Escape leaves the prompt open while a nested modal claims it', async () => {

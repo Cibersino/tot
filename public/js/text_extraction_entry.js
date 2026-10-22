@@ -676,53 +676,60 @@
           && !Array.isArray(execution.result.pdfPageSelection)
             ? execution.result.pdfPageSelection
             : null;
-        const singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
-          caseKind: 'case_b',
-          sourceFileName: preparation.fileInfo && preparation.fileInfo.fileName
-            ? preparation.fileInfo.fileName
-            : inspection.fileInfo.fileName,
-          sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
-            ? preparation.fileInfo.sourceFileSizeBytes
-            : 0,
-          selectedRangeFromPage: pdfPageSelection && pdfPageSelection.mode === 'range'
-            ? pdfPageSelection.fromPage
-            : 0,
-          selectedRangeToPage: pdfPageSelection && pdfPageSelection.mode === 'range'
-            ? pdfPageSelection.toPage
-            : 0,
-          generatedPdfFileName: execution.result.processingInputFileName || '',
-          generatedPdfSizeBytes:
-            execution.result.error
-            && execution.result.error.detailsSafeForLogs
-            && execution.result.error.detailsSafeForLogs.effectiveInputSizeBytes
-              ? execution.result.error.detailsSafeForLogs.effectiveInputSizeBytes
+        let singleFileHeavyAction;
+        try {
+          singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
+            caseKind: 'case_b',
+            sourceFileName: preparation.fileInfo && preparation.fileInfo.fileName
+              ? preparation.fileInfo.fileName
+              : inspection.fileInfo.fileName,
+            sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
+              ? preparation.fileInfo.sourceFileSizeBytes
               : 0,
-          providerLimitBytes:
-            execution.result.error
-            && execution.result.error.detailsSafeForLogs
-            && execution.result.error.detailsSafeForLogs.providerLimitBytes
-              ? execution.result.error.detailsSafeForLogs.providerLimitBytes
+            selectedRangeFromPage: pdfPageSelection && pdfPageSelection.mode === 'range'
+              ? pdfPageSelection.fromPage
               : 0,
-          canUseNative: getPreparationRouteOptions(preparation).includes('native'),
-          retainedGeneratedPdf,
-          onRevealGeneratedPdf: retainedGeneratedPdf
-            ? async () => {
-              const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-                dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
-                unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.',
-              });
-              if (!revealTextExtractionGeneratedPdf) {
-                throw new Error('revealTextExtractionGeneratedPdf unavailable');
+            selectedRangeToPage: pdfPageSelection && pdfPageSelection.mode === 'range'
+              ? pdfPageSelection.toPage
+              : 0,
+            generatedPdfFileName: execution.result.processingInputFileName || '',
+            generatedPdfSizeBytes:
+              execution.result.error
+              && execution.result.error.detailsSafeForLogs
+              && execution.result.error.detailsSafeForLogs.effectiveInputSizeBytes
+                ? execution.result.error.detailsSafeForLogs.effectiveInputSizeBytes
+                : 0,
+            providerLimitBytes:
+              execution.result.error
+              && execution.result.error.detailsSafeForLogs
+              && execution.result.error.detailsSafeForLogs.providerLimitBytes
+                ? execution.result.error.detailsSafeForLogs.providerLimitBytes
+                : 0,
+            canUseNative: getPreparationRouteOptions(preparation).includes('native'),
+            retainedGeneratedPdf,
+            onRevealGeneratedPdf: retainedGeneratedPdf
+              ? async () => {
+                const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
+                  dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
+                  unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.',
+                });
+                if (!revealTextExtractionGeneratedPdf) {
+                  throw new Error('revealTextExtractionGeneratedPdf unavailable');
+                }
+                const revealResult = await revealTextExtractionGeneratedPdf({
+                  artifactPath: retainedGeneratedPdf.artifactPath,
+                });
+                if (!revealResult || revealResult.ok !== true) {
+                  throw new Error('reveal generated PDF failed');
+                }
               }
-              const revealResult = await revealTextExtractionGeneratedPdf({
-                artifactPath: retainedGeneratedPdf.artifactPath,
-              });
-              if (!revealResult || revealResult.ok !== true) {
-                throw new Error('reveal generated PDF failed');
-              }
-            }
-            : null,
-        });
+              : null,
+          });
+        } catch (err) {
+          log.error('text extraction heavy-PDF recovery modal failed:', err);
+          window.Notify.notifyMain('renderer.text_extraction.alerts.heavy_pdf_recovery_error');
+          return;
+        }
         if (singleFileHeavyAction === 'return_to_pages') {
           await runSharedFlow({
             filePath: normalizedFilePath,

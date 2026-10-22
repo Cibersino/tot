@@ -251,8 +251,10 @@
         "drop_invalid_file": "El elemento soltado no es un archivo local válido.",
         "generated_pdf_cleanup_warning": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
         "route_choice_error": "Ocurrió un error al elegir la ruta de extracción.",
+        "heavy_pdf_recovery_error": "No se pudieron mostrar las opciones de recuperación para este PDF.",
         "generated_pdf_reveal_failed": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
         "apply_error": "Ocurrió un error al aplicar el texto extraído.",
+        "batch_tags_error": "No se pudo abrir el editor de etiquetas del lote.",
         "prepare_invalid": "La solicitud preparada de extracción ya no es válida. Inicia el flujo nuevamente.",
         "unsupported_format": "La extracción de texto no admite este formato de archivo.",
         "pdf": {

@@ -82,8 +82,7 @@
       return '';
     }
     if (!hasRequiredElements()) {
-      log.error('Route-choice modal DOM elements missing.');
-      return '';
+      throw new Error('Route-choice modal DOM elements missing.');
     }
 
     applyModalCopy();

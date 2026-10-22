@@ -106,7 +106,7 @@ function createElement(id) {
   };
 }
 
-function createHarness() {
+function createHarness({ missingElementIds = [] } = {}) {
   const registeredPromptNames = [];
   const elements = {
     textExtractionSingleFileHeavyPdfModal: createElement('textExtractionSingleFileHeavyPdfModal'),
@@ -123,6 +123,9 @@ function createHarness() {
     textExtractionSingleFileHeavyPdfModalCancel: createElement('textExtractionSingleFileHeavyPdfModalCancel'),
     textExtractionSingleFileHeavyPdfModalClose: createElement('textExtractionSingleFileHeavyPdfModalClose'),
   };
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
 
   const windowListeners = new Map();
   const translations = {
@@ -232,6 +235,17 @@ test('single-file heavy PDF modal registers its public prompt through window.Not
     'promptTextExtractionSingleFileHeavyPdf',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('single-file heavy PDF modal rejects when required DOM is unavailable', async () => {
+  const harness = createHarness({
+    missingElementIds: ['textExtractionSingleFileHeavyPdfModalClose'],
+  });
+
+  await assert.rejects(
+    harness.prompt(),
+    /Single-file heavy PDF modal DOM elements missing/
+  );
 });
 
 test('single-file heavy PDF modal moves provider limit into Case B intro and removes detail noise', async () => {

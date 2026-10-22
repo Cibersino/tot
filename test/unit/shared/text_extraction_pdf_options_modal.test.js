@@ -62,7 +62,7 @@ function createElement(id) {
   };
 }
 
-function createHarness() {
+function createHarness({ missingElementIds = [] } = {}) {
   const registeredPromptNames = [];
   const elements = {
     textExtractionPdfOptionsModal: createElement('textExtractionPdfOptionsModal'),
@@ -91,6 +91,9 @@ function createHarness() {
     textExtractionPdfOptionsModalCancel: createElement('textExtractionPdfOptionsModalCancel'),
     textExtractionPdfOptionsModalClose: createElement('textExtractionPdfOptionsModalClose'),
   };
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
 
   const windowListeners = new Map();
   const translations = {
@@ -250,6 +253,22 @@ test('PDF options modal registers its public prompt through window.Notify.regist
     'promptTextExtractionPdfOptions',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('PDF options modal rejects unavailable DOM and invalid inspection input', async () => {
+  const missingDomHarness = createHarness({
+    missingElementIds: ['textExtractionPdfOptionsModalClose'],
+  });
+  await assert.rejects(
+    missingDomHarness.prompt({ inspection: { totalPages: 12 } }),
+    /PDF options modal DOM elements missing/
+  );
+
+  const invalidInspectionHarness = createHarness();
+  await assert.rejects(
+    invalidInspectionHarness.prompt({ inspection: { totalPages: 0 } }),
+    /PDF options modal received invalid totalPages/
+  );
 });
 
 test('PDF options modal returns range selection and keep intent through the public prompt', async () => {

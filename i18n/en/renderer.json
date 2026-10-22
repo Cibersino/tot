@@ -251,8 +251,10 @@
         "drop_invalid_file": "Dropped item is not a valid local file.",
         "generated_pdf_cleanup_warning": "Extraction finished, but a generated local PDF could not be cleaned up automatically.",
         "route_choice_error": "An error occurred while choosing the extraction route.",
+        "heavy_pdf_recovery_error": "Could not show the recovery options for this PDF.",
         "generated_pdf_reveal_failed": "The saved PDF could not be revealed. Check whether the file still exists.",
         "apply_error": "An error occurred while applying extracted text.",
+        "batch_tags_error": "Could not open the batch tag editor.",
         "prepare_invalid": "The prepared extraction request is no longer valid. Start the flow again.",
         "unsupported_format": "Text extraction does not support this file format.",
         "pdf": {

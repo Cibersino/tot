@@ -208,8 +208,7 @@
     onRevealGeneratedPdf = null,
   } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Single-file heavy PDF modal DOM elements missing.');
-      return 'cancel';
+      throw new Error('Single-file heavy PDF modal DOM elements missing.');
     }
 
     const isCaseB = caseKind === 'case_b';

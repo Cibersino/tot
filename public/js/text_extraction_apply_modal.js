@@ -114,8 +114,7 @@
     onRevealGeneratedPdf = null,
   } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Apply modal DOM elements missing.');
-      return null;
+      throw new Error('Apply modal DOM elements missing.');
     }
 
     const safeMaxRepeat = Number.isInteger(Number(maxRepeat)) && Number(maxRepeat) > 0

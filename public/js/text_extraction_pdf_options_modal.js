@@ -237,14 +237,12 @@
 
   async function promptPdfOptions({ inspection } = {}) {
     if (!hasRequiredElements()) {
-      log.error('PDF options modal DOM elements missing.');
-      return null;
+      throw new Error('PDF options modal DOM elements missing.');
     }
 
     const totalPages = Number(inspection && inspection.totalPages);
     if (!Number.isInteger(totalPages) || totalPages < 1) {
-      log.error('PDF options modal received invalid totalPages:', inspection);
-      return null;
+      throw new Error('PDF options modal received invalid totalPages.');
     }
 
     const inspectedFileName = inspection

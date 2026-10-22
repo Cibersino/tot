@@ -24,6 +24,7 @@ function createHarness({
   hasCurrentTextSubscriptionImpl = undefined,
   saveCurrentTextSnapshotImpl = undefined,
   snapshotTagsPromptResult = { tags: { language: ['en'] } },
+  snapshotTagsPromptImpl = null,
   snapshotSaveResult = { ok: true, filename: 'snapshot.json' },
   processingSessionStateResult = { ok: true, state: { active: true } },
   processingSessionUpdateResult = { ok: true },
@@ -147,6 +148,9 @@ function createHarness({
         },
         async promptSnapshotTags(options) {
           snapshotTagsPromptOptions = options;
+          if (typeof snapshotTagsPromptImpl === 'function') {
+            return snapshotTagsPromptImpl(options);
+          }
           return snapshotTagsPromptResult;
         },
         promptTextExtractionBatchFinalReport({ report }) {
@@ -478,6 +482,30 @@ test('batch rejects a missing operation context before starting its preflight', 
   );
 });
 
+test('batch planning prompt failure is reported instead of treated as cancellation', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\document.pdf': createPreparation({
+      fileName: 'document.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    onPromptBatchPlan() {
+      throw new Error('Batch planning modal DOM elements missing.');
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-planning-prompt-error',
+  });
+
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.start_error']);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+});
+
 test('batch start remains pending until its real final-report prompt is dismissed', async () => {
   const finalReportOpened = createDeferred();
   const finalReportDismissal = createDeferred();
@@ -777,6 +805,38 @@ test('batch flow opens shared tags modal with batch-planning copy overrides', as
       },
     }
   );
+});
+
+test('batch flow reports a failed optional batch-tags prompt without treating it as cancellation', async () => {
+  const preparationsByPath = {
+    'C:\\docs\\ordinary-a.pdf': createPreparation({
+      fileName: 'ordinary-a.pdf',
+      chosenRoute: 'native',
+      pdfPageSelection: {
+        mode: 'all',
+        fromPage: 1,
+        toPage: 12,
+        selectedPageCount: 12,
+        totalPages: 12,
+      },
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    snapshotTagsPromptImpl() {
+      throw new Error('Snapshot prompt DOM elements missing.');
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-flow-tags-error',
+  });
+  await harness.getCapturedController().editUnitTags('batch-unit-1');
+
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.batch_tags_error']);
+  assert.equal(harness.getErrorLogs().length, 1);
 });
 
 test('batch flow formats planner tag summaries with custom labels from snapshot-tag preferences', async () => {
