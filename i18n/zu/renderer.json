@@ -244,6 +244,7 @@
         "precondition_blocked": "Ukuze uqale ukukhishwa, vala wonke amawindi esibili bese umisa isibali-sikhathi.",
         "precondition_error": "Kuvele iphutha ngesikhathi kuhlolwa izimfuneko zokukhishwa. Hlola ikhonsoli.",
         "processing_locked": "Ukukhishwa kuyacutshungulwa. Ukusebenzisana kwewindi elikhulu kuvinjiwe kuze kuphele ukucubungula noma ukukhiphe.",
+        "operation_in_progress": "Okunye ukukhishwa kombhalo sekuvele kuyaqhubeka.",
         "abort_error": "Kuvele iphutha ngesikhathi kucelwa ukumisa ukukhishwa. Hlola ikhonsoli.",
         "cancellation_requested": "Ukukhansela kuceliwe. Sicela ulinde kuze kuphele ukukhishwa kwamanje.",
         "cancellation_complete": "Ukukhansela kuqediwe.",

@@ -244,6 +244,7 @@
         "precondition_blocked": "Pa' partir extracción, cierra toas las ventanas chicas y para el cronómetro.",
         "precondition_error": "Cagó la revisión de precondiciones de extracción. Lorea la consola.",
         "processing_locked": "La extracción está andando. La ventana principal queda bloqueada hasta que termine la cosa o la abortís.",
+        "operation_in_progress": "Ya hay otra extracción de texto andando.",
         "abort_error": "Cagó la custión al pedir el aborto de extracción. Lorea la consola.",
         "cancellation_requested": "Cancelación pedida. Espera a que termine la extracción actual, no seas ansioso.",
         "cancellation_complete": "Cancelación lista.",

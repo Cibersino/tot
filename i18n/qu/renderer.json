@@ -244,6 +244,7 @@
         "precondition_blocked": "Qichuy qallarinapaq, llapan iskay ñiqi ventanakunata wichq'ay hinaspa pachayupaqta sayachiy.",
         "precondition_error": "Qichuypa ñawpaq condicionninkuna qhawaypi pantay karqan. Consolata qhaway.",
         "processing_locked": "Qichuy ruwachkan. Hatun ventanapi ruraykuna hark'asqa kanqa ruwana tukukunankama utaq qan sayachinaykikama.",
+        "operation_in_progress": "Huk qillqa qichuyqa ñam ruwachkan.",
         "abort_error": "Qichuy sayachiy mañakuypi pantay karqan. Consolata qhaway.",
         "cancellation_requested": "Saqiy mañakurun. Kunan qichuy tukukunankama suyay.",
         "cancellation_complete": "Saqiy tukusqa.",

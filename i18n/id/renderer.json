@@ -244,6 +244,7 @@
         "precondition_blocked": "Untuk memulai ekstraksi, tutup semua jendela sekunder dan hentikan stopwatch.",
         "precondition_error": "Terjadi kesalahan saat memeriksa prasyarat ekstraksi. Periksa konsol.",
         "processing_locked": "Ekstraksi sedang diproses. Interaksi jendela utama dikunci sampai proses selesai atau Anda membatalkannya.",
+        "operation_in_progress": "Ekstraksi teks lain sudah berlangsung.",
         "abort_error": "Terjadi kesalahan saat meminta pembatalan ekstraksi. Periksa konsol.",
         "cancellation_requested": "Pembatalan diminta. Harap tunggu sampai ekstraksi saat ini selesai.",
         "cancellation_complete": "Pembatalan selesai.",

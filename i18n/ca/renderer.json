@@ -244,6 +244,7 @@
         "precondition_blocked": "Per iniciar extracció, tanca totes les finestres secundàries i atura el cronòmetre.",
         "precondition_error": "S’ha produït un error en revisar les precondicions d’extracció. Revisa la consola.",
         "processing_locked": "Extracció està processant. Les interaccions de la finestra principal estan bloquejades fins que acabi el processament o l’avortis.",
+        "operation_in_progress": "Ja hi ha una altra extracció de text en curs.",
         "abort_error": "S’ha produït un error en sol·licitar l’avortament d’extracció. Revisa la consola.",
         "cancellation_requested": "Cancel·lació sol·licitada. Espera que acabi l’extracció actual.",
         "cancellation_complete": "Cancel·lació completada.",

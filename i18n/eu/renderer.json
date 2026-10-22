@@ -244,6 +244,7 @@
         "precondition_blocked": "Erauzketa hasteko, itxi bigarren mailako leiho guztiak eta gelditu kronometroa.",
         "precondition_error": "Errorea gertatu da erauzketa aurrebaldintzak egiaztatzean. Begiratu kontsola.",
         "processing_locked": "Erauzketa prozesatzen ari da. Leiho nagusiko interakzioak blokeatuta daude prozesua amaitu arte edo bertan behera utzi arte.",
+        "operation_in_progress": "Beste testu-erauzketa bat abian da dagoeneko.",
         "abort_error": "Errorea gertatu da erauzketa bertan behera uzteko eskaeran. Begiratu kontsola.",
         "cancellation_requested": "Ezeztapena eskatu da. Itxaron uneko erauzketa amaitu arte.",
         "cancellation_complete": "Ezeztapena amaitu da.",

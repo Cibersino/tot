@@ -244,6 +244,7 @@
         "precondition_blocked": "要啟動擷取，請關閉所有次要視窗並停止碼錶。",
         "precondition_error": "檢查擷取前置條件時發生錯誤。請檢查主控台。",
         "processing_locked": "擷取正在處理。主視窗互動會被鎖定，直到處理結束或你中止動作。",
+        "operation_in_progress": "另一項文字擷取作業已在進行中。",
         "abort_error": "要求中止擷取時發生錯誤。請檢查主控台。",
         "cancellation_requested": "已要求取消。請等待目前的擷取完成。",
         "cancellation_complete": "取消已完成。",

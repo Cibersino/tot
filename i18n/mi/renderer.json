@@ -244,6 +244,7 @@
         "precondition_blocked": "Hei tīmata i te tango, katia ngā matapihi tuarua katoa, ā, whakamutua te matawā.",
         "precondition_error": "I puta he hapa i te taki i ngā herenga tōmua tango. Tirohia te papatohu.",
         "processing_locked": "Kei te tukatuka te tango. Kua raka ngā taunekeneke matapihi matua kia mutu rā anō te tukatuka, kia whakakorea rānei e koe.",
+        "operation_in_progress": "Kei te haere kē tētahi atu tangohanga kuputuhi.",
         "abort_error": "I puta he hapa i te tono whakakore tango. Tirohia te papatohu.",
         "cancellation_requested": "Kua tonoa te whakakore. Taihoa kia mutu te tangohanga o nāianei.",
         "cancellation_complete": "Kua oti te whakakore.",

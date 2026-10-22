@@ -244,6 +244,7 @@
         "precondition_blocked": "Um Extraktion zu starten, schließen Sie alle Nebenfenster und stoppen Sie die Stoppuhr.",
         "precondition_error": "Beim Prüfen der Voraussetzungen für Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
         "processing_locked": "Extraktion wird verarbeitet. Interaktionen im Hauptfenster sind gesperrt, bis die Verarbeitung endet oder Sie abbrechen.",
+        "operation_in_progress": "Eine weitere Textextraktion läuft bereits.",
         "abort_error": "Beim Anfordern des Abbruchs von Extraktion ist ein Fehler aufgetreten. Prüfen Sie die Konsole.",
         "cancellation_requested": "Abbruch angefordert. Bitte warten Sie, bis die aktuelle Extraktion abgeschlossen ist.",
         "cancellation_complete": "Abbruch abgeschlossen.",

@@ -244,6 +244,7 @@
         "precondition_blocked": "Extracción amulal, kom ventanas secundarias nürüfünge ka üngümwe mütüntunge.",
         "precondition_error": "Extracción precondiciones kintun mu welulkuy. Kintunge consola.",
         "processing_locked": "Extracción petu küzawüley. Tüfa processing afingelu kam abortaringelu mew, ventana principal mu interacciones bloqueadongey.",
+        "operation_in_progress": "Kangelu textu extracción petu küzawüley.",
         "abort_error": "Extracción aborto mütrümün mu welulkuy. Kintunge consola.",
         "cancellation_requested": "Katrüntun ngillañmagey. Üngümnge fantepu extracción afülu.",
         "cancellation_complete": "Katrüntun afuy.",

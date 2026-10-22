@@ -244,6 +244,7 @@
         "precondition_blocked": "Ili kuanzisha utoaji wa maandishi, funga madirisha yote ya ziada na usimamishe kipima muda.",
         "precondition_error": "Hitilafu ilitokea wakati wa kukagua masharti ya awali ya utoaji wa maandishi.",
         "processing_locked": "Utoaji unaendelea. Matendo katika dirisha kuu yamezuiwa hadi utoaji ukamilike au ughairiwe.",
+        "operation_in_progress": "Utoaji mwingine wa maandishi tayari unaendelea.",
         "abort_error": "Hitilafu ilitokea wakati wa kuomba kughairi.",
         "cancellation_requested": "Kughairi kumeombwa. Tafadhali subiri kukamilike.",
         "cancellation_complete": "Kughairi kumekamilika.",

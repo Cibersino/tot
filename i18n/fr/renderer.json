@@ -244,6 +244,7 @@
         "precondition_blocked": "Pour démarrer l'extraction, fermez toutes les fenêtres secondaires et arrêtez le chronomètre.",
         "precondition_error": "Une erreur s'est produite lors de la vérification des préconditions de l'extraction. Vérifiez la console.",
         "processing_locked": "L'extraction est en cours. Les interactions de la fenêtre principale sont verrouillées jusqu'à la fin du traitement ou jusqu'à ce que vous l'annuliez.",
+        "operation_in_progress": "Une autre extraction de texte est déjà en cours.",
         "abort_error": "Une erreur s'est produite lors de la demande d'annulation de l'extraction. Vérifiez la console.",
         "cancellation_requested": "Annulation demandée. Veuillez attendre la fin de l’extraction en cours.",
         "cancellation_complete": "Annulation terminée.",

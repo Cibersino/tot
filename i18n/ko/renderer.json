@@ -244,6 +244,7 @@
         "precondition_blocked": "추출을 시작하려면 모든 보조 창을 닫고 스톱워치를 정지하세요.",
         "precondition_error": "추출 사전 조건을 확인하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
         "processing_locked": "추출이 처리 중입니다. 처리가 끝나거나 중단할 때까지 메인 창 상호작용이 잠깁니다.",
+        "operation_in_progress": "다른 텍스트 추출이 이미 진행 중입니다.",
         "abort_error": "추출 중단을 요청하는 중 오류가 발생했습니다. 콘솔을 확인하세요.",
         "cancellation_requested": "취소가 요청되었습니다. 현재 추출이 끝날 때까지 기다려 주세요.",
         "cancellation_complete": "취소가 완료되었습니다.",

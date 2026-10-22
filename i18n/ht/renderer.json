@@ -244,6 +244,7 @@
         "precondition_blocked": "Pou kòmanse ekstrè, fèmen tout fenèt segondè yo epi kanpe kwonomèt la.",
         "precondition_error": "Gen yon erè ki fèt pandan tcheke kondisyon ekstrè yo. Tcheke konsole a.",
         "processing_locked": "Ekstrè ap trete. Entèraksyon fenèt prensipal la bloke jiskaske tretman an fini oswa ou anile li.",
+        "operation_in_progress": "Gen yon lòt ekstraksyon tèks ki deja ap fèt.",
         "abort_error": "Gen yon erè ki fèt pandan demann anilasyon ekstrè a. Tcheke konsole a.",
         "cancellation_requested": "Anilasyon mande. Tanpri tann jiskaske ekstraksyon aktyèl la fini.",
         "cancellation_complete": "Anilasyon fini.",

@@ -244,6 +244,7 @@
         "precondition_blocked": "Reñepyrũ hag̃ua text extraction, emboty opaite ventana secundaria ha ejoko cronómetro.",
         "precondition_error": "Oiko jejavy ojehecha aja text extraction precondiciones. Ehecha consola.",
         "processing_locked": "Text extraction oprocesa hína. Ventana principal interacciones ojejoko procesamiento opa peve térã reabortá peve.",
+        "operation_in_progress": "Oĩma ambue text extraction oprocesáva.",
         "abort_error": "Oiko jejavy ejerure aja text extraction abort. Ehecha consola.",
         "cancellation_requested": "Ojejerure ojeheja hag̃ua. Eha’arõ extracción ko’ág̃agua opa peve.",
         "cancellation_complete": "Ojeheja oñemohu’ã.",

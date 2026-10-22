@@ -244,6 +244,7 @@
         "precondition_blocked": "要启动提取，请关闭所有次级窗口并停止秒表。",
         "precondition_error": "检查提取前置条件时发生错误。请检查控制台。",
         "processing_locked": "提取正在处理。主窗口交互会被锁定，直到处理结束或你中止操作。",
+        "operation_in_progress": "另一项文本提取操作已在进行中。",
         "abort_error": "请求中止提取时发生错误。请检查控制台。",
         "cancellation_requested": "已请求取消。请等待当前提取完成。",
         "cancellation_complete": "取消已完成。",

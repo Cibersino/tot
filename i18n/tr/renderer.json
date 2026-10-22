@@ -244,6 +244,7 @@
         "precondition_blocked": "Çıkarma başlatmak için tüm ikincil pencereleri kapatın ve kronometreyi durdurun.",
         "precondition_error": "Çıkarma ön koşulları denetlenirken hata oluştu. Konsolu kontrol edin.",
         "processing_locked": "Çıkarma işleniyor. İşlem bitene veya siz durdurana kadar ana pencere etkileşimleri kilitli kalır.",
+        "operation_in_progress": "Başka bir metin çıkarma işlemi zaten devam ediyor.",
         "abort_error": "Çıkarma durdurma isteği gönderilirken hata oluştu. Konsolu kontrol edin.",
         "cancellation_requested": "İptal istendi. Lütfen geçerli çıkarma bitene kadar bekleyin.",
         "cancellation_complete": "İptal tamamlandı.",
