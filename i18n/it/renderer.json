@@ -251,8 +251,10 @@
         "drop_invalid_file": "L'elemento rilasciato non è un file locale valido.",
         "generated_pdf_cleanup_warning": "L’estrazione è terminata, ma non è stato possibile pulire automaticamente un PDF locale generato.",
         "route_choice_error": "Si è verificato un errore durante la scelta del percorso di estrazione.",
+        "heavy_pdf_recovery_error": "Impossibile mostrare le opzioni di recupero per questo PDF.",
         "generated_pdf_reveal_failed": "Non è stato possibile mostrare il PDF salvato. Controlla se il file esiste ancora.",
         "apply_error": "Si è verificato un errore durante l'applicazione del testo estratto. Controlla la console e riprova.",
+        "batch_tags_error": "Impossibile aprire l’editor dei tag del lotto.",
         "prepare_invalid": "La richiesta preparata di estrazione non è più valida. Avvia di nuovo il flusso.",
         "unsupported_format": "Questo formato di file non è supportato per l’estrazione del testo.",
         "pdf": {

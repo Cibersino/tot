@@ -251,8 +251,10 @@
         "drop_invalid_file": "Ehara te tūemi kua tukuna i te kōnae paetata tika.",
         "generated_pdf_cleanup_warning": "Kua oti te tangohanga, engari kāore i taea te whakapai aunoa i tētahi PDF ā-rohe i hangaia.",
         "route_choice_error": "I hapa i te kōwhiri i te ara tango kupu.",
+        "heavy_pdf_recovery_error": "Kāore i taea te whakaatu i ngā kōwhiringa whakaora mō tēnei PDF.",
         "generated_pdf_reveal_failed": "Kāore i taea te whakaatu i te PDF kua tiakina. Tirohia mēnā kei reira tonu te kōnae.",
         "apply_error": "I puta he hapa i te hoatu i te kuputuhi kua tangohia. Tirohia te papatohu ka ngana anō.",
+        "batch_tags_error": "Kāore i taea te whakatuwhera i te ētita tūtohu mō te tangohanga ā-rōpū.",
         "prepare_invalid": "Kua kore e tika te tono tango kua whakaritea. Tīmata anō te rere.",
         "unsupported_format": "Kāore tēnei hōputu kōnae e tautokona mō te tangohanga kuputuhi.",
         "pdf": {

@@ -251,8 +251,10 @@
         "drop_invalid_file": "Elemento ojeityva’ekue ndaha’éi archivo local válido.",
         "generated_pdf_cleanup_warning": "Pe extracción opa, ha katu ndaikatúi oñemopotĩ ijehegui peteĩ PDF local ojejapóva.",
         "route_choice_error": "Oiko peteĩ jejavy ojeporavóvo extracción ruta.",
+        "heavy_pdf_recovery_error": "Ndaikatúi ojehechauka recuperación opción-kuéra ko PDF-pe g̃uarã.",
         "generated_pdf_reveal_failed": "Ndaikatúi ojehechauka pe PDF oñeñongatúva. Ehecha pe archivo oĩ gueteripa.",
         "apply_error": "Oiko jejavy ojepuru aja jehai ojeipe’áva. Ehecha consola ha eha’ã jey.",
+        "batch_tags_error": "Ndaikatúi ojeipe’a lote extracción etiqueta editor.",
         "prepare_invalid": "Text extraction pedido oñembosako’iva’ekue ndoikovéima. Emoñepyrũjey flujo.",
         "unsupported_format": "Ko archivo formato ndojeporúi texto extracción-pe g̃uarã.",
         "pdf": {

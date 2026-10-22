@@ -251,8 +251,10 @@
         "drop_invalid_file": "Dropped item no be valid local file.",
         "generated_pdf_cleanup_warning": "Extraction don finish, but one generated local PDF no fit clean up automatically.",
         "route_choice_error": "Error happen while choosing extraction route.",
+        "heavy_pdf_recovery_error": "E no fit show di recovery options for dis PDF.",
         "generated_pdf_reveal_failed": "Di saved PDF no fit show. Check whether di file still dey.",
         "apply_error": "Error happen while applying extracted text. Check console and retry.",
+        "batch_tags_error": "E no fit open di batch tag editor.",
         "prepare_invalid": "Di prepared text extraction request no valid again. Start di flow again.",
         "unsupported_format": "Dis file format no dey supported for text extraction.",
         "pdf": {

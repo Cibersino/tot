@@ -251,8 +251,10 @@
         "drop_invalid_file": "拖放的項目不是有效的本機檔案。",
         "generated_pdf_cleanup_warning": "擷取已完成，但無法自動清理產生的本機 PDF。",
         "route_choice_error": "選擇擷取路徑時發生錯誤。",
+        "heavy_pdf_recovery_error": "無法顯示此 PDF 的復原選項。",
         "generated_pdf_reveal_failed": "無法顯示已儲存的 PDF。請檢查檔案是否仍然存在。",
         "apply_error": "套用擷取文字時發生錯誤。請檢查主控台並重試。",
+        "batch_tags_error": "無法開啟批次擷取的標籤編輯器。",
         "prepare_invalid": "已準備的擷取請求不再有效。請重新啟動流程。",
         "unsupported_format": "此檔案格式不支援文字擷取。",
         "pdf": {

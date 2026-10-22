@@ -251,8 +251,10 @@
         "drop_invalid_file": "L'élément déposé n'est pas un fichier local valide.",
         "generated_pdf_cleanup_warning": "L’extraction est terminée, mais un PDF local généré n’a pas pu être nettoyé automatiquement.",
         "route_choice_error": "Une erreur s'est produite lors du choix de la route d'extraction.",
+        "heavy_pdf_recovery_error": "Impossible d’afficher les options de récupération pour ce PDF.",
         "generated_pdf_reveal_failed": "Impossible d’afficher le PDF enregistré. Vérifiez que le fichier existe toujours.",
         "apply_error": "Une erreur s'est produite lors de l'application du texte extrait. Vérifiez la console et réessayez.",
+        "batch_tags_error": "Impossible d’ouvrir l’éditeur d’étiquettes du lot.",
         "prepare_invalid": "La requête d'extraction préparée n'est plus valide. Redémarrez le flux.",
         "unsupported_format": "Ce format de fichier n’est pas pris en charge pour l’extraction de texte.",
         "pdf": {

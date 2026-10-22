@@ -251,8 +251,10 @@
         "drop_invalid_file": "Det släppta objektet är inte en giltig lokal fil.",
         "generated_pdf_cleanup_warning": "Extraheringen slutfördes, men en genererad lokal PDF-fil kunde inte rensas automatiskt.",
         "route_choice_error": "Ett fel uppstod när extraheringsrutt skulle väljas.",
+        "heavy_pdf_recovery_error": "Det gick inte att visa återställningsalternativen för denna PDF-fil.",
         "generated_pdf_reveal_failed": "Den sparade PDF-filen kunde inte visas. Kontrollera om filen fortfarande finns.",
         "apply_error": "Ett fel uppstod när extraherad text skulle tillämpas. Kontrollera konsolen och försök igen.",
+        "batch_tags_error": "Det gick inte att öppna taggredigeraren för satsvis extrahering.",
         "prepare_invalid": "Den förberedda extraheringsbegäran är inte längre giltig. Starta flödet igen.",
         "unsupported_format": "Det här filformatet stöds inte för textextrahering.",
         "pdf": {

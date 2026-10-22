@@ -251,8 +251,10 @@
         "drop_invalid_file": "Das abgelegte Element ist keine gültige lokale Datei.",
         "generated_pdf_cleanup_warning": "Die Extraktion wurde abgeschlossen, aber eine erzeugte lokale PDF-Datei konnte nicht automatisch bereinigt werden.",
         "route_choice_error": "Beim Auswählen der Extraktionsroute ist ein Fehler aufgetreten.",
+        "heavy_pdf_recovery_error": "Die Wiederherstellungsoptionen für diese PDF-Datei konnten nicht angezeigt werden.",
         "generated_pdf_reveal_failed": "Die gespeicherte PDF-Datei konnte nicht angezeigt werden. Prüfe, ob die Datei noch existiert.",
         "apply_error": "Beim Anwenden des extrahierten Textes ist ein Fehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
+        "batch_tags_error": "Der Tag-Editor für die Stapelextraktion konnte nicht geöffnet werden.",
         "prepare_invalid": "Die vorbereitete Extraktionsanfrage ist nicht mehr gültig. Starten Sie den Ablauf erneut.",
         "unsupported_format": "Dieses Dateiformat wird für die Textextraktion nicht unterstützt.",
         "pdf": {

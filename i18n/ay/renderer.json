@@ -251,8 +251,10 @@
         "drop_invalid_file": "Jaquntata elementox janiw mä local archivo válido ukäkiti.",
         "generated_pdf_cleanup_warning": "Extracción tukuyxiwa, ukampis lurat local PDF janiw automáticamente pichsusiñjamäkänti.",
         "route_choice_error": "Extracción ruta ajlliñan pantjasiwi utji.",
+        "heavy_pdf_recovery_error": "Aka PDF ukatak recuperación opciones uñacht’ayañax janiw atiskiti.",
         "generated_pdf_reveal_failed": "Imat PDF janiw uñachayañjamäkiti. Archivo ukax wali utjaskiti uñakipam.",
         "apply_error": "Apsuta qillqata apnaqañan pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
+        "batch_tags_error": "Lote apsuña etiquetanaka editor jist’arañax janiw atiskiti.",
         "prepare_invalid": "Wakicht’ata apsuña mayiwix janiw válido ukäxiti. Flujo wasitat qalltam.",
         "unsupported_format": "Aka archivo formatox janiw texto apsuñataki yanapt’kiti.",
         "pdf": {

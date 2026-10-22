@@ -251,8 +251,10 @@
         "drop_invalid_file": "ドロップされた項目は有効なローカルファイルではありません。",
         "generated_pdf_cleanup_warning": "抽出は完了しましたが、生成されたローカル PDF を自動的に削除できませんでした。",
         "route_choice_error": "抽出ルートの選択中にエラーが発生しました。",
+        "heavy_pdf_recovery_error": "この PDF の復旧オプションを表示できませんでした。",
         "generated_pdf_reveal_failed": "保存済み PDF を表示できませんでした。ファイルがまだ存在するか確認してください。",
         "apply_error": "抽出テキストの適用中にエラーが発生しました。コンソールを確認して再試行してください。",
+        "batch_tags_error": "一括抽出のタグエディターを開けませんでした。",
         "prepare_invalid": "準備済みの抽出リクエストは無効になっています。フローを最初から開始してください。",
         "unsupported_format": "このファイル形式はテキスト抽出に対応していません。",
         "pdf": {

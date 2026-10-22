@@ -251,8 +251,10 @@
         "drop_invalid_file": "Mục được thả không phải là tệp cục bộ hợp lệ.",
         "generated_pdf_cleanup_warning": "Quá trình trích xuất đã hoàn tất, nhưng không thể tự động dọn dẹp một PDF cục bộ đã tạo.",
         "route_choice_error": "Đã xảy ra lỗi khi chọn tuyến trích xuất.",
+        "heavy_pdf_recovery_error": "Không thể hiển thị các tùy chọn khôi phục cho PDF này.",
         "generated_pdf_reveal_failed": "Không thể hiển thị PDF đã lưu. Hãy kiểm tra xem tệp còn tồn tại không.",
         "apply_error": "Đã xảy ra lỗi khi áp dụng văn bản đã trích xuất. Hãy kiểm tra console và thử lại.",
+        "batch_tags_error": "Không thể mở trình chỉnh sửa thẻ của lô trích xuất.",
         "prepare_invalid": "Yêu cầu trích xuất đã chuẩn bị không còn hợp lệ. Hãy bắt đầu lại quy trình.",
         "unsupported_format": "Định dạng tệp này không được hỗ trợ để trích xuất văn bản.",
         "pdf": {

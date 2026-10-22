@@ -251,8 +251,10 @@
         "drop_invalid_file": "拖放的项目不是有效的本地文件。",
         "generated_pdf_cleanup_warning": "提取已完成，但无法自动清理生成的本地 PDF。",
         "route_choice_error": "选择提取路线时发生错误。",
+        "heavy_pdf_recovery_error": "无法显示此 PDF 的恢复选项。",
         "generated_pdf_reveal_failed": "无法显示已保存的 PDF。请检查文件是否仍然存在。",
         "apply_error": "应用提取文本时发生错误。请检查控制台并重试。",
+        "batch_tags_error": "无法打开批量提取的标签编辑器。",
         "prepare_invalid": "已准备好的提取请求不再有效。请重新启动流程。",
         "unsupported_format": "此文件格式不支持文本提取。",
         "pdf": {

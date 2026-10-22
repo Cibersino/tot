@@ -251,8 +251,10 @@
         "drop_invalid_file": "La custión que soltaste no es un archivo local válido.",
         "generated_pdf_cleanup_warning": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
         "route_choice_error": "Cagó la elección de ruta de extracción.",
+        "heavy_pdf_recovery_error": "No se pudieron mostrar las opciones pa' recuperar este PDF.",
         "generated_pdf_reveal_failed": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
         "apply_error": "Cagó la custión al aplicar el texto extraído. Lorea la consola y prueba otra vez.",
+        "batch_tags_error": "No se pudo abrir el editor de etiquetas del lote.",
         "prepare_invalid": "La solicitud preparada de extracción ya no sirve. Parte la movida de nuevo.",
         "unsupported_format": "Este formato de archivo no apaña pa’ extraer texto.",
         "pdf": {

@@ -251,8 +251,10 @@
         "drop_invalid_file": "Bırakılan öğe geçerli bir yerel dosya değil.",
         "generated_pdf_cleanup_warning": "Çıkarma tamamlandı, ancak oluşturulan yerel PDF otomatik olarak temizlenemedi.",
         "route_choice_error": "Çıkarma rotası seçilirken bir hata oluştu.",
+        "heavy_pdf_recovery_error": "Bu PDF için kurtarma seçenekleri gösterilemedi.",
         "generated_pdf_reveal_failed": "Kaydedilen PDF gösterilemedi. Dosyanın hâlâ var olup olmadığını kontrol edin.",
         "apply_error": "Çıkarılan metin uygulanırken hata oluştu. Konsolu kontrol edin ve yeniden deneyin.",
+        "batch_tags_error": "Toplu çıkarma etiket düzenleyicisi açılamadı.",
         "prepare_invalid": "Hazırlanan çıkarma isteği artık geçerli değil. Akışı yeniden başlatın.",
         "unsupported_format": "Bu dosya biçimi metin çıkarma için desteklenmiyor.",
         "pdf": {

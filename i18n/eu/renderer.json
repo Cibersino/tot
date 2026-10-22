@@ -251,8 +251,10 @@
         "drop_invalid_file": "Jaregindako elementua ez da fitxategi lokal balioduna.",
         "generated_pdf_cleanup_warning": "Erauzketa amaitu da, baina sortutako tokiko PDF bat ezin izan da automatikoki garbitu.",
         "route_choice_error": "Errore bat gertatu da erauzketa-ibilbidea aukeratzean.",
+        "heavy_pdf_recovery_error": "Ezin izan dira PDF honen berreskuratze-aukerak erakutsi.",
         "generated_pdf_reveal_failed": "Ezin izan da gordetako PDFa erakutsi. Egiaztatu fitxategia oraindik badagoen.",
         "apply_error": "Errorea gertatu da erauzitako testua aplikatzean. Begiratu kontsola eta saiatu berriro.",
+        "batch_tags_error": "Ezin izan da multzokako erauzketaren etiketen editorea ireki.",
         "prepare_invalid": "Prestatutako erauzketa eskaera ez da jada baliozkoa. Hasi fluxua berriro.",
         "unsupported_format": "Fitxategi-formatu hau ez da onartzen testua erauzteko.",
         "pdf": {

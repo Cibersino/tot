@@ -251,8 +251,10 @@
         "drop_invalid_file": "Into ededeliwe ayilona ifayela lendawo elivumelekile.",
         "generated_pdf_cleanup_warning": "Ukukhishwa kuqediwe, kodwa i-PDF yasendaweni edaliwe ayikwazanga ukusulwa ngokuzenzakalelayo.",
         "route_choice_error": "Kwenzeke iphutha ngesikhathi kukhethwa indlela yokukhipha umbhalo.",
+        "heavy_pdf_recovery_error": "Akukwazekanga ukubonisa izinketho zokubuyisela zale PDF.",
         "generated_pdf_reveal_failed": "Akukwazekanga ukubonisa i-PDF egciniwe. Hlola ukuthi ifayela lisekhona yini.",
         "apply_error": "Kuvele iphutha ngesikhathi kusetshenziswa umbhalo okhishiwe. Hlola ikhonsoli bese uzama futhi.",
+        "batch_tags_error": "Akukwazekanga ukuvula umhleli wamathegi weqoqo.",
         "prepare_invalid": "Isicelo sokukhishwa esilungisiwe asisavumelekile. Qala kabusha inqubo.",
         "unsupported_format": "Le fomethi yefayela ayisekelwa ekukhishweni kombhalo.",
         "pdf": {

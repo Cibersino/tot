@@ -251,8 +251,10 @@
         "drop_invalid_file": "Saqisqa elementoqa mana allin local archivochu.",
         "generated_pdf_cleanup_warning": "Extracción tukukurqan, ichaqa mana atikurqanchu ruwasqa local PDF-ta kikinmanta pichay.",
         "route_choice_error": "Extracción ruta akllachkaspa pantay karqan.",
+        "heavy_pdf_recovery_error": "Mana atikurqanchu kay PDF-paq recuperación akllanakta rikuchiy.",
         "generated_pdf_reveal_failed": "Mana atikurqanchu waqaychasqa PDF-ta rikuchiy. Archivo kachkanraqchu qhawariy.",
         "apply_error": "Qichusqa qillqata churaypi pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
+        "batch_tags_error": "Mana atikurqanchu lote etiquetakunapa editorninta kichay.",
         "prepare_invalid": "Wakichisqa qichuy mañakuyqa ña mana allinchu. Flujo wakmanta qallariy.",
         "unsupported_format": "Kay archivo formatoqa manam texto qichunapaq yanapanchu.",
         "pdf": {

@@ -251,8 +251,10 @@
         "drop_invalid_file": "놓은 항목이 유효한 로컬 파일이 아닙니다.",
         "generated_pdf_cleanup_warning": "추출이 완료되었지만 생성된 로컬 PDF를 자동으로 정리할 수 없습니다.",
         "route_choice_error": "추출 경로를 선택하는 중 오류가 발생했습니다.",
+        "heavy_pdf_recovery_error": "이 PDF의 복구 옵션을 표시할 수 없습니다.",
         "generated_pdf_reveal_failed": "저장된 PDF를 표시할 수 없습니다. 파일이 아직 존재하는지 확인하세요.",
         "apply_error": "추출된 텍스트를 적용하는 중 오류가 발생했습니다. 콘솔을 확인하고 다시 시도하세요.",
+        "batch_tags_error": "일괄 추출 태그 편집기를 열 수 없습니다.",
         "prepare_invalid": "준비된 추출 요청이 더 이상 유효하지 않습니다. 흐름을 다시 시작하세요.",
         "unsupported_format": "이 파일 형식은 텍스트 추출에 지원되지 않습니다.",
         "pdf": {

@@ -251,8 +251,10 @@
         "drop_invalid_file": "Eltungechi dungu no rüf local archivo.",
         "generated_pdf_cleanup_warning": "Extracción afiy, welu pepilay ñi müleweyümew liftungeal kiñe local PDF dewmal.",
         "route_choice_error": "Kiñe error müley extracción route dullin mew.",
+        "heavy_pdf_recovery_error": "Tüfachi PDF mew recuperación opciones pengeal pepilay.",
         "generated_pdf_reveal_failed": "Pepilay ñi pengeal elkun PDF. Azkintunge petu mülelechi archivo.",
         "apply_error": "Nentulelu wirin püneal mu welulkuy. Kintunge consola ka wiño küdaw.",
+        "batch_tags_error": "Lote extracción etiquetas editor nülay pepilay.",
         "prepare_invalid": "Extracción mu elkünütuyechi solicitud no küme müley. Wiño amulnge kom rüpü.",
         "unsupported_format": "Tüfachi archivo formato no soportadongey texto extracción mew.",
         "pdf": {
