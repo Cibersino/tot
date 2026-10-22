@@ -32,6 +32,7 @@
   // Shared state + configuration
   // =============================================================================
   let deps = null;
+  let activeOperation = null;
 
   function configure(nextDeps = {}) {
     deps = {
@@ -48,6 +49,7 @@
       isLatestTextExtractionPrepareAttempt: null,
       maybeRecoverTextExtractionOcrSetupAndRetry: null,
       requestPreparedImport: null,
+      resolveDroppedFilePath: null,
       ...nextDeps,
     };
   }
@@ -64,6 +66,39 @@
 
   function normalizeFilePath(rawValue) {
     return typeof rawValue === 'string' ? rawValue.trim() : '';
+  }
+
+  function isCurrentOperation(operation) {
+    return operation !== null
+      && operation !== undefined
+      && activeOperation === operation;
+  }
+
+  function isOperationActive() {
+    return activeOperation !== null;
+  }
+
+  async function runAdmittedOperation({ source, actionId }, work) {
+    if (isOperationActive()) {
+      log.info('Text extraction entry ignored because another operation is active:', {
+        actionId,
+        source,
+      });
+      window.Notify.toastMain('renderer.text_extraction.alerts.operation_in_progress', {
+        type: 'info',
+      });
+      return;
+    }
+
+    const operation = {};
+    activeOperation = operation;
+    try {
+      await work(operation);
+    } finally {
+      if (isCurrentOperation(operation)) {
+        activeOperation = null;
+      }
+    }
   }
 
   function hasBlockingModalOpen() {
@@ -114,6 +149,27 @@
       throw new Error('[text-extraction-entry] textExtractionBatchFlow dependency incomplete');
     }
     return textExtractionBatchFlow;
+  }
+
+  async function resolveDroppedFilePaths(files) {
+    const { resolveDroppedFilePath: resolver } = requireConfiguredDeps();
+    if (typeof resolver !== 'function') {
+      log.warn('resolveDroppedFilePath dependency missing; dropped file paths cannot be resolved.');
+      return [];
+    }
+
+    const filePaths = [];
+    for (const file of Array.isArray(files) ? files : []) {
+      try {
+        const filePath = normalizeFilePath(await resolver(file));
+        if (filePath) {
+          filePaths.push(filePath);
+        }
+      } catch (err) {
+        log.warn('Dropped file path resolution failed; file ignored:', err);
+      }
+    }
+    return filePaths;
   }
 
   // =============================================================================
@@ -281,7 +337,15 @@
     skipGuard = false,
     forcedPdfOptions = null,
     forcedRoutePreference = '',
+    operation,
   } = {}) {
+    if (!isCurrentOperation(operation)) {
+      log.warn('Text extraction continuation ignored because its operation is no longer active:', {
+        actionId,
+        source,
+      });
+      return;
+    }
     const {
       applyTextViaCanonicalPath,
       getClipboardRepeatCount,
@@ -549,6 +613,7 @@
             source,
             actionId,
             skipGuard: true,
+            operation,
           });
           return;
         }
@@ -557,6 +622,7 @@
           await batchFlow.startSyntheticSingleFileHeavySplit({
             filePath: normalizedFilePath,
             source: 'single_file_case_a',
+            operation,
           });
           return;
         }
@@ -663,6 +729,7 @@
             source,
             actionId,
             skipGuard: true,
+            operation,
           });
           return;
         }
@@ -671,6 +738,7 @@
           await batchFlow.startSyntheticSingleFileHeavySplit({
             filePath: normalizedFilePath,
             source: 'single_file_case_b',
+            operation,
           });
           return;
         }
@@ -682,6 +750,7 @@
             skipGuard: true,
             forcedPdfOptions: pdfOptions,
             forcedRoutePreference: 'native',
+            operation,
           });
         }
         return;
@@ -805,70 +874,13 @@
   // =============================================================================
   // Public entrypoints
   // =============================================================================
-  async function startFromPicker() {
-    const { guardUserAction } = requireConfiguredDeps();
-
-    if (typeof guardUserAction !== 'function') {
-      log.error('guardUserAction dependency missing; picker entrypoint blocked.');
-      return;
-    }
-    if (!guardUserAction('text-extraction-entrypoint')) return;
-    if (hasBlockingModalOpen()) {
-      log.info('text extraction picker entry blocked because a main-window modal is open.');
-      return;
-    }
-
-    try {
-      const openTextExtractionPicker = getOptionalElectronMethod('openTextExtractionPicker', {
-        dedupeKey: 'renderer.ipc.openTextExtractionPicker.unavailable',
-        unavailableMessage: 'openTextExtractionPicker unavailable; text extraction entrypoint skipped.'
-      });
-      if (!openTextExtractionPicker) {
-        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
-        return;
-      }
-
-      const picker = await openTextExtractionPicker();
-      if (!picker || picker.ok === false) {
-        log.error('text extraction picker failed:', picker && picker.error ? picker.error : picker);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
-        return;
-      }
-      if (picker.canceled) return;
-      const selectedFilePaths = Array.isArray(picker.filePaths) && picker.filePaths.length
-        ? picker.filePaths
-        : [picker.filePath || ''].filter(Boolean);
-      if (selectedFilePaths.length > 1) {
-        const batchFlow = getBatchFlow();
-        await batchFlow.startFromSelectedFiles({
-          filePaths: selectedFilePaths,
-          source: 'picker',
-          actionId: 'text-extraction-entrypoint',
-          skipGuard: true,
-        });
-        return;
-      }
-
-      await runSharedFlow({
-        filePath: selectedFilePaths[0] || '',
-        source: 'picker',
-        skipGuard: true,
-      });
-    } catch (err) {
-      log.error('Error handling text extraction picker entrypoint:', err);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
-    }
-  }
-
-  async function startFromFilePath({ filePath, source = 'drop' } = {}) {
-    await runSharedFlow({
-      filePath,
-      source,
-      actionId: `text-extraction-${source}`,
-    });
-  }
-
-  async function startFromFilePaths({ filePaths, source = 'drop' } = {}) {
+  async function runFromFilePaths({
+    filePaths,
+    source,
+    actionId,
+    skipGuard = false,
+    operation,
+  }) {
     const normalizedFilePaths = Array.isArray(filePaths)
       ? filePaths.map((value) => normalizeFilePath(value)).filter(Boolean)
       : [];
@@ -877,13 +889,110 @@
       await batchFlow.startFromSelectedFiles({
         filePaths: normalizedFilePaths,
         source,
-        actionId: `text-extraction-${source}`,
+        actionId,
+        skipGuard,
+        operation,
       });
       return;
     }
-    await startFromFilePath({
+
+    await runSharedFlow({
       filePath: normalizedFilePaths[0] || '',
       source,
+      actionId,
+      skipGuard,
+      operation,
+    });
+  }
+
+  async function startFromPicker() {
+    await runAdmittedOperation({
+      source: 'picker',
+      actionId: 'text-extraction-entrypoint',
+    }, async (operation) => {
+      const { guardUserAction } = requireConfiguredDeps();
+      if (typeof guardUserAction !== 'function') {
+        log.error('guardUserAction dependency missing; picker entrypoint blocked.');
+        return;
+      }
+      if (!guardUserAction('text-extraction-entrypoint')) return;
+      if (hasBlockingModalOpen()) {
+        log.info('text extraction picker entry blocked because a main-window modal is open.');
+        return;
+      }
+
+      try {
+        const openTextExtractionPicker = getOptionalElectronMethod('openTextExtractionPicker', {
+          dedupeKey: 'renderer.ipc.openTextExtractionPicker.unavailable',
+          unavailableMessage: 'openTextExtractionPicker unavailable; text extraction entrypoint skipped.'
+        });
+        if (!openTextExtractionPicker) {
+          window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+          return;
+        }
+
+        const picker = await openTextExtractionPicker();
+        if (!picker || picker.ok === false) {
+          log.error('text extraction picker failed:', picker && picker.error ? picker.error : picker);
+          window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+          return;
+        }
+        if (picker.canceled) return;
+        const selectedFilePaths = Array.isArray(picker.filePaths) && picker.filePaths.length
+          ? picker.filePaths
+          : [picker.filePath || ''].filter(Boolean);
+        await runFromFilePaths({
+          filePaths: selectedFilePaths,
+          source: 'picker',
+          actionId: 'text-extraction-entrypoint',
+          skipGuard: true,
+          operation,
+        });
+      } catch (err) {
+        log.error('Error handling text extraction picker entrypoint:', err);
+        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      }
+    });
+  }
+
+  async function startFromFilePath({ filePath, source = 'drop' } = {}) {
+    const actionId = `text-extraction-${source}`;
+    await runAdmittedOperation({ source, actionId }, async (operation) => {
+      await runSharedFlow({
+        filePath,
+        source,
+        actionId,
+        operation,
+      });
+    });
+  }
+
+  async function startFromFilePaths({ filePaths, source = 'drop' } = {}) {
+    const actionId = `text-extraction-${source}`;
+    await runAdmittedOperation({ source, actionId }, async (operation) => {
+      await runFromFilePaths({
+        filePaths,
+        source,
+        actionId,
+        operation,
+      });
+    });
+  }
+
+  async function startFromDroppedFiles({ files, source = 'drop' } = {}) {
+    const actionId = `text-extraction-${source}`;
+    await runAdmittedOperation({ source, actionId }, async (operation) => {
+      const filePaths = await resolveDroppedFilePaths(files);
+      if (!filePaths.length) {
+        window.Notify.notifyMain('renderer.text_extraction.alerts.drop_invalid_file');
+        return;
+      }
+      await runFromFilePaths({
+        filePaths,
+        source,
+        actionId,
+        operation,
+      });
     });
   }
 
@@ -894,7 +1003,10 @@
     configure,
     startFromFilePath,
     startFromFilePaths,
+    startFromDroppedFiles,
     startFromPicker,
+    isCurrentOperation,
+    isOperationActive,
   };
 })();
 

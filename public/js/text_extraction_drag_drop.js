@@ -117,22 +117,6 @@
     return Array.from(dt.files);
   }
 
-  async function resolveDroppedFilePath(file) {
-    const { resolveDroppedFilePath: resolver } = requireConfiguredDeps();
-    if (typeof resolver !== 'function') {
-      log.warn(
-        'resolveDroppedFilePath dependency missing; dropped file path cannot be resolved.'
-      );
-      return '';
-    }
-    try {
-      return String(await resolver(file) || '').trim();
-    } catch (err) {
-      log.warn('Dropped file path resolution failed; file ignored:', err);
-      return '';
-    }
-  }
-
   // =============================================================================
   // Window wiring
   // =============================================================================
@@ -195,45 +179,16 @@
       log.info('text extraction drop ignored because the entrypoint is currently blocked.');
       return;
     }
-    const filePaths = [];
-    for (const file of files) {
-      const filePath = await resolveDroppedFilePath(file);
-      if (filePath) {
-        filePaths.push(filePath);
-      }
-    }
-    if (!filePaths.length) {
-      window.Notify.notifyMain('renderer.text_extraction.alerts.drop_invalid_file');
-      return;
-    }
-
-    const { startFromFilePath, startFromFilePaths } = requireConfiguredDeps();
-    if (filePaths.length > 1) {
-      if (typeof startFromFilePaths !== 'function') {
-        log.error('startFromFilePaths dependency missing; cannot continue dropped batch text extraction flow.');
-        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
-        return;
-      }
-      try {
-        await startFromFilePaths({
-          filePaths,
-          source: 'drop',
-        });
-      } catch (err) {
-        log.error('Dropped batch text extraction flow failed unexpectedly:', err);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
-      }
-      return;
-    }
-    if (typeof startFromFilePath !== 'function') {
-      log.error('startFromFilePath dependency missing; cannot continue dropped text extraction flow.');
+    const { startFromDroppedFiles } = requireConfiguredDeps();
+    if (typeof startFromDroppedFiles !== 'function') {
+      log.error('startFromDroppedFiles dependency missing; cannot continue dropped text extraction flow.');
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 
     try {
-      await startFromFilePath({
-        filePath: filePaths[0],
+      await startFromDroppedFiles({
+        files,
         source: 'drop',
       });
     } catch (err) {
@@ -248,9 +203,7 @@
   function configure(nextDeps = {}) {
     deps = {
       canAcceptDrop: null,
-      resolveDroppedFilePath: null,
-      startFromFilePath: null,
-      startFromFilePaths: null,
+      startFromDroppedFiles: null,
       ...nextDeps,
     };
     ensureOverlay();

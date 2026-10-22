@@ -127,6 +127,7 @@ async function createRendererHarness({
   const pendingStates = [];
   const subscriptions = {};
   const textExtractionDragDropConfigs = [];
+  const textExtractionEntryConfigs = [];
   const warnings = [];
   const warningOnceKeys = new Set();
   const currentTextRuntimeCalls = {
@@ -447,7 +448,11 @@ async function createRendererHarness({
     TextExtractionDragDrop: createNoopSurface({
       configure(config) { textExtractionDragDropConfigs.push(config); },
     }),
-    TextExtractionEntry: createNoopSurface(),
+    TextExtractionEntry: createNoopSurface({
+      configure(config) { textExtractionEntryConfigs.push(config); },
+      isCurrentOperation() { return false; },
+      isOperationActive() { return false; },
+    }),
     TextExtractionOcrActivationDisclosureModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionOcrActivationDisclosureModal'); },
     },
@@ -556,6 +561,10 @@ async function createRendererHarness({
     getTextExtractionDragDropConfig() {
       assert.equal(textExtractionDragDropConfigs.length, 1);
       return textExtractionDragDropConfigs[0];
+    },
+    getTextExtractionEntryConfig() {
+      assert.equal(textExtractionEntryConfigs.length, 1);
+      return textExtractionEntryConfigs[0];
     },
     getPresetCreatedCalls() {
       return presetCreatedCalls;
@@ -998,7 +1007,7 @@ test('main renderer Spoiler persistence adapter rejects non-ok bridge results', 
   assert.equal(persistCalls, 1);
 });
 
-test('main renderer resolves dropped file paths only through getPathForFile', async () => {
+test('main renderer wires Entry dropped-file resolution only through getPathForFile', async () => {
   const droppedFile = { path: 'C:\\legacy\\drop.txt' };
   let receivedFile = null;
   const validHarness = await createRendererHarness({
@@ -1009,7 +1018,7 @@ test('main renderer resolves dropped file paths only through getPathForFile', as
       },
     },
   });
-  const validResolver = validHarness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+  const validResolver = validHarness.getTextExtractionEntryConfig().resolveDroppedFilePath;
 
   assert.equal(await validResolver(droppedFile), 'C:\\current\\drop.txt');
   assert.equal(receivedFile, droppedFile);
@@ -1045,7 +1054,7 @@ test('main renderer resolves dropped file paths only through getPathForFile', as
 
   for (const { name, options, diagnostic } of unresolvedCases) {
     const harness = await createRendererHarness(options);
-    const resolver = harness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+    const resolver = harness.getTextExtractionEntryConfig().resolveDroppedFilePath;
 
     assert.equal(await resolver(droppedFile), '', `${name} result should leave the file unresolved`);
     assert.ok(

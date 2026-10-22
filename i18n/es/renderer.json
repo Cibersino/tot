@@ -244,6 +244,7 @@
         "precondition_blocked": "Para iniciar la extracción, cierra todas las ventanas secundarias y detén el cronómetro.",
         "precondition_error": "Ocurrió un error al revisar las precondiciones de extracción.",
         "processing_locked": "Hay una extracción en curso. Las interacciones de la ventana principal están bloqueadas hasta que termine la extracción o sea cancelada.",
+        "operation_in_progress": "Ya hay otra extracción de texto en curso.",
         "abort_error": "Ocurrió un error al solicitar la cancelación.",
         "cancellation_requested": "Cancelación solicitada. Por favor, espera a que termine.",
         "cancellation_complete": "La cancelación terminó.",

@@ -1928,6 +1928,12 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
           // [CONCEPTO_APP] extracción de texto
         },
+        "operation_in_progress": {
+          "es": "Ya hay otra extracción de texto en curso.",
+          "en": "Another text extraction is already in progress."
+          // [PROPÓSITO] Aviso no bloqueante cuando un segundo inicio independiente de extracción es rechazado mientras el ciclo de vida de otra extracción permanece activo.
+          // [CONCEPTO_APP] extracción de texto; operación en curso
+        },
         "abort_error": {
           "es": "Ocurrió un error al solicitar la cancelación.",
           "en": "An error occurred while requesting cancellation."

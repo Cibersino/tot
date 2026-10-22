@@ -244,6 +244,7 @@
         "precondition_blocked": "To start text extraction, close all secondary windows and stop the stopwatch.",
         "precondition_error": "An error occurred while checking text extraction preconditions.",
         "processing_locked": "There is an extraction in progress. Main-window interactions are locked until the extraction finishes or is cancelled.",
+        "operation_in_progress": "Another text extraction is already in progress.",
         "abort_error": "An error occurred while requesting cancellation.",
         "cancellation_requested": "Cancellation requested. Please wait for it to finish.",
         "cancellation_complete": "Cancellation finished.",

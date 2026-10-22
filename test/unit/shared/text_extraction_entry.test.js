@@ -8,20 +8,33 @@ const vm = require('node:vm');
 
 function createHarness({
   inspectResult = null,
+  pdfOptionsImpl = null,
   pdfOptionsResponses = null,
+  routeChoiceImpl = null,
   singleFileHeavyResponses = null,
   requestPreparedImportResult = null,
+  requestPreparedImportImpl = null,
   executePreparedTextExtractionResult = null,
   applyChoice = null,
+  applyChoiceImpl = null,
   applyTextViaCanonicalPathResult = null,
+  checkTextExtractionPreconditionsImpl = null,
+  openTextExtractionPickerImpl = null,
+  resolveDroppedFilePathImpl = null,
+  startFromSelectedFilesImpl = null,
+  startSyntheticSingleFileHeavySplitImpl = null,
+  maybeRecoverTextExtractionOcrSetupAndRetryImpl = null,
 } = {}) {
   let capturedSingleFileHeavyOptions = null;
   let capturedApplyPromptOptions = null;
   const applyPayloads = [];
   const notifications = [];
+  const toasts = [];
   let pdfOptionsPromptCount = 0;
   let singleFileHeavyPromptCount = 0;
   let executePreparedTextExtractionCallCount = 0;
+  let checkTextExtractionPreconditionsCallCount = 0;
+  let openTextExtractionPickerCallCount = 0;
   let syncMainInteractionLockUiCallCount = 0;
   let abortFinalizationActive = false;
   const nextPdfOptionsResponses = Array.isArray(pdfOptionsResponses)
@@ -40,8 +53,17 @@ function createHarness({
         notifyMain(key) {
           notifications.push(key);
         },
-        async promptTextExtractionPdfOptions() {
+        toastMain(key) {
+          toasts.push(key);
+        },
+        async promptTextExtractionPdfOptions(options) {
           pdfOptionsPromptCount += 1;
+          if (typeof pdfOptionsImpl === 'function') {
+            return pdfOptionsImpl({
+              options,
+              promptCount: pdfOptionsPromptCount,
+            });
+          }
           if (nextPdfOptionsResponses && nextPdfOptionsResponses.length) {
             return nextPdfOptionsResponses.shift();
           }
@@ -58,6 +80,12 @@ function createHarness({
             },
           };
         },
+        async promptTextExtractionRouteChoice(options) {
+          if (typeof routeChoiceImpl === 'function') {
+            return routeChoiceImpl(options);
+          }
+          return null;
+        },
         async promptTextExtractionSingleFileHeavyPdf(options) {
           capturedSingleFileHeavyOptions = options;
           singleFileHeavyPromptCount += 1;
@@ -68,6 +96,9 @@ function createHarness({
         },
         async promptTextExtractionApplyChoice(options) {
           capturedApplyPromptOptions = options;
+          if (typeof applyChoiceImpl === 'function') {
+            return applyChoiceImpl(options);
+          }
           return applyChoice;
         },
       },
@@ -127,7 +158,22 @@ function createHarness({
     },
     getOptionalElectronMethod(methodName) {
       if (methodName === 'checkTextExtractionPreconditions') {
-        return async () => ({ ok: true, canStart: true });
+        return async () => {
+          checkTextExtractionPreconditionsCallCount += 1;
+          if (typeof checkTextExtractionPreconditionsImpl === 'function') {
+            return checkTextExtractionPreconditionsImpl();
+          }
+          return { ok: true, canStart: true };
+        };
+      }
+      if (methodName === 'openTextExtractionPicker') {
+        return async () => {
+          openTextExtractionPickerCallCount += 1;
+          if (typeof openTextExtractionPickerImpl === 'function') {
+            return openTextExtractionPickerImpl();
+          }
+          return { ok: true, canceled: true };
+        };
       }
       if (methodName === 'inspectTextExtractionSelectedFile') {
         return async () => (inspectResult || {
@@ -182,16 +228,31 @@ function createHarness({
     },
     textExtractionStatusUi,
     textExtractionBatchFlow: {
-      async startFromSelectedFiles() {},
-      async startSyntheticSingleFileHeavySplit() {},
+      async startFromSelectedFiles(payload) {
+        if (typeof startFromSelectedFilesImpl === 'function') {
+          return startFromSelectedFilesImpl(payload);
+        }
+      },
+      async startSyntheticSingleFileHeavySplit(payload) {
+        if (typeof startSyntheticSingleFileHeavySplitImpl === 'function') {
+          return startSyntheticSingleFileHeavySplitImpl(payload);
+        }
+      },
     },
     isLatestTextExtractionPrepareAttempt() {
       return true;
     },
-    async maybeRecoverTextExtractionOcrSetupAndRetry({ preparation }) {
+    async maybeRecoverTextExtractionOcrSetupAndRetry(options) {
+      if (typeof maybeRecoverTextExtractionOcrSetupAndRetryImpl === 'function') {
+        return maybeRecoverTextExtractionOcrSetupAndRetryImpl(options);
+      }
+      const { preparation } = options;
       return { preparation };
     },
-    async requestPreparedImport() {
+    async requestPreparedImport(options) {
+      if (typeof requestPreparedImportImpl === 'function') {
+        return requestPreparedImportImpl(options);
+      }
       return requestPreparedImportResult || {
         attemptId: 1,
         preparation: {
@@ -212,11 +273,18 @@ function createHarness({
         },
       };
     },
+    resolveDroppedFilePath(file) {
+      if (typeof resolveDroppedFilePathImpl === 'function') {
+        return resolveDroppedFilePathImpl(file);
+      }
+      return '';
+    },
   });
 
   return {
     entry,
     notifications,
+    toasts,
     getCapturedSingleFileHeavyOptions() {
       return capturedSingleFileHeavyOptions;
     },
@@ -235,6 +303,12 @@ function createHarness({
     getExecutePreparedTextExtractionCallCount() {
       return executePreparedTextExtractionCallCount;
     },
+    getCheckTextExtractionPreconditionsCallCount() {
+      return checkTextExtractionPreconditionsCallCount;
+    },
+    getOpenTextExtractionPickerCallCount() {
+      return openTextExtractionPickerCallCount;
+    },
     getSyncMainInteractionLockUiCallCount() {
       return syncMainInteractionLockUiCallCount;
     },
@@ -244,6 +318,212 @@ function createHarness({
     textExtractionStatusUi,
   };
 }
+
+function createDeferred() {
+  let resolve;
+  const promise = new Promise((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
+}
+
+test('entry admits one independent file operation until preflight and terminal handling settle', async () => {
+  const preconditions = createDeferred();
+  const harness = createHarness({
+    checkTextExtractionPreconditionsImpl() {
+      return preconditions.promise;
+    },
+  });
+  assert.equal(harness.entry.isCurrentOperation(null), false);
+
+  const first = harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\first.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 1);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\second.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 1);
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  preconditions.resolve({ ok: true, canStart: true });
+  await first;
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\third.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+});
+
+test('picker cancellation releases admission after its native-picker promise settles', async () => {
+  const picker = createDeferred();
+  const harness = createHarness({
+    openTextExtractionPickerImpl() {
+      return picker.promise;
+    },
+  });
+
+  const first = harness.entry.startFromPicker();
+  assert.equal(harness.getOpenTextExtractionPickerCallCount(), 1);
+
+  await harness.entry.startFromPicker();
+  assert.equal(harness.getOpenTextExtractionPickerCallCount(), 1);
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  picker.resolve({ ok: true, canceled: true });
+  await first;
+  await harness.entry.startFromPicker();
+  assert.equal(harness.getOpenTextExtractionPickerCallCount(), 2);
+});
+
+test('dropped-file admission begins before asynchronous path resolution', async () => {
+  const droppedPath = createDeferred();
+  let resolverCallCount = 0;
+  const harness = createHarness({
+    resolveDroppedFilePathImpl() {
+      resolverCallCount += 1;
+      return droppedPath.promise;
+    },
+  });
+
+  const first = harness.entry.startFromDroppedFiles({
+    files: [{ name: 'first.pdf' }],
+    source: 'drop',
+  });
+  assert.equal(resolverCallCount, 1);
+
+  await harness.entry.startFromDroppedFiles({
+    files: [{ name: 'second.pdf' }],
+    source: 'drop',
+  });
+  assert.equal(resolverCallCount, 1);
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  droppedPath.resolve('C:\\docs\\first.pdf');
+  await first;
+});
+
+test('batch handoff retains the admitted operation until Batch settles', async () => {
+  const batchCompletion = createDeferred();
+  let batchOperation = null;
+  const harness = createHarness({
+    startFromSelectedFilesImpl({ operation }) {
+      batchOperation = operation;
+      return batchCompletion.promise;
+    },
+  });
+
+  const first = harness.entry.startFromFilePaths({
+    filePaths: ['C:\\docs\\first.pdf', 'C:\\docs\\second.pdf'],
+    source: 'test',
+  });
+  assert.ok(batchOperation);
+  assert.equal(harness.entry.isCurrentOperation(batchOperation), true);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\third.pdf',
+    source: 'test',
+  });
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  batchCompletion.resolve();
+  await first;
+  assert.equal(harness.entry.isCurrentOperation(batchOperation), false);
+});
+
+test('single-file apply-choice dismissal retains admission until the terminal prompt closes', async () => {
+  const applyChoiceOpened = createDeferred();
+  const applyChoiceDismissal = createDeferred();
+  const harness = createHarness({
+    applyChoiceImpl(options) {
+      applyChoiceOpened.resolve(options);
+      return applyChoiceDismissal.promise;
+    },
+    executePreparedTextExtractionResult: {
+      ok: true,
+      result: {
+        state: 'success',
+        text: 'Extracted text',
+        textApplicability: 'applicable',
+        error: null,
+      },
+    },
+  });
+
+  const first = harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\first.pdf',
+    source: 'test',
+  });
+  await applyChoiceOpened.promise;
+  assert.equal(harness.entry.isOperationActive(), true);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\second.pdf',
+    source: 'test',
+  });
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  applyChoiceDismissal.resolve(null);
+  await first;
+  assert.equal(harness.entry.isOperationActive(), false);
+  assert.deepEqual(harness.getApplyPayloads(), []);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\third.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+});
+
+test('stale preparation discard releases admission for the next independent request', async () => {
+  const harness = createHarness({
+    requestPreparedImportResult: {
+      attemptId: 1,
+      stale: true,
+      preparation: null,
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\first.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.entry.isOperationActive(), false);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\second.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+});
+
+test('entry releases admission when an unexpected Batch continuation rejection escapes', async () => {
+  const harness = createHarness({
+    startFromSelectedFilesImpl() {
+      return Promise.reject(new Error('Batch continuation failed unexpectedly'));
+    },
+  });
+
+  await assert.rejects(
+    harness.entry.startFromFilePaths({
+      filePaths: ['C:\\docs\\first.pdf', 'C:\\docs\\second.pdf'],
+      source: 'test',
+    }),
+    /Batch continuation failed unexpectedly/
+  );
+  assert.equal(harness.entry.isOperationActive(), false);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\third.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 1);
+});
 
 test('single-file entry passes source file size into the Case B heavy-PDF modal payload', async () => {
   const harness = createHarness();
@@ -328,6 +608,230 @@ test('single-file entry returns to PDF options from the Case A heavy-PDF modal',
   assert.equal(modalOptions.providerLimitBytes, 50 * 1024 * 1024);
 });
 
+test('recursive PDF page re-entry retains admission until the returned-to prompt is dismissed', async () => {
+  const returnedToPdfOptions = createDeferred();
+  const returnedToPdfOptionsOpened = createDeferred();
+  const allPagesPdfOptions = {
+    pdfPageSelection: {
+      mode: 'all',
+      fromPage: 1,
+      toPage: 516,
+      selectedPageCount: 516,
+      totalPages: 516,
+    },
+    generatedPdfArtifactPolicy: {
+      mode: 'delete',
+    },
+  };
+  const harness = createHarness({
+    pdfOptionsImpl({ promptCount }) {
+      if (promptCount === 1) {
+        return allPagesPdfOptions;
+      }
+      returnedToPdfOptionsOpened.resolve();
+      return returnedToPdfOptions.promise;
+    },
+    singleFileHeavyResponses: ['return_to_pages'],
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true,
+        prepareReady: true,
+        prepareFailed: false,
+        prepareId: 'prepare-1',
+        fileInfo: {
+          fileName: 'book.pdf',
+          sourceFileSizeBytes: 458 * 1024 * 1024,
+        },
+        routeChoiceOptions: ['native', 'ocr'],
+        routeMetadata: {
+          chosenRoute: 'ocr',
+          availableRoutes: ['native', 'ocr'],
+          pdfTotalPages: 516,
+          ocrProviderLimitBytes: 50 * 1024 * 1024,
+          heavySplitEligible: true,
+        },
+      },
+    },
+  });
+
+  const first = harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+  await returnedToPdfOptionsOpened.promise;
+  assert.equal(harness.entry.isOperationActive(), true);
+  assert.equal(harness.getPdfOptionsPromptCount(), 2);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\second.pdf',
+    source: 'test',
+  });
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  returnedToPdfOptions.resolve(null);
+  await first;
+  assert.equal(harness.entry.isOperationActive(), false);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\third.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 3);
+});
+
+test('OCR recovery retry retains the original admission through route recovery', async () => {
+  const recoveryStarted = createDeferred();
+  const recoveryCompletion = createDeferred();
+  const recoveryCalls = [];
+  const initialPreparation = {
+    ok: true,
+    prepareReady: true,
+    prepareFailed: false,
+    prepareId: 'prepare-1',
+    requiresRouteChoice: true,
+    fileInfo: {
+      fileName: 'book.pdf',
+      sourceFileSizeBytes: 458 * 1024 * 1024,
+    },
+    routeChoiceOptions: ['native', 'ocr'],
+    routeMetadata: {
+      chosenRoute: '',
+      availableRoutes: ['native', 'ocr'],
+      heavySplitEligible: false,
+    },
+  };
+  const recoveredPreparation = {
+    ...initialPreparation,
+    prepareId: 'prepare-2',
+    requiresRouteChoice: false,
+    routeMetadata: {
+      ...initialPreparation.routeMetadata,
+      chosenRoute: 'ocr',
+    },
+  };
+  const harness = createHarness({
+    routeChoiceImpl() {
+      return 'ocr';
+    },
+    maybeRecoverTextExtractionOcrSetupAndRetryImpl(options) {
+      recoveryCalls.push(options);
+      if (options.routePreference === 'ocr') {
+        recoveryStarted.resolve();
+        return recoveryCompletion.promise;
+      }
+      return { preparation: options.preparation };
+    },
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: initialPreparation,
+    },
+  });
+
+  const first = harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+  await recoveryStarted.promise;
+  assert.equal(harness.entry.isOperationActive(), true);
+  assert.equal(recoveryCalls.length, 2);
+  assert.equal(recoveryCalls[1].routePreference, 'ocr');
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\second.pdf',
+    source: 'test',
+  });
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  recoveryCompletion.resolve({
+    preparationRun: {
+      attemptId: 2,
+      preparation: recoveredPreparation,
+    },
+  });
+  await first;
+  assert.equal(harness.entry.isOperationActive(), false);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\third.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+});
+
+test('single-file heavy-split handoff retains the admitted operation until Batch returns', async () => {
+  const batchCompletion = createDeferred();
+  const batchStarted = createDeferred();
+  let batchOperation = null;
+  const harness = createHarness({
+    pdfOptionsResponses: [
+      {
+        pdfPageSelection: {
+          mode: 'all',
+          fromPage: 1,
+          toPage: 516,
+          selectedPageCount: 516,
+          totalPages: 516,
+        },
+        generatedPdfArtifactPolicy: {
+          mode: 'delete',
+        },
+      },
+    ],
+    singleFileHeavyResponses: ['split'],
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true,
+        prepareReady: true,
+        prepareFailed: false,
+        prepareId: 'prepare-1',
+        fileInfo: {
+          fileName: 'book.pdf',
+          sourceFileSizeBytes: 458 * 1024 * 1024,
+        },
+        routeChoiceOptions: ['native', 'ocr'],
+        routeMetadata: {
+          chosenRoute: 'ocr',
+          availableRoutes: ['native', 'ocr'],
+          pdfTotalPages: 516,
+          ocrProviderLimitBytes: 50 * 1024 * 1024,
+          heavySplitEligible: true,
+        },
+      },
+    },
+    startSyntheticSingleFileHeavySplitImpl({ operation }) {
+      batchOperation = operation;
+      batchStarted.resolve();
+      return batchCompletion.promise;
+    },
+  });
+
+  const first = harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+  await batchStarted.promise;
+  assert.ok(batchOperation);
+  assert.equal(harness.entry.isCurrentOperation(batchOperation), true);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\second.pdf',
+    source: 'test',
+  });
+  assert.deepEqual(harness.toasts, ['renderer.text_extraction.alerts.operation_in_progress']);
+
+  batchCompletion.resolve();
+  await first;
+  assert.equal(harness.entry.isCurrentOperation(batchOperation), false);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\third.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+});
+
 test('single-file cancellation finishes abort finalization only after execution settles', async () => {
   const harness = createHarness({
     executePreparedTextExtractionResult: {
@@ -355,6 +859,13 @@ test('single-file cancellation finishes abort finalization only after execution 
     harness.notifications,
     ['renderer.text_extraction.alerts.cancellation_complete']
   );
+  assert.equal(harness.entry.isOperationActive(), false);
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\second.pdf',
+    source: 'test',
+  });
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
 });
 
 test('single-file no-text success opens the informational prompt but never applies text', async () => {

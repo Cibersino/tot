@@ -79,6 +79,7 @@
       guardUserAction: null,
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
+      isCurrentTextExtractionOperation: null,
       requestPreparedImport: null,
       syncMainInteractionLockUi: null,
       textExtractionStatusUi: null,
@@ -122,6 +123,27 @@
       return;
     }
     syncUi();
+  }
+
+  function hasCurrentTextExtractionOperation(operation, { source, actionId }) {
+    const { isCurrentTextExtractionOperation: predicate } = requireDeps();
+    if (typeof predicate !== 'function') {
+      log.error('isCurrentTextExtractionOperation dependency missing; batch continuation blocked.');
+      return false;
+    }
+    try {
+      if (predicate(operation) === true) {
+        return true;
+      }
+    } catch (err) {
+      log.error('isCurrentTextExtractionOperation dependency failed; batch continuation blocked:', err);
+      return false;
+    }
+    log.warn('Batch continuation ignored because its text extraction operation is not active:', {
+      actionId,
+      source,
+    });
+    return false;
   }
 
   // =============================================================================
@@ -1741,11 +1763,15 @@
     actionId = 'text-extraction-entrypoint',
     flowKind = 'batch',
     skipGuard = false,
+    operation,
   } = {}) {
     const {
       guardUserAction,
       hasBlockingModalOpen,
     } = requireDeps();
+    if (!hasCurrentTextExtractionOperation(operation, { source, actionId })) {
+      return;
+    }
     const normalizedFilePaths = Array.isArray(filePaths)
       ? filePaths.map((filePath) => normalizeFilePath(filePath)).filter(Boolean)
       : [];
@@ -1814,6 +1840,7 @@
   async function startSyntheticSingleFileHeavySplit({
     filePath,
     source = 'single_file_heavy_split',
+    operation,
   } = {}) {
     return startFromSelectedFiles({
       filePaths: [filePath],
@@ -1821,6 +1848,7 @@
       actionId: 'text-extraction-single-file-heavy-split',
       flowKind: 'single_file_split',
       skipGuard: true,
+      operation,
     });
   }
 

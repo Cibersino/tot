@@ -237,6 +237,7 @@ function createHarness({
   vm.runInContext(source, sandbox, { filename: 'public/js/text_extraction_batch_flow.js' });
 
   const batchFlow = sandbox.window.TextExtractionBatchFlow;
+  const operation = {};
   batchFlow.configure({
     guardUserAction: guardUserActionImpl === undefined ? () => true : guardUserActionImpl,
     hasBlockingModalOpen: hasBlockingModalOpenImpl === undefined ? () => false : hasBlockingModalOpenImpl,
@@ -315,6 +316,9 @@ function createHarness({
     hasCurrentTextSubscription: hasCurrentTextSubscriptionImpl === undefined
       ? () => true
       : hasCurrentTextSubscriptionImpl,
+    isCurrentTextExtractionOperation(candidate) {
+      return candidate === operation;
+    },
     syncMainInteractionLockUi: syncMainInteractionLockUiImpl === undefined
       ? () => {
         syncMainInteractionLockUiCallCount += 1;
@@ -323,8 +327,20 @@ function createHarness({
     textExtractionStatusUi,
   });
 
+  const admittedBatchFlow = {
+    ...batchFlow,
+    startFromSelectedFiles(options = {}) {
+      return batchFlow.startFromSelectedFiles({ ...options, operation });
+    },
+    startSyntheticSingleFileHeavySplit(options = {}) {
+      return batchFlow.startSyntheticSingleFileHeavySplit({ ...options, operation });
+    },
+  };
+
   return {
-    batchFlow,
+    batchFlow: admittedBatchFlow,
+    rawBatchFlow: batchFlow,
+    operation,
     getCapturedViewModel() {
       return capturedViewModel;
     },
@@ -423,6 +439,90 @@ function createPreparation({
     },
   };
 }
+
+function createDeferred() {
+  let resolve;
+  const promise = new Promise((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
+}
+
+test('batch rejects a missing operation context before starting its preflight', async () => {
+  const harness = createHarness({
+    preparationsByPath: {
+      'C:\\docs\\document.pdf': createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }),
+    },
+  });
+
+  await harness.rawBatchFlow.startFromSelectedFiles({
+    filePaths: ['C:\\docs\\document.pdf'],
+    source: 'test',
+    actionId: 'test-missing-operation-context',
+  });
+  await harness.rawBatchFlow.startFromSelectedFiles({
+    filePaths: ['C:\\docs\\document.pdf'],
+    source: 'test',
+    actionId: 'test-null-operation-context',
+    operation: null,
+  });
+
+  assert.equal(harness.getCapturedViewModel(), null);
+  assert.deepEqual(harness.getPreparationRequests(), []);
+  assert.deepEqual(
+    harness.getWarnLogs().map(([message, details]) => [message, details.actionId]),
+    [
+      ['Batch continuation ignored because its text extraction operation is not active:', 'test-missing-operation-context'],
+      ['Batch continuation ignored because its text extraction operation is not active:', 'test-null-operation-context'],
+    ]
+  );
+});
+
+test('batch start remains pending until its real final-report prompt is dismissed', async () => {
+  const finalReportOpened = createDeferred();
+  const finalReportDismissal = createDeferred();
+  const preparationsByPath = {
+    'C:\\docs\\document.pdf': createPreparation({
+      fileName: 'document.pdf',
+      chosenRoute: 'native',
+    }),
+  };
+  const harness = createHarness({
+    preparationsByPath,
+    promptBatchPlanResult: { action: 'start' },
+    promptBatchFinalReportImpl({ report }) {
+      finalReportOpened.resolve(report);
+      return finalReportDismissal.promise;
+    },
+    executionResultsByProcessingInputFileName: {
+      'document.pdf': {
+        ok: true,
+        result: {
+          state: 'success',
+          text: 'Document text',
+          generatedPdfArtifact: null,
+        },
+      },
+    },
+  });
+
+  let settled = false;
+  const start = harness.batchFlow.startFromSelectedFiles({
+    filePaths: Object.keys(preparationsByPath),
+    source: 'picker',
+    actionId: 'test-batch-final-report-admission-lifecycle',
+  }).then(() => {
+    settled = true;
+  });
+
+  const report = await finalReportOpened.promise;
+  assert.equal(report.flowKind, 'batch');
+  assert.equal(settled, false);
+
+  finalReportDismissal.resolve();
+  await start;
+  assert.equal(settled, true);
+});
 
 test('batch flow shows generated-PDF keep toggle only for range-selected ordinary PDFs and heavy split PDFs', async () => {
   const preparationsByPath = {
