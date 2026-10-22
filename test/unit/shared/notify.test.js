@@ -640,3 +640,19 @@ test('notify modal focus activation is idempotent and does not duplicate handlin
   assert.equal(harness.getKeydownListenerCount(), 0);
   assert.equal(harness.document.activeElement, opener);
 });
+
+test('notify modal focus restores an eligible opener when its ancestor Document is hidden', () => {
+  const harness = createModalFocusHarness();
+  const opener = harness.createElement('opener', { tabIndex: 0 });
+  const modal = harness.createElement('modal');
+  opener.parentNode = harness.document;
+  harness.document.hidden = true;
+  opener.focus();
+
+  harness.notify.activateModalFocus(modal, { fallbackFocus: modal });
+  harness.notify.deactivateModalFocus(modal);
+
+  assert.equal(harness.document.activeElement, opener);
+  assert.equal(opener.focusCount, 2);
+  assert.deepEqual(harness.warnings, []);
+});

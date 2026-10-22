@@ -327,11 +327,12 @@
 
     let current = element;
     while (current) {
-      if (current.hidden === true
-        || current.inert === true
-        || getAttribute(current, 'hidden') !== null
-        || getAttribute(current, 'inert') !== null
-        || getAttribute(current, 'aria-hidden') === 'true') {
+      if (current !== document
+        && (current.hidden === true
+          || current.inert === true
+          || getAttribute(current, 'hidden') !== null
+          || getAttribute(current, 'inert') !== null
+          || getAttribute(current, 'aria-hidden') === 'true')) {
         return false;
       }
       if (current === activeModal) break;
