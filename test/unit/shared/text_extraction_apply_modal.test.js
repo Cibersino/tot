@@ -65,7 +65,7 @@ function createElement(id) {
   };
 }
 
-function createHarness() {
+function createHarness({ missingElementIds = [] } = {}) {
   const registeredPromptNames = [];
   const notifiedKeys = [];
   const elements = {
@@ -85,6 +85,9 @@ function createHarness() {
     textExtractionApplyModalCancel: createElement('textExtractionApplyModalCancel'),
     textExtractionApplyModalClose: createElement('textExtractionApplyModalClose'),
   };
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
 
   const windowListeners = new Map();
   const translations = {
@@ -187,6 +190,14 @@ test('apply modal registers its public prompt through window.Notify.registerCust
     'promptTextExtractionApplyChoice',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('apply modal rejects when required DOM is unavailable', async () => {
+  const harness = createHarness({
+    missingElementIds: ['textExtractionApplyModalClose'],
+  });
+
+  await assert.rejects(harness.prompt(), /Apply modal DOM elements missing/);
 });
 
 test('apply modal renders retained PDF details, normalizes repeat count, and resolves overwrite choice', async () => {

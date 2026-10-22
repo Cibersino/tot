@@ -319,8 +319,8 @@
   }
 
   window.addEventListener('keydown', (ev) => {
-    if (ev.key !== 'Escape' || !lightboxEl || lightboxEl.getAttribute('aria-hidden') !== 'false') return;
-    ev.preventDefault();
+    if (!lightboxEl || lightboxEl.getAttribute('aria-hidden') !== 'false') return;
+    if (!window.Notify.claimModalEscape(ev, lightboxEl)) return;
     ev.stopImmediatePropagation();
     closeLightbox();
   }, true);

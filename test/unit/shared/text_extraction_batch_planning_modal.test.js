@@ -265,10 +265,12 @@ function findNodesByAttributes(node, expectedAttributes = {}, matches = []) {
   return matches;
 }
 
-function createHarness() {
+function createHarness({ missingElementIds = [] } = {}) {
   activeElementRef = null;
   const registeredPromptNames = [];
+  const loggerCalls = [];
   const modalOpeners = new Map();
+  const modalFocusStack = [];
   const elements = {
     outsideLauncher: createElement('outsideLauncher'),
     textExtractionBatchPlanModal: createElement('textExtractionBatchPlanModal'),
@@ -287,6 +289,9 @@ function createHarness() {
     textExtractionBatchPlanCancel: createElement('textExtractionBatchPlanCancel'),
     textExtractionBatchPlanClose: createElement('textExtractionBatchPlanClose'),
   };
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
 
   const windowListeners = new Map();
   const translations = {
@@ -364,12 +369,25 @@ function createHarness() {
       Notify: {
         activateModalFocus(modal, { initialFocus }) {
           modalOpeners.set(modal, activeElementRef);
+          if (!modalFocusStack.includes(modal)) modalFocusStack.push(modal);
           initialFocus.focus();
         },
         deactivateModalFocus(modal) {
           const opener = modalOpeners.get(modal);
           modalOpeners.delete(modal);
+          const modalIndex = modalFocusStack.indexOf(modal);
+          if (modalIndex >= 0) modalFocusStack.splice(modalIndex);
           if (opener) opener.focus();
+        },
+        claimModalEscape(event, modal) {
+          if (!event
+            || event.key !== 'Escape'
+            || event.defaultPrevented
+            || modalFocusStack[modalFocusStack.length - 1] !== modal) {
+            return false;
+          }
+          event.preventDefault();
+          return true;
         },
         notifyMain() {},
         registerCustomPrompt(name, handler) {
@@ -379,11 +397,21 @@ function createHarness() {
       },
       getLogger() {
         return {
-          debug() {},
-          info() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
+          debug(...args) {
+            loggerCalls.push({ level: 'debug', args });
+          },
+          info(...args) {
+            loggerCalls.push({ level: 'info', args });
+          },
+          warn(...args) {
+            loggerCalls.push({ level: 'warn', args });
+          },
+          warnOnce(...args) {
+            loggerCalls.push({ level: 'warnOnce', args });
+          },
+          error(...args) {
+            loggerCalls.push({ level: 'error', args });
+          },
         };
       },
       AppConstants: {
@@ -573,8 +601,26 @@ function createHarness() {
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
+    getLoggerCalls() {
+      return loggerCalls.slice();
+    },
     getActiveElement() {
       return activeElementRef;
+    },
+    notify: sandbox.window.Notify,
+    addWindowKeydownListener(handler) {
+      sandbox.window.addEventListener('keydown', handler);
+    },
+    dispatchWindowKeydown(event = {}) {
+      const safeEvent = {
+        defaultPrevented: false,
+        preventDefault() {
+          this.defaultPrevented = true;
+        },
+        ...event,
+      };
+      (windowListeners.get('keydown') || []).slice().forEach((handler) => handler(safeEvent));
+      return safeEvent;
     },
     prompt: sandbox.window.Notify.promptTextExtractionBatchPlan,
   };
@@ -587,6 +633,141 @@ test('batch planning modal registers its public prompt through window.Notify.reg
     'promptTextExtractionBatchPlan',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('batch planning modal rejects unavailable DOM and an incomplete controller', async () => {
+  const missingDomHarness = createHarness({
+    missingElementIds: ['textExtractionBatchPlanClose'],
+  });
+  await assert.rejects(
+    missingDomHarness.prompt({ controller: {} }),
+    /Batch planning modal DOM elements missing/
+  );
+
+  const incompleteControllerHarness = createHarness();
+  await assert.rejects(
+    incompleteControllerHarness.prompt({ controller: {} }),
+    /Batch planning modal controller missing/
+  );
+});
+
+test('batch planning Escape leaves the prompt open while a nested modal claims it', async () => {
+  const harness = createHarness();
+  const controller = {
+    getViewModel() {
+      return {
+        flowKind: 'batch',
+        failurePolicy: 'finish_unit_after_last_success',
+        startDisabled: false,
+        unitCount: 1,
+        units: [],
+      };
+    },
+    applyAction() {},
+  };
+
+  const promptPromise = harness.prompt({ controller });
+  const nestedModal = createElement('nestedModal');
+  const nestedClose = createElement('nestedClose', 'button');
+  harness.notify.activateModalFocus(nestedModal, { initialFocus: nestedClose });
+  let nestedCloseCount = 0;
+  harness.addWindowKeydownListener((event) => {
+    if (!harness.notify.claimModalEscape(event, nestedModal)) return;
+    nestedCloseCount += 1;
+    harness.notify.deactivateModalFocus(nestedModal);
+  });
+
+  const nestedEscape = harness.dispatchWindowKeydown({ key: 'Escape' });
+  await Promise.resolve();
+
+  assert.equal(nestedEscape.defaultPrevented, true);
+  assert.equal(nestedCloseCount, 1);
+  assert.equal(harness.elements.textExtractionBatchPlanModal.getAttribute('aria-hidden'), 'false');
+
+  const plannerEscape = harness.dispatchWindowKeydown({ key: 'Escape' });
+  assert.equal(plannerEscape.defaultPrevented, true);
+  assert.equal(await promptPromise, null);
+});
+
+test('batch planning logs a focus restoration retry without deduplication', async () => {
+  const harness = createHarness();
+  const controller = {
+    getViewModel() {
+      return {
+        flowKind: 'batch',
+        failurePolicy: 'finish_unit_after_last_success',
+        startDisabled: false,
+        unitCount: 1,
+        units: [],
+      };
+    },
+    applyAction() {},
+  };
+  const focusError = new Error('preventScroll unsupported');
+  const promptPromise = harness.prompt({ controller });
+
+  harness.elements.outsideLauncher.focus = (options) => {
+    if (options && options.preventScroll) throw focusError;
+    activeElementRef = harness.elements.outsideLauncher;
+  };
+  harness.elements.outsideLauncher.focus();
+  harness.elements.textExtractionBatchPlanPresetAll.dispatch('click');
+
+  assert.equal(harness.getActiveElement(), harness.elements.outsideLauncher);
+  assert.deepEqual(
+    harness.getLoggerCalls().filter((call) => call.level === 'warn'),
+    [{
+      level: 'warn',
+      args: [
+        'focus({ preventScroll: true }) failed; falling back to focus().',
+        focusError,
+      ],
+    }]
+  );
+
+  harness.elements.textExtractionBatchPlanCancel.dispatch('click');
+  await promptPromise;
+});
+
+test('batch planning logs an ignored selection restoration failure without deduplication', async () => {
+  const harness = createHarness();
+  const controller = {
+    getViewModel() {
+      return {
+        flowKind: 'batch',
+        failurePolicy: 'finish_unit_after_last_success',
+        startDisabled: false,
+        unitCount: 1,
+        units: [],
+      };
+    },
+    applyAction() {},
+  };
+  const selectionError = new Error('selection unavailable');
+  const promptPromise = harness.prompt({ controller });
+
+  harness.elements.outsideLauncher.selectionStart = 2;
+  harness.elements.outsideLauncher.selectionEnd = 2;
+  harness.elements.outsideLauncher.setSelectionRange = () => {
+    throw selectionError;
+  };
+  harness.elements.outsideLauncher.focus();
+  harness.elements.textExtractionBatchPlanPresetAll.dispatch('click');
+
+  assert.equal(harness.getActiveElement(), harness.elements.outsideLauncher);
+  assert.deepEqual(
+    harness.getLoggerCalls().filter((call) => call.level === 'warn'),
+    [{
+      level: 'warn',
+      args: [
+        'Batch planning selection restoration failed (ignored):',
+        selectionError,
+      ],
+    }]
+  );
+
+  harness.elements.textExtractionBatchPlanCancel.dispatch('click');
+  await promptPromise;
 });
 
 test('batch planning modal keeps each heavy preview under its groupable source input in a mixed unit', async () => {

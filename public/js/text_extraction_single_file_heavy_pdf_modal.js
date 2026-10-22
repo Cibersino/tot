@@ -208,8 +208,7 @@
     onRevealGeneratedPdf = null,
   } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Single-file heavy PDF modal DOM elements missing.');
-      return 'cancel';
+      throw new Error('Single-file heavy PDF modal DOM elements missing.');
     }
 
     const isCaseB = caseKind === 'case_b';
@@ -310,10 +309,8 @@
       };
       const onWindowKeyDown = (event) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          finish('cancel');
-        }
+        if (!window.Notify.claimModalEscape(event, modal)) return;
+        finish('cancel');
       };
 
       btnSplit.addEventListener('click', onSplit);

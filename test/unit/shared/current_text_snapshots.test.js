@@ -10,6 +10,7 @@ const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog'
 
 function loadSnapshotsModule({
   promptResult,
+  promptSnapshotSaveImpl = null,
   getCurrentWpm = null,
   saveResult = { ok: true },
   loadResult = { ok: true },
@@ -35,6 +36,9 @@ function loadSnapshotsModule({
       SnapshotTagCatalog: snapshotTagCatalog,
       Notify: {
         async promptSnapshotSave() {
+          if (typeof promptSnapshotSaveImpl === 'function') {
+            return promptSnapshotSaveImpl();
+          }
           return promptResult;
         },
         toastMain(key, options) {
@@ -87,6 +91,28 @@ test('manual snapshot save forwards selected count and reading metadata with act
     tags: { language: ['es'] },
     wpm: 240,
   }]);
+});
+
+test('manual snapshot prompt failure reports save failure instead of cancellation', async () => {
+  const { snapshots, saveCalls, toastCalls, logCalls } = loadSnapshotsModule({
+    promptSnapshotSaveImpl() {
+      throw new Error('Snapshot prompt DOM elements missing.');
+    },
+  });
+
+  const result = await snapshots.saveSnapshot();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    ok: false,
+    code: 'WRITE_FAILED',
+    error: 'Error: Snapshot prompt DOM elements missing.',
+  });
+  assert.deepEqual(saveCalls, []);
+  assert.deepEqual(JSON.parse(JSON.stringify(toastCalls)), [{
+    key: 'renderer.snapshots.alerts.save_error',
+    options: { type: 'error' },
+  }]);
+  assert.equal(logCalls.filter(({ level }) => level === 'error').length, 1);
 });
 
 test('manual snapshot save forwards an intentional no-metrics selection without WPM', async () => {

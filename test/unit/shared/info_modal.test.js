@@ -118,6 +118,11 @@ function loadInfoModalHarness({ loadLocalizedDocument, fetchText, electronAPI = 
         focusCalls.activate += 1;
         initialFocus.focus({ preventScroll: true });
       },
+      claimModalEscape(event) {
+        if (!event || event.key !== 'Escape' || event.defaultPrevented) return false;
+        event.preventDefault();
+        return true;
+      },
       deactivateModalFocus() { focusCalls.deactivate += 1; },
     },
     RendererI18n: rendererI18n,
@@ -220,7 +225,13 @@ test('InfoModal owns localized manual rendering, focus lifecycle, and language r
   assert.equal(harness.focusCalls.deactivate, 2);
 
   await harness.api.open('instrucciones');
-  harness.keydownListeners.forEach((listener) => listener({ key: 'Escape' }));
+  harness.keydownListeners.forEach((listener) => listener({
+    key: 'Escape',
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  }));
   assert.equal(modal.getAttribute('aria-hidden'), 'true');
   assert.equal(harness.focusCalls.deactivate, 3);
   assert.equal(harness.errors.length, 0);

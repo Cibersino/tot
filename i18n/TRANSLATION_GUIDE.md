@@ -1928,6 +1928,12 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Alerta cuando una extracción en curso bloquea interacciones de la ventana principal.
           // [CONCEPTO_APP] extracción de texto
         },
+        "operation_in_progress": {
+          "es": "Ya hay otra extracción de texto en curso.",
+          "en": "Another text extraction is already in progress."
+          // [PROPÓSITO] Aviso no bloqueante cuando un segundo inicio independiente de extracción es rechazado mientras el ciclo de vida de otra extracción permanece activo.
+          // [CONCEPTO_APP] extracción de texto; operación en curso
+        },
         "abort_error": {
           "es": "Ocurrió un error al solicitar la cancelación.",
           "en": "An error occurred while requesting cancellation."
@@ -1961,6 +1967,13 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Alerta de fallo en el paso crítico de elección de ruta de extracción.
           // [CONCEPTO_APP] ruta de extracción
         },
+        "heavy_pdf_recovery_error": {
+          "es": "No se pudieron mostrar las opciones de recuperación para este PDF.",
+          "en": "Could not show the recovery options for this PDF."
+          // [PROPÓSITO] Informa que no se pudo abrir el diálogo con las alternativas de recuperación para un PDF demasiado grande para OCR.
+          // [CONCEPTO_APP] PDF fuente; ruta OCR
+          // [PROTEGIDO] `PDF`; `OCR`
+        },
         "generated_pdf_reveal_failed": {
           "es": "No se pudo mostrar el PDF guardado. Revisa si el archivo sigue existiendo.",
           "en": "The saved PDF could not be revealed. Check whether the file still exists."
@@ -1972,6 +1985,12 @@ Estados de revisión recomendados:
           "es": "Ocurrió un error al aplicar el texto extraído.",
           "en": "An error occurred while applying extracted text."
           // [CONCEPTO_APP] extracción de texto; texto actual
+        },
+        "batch_tags_error": {
+          "es": "No se pudo abrir el editor de etiquetas del lote.",
+          "en": "Could not open the batch tag editor."
+          // [PROPÓSITO] Informa que la edición opcional de etiquetas de una unidad de extracción por lotes no pudo abrirse; la planificación sigue disponible.
+          // [CONCEPTO_APP] extracción por lotes; etiquetas de snapshot de texto; unidad de extracción por lotes
         },
         "prepare_invalid": {
           "es": "La solicitud preparada de extracción ya no es válida. Inicia el flujo nuevamente.",

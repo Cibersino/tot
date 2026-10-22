@@ -34,6 +34,7 @@
   }
   if (!window.Notify
     || typeof window.Notify.activateModalFocus !== 'function'
+    || typeof window.Notify.claimModalEscape !== 'function'
     || typeof window.Notify.deactivateModalFocus !== 'function') {
     throw new Error('[info-modal] Notify modal-focus API unavailable; cannot continue');
   }
@@ -489,7 +490,9 @@
       log.warn('Info modal backdrop unavailable; click-to-close binding skipped.');
     }
     window.addEventListener('keydown', (ev) => {
-      if (infoModal && ev.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') close();
+      if (!infoModal || infoModal.getAttribute('aria-hidden') !== 'false') return;
+      if (!window.Notify.claimModalEscape(ev, infoModal)) return;
+      close();
     });
     uiBound = true;
   }

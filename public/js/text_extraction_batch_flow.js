@@ -5,10 +5,13 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own batch text-extraction planning/execution state in the renderer.
-// - Reuse the existing prepare/execute/apply/snapshot contracts for multi-file work.
-// - Keep automatic heavy-PDF splitting local to its logical source input while
-//   using the normal unit model for planning and reporting.
+// - Turn selected files into a mutable batch plan and hand it to the planning modal.
+// - Validate the approved plan, run each unit through the canonical
+//   prepare/execute/apply flow, and assemble its final report.
+// - Reuse the current-text, snapshot, and processing-session contracts instead
+//   of owning parallel state.
+// - Keep automatic heavy-PDF splitting attached to its logical source input for
+//   planning, execution, and reporting.
 
 (() => {
   // =============================================================================
@@ -52,6 +55,8 @@
   const ROUTE_OCR = 'ocr';
   const GROUP_NEW_SENTINEL = '__new__';
   const { BATCH_UNIT_NAME_MAX } = AppConstants;
+  const LTR_ISOLATE = '\u2066';
+  const POP_DIRECTIONAL_ISOLATE = '\u2069';
 
   // =============================================================================
   // Shared state
@@ -74,6 +79,7 @@
       guardUserAction: null,
       hasBlockingModalOpen: null,
       hasCurrentTextSubscription: null,
+      isCurrentTextExtractionOperation: null,
       requestPreparedImport: null,
       syncMainInteractionLockUi: null,
       textExtractionStatusUi: null,
@@ -112,13 +118,36 @@
 
   function syncMainInteractionLockUi() {
     const { syncMainInteractionLockUi: syncUi } = requireDeps();
-    if (typeof syncUi === 'function') {
-      syncUi();
+    if (typeof syncUi !== 'function') {
+      log.warn('syncMainInteractionLockUi failed (ignored): dependency unavailable; main interaction lock UI sync skipped.');
+      return;
     }
+    syncUi();
+  }
+
+  function hasCurrentTextExtractionOperation(operation, { source, actionId }) {
+    const { isCurrentTextExtractionOperation: predicate } = requireDeps();
+    if (typeof predicate !== 'function') {
+      log.error('isCurrentTextExtractionOperation dependency missing; batch continuation blocked.');
+      return false;
+    }
+    try {
+      if (predicate(operation) === true) {
+        return true;
+      }
+    } catch (err) {
+      log.error('isCurrentTextExtractionOperation dependency failed; batch continuation blocked:', err);
+      return false;
+    }
+    log.warn('Batch continuation ignored because its text extraction operation is not active:', {
+      actionId,
+      source,
+    });
+    return false;
   }
 
   // =============================================================================
-  // Generic helpers
+  // Input and planner model helpers
   // =============================================================================
 
   function normalizeFilePath(rawValue) {
@@ -133,6 +162,12 @@
   function normalizeRoute(rawValue) {
     const value = normalizeNonEmptyString(rawValue).toLowerCase();
     return value === ROUTE_NATIVE || value === ROUTE_OCR ? value : '';
+  }
+
+  function normalizeRouteList(rawRoutes) {
+    return Array.isArray(rawRoutes)
+      ? rawRoutes.map((value) => normalizeRoute(value)).filter(Boolean)
+      : [];
   }
 
   function constrainFileName(rawValue) {
@@ -269,16 +304,14 @@
     if (!preparation || preparation.ok !== true) return '';
     const chosenRoute = normalizeRoute(preparation.routeMetadata && preparation.routeMetadata.chosenRoute);
     if (chosenRoute) return chosenRoute;
-    const routeOptions = Array.isArray(preparation.routeChoiceOptions)
-      ? preparation.routeChoiceOptions.map((value) => normalizeRoute(value)).filter(Boolean)
-      : [];
+    const routeOptions = normalizeRouteList(preparation.routeChoiceOptions);
     if (routeOptions.includes(ROUTE_NATIVE) && routeOptions.includes(ROUTE_OCR)) {
       return ROUTE_OCR;
     }
     if (routeOptions.length === 1) return routeOptions[0];
-    const availableRoutes = Array.isArray(preparation.routeMetadata && preparation.routeMetadata.availableRoutes)
-      ? preparation.routeMetadata.availableRoutes.map((value) => normalizeRoute(value)).filter(Boolean)
-      : [];
+    const availableRoutes = normalizeRouteList(
+      preparation.routeMetadata && preparation.routeMetadata.availableRoutes
+    );
     if (availableRoutes.includes(ROUTE_NATIVE) && availableRoutes.includes(ROUTE_OCR)) {
       return ROUTE_OCR;
     }
@@ -369,10 +402,8 @@
       prepareErrorCode: normalizeNonEmptyString(safePreparation && safePreparation.error && safePreparation.error.code),
       preparation: safePreparation,
       routeOptions: Array.isArray(safePreparation && safePreparation.routeChoiceOptions)
-        ? safePreparation.routeChoiceOptions.map((value) => normalizeRoute(value)).filter(Boolean)
-        : (Array.isArray(routeMetadata.availableRoutes)
-          ? routeMetadata.availableRoutes.map((value) => normalizeRoute(value)).filter(Boolean)
-          : []),
+        ? normalizeRouteList(safePreparation.routeChoiceOptions)
+        : normalizeRouteList(routeMetadata.availableRoutes),
       activeRoute: getInputDefaultRoute(safePreparation),
       pdfPageSelection,
       generatedPdfArtifactPolicy,
@@ -382,6 +413,10 @@
       groupKey: null,
     };
   }
+
+  // =============================================================================
+  // Planner state and plan mutations
+  // =============================================================================
 
   function syncUnitMetadata(state) {
     const visibleUnitKeys = [];
@@ -634,6 +669,10 @@
     input.pdfPageSelection = canonicalSelection;
   }
 
+  // =============================================================================
+  // Planner view model and modal controller
+  // =============================================================================
+
   function buildPlannerViewModel(state) {
     syncUnitMetadata(state);
     const units = getVisibleUnits(state);
@@ -741,7 +780,8 @@
             },
           });
         } catch (err) {
-          log.warn('Batch unit tags dialog failed (ignored):', err);
+          log.error('Batch unit tags dialog failed:', err);
+          window.Notify.notifyMain('renderer.text_extraction.alerts.batch_tags_error');
           return;
         }
         if (!nextTags) return;
@@ -751,7 +791,7 @@
   }
 
   // =============================================================================
-  // Planning / execution helpers
+  // Batch planning and start validation
   // =============================================================================
 
   async function preparePlanInputs(filePaths) {
@@ -760,7 +800,6 @@
       requestPreparedImport,
     } = requireDeps();
     const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
-      dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
       unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; batch planning cannot continue.',
     });
     if (!prepareTextExtractionSelectedFile) {
@@ -768,6 +807,10 @@
     }
     if (typeof requestPreparedImport !== 'function') {
       throw new Error('[text-extraction-batch-flow] requestPreparedImport dependency missing');
+    }
+    const hasOcrLanguageGetter = typeof getOcrLanguage === 'function';
+    if (!hasOcrLanguageGetter) {
+      log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
     }
 
     const inputs = [];
@@ -778,7 +821,7 @@
           prepareTextExtractionSelectedFile,
           preparationRequest: {
             filePath,
-            ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
+            ocrLanguage: hasOcrLanguageGetter ? (getOcrLanguage() || '') : '',
             planningMode: 'batch',
             pdfPageSelection: null,
             generatedPdfArtifactPolicy: null,
@@ -833,7 +876,6 @@
     const plannedOcrInputs = getPlannedOcrInputs(state);
     if (plannedOcrInputs.length) {
       const checkTextExtractionOcrAvailability = getOptionalElectronMethod('checkTextExtractionOcrAvailability', {
-        dedupeKey: 'renderer.ipc.checkTextExtractionOcrAvailability.unavailable',
         unavailableMessage: 'checkTextExtractionOcrAvailability unavailable; batch OCR start check cannot continue.',
       });
       if (!checkTextExtractionOcrAvailability) {
@@ -862,7 +904,6 @@
     }
 
     const getCurrentText = getOptionalElectronMethod('getCurrentText', {
-      dedupeKey: 'renderer.ipc.getCurrentText.unavailable',
       unavailableMessage: 'getCurrentText unavailable; batch overwrite confirmation check cannot continue.',
     });
     if (!getCurrentText) {
@@ -885,6 +926,10 @@
     return window.Notify.confirmMain('renderer.text_extraction.alerts.overwrite_confirm');
   }
 
+  // =============================================================================
+  // Execution results and final report helpers
+  // =============================================================================
+
   function mapPreparedIdInvalidReason(execution) {
     if (!execution || execution.code !== 'PREPARED_ID_INVALID') {
       return 'prepared_id_invalid';
@@ -901,17 +946,11 @@
       hasCurrentTextSubscription,
     } = requireDeps();
     if (typeof applyTextViaCanonicalPath !== 'function') {
-      log.warnOnce(
-        'renderer.batch.applyTextViaCanonicalPath.unavailable',
-        'applyTextViaCanonicalPath unavailable; extracted text apply skipped.'
-      );
+      log.error('Batch text apply blocked: applyTextViaCanonicalPath dependency unavailable.');
       return { ok: false, code: 'apply_unavailable' };
     }
     if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
-      log.warnOnce(
-        'renderer.batch.currentTextSubscription.unavailable',
-        'current-text-updated subscription unavailable; extracted text apply skipped.'
-      );
+      log.error('Batch text apply blocked: current-text-updated subscription unavailable.');
       return { ok: false, code: 'apply_unavailable' };
     }
     try {
@@ -936,10 +975,7 @@
 
   async function autoSaveUnitSnapshot(fileBaseSource, tags, name, sourceComment) {
     if (!window.electronAPI || typeof window.electronAPI.saveCurrentTextSnapshot !== 'function') {
-      log.warnOnce(
-        'renderer.ipc.saveCurrentTextSnapshot.unavailable',
-        'saveCurrentTextSnapshot unavailable; batch snapshot auto-save skipped.'
-      );
+      log.warn('saveCurrentTextSnapshot failed (ignored): method unavailable; batch snapshot auto-save skipped.');
       return { ok: false, code: 'WRITE_FAILED' };
     }
     try {
@@ -1003,9 +1039,6 @@
       ),
     };
   }
-
-  const LTR_ISOLATE = '\u2066';
-  const POP_DIRECTIONAL_ISOLATE = '\u2069';
 
   function formatIsolatedPageRangeToken(pdfPageSelection) {
     const totalPages = pdfPageSelection && Number.isInteger(Number(pdfPageSelection.totalPages))
@@ -1093,24 +1126,20 @@
     });
   }
 
-  function mapExecutionResultStateToReportState(executionResult) {
-    const state = executionResult && typeof executionResult.state === 'string'
-      ? executionResult.state
-      : '';
+  function mapReportState(rawState) {
+    const state = typeof rawState === 'string' ? rawState : '';
     if (state === 'success') return 'success';
     if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
     if (state === 'omitted') return 'omitted';
     return 'failed';
   }
 
+  function mapExecutionResultStateToReportState(executionResult) {
+    return mapReportState(executionResult && executionResult.state);
+  }
+
   function mapGeneratedInputStateToReportState(generatedInputState) {
-    const state = typeof generatedInputState === 'string'
-      ? generatedInputState
-      : '';
-    if (state === 'success') return 'success';
-    if (state === 'cancelled' || state.indexOf('cancelled') === 0) return 'cancelled';
-    if (state === 'omitted') return 'omitted';
-    return 'failed';
+    return mapReportState(generatedInputState);
   }
 
   function getSuccessfulTextApplicability(executionResult) {
@@ -1263,22 +1292,69 @@
     }
   }
 
-  async function isProcessingSessionActive(getTextExtractionProcessingMode) {
+  function getProcessingSessionFailureCode(result, fallbackCode) {
+    const code = result && typeof result.code === 'string' ? result.code.trim() : '';
+    return code ? code.toLowerCase() : fallbackCode;
+  }
+
+  function isUserCancelledProcessingSession(result) {
+    return !!(
+      result
+      && result.code === 'NOT_ACTIVE'
+      && result.state
+      && result.state.active === false
+    );
+  }
+
+  function getBatchProcessingSessionExitReason(batchTermination) {
+    if (batchTermination === 'cancelled') return 'batch_execution_cancelled';
+    if (batchTermination === 'failed') return 'batch_execution_failed';
+    return 'batch_execution_completed';
+  }
+
+  async function getProcessingSessionStatus(getTextExtractionProcessingMode) {
     if (typeof getTextExtractionProcessingMode !== 'function') {
-      return false;
+      log.error('Batch processing session state check unavailable.');
+      return {
+        status: 'failed',
+        code: 'processing_session_state_unavailable',
+      };
     }
     try {
       const stateResult = await getTextExtractionProcessingMode();
       if (!stateResult || stateResult.ok !== true) {
-        log.warn('Batch processing session state returned non-ok result; treating batch as cancelled:', stateResult);
-        return false;
+        log.error('Batch processing session state check failed:', stateResult);
+        return {
+          status: 'failed',
+          code: getProcessingSessionFailureCode(
+            stateResult,
+            'processing_session_state_failed'
+          ),
+        };
       }
-      return !!(stateResult.state && stateResult.state.active === true);
+      if (stateResult.state && stateResult.state.active === true) {
+        return { status: 'active' };
+      }
+      if (stateResult.state && stateResult.state.active === false) {
+        return { status: 'cancelled', code: 'aborted_by_user' };
+      }
+      log.error('Batch processing session state returned an invalid successful result:', stateResult);
+      return {
+        status: 'failed',
+        code: 'processing_session_state_invalid',
+      };
     } catch (err) {
       log.error('Batch processing session state check failed unexpectedly:', err);
-      return false;
+      return {
+        status: 'failed',
+        code: 'processing_session_state_failed',
+      };
     }
   }
+
+  // =============================================================================
+  // Batch execution lifecycle
+  // =============================================================================
 
   async function runBatchExecution(state) {
     const {
@@ -1289,28 +1365,23 @@
     if (typeof requestPreparedImport !== 'function') {
       throw new Error('[text-extraction-batch-flow] requestPreparedImport dependency missing');
     }
+    const hasOcrLanguageGetter = typeof getOcrLanguage === 'function';
     const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
-      dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
       unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; batch execution cannot continue.',
     });
     const executePreparedTextExtraction = getOptionalElectronMethod('executePreparedTextExtraction', {
-      dedupeKey: 'renderer.ipc.executePreparedTextExtraction.unavailable',
       unavailableMessage: 'executePreparedTextExtraction unavailable; batch execution cannot continue.',
     });
     const getTextExtractionProcessingMode = getOptionalElectronMethod('getTextExtractionProcessingMode', {
-      dedupeKey: 'renderer.ipc.getTextExtractionProcessingMode.unavailable',
       unavailableMessage: 'getTextExtractionProcessingMode unavailable; batch execution cannot continue.',
     });
     const enterTextExtractionProcessingSession = getOptionalElectronMethod('enterTextExtractionProcessingSession', {
-      dedupeKey: 'renderer.ipc.enterTextExtractionProcessingSession.unavailable',
       unavailableMessage: 'enterTextExtractionProcessingSession unavailable; batch execution cannot continue.',
     });
     const updateTextExtractionProcessingSession = getOptionalElectronMethod('updateTextExtractionProcessingSession', {
-      dedupeKey: 'renderer.ipc.updateTextExtractionProcessingSession.unavailable',
       unavailableMessage: 'updateTextExtractionProcessingSession unavailable; batch execution cannot continue.',
     });
     const exitTextExtractionProcessingSession = getOptionalElectronMethod('exitTextExtractionProcessingSession', {
-      dedupeKey: 'renderer.ipc.exitTextExtractionProcessingSession.unavailable',
       unavailableMessage: 'exitTextExtractionProcessingSession unavailable; batch execution cannot continue.',
     });
     if (!prepareTextExtractionSelectedFile
@@ -1360,13 +1431,13 @@
     }
     if (!sessionEnterResult || sessionEnterResult.ok !== true) {
       if (!sessionEnterThrew) {
-        log.warn('Batch processing session start returned non-ok result; batch execution cannot continue:', sessionEnterResult);
+        log.error('Batch processing session start failed:', sessionEnterResult);
       }
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 
-    let batchCancelled = false;
+    let batchTermination = 'completed';
 
     try {
       for (let unitIndex = 0; unitIndex < units.length; unitIndex += 1) {
@@ -1406,13 +1477,19 @@
             log.error('Batch processing session update failed unexpectedly:', err);
           }
           if (!sessionUpdateResult || sessionUpdateResult.ok !== true) {
-            if (!sessionUpdateThrew) {
-              log.warn('Batch processing session update returned non-ok result; treating batch as cancelled:', sessionUpdateResult);
+            const sessionCancelled = isUserCancelledProcessingSession(sessionUpdateResult);
+            if (!sessionUpdateThrew && !sessionCancelled) {
+              log.error('Batch processing session update failed:', sessionUpdateResult);
             }
-            batchCancelled = true;
+            batchTermination = sessionCancelled ? 'cancelled' : 'failed';
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
-              state: 'cancelled',
-              code: 'aborted_by_user',
+              state: sessionCancelled ? 'cancelled' : 'failed',
+              code: sessionCancelled
+                ? 'aborted_by_user'
+                : getProcessingSessionFailureCode(
+                  sessionUpdateResult,
+                  'processing_session_update_failed'
+                ),
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
@@ -1421,9 +1498,12 @@
           const executionSelection = isHeavySplitActive(input)
             ? pdfPageSelectionHelper.buildAllPagesSelection(input.pdfPageSelection && input.pdfPageSelection.totalPages)
             : cloneSelection(input.pdfPageSelection);
+          if (!hasOcrLanguageGetter) {
+            log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
+          }
           const preparationRequest = {
             filePath: input.filePath,
-            ocrLanguage: typeof getOcrLanguage === 'function' ? (getOcrLanguage() || '') : '',
+            ocrLanguage: hasOcrLanguageGetter ? (getOcrLanguage() || '') : '',
             planningMode: 'batch',
             forceHeavySplitFullSource: isHeavySplitActive(input),
             pdfPageSelection: executionSelection,
@@ -1439,11 +1519,15 @@
           } catch (err) {
             log.error('Batch execution preparation failed unexpectedly:', err);
           }
-          if (!(await isProcessingSessionActive(getTextExtractionProcessingMode))) {
-            batchCancelled = true;
+          const processingSessionStatus = await getProcessingSessionStatus(
+            getTextExtractionProcessingMode
+          );
+          if (processingSessionStatus.status !== 'active') {
+            const sessionCancelled = processingSessionStatus.status === 'cancelled';
+            batchTermination = sessionCancelled ? 'cancelled' : 'failed';
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
-              state: 'cancelled',
-              code: 'aborted_by_user',
+              state: sessionCancelled ? 'cancelled' : 'failed',
+              code: processingSessionStatus.code,
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
@@ -1502,7 +1586,7 @@
               code: failureCode,
             }));
             if (failureCode === 'active_session_required') {
-              batchCancelled = true;
+              batchTermination = 'cancelled';
               appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
               break;
             }
@@ -1575,7 +1659,7 @@
           });
 
           if (isCancelled) {
-            batchCancelled = true;
+            batchTermination = 'cancelled';
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
           }
@@ -1585,6 +1669,7 @@
           }
         }
 
+        // Automatic snapshot failures are reported per unit without stopping the batch. A later unit may overwrite unsaved text, requiring re-extraction.
         const snapshotRequired = units.length > 1 && unitProducedText;
         const snapshotResult = snapshotRequired
           ? await autoSaveUnitSnapshot(
@@ -1600,17 +1685,18 @@
         });
         finalReport.units.push(unitReport);
 
-        if (batchCancelled) {
+        if (batchTermination !== 'completed') {
           appendRemainingOmittedUnits(finalReport, units, unitIndex + 1);
           break;
         }
       }
     } finally {
       textExtractionStatusUi.clearPendingExecutionContext();
+      // Main owns the processing lock. A failed exit does not authorize the renderer to release it; NOT_ACTIVE may follow an abort. Final reporting proceeds without assuming the lock was released.
       try {
         await exitTextExtractionProcessingSession({
           source: 'text_extraction_batch_execution',
-          reason: batchCancelled ? 'batch_execution_cancelled' : 'batch_execution_completed',
+          reason: getBatchProcessingSessionExitReason(batchTermination),
         });
       } catch (err) {
         log.warn('Batch processing session exit failed (ignored):', err);
@@ -1619,10 +1705,7 @@
 
     const openSnapshotsFolder = async () => {
       if (!window.electronAPI || typeof window.electronAPI.openCurrentTextSnapshotsFolder !== 'function') {
-        log.warnOnce(
-          'renderer.ipc.openCurrentTextSnapshotsFolder.unavailable',
-          'openCurrentTextSnapshotsFolder unavailable; snapshots-folder action skipped.'
-        );
+        log.warn('openCurrentTextSnapshotsFolder failed (ignored): method unavailable.');
         return;
       }
       try {
@@ -1641,7 +1724,6 @@
         elapsedValueText: textExtractionStatusUi.getFinalElapsedValueText(),
         onRevealGeneratedPdf: async (artifactPath) => {
           const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-            dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
             unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; reveal action disabled.',
           });
           if (!revealTextExtractionGeneratedPdf) {
@@ -1672,34 +1754,47 @@
     }
   }
 
+  // =============================================================================
+  // Batch entrypoints
+  // =============================================================================
+
   async function startFromSelectedFiles({
     filePaths = [],
     source = 'picker',
     actionId = 'text-extraction-entrypoint',
     flowKind = 'batch',
     skipGuard = false,
+    operation,
   } = {}) {
     const {
       guardUserAction,
       hasBlockingModalOpen,
     } = requireDeps();
+    if (!hasCurrentTextExtractionOperation(operation, { source, actionId })) {
+      return;
+    }
     const normalizedFilePaths = Array.isArray(filePaths)
       ? filePaths.map((filePath) => normalizeFilePath(filePath)).filter(Boolean)
       : [];
     if (!normalizedFilePaths.length) return;
 
     if (!skipGuard) {
-      if (typeof guardUserAction !== 'function' || !guardUserAction(actionId)) {
+      if (typeof guardUserAction !== 'function') {
+        log.error('guardUserAction dependency missing; batch entrypoint blocked:', actionId);
+        return;
+      }
+      if (!guardUserAction(actionId)) {
         return;
       }
     }
-    if (typeof hasBlockingModalOpen === 'function' && hasBlockingModalOpen() === true) {
+    if (typeof hasBlockingModalOpen !== 'function') {
+      log.warn('hasBlockingModalOpen dependency unavailable; proceeding without modal-open guard.');
+    } else if (hasBlockingModalOpen() === true) {
       log.info('Batch planning blocked because a main-window modal is open:', { source });
       return;
     }
 
     const checkTextExtractionPreconditions = getOptionalElectronMethod('checkTextExtractionPreconditions', {
-      dedupeKey: 'renderer.ipc.checkTextExtractionPreconditions.unavailable',
       unavailableMessage: 'checkTextExtractionPreconditions unavailable; batch entrypoint skipped.',
     });
     if (!checkTextExtractionPreconditions) {
@@ -1746,6 +1841,7 @@
   async function startSyntheticSingleFileHeavySplit({
     filePath,
     source = 'single_file_heavy_split',
+    operation,
   } = {}) {
     return startFromSelectedFiles({
       filePaths: [filePath],
@@ -1753,6 +1849,7 @@
       actionId: 'text-extraction-single-file-heavy-split',
       flowKind: 'single_file_split',
       skipGuard: true,
+      operation,
     });
   }
 

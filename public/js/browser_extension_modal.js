@@ -160,8 +160,7 @@
     backdrop.addEventListener('click', closeModal);
     chromeStoreLink.addEventListener('click', handleChromeStoreLinkClick);
     window.addEventListener('keydown', (event) => {
-      if (!isModalOpen() || event.key !== 'Escape') return;
-      event.preventDefault();
+      if (!isModalOpen() || !window.Notify.claimModalEscape(event, modal)) return;
       closeModal();
     });
   }

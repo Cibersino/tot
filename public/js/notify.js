@@ -262,6 +262,23 @@
     focusWithoutScroll(reverse ? targets[targets.length - 1] : targets[0]);
   }
 
+  function isTopModal(modal) {
+    const activeEntry = modalFocusStack[modalFocusStack.length - 1] || null;
+    return !!activeEntry && activeEntry.modal === modal;
+  }
+
+  function claimModalEscape(event, modal) {
+    if (!event
+      || event.key !== 'Escape'
+      || event.defaultPrevented
+      || !isTopModal(modal)) {
+      return false;
+    }
+
+    event.preventDefault();
+    return true;
+  }
+
   function syncModalKeydownListener() {
     if (modalFocusStack.length && !modalKeydownListening) {
       document.addEventListener('keydown', handleModalFocusKeydown, true);
@@ -310,11 +327,12 @@
 
     let current = element;
     while (current) {
-      if (current.hidden === true
-        || current.inert === true
-        || getAttribute(current, 'hidden') !== null
-        || getAttribute(current, 'inert') !== null
-        || getAttribute(current, 'aria-hidden') === 'true') {
+      if (current !== document
+        && (current.hidden === true
+          || current.inert === true
+          || getAttribute(current, 'hidden') !== null
+          || getAttribute(current, 'inert') !== null
+          || getAttribute(current, 'aria-hidden') === 'true')) {
         return false;
       }
       if (current === activeModal) break;
@@ -433,6 +451,7 @@
   // =============================================================================
   const notifyApi = {
     activateModalFocus,
+    claimModalEscape,
     confirmMain,
     deactivateModalFocus,
     notifyMain,

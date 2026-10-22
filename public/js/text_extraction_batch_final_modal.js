@@ -5,14 +5,14 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Host the shared Issue 266/267 unit-based final report modal.
-// - Render retained generated-artifact reveal actions through window.Notify.
-// - Expose a copy-report and open-snapshots-folder action without creating a
-//   second reporting surface.
+// - Render the caller-supplied batch report as a modal and copied text.
+// - Own report-body rendering, action wiring, modal cleanup, and focus handoff.
+// - Register the public prompt through window.Notify and refresh an active prompt
+//   when renderer translations change.
 
 (() => {
   // =============================================================================
-  // Imports / logger
+  // Dependencies / logger
   // =============================================================================
 
   if (typeof window.getLogger !== 'function') {
@@ -30,7 +30,7 @@
   const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
-  // DOM references
+  // DOM references / shared state
   // =============================================================================
 
   const modal = document.getElementById('textExtractionBatchFinalModal');
@@ -47,7 +47,7 @@
   let activePromptTranslations = null;
 
   // =============================================================================
-  // Helpers
+  // DOM and report helpers
   // =============================================================================
 
   function hasRequiredElements() {
@@ -131,6 +131,12 @@
     };
   }
 
+  function getReportTitle(report) {
+    return report.flowKind === 'single_file_split'
+      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
+      : tRenderer('renderer.text_extraction.batch_report.title');
+  }
+
   function buildSummaryText(report) {
     const parts = [
       report && report.hadOutput
@@ -141,23 +147,6 @@
       parts.push(tRenderer('renderer.text_extraction.batch_report.snapshot_load_guidance'));
     }
     return parts.join(' ');
-  }
-
-  function createRevealGeneratedPdfButton(artifactPath) {
-    if (typeof artifactPath !== 'string' || !artifactPath.trim()) {
-      return null;
-    }
-    const label = tRenderer('renderer.text_extraction.batch_report.reveal_generated_pdf');
-    const button = rendererIcons.createIconButton({
-      iconName: 'open-target',
-      className: 'btn-standard btn-standard--square-half',
-      ariaLabel: label,
-      type: 'button',
-    });
-    button.setAttribute('data-tot-tooltip', label);
-    button.setAttribute('data-action', 'reveal-generated-pdf');
-    button.setAttribute('data-artifact-path', artifactPath);
-    return button;
   }
 
   function normalizeReportState(state) {
@@ -241,6 +230,39 @@
     return normalizedState;
   }
 
+  function getRetainedArtifactPath(item) {
+    return item
+      && item.generatedPdfArtifact
+      && item.generatedPdfArtifact.retainedArtifactPath;
+  }
+
+  function getSnapshotResultText(unit) {
+    return unit && unit.snapshotResult
+      ? unit.snapshotResult.text
+      : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
+  }
+
+  // =============================================================================
+  // Report rendering
+  // =============================================================================
+
+  function createRevealGeneratedPdfButton(artifactPath) {
+    if (typeof artifactPath !== 'string' || !artifactPath.trim()) {
+      return null;
+    }
+    const label = tRenderer('renderer.text_extraction.batch_report.reveal_generated_pdf');
+    const button = rendererIcons.createIconButton({
+      iconName: 'open-target',
+      className: 'btn-standard btn-standard--square-half',
+      ariaLabel: label,
+      type: 'button',
+    });
+    button.setAttribute('data-tot-tooltip', label);
+    button.setAttribute('data-action', 'reveal-generated-pdf');
+    button.setAttribute('data-artifact-path', artifactPath);
+    return button;
+  }
+
   function createReportItemLabel(displayName, item) {
     const label = createDomElement('span', {
       className: 'text-extraction-batch-final-item-label',
@@ -258,18 +280,6 @@
       }));
     }
     return label;
-  }
-
-  function getRetainedArtifactPath(item) {
-    return item
-      && item.generatedPdfArtifact
-      && item.generatedPdfArtifact.retainedArtifactPath;
-  }
-
-  function getSnapshotResultText(unit) {
-    return unit && unit.snapshotResult
-      ? unit.snapshotResult.text
-      : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
   }
 
   function renderGeneratedInputRow(generatedInput, index, unitKey) {
@@ -337,8 +347,7 @@
       body.replaceChildren(...unitNodes);
       return;
     }
-    log.warnOnce(
-      'text-extraction.batch-final.replace-children-body-unavailable',
+    log.warn(
       'Batch final report: replaceChildren unavailable; using DOM fallback.'
     );
     while (body.firstChild) {
@@ -347,11 +356,13 @@
     unitNodes.forEach((node) => body.appendChild(node));
   }
 
+  // =============================================================================
+  // Copy report / translation refresh
+  // =============================================================================
+
   function buildReportText(report, elapsedValueText = '') {
     const lines = [];
-    lines.push(report.flowKind === 'single_file_split'
-      ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
-      : tRenderer('renderer.text_extraction.batch_report.title'));
+    lines.push(getReportTitle(report));
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
     if (normalizedElapsedValueText) {
       lines.push(`${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`);
@@ -404,16 +415,14 @@
       return;
     }
     if (!report || typeof report !== 'object' || !Array.isArray(report.units)) {
-      log.warn('Batch final modal received invalid report payload; rendering fallback report.');
+      log.warn('Batch final modal received invalid report payload; rendering normalized report.');
     }
     const safeReport = normalizeReport(report);
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
     let reportText = '';
     const renderModalCopy = () => {
       reportText = buildReportText(safeReport, normalizedElapsedValueText);
-      title.textContent = safeReport.flowKind === 'single_file_split'
-        ? tRenderer('renderer.text_extraction.batch_report.single_file_title')
-        : tRenderer('renderer.text_extraction.batch_report.title');
+      title.textContent = getReportTitle(safeReport);
       summary.textContent = buildSummaryText(safeReport);
       if (normalizedElapsedValueText) {
         elapsed.textContent = `${tRenderer('renderer.text_extraction.batch_report.elapsed')}${normalizedElapsedValueText}`;
@@ -431,6 +440,7 @@
 
     return new Promise((resolve) => {
       let settled = false;
+      // A refresh replaces report-body nodes, so return body focus to a stable control.
       const refreshModalTranslations = () => {
         const scrollTop = typeof panel.scrollTop === 'number' ? panel.scrollTop : 0;
         const hadBodyFocus = !!(document.activeElement && body.contains(document.activeElement));
@@ -451,6 +461,7 @@
         window.Notify.deactivateModalFocus(modal);
       };
 
+      // Settle once so every completion path removes prompt-local listeners and focus state.
       const finish = () => {
         if (settled) return;
         settled = true;
@@ -458,6 +469,7 @@
         resolve();
       };
 
+      // Delegate because renderModalCopy replaces report-body nodes.
       const onBodyClick = async (event) => {
         const target = event.target && event.target.closest ? event.target.closest('[data-action="reveal-generated-pdf"]') : null;
         if (!target) return;
@@ -468,7 +480,7 @@
         try {
           await onRevealGeneratedPdf(target.getAttribute('data-artifact-path') || '');
         } catch (err) {
-          log.error('Generated PDF reveal failed from final modal:', err);
+          log.error('Generated PDF reveal failed (ignored):', err);
           window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         }
       };
@@ -476,7 +488,7 @@
         try {
           await copyReportText(reportText);
         } catch (err) {
-          log.error('Batch report copy failed:', err);
+          log.error('Batch report copy failed (ignored):', err);
         }
       };
       const onOpenSnapshots = async () => {
@@ -487,16 +499,14 @@
         try {
           await onOpenSnapshotsFolder();
         } catch (err) {
-          log.error('Open snapshots folder failed:', err);
+          log.error('Open snapshots folder failed (ignored):', err);
         }
       };
       const onOk = () => finish();
       const onWindowKeyDown = (event) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          finish();
-        }
+        if (!window.Notify.claimModalEscape(event, modal)) return;
+        finish();
       };
 
       body.addEventListener('click', onBodyClick);

@@ -51,7 +51,10 @@ if (!textExtractionEntry
   || typeof textExtractionEntry.configure !== 'function'
   || typeof textExtractionEntry.startFromFilePath !== 'function'
   || typeof textExtractionEntry.startFromFilePaths !== 'function'
-  || typeof textExtractionEntry.startFromPicker !== 'function') {
+  || typeof textExtractionEntry.startFromDroppedFiles !== 'function'
+  || typeof textExtractionEntry.startFromPicker !== 'function'
+  || typeof textExtractionEntry.isCurrentOperation !== 'function'
+  || typeof textExtractionEntry.isOperationActive !== 'function') {
   throw new Error('[renderer] TextExtractionEntry unavailable; cannot continue');
 }
 
@@ -503,6 +506,8 @@ function canAcceptTextExtractionDrop() {
     && !isCurrentTextAreaPendingActive()
     && !isAbortFinalizationActive()
     && !isReadingTestSessionActive()
+    // An active Entry operation suppresses the drop affordance without a busy toast. Entry remains the authoritative admission gate for drops that pass this early UI check.
+    && !textExtractionEntry.isOperationActive()
     && !hasBlockingMainWindowModalOpen();
 }
 
@@ -1681,19 +1686,6 @@ function configureTextExtractionModules() {
     log.warn('TextExtractionOcrActivationRecovery.configure unavailable; OCR setup recovery will be disabled.');
   }
 
-  textExtractionBatchFlow.configure({
-    applyTextViaCanonicalPath,
-    getOptionalElectronMethod,
-    getOcrLanguage: () => idiomaActual || '',
-    getSettingsCache: () => settingsCache,
-    guardUserAction,
-    hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
-    hasCurrentTextSubscription: () => hasCurrentTextSubscription,
-    requestPreparedImport,
-    syncMainInteractionLockUi,
-    textExtractionStatusUi,
-  });
-
   textExtractionEntry.configure({
     applyTextViaCanonicalPath,
     getClipboardRepeatCount: () => currentTextSelectorSection.getClipboardRepeatCount(),
@@ -1708,13 +1700,26 @@ function configureTextExtractionModules() {
     isLatestTextExtractionPrepareAttempt,
     maybeRecoverTextExtractionOcrSetupAndRetry,
     requestPreparedImport,
+    resolveDroppedFilePath,
+  });
+
+  textExtractionBatchFlow.configure({
+    applyTextViaCanonicalPath,
+    getOptionalElectronMethod,
+    getOcrLanguage: () => idiomaActual || '',
+    getSettingsCache: () => settingsCache,
+    guardUserAction,
+    hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
+    hasCurrentTextSubscription: () => hasCurrentTextSubscription,
+    isCurrentTextExtractionOperation: textExtractionEntry.isCurrentOperation,
+    requestPreparedImport,
+    syncMainInteractionLockUi,
+    textExtractionStatusUi,
   });
 
   textExtractionDragDrop.configure({
     canAcceptDrop: canAcceptTextExtractionDrop,
-    resolveDroppedFilePath,
-    startFromFilePath: textExtractionEntry.startFromFilePath,
-    startFromFilePaths: textExtractionEntry.startFromFilePaths,
+    startFromDroppedFiles: textExtractionEntry.startFromDroppedFiles,
   });
 
   if (textExtractionOcrDisconnect

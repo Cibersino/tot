@@ -5,13 +5,14 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Host text extraction route-choice modal behavior.
-// - Prompt only when both `native` and `ocr` routes are available for the prepared file.
-// - Resolve user route selection (`native` / `ocr`) without renderer orchestration bloat.
+// - Own the DOM and focus lifecycle for the text-extraction route-choice modal.
+// - Prompt only when the prepared file offers both `native` and `ocr` routes.
+// - Refresh active modal copy during renderer language changes.
+// - Register the prompt through `window.Notify` for the extraction entry flow.
 
 (() => {
   // =============================================================================
-  // Imports / logger
+  // Required renderer dependencies
   // =============================================================================
 
   if (typeof window.getLogger !== 'function') {
@@ -25,7 +26,7 @@
   const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
-  // UI elements
+  // Modal DOM and prompt state
   // =============================================================================
 
   const modal = document.getElementById('textExtractionRouteModal');
@@ -39,7 +40,7 @@
   let activePromptTranslations = null;
 
   // =============================================================================
-  // Helpers
+  // Validation and translation helpers
   // =============================================================================
 
   function hasRequiredElements() {
@@ -74,7 +75,7 @@
   }
 
   // =============================================================================
-  // Public entrypoints
+  // Prompt lifecycle
   // =============================================================================
 
   async function promptRouteChoice({ preparation } = {}) {
@@ -82,8 +83,7 @@
       return '';
     }
     if (!hasRequiredElements()) {
-      log.error('Route-choice modal DOM elements missing.');
-      return '';
+      throw new Error('Route-choice modal DOM elements missing.');
     }
 
     applyModalCopy();
@@ -115,10 +115,8 @@
       const onCancel = () => finish('');
       const onWindowKeyDown = (ev) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
-        if (ev.key === 'Escape') {
-          ev.preventDefault();
-          finish('');
-        }
+        if (!window.Notify.claimModalEscape(ev, modal)) return;
+        finish('');
       };
 
       btnNative.addEventListener('click', onNative);
@@ -138,7 +136,7 @@
   }
 
   // =============================================================================
-  // Exports / module surface
+  // Public registration and module surface
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionRouteChoice', promptRouteChoice);

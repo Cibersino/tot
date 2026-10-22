@@ -791,10 +791,8 @@
     });
     window.addEventListener('keydown', (event) => {
       if (!isModalOpen()) return;
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeModal();
-      }
+      if (!window.Notify.claimModalEscape(event, modal)) return;
+      closeModal();
     });
   }
 

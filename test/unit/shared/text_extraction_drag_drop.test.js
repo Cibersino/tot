@@ -90,6 +90,9 @@ function createHarness() {
     getListenerCount() {
       return listeners.size;
     },
+    getListener(type) {
+      return listeners.get(type);
+    },
     establishTranslations() {
       translationsEstablished = true;
     },
@@ -104,11 +107,7 @@ test('drag/drop configuration wires an untranslated overlay until Main applies t
       canAcceptDrop() {
         return false;
       },
-      async resolveDroppedFilePath() {
-        return '';
-      },
-      async startFromFilePath() {},
-      async startFromFilePaths() {},
+      async startFromDroppedFiles() {},
     });
   });
   assert.ok(harness.getOverlay());
@@ -120,4 +119,41 @@ test('drag/drop configuration wires an untranslated overlay until Main applies t
 
   assert.equal(harness.getTranslationCalls(), 1);
   assert.equal(harness.getOverlayMessage().textContent, 'Drop files here');
+});
+
+test('drag/drop forwards raw files to the admitted Entry root', async () => {
+  const harness = createHarness();
+  const droppedFiles = [{ name: 'first.pdf' }, { name: 'second.pdf' }];
+  const starts = [];
+  harness.dragDrop.configure({
+    canAcceptDrop() {
+      return true;
+    },
+    async startFromDroppedFiles(payload) {
+      starts.push(payload);
+    },
+  });
+
+  let prevented = false;
+  let propagationStopped = false;
+  await harness.getListener('drop')({
+    dataTransfer: {
+      types: ['Files'],
+      files: droppedFiles,
+    },
+    preventDefault() {
+      prevented = true;
+    },
+    stopPropagation() {
+      propagationStopped = true;
+    },
+  });
+
+  assert.equal(prevented, true);
+  assert.equal(propagationStopped, true);
+  assert.equal(starts.length, 1);
+  assert.equal(starts[0].source, 'drop');
+  assert.equal(starts[0].files.length, 2);
+  assert.equal(starts[0].files[0], droppedFiles[0]);
+  assert.equal(starts[0].files[1], droppedFiles[1]);
 });

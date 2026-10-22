@@ -69,6 +69,7 @@
       && btnClose);
   }
 
+  // The public normalizer can be unavailable while canonical text application remains usable. This local fallback only normalizes the repeat count; it does not replace the canonical text-application path.
   function normalizeRepeatForModal(rawValue, maxRepeat) {
     if (window.TextApplyCanonical && typeof window.TextApplyCanonical.normalizeRepeat === 'function') {
       return window.TextApplyCanonical.normalizeRepeat(rawValue, { maxRepeat });
@@ -113,8 +114,7 @@
     onRevealGeneratedPdf = null,
   } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Apply modal DOM elements missing.');
-      return null;
+      throw new Error('Apply modal DOM elements missing.');
     }
 
     const safeMaxRepeat = Number.isInteger(Number(maxRepeat)) && Number(maxRepeat) > 0
@@ -243,6 +243,7 @@
         event.preventDefault();
         repeatInput.blur();
       };
+      // Reveal completion and failure reporting are independent of prompt settlement. A late completion may re-enable the shared button, but each prompt's revealPending guard prevents duplicate requests during its own reveal.
       const onRevealSavedPdf = async () => {
         if (!canRevealGeneratedPdf || revealPending) return;
         revealPending = true;
@@ -259,10 +260,8 @@
       };
       const onWindowKeyDown = (ev) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
-        if (ev.key === 'Escape') {
-          ev.preventDefault();
-          finish(null);
-        }
+        if (!window.Notify.claimModalEscape(ev, modal)) return;
+        finish(null);
       };
 
       btnOverwrite.addEventListener('click', onOverwrite);

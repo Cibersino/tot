@@ -127,6 +127,7 @@ async function createRendererHarness({
   const pendingStates = [];
   const subscriptions = {};
   const textExtractionDragDropConfigs = [];
+  const textExtractionEntryConfigs = [];
   const warnings = [];
   const warningOnceKeys = new Set();
   const currentTextRuntimeCalls = {
@@ -447,7 +448,11 @@ async function createRendererHarness({
     TextExtractionDragDrop: createNoopSurface({
       configure(config) { textExtractionDragDropConfigs.push(config); },
     }),
-    TextExtractionEntry: createNoopSurface(),
+    TextExtractionEntry: createNoopSurface({
+      configure(config) { textExtractionEntryConfigs.push(config); },
+      isCurrentOperation() { return false; },
+      isOperationActive() { return false; },
+    }),
     TextExtractionOcrActivationDisclosureModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionOcrActivationDisclosureModal'); },
     },
@@ -556,6 +561,10 @@ async function createRendererHarness({
     getTextExtractionDragDropConfig() {
       assert.equal(textExtractionDragDropConfigs.length, 1);
       return textExtractionDragDropConfigs[0];
+    },
+    getTextExtractionEntryConfig() {
+      assert.equal(textExtractionEntryConfigs.length, 1);
+      return textExtractionEntryConfigs[0];
     },
     getPresetCreatedCalls() {
       return presetCreatedCalls;
@@ -998,7 +1007,7 @@ test('main renderer Spoiler persistence adapter rejects non-ok bridge results', 
   assert.equal(persistCalls, 1);
 });
 
-test('main renderer resolves dropped file paths only through getPathForFile', async () => {
+test('main renderer wires Entry dropped-file resolution only through getPathForFile', async () => {
   const droppedFile = { path: 'C:\\legacy\\drop.txt' };
   let receivedFile = null;
   const validHarness = await createRendererHarness({
@@ -1009,7 +1018,7 @@ test('main renderer resolves dropped file paths only through getPathForFile', as
       },
     },
   });
-  const validResolver = validHarness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+  const validResolver = validHarness.getTextExtractionEntryConfig().resolveDroppedFilePath;
 
   assert.equal(await validResolver(droppedFile), 'C:\\current\\drop.txt');
   assert.equal(receivedFile, droppedFile);
@@ -1045,7 +1054,7 @@ test('main renderer resolves dropped file paths only through getPathForFile', as
 
   for (const { name, options, diagnostic } of unresolvedCases) {
     const harness = await createRendererHarness(options);
-    const resolver = harness.getTextExtractionDragDropConfig().resolveDroppedFilePath;
+    const resolver = harness.getTextExtractionEntryConfig().resolveDroppedFilePath;
 
     assert.equal(await resolver(droppedFile), '', `${name} result should leave the file unresolved`);
     assert.ok(
@@ -1391,7 +1400,9 @@ test('main markup exposes precise-mode help only through the explicit descriptio
 
 test('main markup reaches primary controls before the fixed brand-link actions', () => {
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
-  const bodyStart = markup.indexOf('<body>');
+  const bodyTag = '<body tabindex="-1">';
+  const bodyStart = markup.indexOf(bodyTag);
+  const bodyEnd = bodyStart + bodyTag.length;
   const appTitle = markup.indexOf('<h1 class="main-accessible-title">toT</h1>');
   const textExtractionAction = markup.indexOf('id="btnTextExtraction"');
   const textExtractionButtonStart = markup.lastIndexOf('<button', textExtractionAction);
@@ -1407,7 +1418,7 @@ test('main markup reaches primary controls before the fixed brand-link actions',
     markup.slice(bodyStart, textExtractionButtonStart),
     /<(?:a|button|input|select|textarea)\b/i
   );
-  assert.doesNotMatch(markup.slice(bodyStart, textExtractionButtonStart), /\btabindex\s*=/i);
+  assert.doesNotMatch(markup.slice(bodyEnd, textExtractionButtonStart), /\btabindex\s*=/i);
 });
 
 test('Editor launch lifecycle exposes, retranslates, and clears real live-region status text', async () => {

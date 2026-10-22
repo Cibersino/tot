@@ -730,7 +730,7 @@
   async function promptSnapshotTagManager(options = {}) {
     if (!hasRequiredElements()) {
       log.error('Snapshot tag manager DOM elements missing.');
-      return null;
+      throw new Error('Snapshot tag manager DOM elements missing.');
     }
 
     let managerPreferences = await loadSnapshotTagPreferences(options.initialPreferences || null);
@@ -1117,8 +1117,7 @@
 
       function onWindowKeyDown(event) {
         if (!isManagerModalOpen()) return;
-        if (event.key !== 'Escape') return;
-        event.preventDefault();
+        if (!window.Notify.claimModalEscape(event, managerModal)) return;
         finish(managerPreferences);
       }
 
@@ -1142,8 +1141,7 @@
   // =============================================================================
   async function promptSnapshot(options = {}, { includeSaveFields } = {}) {
     if (!hasRequiredElements()) {
-      log.error('Snapshot prompt DOM elements missing.');
-      return null;
+      throw new Error('Snapshot prompt DOM elements missing.');
     }
 
     ensureFieldEventsBound();
@@ -1269,7 +1267,7 @@
       }
 
       function onWindowKeyDown(ev) {
-        if (modal.getAttribute('aria-hidden') !== 'false' || isManagerModalOpen()) return;
+        if (modal.getAttribute('aria-hidden') !== 'false') return;
         if (ev.key !== 'Escape') return;
 
         const openFieldDef = FIELD_DEFS.find((field) => isFieldOpen(field.key));
@@ -1279,7 +1277,7 @@
           return;
         }
 
-        ev.preventDefault();
+        if (!window.Notify.claimModalEscape(ev, modal)) return;
         requestAction('cancel');
       }
 
