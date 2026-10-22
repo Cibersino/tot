@@ -1400,7 +1400,9 @@ test('main markup exposes precise-mode help only through the explicit descriptio
 
 test('main markup reaches primary controls before the fixed brand-link actions', () => {
   const markup = fs.readFileSync(path.resolve(__dirname, '../../../public/index.html'), 'utf8');
-  const bodyStart = markup.indexOf('<body>');
+  const bodyTag = '<body tabindex="-1">';
+  const bodyStart = markup.indexOf(bodyTag);
+  const bodyEnd = bodyStart + bodyTag.length;
   const appTitle = markup.indexOf('<h1 class="main-accessible-title">toT</h1>');
   const textExtractionAction = markup.indexOf('id="btnTextExtraction"');
   const textExtractionButtonStart = markup.lastIndexOf('<button', textExtractionAction);
@@ -1416,7 +1418,7 @@ test('main markup reaches primary controls before the fixed brand-link actions',
     markup.slice(bodyStart, textExtractionButtonStart),
     /<(?:a|button|input|select|textarea)\b/i
   );
-  assert.doesNotMatch(markup.slice(bodyStart, textExtractionButtonStart), /\btabindex\s*=/i);
+  assert.doesNotMatch(markup.slice(bodyEnd, textExtractionButtonStart), /\btabindex\s*=/i);
 });
 
 test('Editor launch lifecycle exposes, retranslates, and clears real live-region status text', async () => {
