@@ -8,7 +8,7 @@
 // - Host the blocking modal used for single-file heavy-PDF decisions.
 // - Resolve case-specific copy and detail rows for Case A and Case B.
 // - Wire the modal actions that return split, page-selection, native, or cancel.
-// - Expose retained generated-PDF reveal behavior when the callback is available.
+// - Expose retained generated-PDF reveal through a caller-provided callback.
 
 (() => {
   // =============================================================================
@@ -311,6 +311,7 @@
           window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         } finally {
           revealPending = false;
+          // btnReveal is reused by later prompts; stale completions must not update it.
           if (!settled) {
             btnReveal.disabled = false;
           }
