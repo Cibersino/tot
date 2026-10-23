@@ -66,6 +66,7 @@
   const btnCancel = document.getElementById('textExtractionPdfOptionsModalCancel');
   const btnClose = document.getElementById('textExtractionPdfOptionsModalClose');
   let activePromptTranslations = null;
+  let pageSelectionDraft = null;
 
   // =============================================================================
   // Helpers
@@ -151,8 +152,6 @@
     syncPageSelectionControls(uiState, { preserveTypedValues });
     return uiState;
   }
-
-  let pageSelectionDraft = null;
 
   function buildModalResult() {
     const uiState = pdfPageSelectionHelper.getPageSelectionUiState(pageSelectionDraft);
