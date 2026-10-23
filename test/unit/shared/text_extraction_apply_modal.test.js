@@ -219,6 +219,8 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
   assert.equal(harness.elements.textExtractionApplyModalElapsed.textContent, 'Elapsed: 00:42');
   assert.equal(harness.elements.textExtractionApplyModalSavedPdf.hidden, false);
   assert.equal(harness.elements.textExtractionApplyModalSavedPdfFile.textContent, 'Generated PDF: output.pdf');
+  assert.equal(harness.elements.textExtractionApplyModalRevealSavedPdf.hidden, false);
+  assert.equal(harness.elements.textExtractionApplyModalRevealSavedPdf.disabled, false);
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.value, '3');
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.focusCount, 0);
   assert.equal(harness.elements.textExtractionApplyModalRepeatInput.selectCount, 0);
@@ -260,7 +262,24 @@ test('apply modal renders retained PDF details, normalizes repeat count, and res
   );
 });
 
-test('apply modal reports retained PDF reveal failures through window.Notify.notifyMain', async () => {
+test('apply modal presents retained PDF details when no reveal action is supplied', async () => {
+  const harness = createHarness();
+
+  const promptPromise = harness.prompt({
+    retainedGeneratedPdf: { fileName: 'output.pdf' },
+  });
+
+  assert.equal(harness.elements.textExtractionApplyModalSavedPdf.hidden, false);
+  assert.equal(harness.elements.textExtractionApplyModalSavedPdfMessage.textContent, 'A generated PDF was retained.');
+  assert.equal(harness.elements.textExtractionApplyModalSavedPdfFile.textContent, 'Generated PDF: output.pdf');
+  assert.equal(harness.elements.textExtractionApplyModalRevealSavedPdf.hidden, true);
+  assert.equal(harness.elements.textExtractionApplyModalRevealSavedPdf.disabled, true);
+
+  harness.elements.textExtractionApplyModalCancel.dispatch('click');
+  assert.equal(await promptPromise, null);
+});
+
+test('apply modal keeps the retained PDF reveal action available and reports its failures', async () => {
   const harness = createHarness();
 
   const promptPromise = harness.prompt({
@@ -269,6 +288,11 @@ test('apply modal reports retained PDF reveal failures through window.Notify.not
       throw new Error('reveal failed');
     },
   });
+
+  assert.equal(harness.elements.textExtractionApplyModalSavedPdf.hidden, false);
+  assert.equal(harness.elements.textExtractionApplyModalSavedPdfFile.textContent, 'Generated PDF: output.pdf');
+  assert.equal(harness.elements.textExtractionApplyModalRevealSavedPdf.hidden, false);
+  assert.equal(harness.elements.textExtractionApplyModalRevealSavedPdf.disabled, false);
 
   harness.elements.textExtractionApplyModalRevealSavedPdf.dispatch('click');
   await flushMicrotasks();

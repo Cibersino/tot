@@ -780,12 +780,6 @@
           ? getClipboardRepeatCount()
           : 1;
         const retainedGeneratedPdf = resolveRetainedGeneratedPdf(execution.result);
-        const revealTextExtractionGeneratedPdf = retainedGeneratedPdf
-          ? getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-            dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
-            unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.'
-          })
-          : null;
         let applyChoice = null;
         try {
           applyChoice = await window.Notify.promptTextExtractionApplyChoice({
@@ -796,8 +790,15 @@
             retainedGeneratedPdf: retainedGeneratedPdf
               ? { fileName: retainedGeneratedPdf.fileName }
               : null,
-            onRevealGeneratedPdf: revealTextExtractionGeneratedPdf
+            onRevealGeneratedPdf: retainedGeneratedPdf
               ? async () => {
+                const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
+                  dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
+                  unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action unavailable.'
+                });
+                if (!revealTextExtractionGeneratedPdf) {
+                  throw new Error('revealTextExtractionGeneratedPdf unavailable');
+                }
                 const revealResult = await revealTextExtractionGeneratedPdf({
                   artifactPath: retainedGeneratedPdf.artifactPath,
                 });

@@ -22,6 +22,7 @@ function createHarness({
   checkTextExtractionPreconditionsImpl = null,
   openTextExtractionPickerImpl = null,
   resolveDroppedFilePathImpl = null,
+  revealTextExtractionGeneratedPdfImpl = null,
   startFromSelectedFilesImpl = null,
   startSyntheticSingleFileHeavySplitImpl = null,
   maybeRecoverTextExtractionOcrSetupAndRetryImpl = null,
@@ -36,6 +37,7 @@ function createHarness({
   let executePreparedTextExtractionCallCount = 0;
   let checkTextExtractionPreconditionsCallCount = 0;
   let openTextExtractionPickerCallCount = 0;
+  let revealTextExtractionGeneratedPdfLookupCount = 0;
   let syncMainInteractionLockUiCallCount = 0;
   let abortFinalizationActive = false;
   const nextPdfOptionsResponses = Array.isArray(pdfOptionsResponses)
@@ -161,6 +163,13 @@ function createHarness({
       return 'en';
     },
     getOptionalElectronMethod(methodName) {
+      if (methodName === 'revealTextExtractionGeneratedPdf') {
+        revealTextExtractionGeneratedPdfLookupCount += 1;
+        if (typeof revealTextExtractionGeneratedPdfImpl === 'function') {
+          return revealTextExtractionGeneratedPdfImpl();
+        }
+        return null;
+      }
       if (methodName === 'checkTextExtractionPreconditions') {
         return async () => {
           checkTextExtractionPreconditionsCallCount += 1;
@@ -312,6 +321,9 @@ function createHarness({
     },
     getOpenTextExtractionPickerCallCount() {
       return openTextExtractionPickerCallCount;
+    },
+    getRevealTextExtractionGeneratedPdfLookupCount() {
+      return revealTextExtractionGeneratedPdfLookupCount;
     },
     getSyncMainInteractionLockUiCallCount() {
       return syncMainInteractionLockUiCallCount;
@@ -481,6 +493,45 @@ test('single-file apply-choice dismissal retains admission until the terminal pr
     source: 'test',
   });
   assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+});
+
+test('retained generated-PDF disclosure reaches the Apply prompt before its optional reveal bridge is resolved', async () => {
+  const revealBridgeLookupError = new Error('reveal bridge lookup failed');
+  const harness = createHarness({
+    revealTextExtractionGeneratedPdfImpl() {
+      throw revealBridgeLookupError;
+    },
+    executePreparedTextExtractionResult: {
+      ok: true,
+      result: {
+        state: 'success',
+        text: 'Extracted text',
+        textApplicability: 'applicable',
+        generatedPdfArtifact: {
+          retained: true,
+          fileName: 'book_pages_100_220.pdf',
+          retainedArtifactPath: 'C:\\retained\\book_pages_100_220.pdf',
+        },
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  const modalOptions = harness.getCapturedApplyPromptOptions();
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(modalOptions.retainedGeneratedPdf)),
+    { fileName: 'book_pages_100_220.pdf' }
+  );
+  assert.equal(typeof modalOptions.onRevealGeneratedPdf, 'function');
+  assert.equal(harness.getRevealTextExtractionGeneratedPdfLookupCount(), 0);
+  assert.deepEqual(harness.notifications, []);
+
+  await assert.rejects(modalOptions.onRevealGeneratedPdf(), revealBridgeLookupError);
+  assert.equal(harness.getRevealTextExtractionGeneratedPdfLookupCount(), 1);
 });
 
 test('stale preparation discard releases admission for the next independent request', async () => {
