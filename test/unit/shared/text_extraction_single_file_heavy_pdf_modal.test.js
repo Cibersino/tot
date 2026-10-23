@@ -143,6 +143,7 @@ function createHarness({ missingElementIds = [] } = {}) {
   });
 
   const windowListeners = new Map();
+  const loggerCalls = [];
   const notifiedKeys = [];
   const translations = {
     'renderer.text_extraction.single_file_heavy.case_a_title': 'Full PDF too large for OCR',
@@ -181,11 +182,21 @@ function createHarness({ missingElementIds = [] } = {}) {
       },
       getLogger() {
         return {
-          debug() {},
-          info() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
+          debug(...args) {
+            loggerCalls.push({ level: 'debug', args });
+          },
+          info(...args) {
+            loggerCalls.push({ level: 'info', args });
+          },
+          warn(...args) {
+            loggerCalls.push({ level: 'warn', args });
+          },
+          warnOnce(...args) {
+            loggerCalls.push({ level: 'warnOnce', args });
+          },
+          error(...args) {
+            loggerCalls.push({ level: 'error', args });
+          },
         };
       },
       RendererI18n: {
@@ -237,6 +248,7 @@ function createHarness({ missingElementIds = [] } = {}) {
 
   return {
     elements,
+    loggerCalls,
     notifiedKeys,
     translations,
     applyTranslations: sandbox.window.TextExtractionSingleFileHeavyPdfModal.applyTranslations,
@@ -488,6 +500,12 @@ test('single-file heavy PDF modal prevents concurrent reveals and allows retry a
   assert.deepEqual(harness.notifiedKeys, [
     'renderer.text_extraction.alerts.generated_pdf_reveal_failed',
   ]);
+  assert.deepEqual(
+    harness.loggerCalls
+      .filter(({ level, args }) => level === 'error' && args[0] === 'Single-file heavy modal reveal failed:')
+      .map(({ level, args }) => ({ level, message: args[0] })),
+    [{ level: 'error', message: 'Single-file heavy modal reveal failed:' }]
+  );
   assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, false);
 
   harness.elements.textExtractionSingleFileHeavyPdfModalReveal.dispatch('click');
