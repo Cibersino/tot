@@ -332,8 +332,10 @@
 
   function renderElapsedLabelWithValue(container, labelKey, valueText) {
     if (!container) return;
+    const labelText = tRenderer(labelKey);
+    if (container.textContent === `${labelText}${valueText}`) return;
     renderLocalizedLabelWithInvariantValue(container, {
-      labelText: tRenderer(labelKey),
+      labelText,
       valueText,
       valueDirection: 'ltr',
     });

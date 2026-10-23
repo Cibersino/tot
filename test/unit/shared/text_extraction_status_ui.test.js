@@ -41,6 +41,7 @@ function createElement(id) {
 function createHarness({ semanticReady = true } = {}) {
   let nowMs = 0;
   let nextIntervalId = 1;
+  let elapsedLabelRenderCount = 0;
   const intervals = new Map();
 
   const elements = {
@@ -86,6 +87,7 @@ function createHarness({ semanticReady = true } = {}) {
           return translations[key] || key;
         },
         renderLocalizedLabelWithInvariantValue(container, { labelText, valueText }) {
+          elapsedLabelRenderCount += 1;
           container.textContent = `${labelText}${valueText}`;
         },
       },
@@ -142,6 +144,12 @@ function createHarness({ semanticReady = true } = {}) {
     },
     getElapsedTimerCount() {
       return intervals.size;
+    },
+    getElapsedLabelRenderCount() {
+      return elapsedLabelRenderCount;
+    },
+    setTranslation(key, value) {
+      translations[key] = value;
     },
   };
 }
@@ -392,6 +400,37 @@ test('elapsed timer updates only row 2 until delayed OCR copy threshold is reach
     harness.elements.textExtractionProcessingFilename.textContentWriteCount,
     initialFilenameWrites
   );
+});
+
+test('elapsed rendering skips equivalent content and refreshes changed translations', () => {
+  const harness = createHarness();
+  harness.setNowMs(1000);
+  harness.api.applyProcessingModeState({
+    active: true,
+    lockId: 1,
+    sinceEpochMs: 1000,
+  }, { source: 'test' });
+
+  assert.equal(harness.getElapsedLabelRenderCount(), 1);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:00');
+
+  harness.setNowMs(1250);
+  harness.tickElapsedTimer();
+
+  assert.equal(harness.getElapsedLabelRenderCount(), 1);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:00');
+
+  harness.setNowMs(2000);
+  harness.tickElapsedTimer();
+
+  assert.equal(harness.getElapsedLabelRenderCount(), 2);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:01');
+
+  harness.setTranslation('renderer.main.processing.text_extraction_elapsed', 'Time: ');
+  harness.api.applyTranslations();
+
+  assert.equal(harness.getElapsedLabelRenderCount(), 3);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Time: 00:01');
 });
 
 test('abort finalization keeps the processing shell visible with frozen elapsed time', () => {
