@@ -341,44 +341,6 @@
     });
   }
 
-  function getBusyLabelText({ elapsedMsOverride = null } = {}) {
-    if (isAbortFinalizationActive()) {
-      return tRenderer('renderer.main.processing.text_extraction_cancellation_pending');
-    }
-    const progressLabelText = getProgressLabelText();
-    if (progressLabelText) {
-      return progressLabelText;
-    }
-    if (isPrepareActive()) {
-      return tRenderer('renderer.main.processing.text_extraction_preparing');
-    }
-    if (isCurrentTextProcessingActive()) {
-      if (currentTextProcessingState.action === 'initial_load') {
-        return tRenderer('renderer.main.processing.current_text_waiting_startup');
-      }
-      if (currentTextProcessingState.source === 'editor') {
-        return tRenderer('renderer.main.processing.current_text_waiting_editor');
-      }
-      return tRenderer('renderer.main.processing.current_text_waiting');
-    }
-    if (isStandaloneFullRefreshPendingActive()) {
-      return tRenderer('renderer.main.processing.current_text_recount_waiting');
-    }
-    if (pendingExecutionRoute === 'native') {
-      return tRenderer('renderer.main.processing.text_extraction_waiting_native');
-    }
-    if (pendingExecutionRoute === 'ocr') {
-      const elapsedMs = elapsedMsOverride === null
-        ? getElapsedMsSince(processingModeState.sinceEpochMs)
-        : elapsedMsOverride;
-      if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
-        return tRenderer('renderer.main.processing.text_extraction_waiting_ocr_delayed');
-      }
-      return tRenderer('renderer.main.processing.text_extraction_waiting_ocr');
-    }
-    return tRenderer('renderer.main.processing.text_extraction_placeholder');
-  }
-
   function formatProgressText(key, index, count) {
     return tRenderer(key)
       .replace('{index}', String(index))
@@ -420,6 +382,44 @@
     }
 
     return parts.join(' · ');
+  }
+
+  function getBusyLabelText({ elapsedMsOverride = null } = {}) {
+    if (isAbortFinalizationActive()) {
+      return tRenderer('renderer.main.processing.text_extraction_cancellation_pending');
+    }
+    const progressLabelText = getProgressLabelText();
+    if (progressLabelText) {
+      return progressLabelText;
+    }
+    if (isPrepareActive()) {
+      return tRenderer('renderer.main.processing.text_extraction_preparing');
+    }
+    if (isCurrentTextProcessingActive()) {
+      if (currentTextProcessingState.action === 'initial_load') {
+        return tRenderer('renderer.main.processing.current_text_waiting_startup');
+      }
+      if (currentTextProcessingState.source === 'editor') {
+        return tRenderer('renderer.main.processing.current_text_waiting_editor');
+      }
+      return tRenderer('renderer.main.processing.current_text_waiting');
+    }
+    if (isStandaloneFullRefreshPendingActive()) {
+      return tRenderer('renderer.main.processing.current_text_recount_waiting');
+    }
+    if (pendingExecutionRoute === 'native') {
+      return tRenderer('renderer.main.processing.text_extraction_waiting_native');
+    }
+    if (pendingExecutionRoute === 'ocr') {
+      const elapsedMs = elapsedMsOverride === null
+        ? getElapsedMsSince(processingModeState.sinceEpochMs)
+        : elapsedMsOverride;
+      if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
+        return tRenderer('renderer.main.processing.text_extraction_waiting_ocr_delayed');
+      }
+      return tRenderer('renderer.main.processing.text_extraction_waiting_ocr');
+    }
+    return tRenderer('renderer.main.processing.text_extraction_placeholder');
   }
 
   function getDisplayedSourceFileName() {
