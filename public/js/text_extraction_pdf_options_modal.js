@@ -5,14 +5,15 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Host the PDF options modal used before text extraction prepare.
-// - Collect all-pages vs contiguous-range intent for a single selected PDF.
+// - Host PDF page-selection and generated-PDF retention controls.
+// - Collect all-pages or contiguous-range intent for one selected PDF.
+// - Render the active prompt from the current renderer translations.
 // - Expose the maintained public prompt through window.Notify.
-// - Return raw user intent while leaving final canonicalization to main prepare.
+// - Return page-selection and generated-PDF retention intent to the caller.
 
 (() => {
   // =============================================================================
-  // Imports / logger
+  // Runtime dependencies / logger
   // =============================================================================
 
   if (typeof window.getLogger !== 'function') {
@@ -37,7 +38,7 @@
   } = window.RendererI18n;
 
   // =============================================================================
-  // UI elements
+  // UI elements / shared state
   // =============================================================================
 
   const modal = document.getElementById('textExtractionPdfOptionsModal');
@@ -329,7 +330,7 @@
   }
 
   // =============================================================================
-  // Exports / module surface
+  // Public registration / module surface
   // =============================================================================
 
   window.Notify.registerCustomPrompt('promptTextExtractionPdfOptions', promptPdfOptions);
