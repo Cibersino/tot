@@ -159,14 +159,12 @@
     if (!normalizedValue) return '';
 
     const pathSegments = normalizedValue.split(/[\\/]+/).filter(Boolean);
-    if (pathSegments.length > 0) {
-      const basename = pathSegments[pathSegments.length - 1];
-      const safeBasename = basename.replace(/[\u0000-\u001F\u007F]+/g, ' ').trim();
-      if (safeBasename && safeBasename !== '.' && safeBasename !== '..') {
-        return safeBasename;
-      }
-    }
-    return '';
+    if (pathSegments.length === 0) return '';
+
+    const basename = pathSegments[pathSegments.length - 1];
+    const safeBasename = basename.replace(/[\u0000-\u001F\u007F]+/g, ' ').trim();
+    if (!safeBasename || safeBasename === '.' || safeBasename === '..') return '';
+    return safeBasename;
   }
 
   function resolveSourceFileNameFromPath(rawFilePath) {
@@ -429,10 +427,7 @@
     if (isProcessingModeActive() && processingModeState.processingInputFileName) {
       return processingModeState.processingInputFileName;
     }
-    if (isCurrentTextProcessingActive()) {
-      return '';
-    }
-    if (isStandaloneFullRefreshPendingActive()) {
+    if (isCurrentTextAreaPendingActive()) {
       return '';
     }
     return pendingSourceFileName;
