@@ -545,26 +545,17 @@
     elapsedTimerId = null;
   }
 
-  // The timer exists only while processing is active so elapsed updates do not
-  // keep running after the processing-mode lock has been released.
+  // The timer drives extraction elapsed time and delayed OCR waiting copy only.
   function ensureElapsedTimer() {
     if (!semanticReady || terminalUnavailable) return;
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
-      if (!isProcessingModeActive() && !isCurrentTextAreaPendingActive()) {
+      if (!isProcessingModeActive()) {
         stopElapsedTimer();
         return;
       }
-      const elapsedMs = isProcessingModeActive()
-        ? getElapsedMsSince(processingModeState.sinceEpochMs)
-        : getElapsedMsSince(
-          isCurrentTextProcessingActive()
-            ? currentTextProcessingState.sinceEpochMs
-            : standaloneFullRefreshPendingState.sinceEpochMs
-        );
-      if (isProcessingModeActive()) {
-        syncDelayedBusyCopyUi(elapsedMs);
-      }
+      const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
+      syncDelayedBusyCopyUi(elapsedMs);
       syncElapsedUi({ elapsedMsOverride: elapsedMs });
     }, ELAPSED_TICK_MS);
   }
@@ -627,11 +618,6 @@
     currentTextProcessingState = normalizeCurrentTextProcessingState(rawState);
 
     syncProcessingUi();
-    if (currentTextProcessingState.active && currentTextProcessingState.sinceEpochMs) {
-      ensureElapsedTimer();
-    } else if (!isProcessingModeActive()) {
-      stopElapsedTimer();
-    }
 
     if (prevState.active !== currentTextProcessingState.active
       || (currentTextProcessingState.active && prevState.requestId !== currentTextProcessingState.requestId)) {
@@ -650,11 +636,6 @@
     standaloneFullRefreshPendingState = normalizeStandaloneFullRefreshPendingState(rawState);
 
     syncProcessingUi();
-    if (standaloneFullRefreshPendingState.active && standaloneFullRefreshPendingState.sinceEpochMs) {
-      ensureElapsedTimer();
-    } else if (!isProcessingModeActive() && !isCurrentTextProcessingActive()) {
-      stopElapsedTimer();
-    }
 
     if (prevState.active !== standaloneFullRefreshPendingState.active
       || (standaloneFullRefreshPendingState.active

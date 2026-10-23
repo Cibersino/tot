@@ -140,6 +140,9 @@ function createHarness({ semanticReady = true } = {}) {
       assert.equal(activeIntervals.length, 1);
       activeIntervals[0].callback();
     },
+    getElapsedTimerCount() {
+      return intervals.size;
+    },
   };
 }
 
@@ -467,6 +470,55 @@ test('standalone full refresh pending reuses the current-text processing shell w
 
   assert.equal(harness.api.isCurrentTextAreaPendingActive(), false);
   assert.equal(harness.elements.selectorControlsProcessing.hidden, true);
+});
+
+test('only extraction processing owns the periodic elapsed timer', () => {
+  const harness = createHarness();
+  harness.setNowMs(5000);
+
+  harness.api.applyCurrentTextProcessingState({
+    active: true,
+    requestId: 3,
+    sinceEpochMs: 2000,
+    source: 'main-window',
+    action: 'overwrite',
+  }, { source: 'test_current_text' });
+  assert.equal(harness.getElapsedTimerCount(), 0);
+
+  harness.api.applyStandaloneFullRefreshPendingState({
+    active: true,
+    ownerSequence: 4,
+    sinceEpochMs: 2000,
+    reason: 'mode toggle',
+  }, { source: 'test_standalone' });
+  assert.equal(harness.getElapsedTimerCount(), 0);
+
+  harness.api.applyProcessingModeState({
+    active: true,
+    lockId: 5,
+    sinceEpochMs: 2000,
+    selectedRoute: 'ocr',
+  }, { source: 'test_extraction' });
+  assert.equal(harness.getElapsedTimerCount(), 1);
+
+  harness.api.applyCurrentTextProcessingState({
+    active: false,
+    requestId: 0,
+    sinceEpochMs: null,
+  }, { source: 'test_current_text_complete' });
+  harness.api.applyStandaloneFullRefreshPendingState({
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+  }, { source: 'test_standalone_complete' });
+  assert.equal(harness.getElapsedTimerCount(), 1);
+
+  harness.api.applyProcessingModeState({
+    active: false,
+    lockId: 5,
+    sinceEpochMs: null,
+  }, { source: 'test_extraction_complete' });
+  assert.equal(harness.getElapsedTimerCount(), 0);
 });
 
 test('broader processing owner stays visible while standalone full refresh pending is also active', () => {
