@@ -32,6 +32,7 @@ function createHarness({
   const applyPayloads = [];
   const notifications = [];
   const toasts = [];
+  const warnings = [];
   let pdfOptionsPromptCount = 0;
   let singleFileHeavyPromptCount = 0;
   let executePreparedTextExtractionCallCount = 0;
@@ -112,7 +113,7 @@ function createHarness({
         return {
           debug() {},
           info() {},
-          warn() {},
+          warn(...args) { warnings.push(args); },
           warnOnce() {},
           error() {},
         };
@@ -325,6 +326,9 @@ function createHarness({
     getRevealTextExtractionGeneratedPdfLookupCount() {
       return revealTextExtractionGeneratedPdfLookupCount;
     },
+    getWarnings() {
+      return warnings.map((args) => [...args]);
+    },
     getSyncMainInteractionLockUiCallCount() {
       return syncMainInteractionLockUiCallCount;
     },
@@ -532,6 +536,38 @@ test('retained generated-PDF disclosure reaches the Apply prompt before its opti
 
   await assert.rejects(modalOptions.onRevealGeneratedPdf(), revealBridgeLookupError);
   assert.equal(harness.getRevealTextExtractionGeneratedPdfLookupCount(), 1);
+});
+
+test('single-file retained generated-PDF contract violations are logged without exposing reveal', async () => {
+  const harness = createHarness({
+    executePreparedTextExtractionResult: {
+      ok: true,
+      result: {
+        state: 'success',
+        text: 'Extracted text',
+        textApplicability: 'applicable',
+        generatedPdfArtifact: {
+          retained: true,
+          fileName: 'book_pages_100_220.pdf',
+        },
+      },
+    },
+  });
+
+  await harness.entry.startFromFilePath({
+    filePath: 'C:\\docs\\book.pdf',
+    source: 'test',
+  });
+
+  assert.equal(harness.getCapturedApplyPromptOptions().retainedGeneratedPdf, null);
+  const warning = harness.getWarnings().find(([message]) => (
+    message === 'Retained generated PDF reveal action omitted because its result contract is invalid:'
+  ));
+  assert.ok(warning);
+  assert.equal(warning[1].artifactType, 'object');
+  assert.equal(warning[1].retained, true);
+  assert.equal(warning[1].hasFileName, true);
+  assert.equal(warning[1].hasRetainedArtifactPath, false);
 });
 
 test('stale preparation discard releases admission for the next independent request', async () => {

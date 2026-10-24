@@ -198,13 +198,24 @@
   }
 
   function resolveRetainedGeneratedPdf(resultLike) {
-    const generatedPdfArtifact = resultLike
-      && resultLike.generatedPdfArtifact
-      && typeof resultLike.generatedPdfArtifact === 'object'
-      && !Array.isArray(resultLike.generatedPdfArtifact)
-        ? resultLike.generatedPdfArtifact
-        : null;
-    if (!generatedPdfArtifact || generatedPdfArtifact.retained !== true) {
+    const generatedPdfArtifact = resultLike && typeof resultLike === 'object'
+      ? resultLike.generatedPdfArtifact
+      : null;
+    if (generatedPdfArtifact === null || generatedPdfArtifact === undefined) {
+      return null;
+    }
+    if (typeof generatedPdfArtifact !== 'object' || Array.isArray(generatedPdfArtifact)) {
+      log.warn('Retained generated PDF reveal action omitted because its result contract is invalid:', {
+        artifactType: Array.isArray(generatedPdfArtifact) ? 'array' : typeof generatedPdfArtifact,
+      });
+      return null;
+    }
+    if (generatedPdfArtifact.retained === false) return null;
+    if (generatedPdfArtifact.retained !== true) {
+      log.warn('Retained generated PDF reveal action omitted because its result contract is invalid:', {
+        artifactType: 'object',
+        retainedType: typeof generatedPdfArtifact.retained,
+      });
       return null;
     }
 
@@ -215,6 +226,12 @@
       ? generatedPdfArtifact.retainedArtifactPath.trim()
       : '';
     if (!fileName || !artifactPath) {
+      log.warn('Retained generated PDF reveal action omitted because its result contract is invalid:', {
+        artifactType: 'object',
+        retained: true,
+        hasFileName: !!fileName,
+        hasRetainedArtifactPath: !!artifactPath,
+      });
       return null;
     }
 
@@ -388,7 +405,6 @@
 
     try {
       const checkTextExtractionPreconditions = getOptionalElectronMethod('checkTextExtractionPreconditions', {
-        dedupeKey: 'renderer.ipc.checkTextExtractionPreconditions.unavailable',
         unavailableMessage: 'checkTextExtractionPreconditions unavailable; text extraction precondition check skipped.'
       });
       if (!checkTextExtractionPreconditions) {
@@ -408,15 +424,12 @@
       }
 
       const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
-        dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
         unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; text extraction prepare cannot continue.'
       });
       const inspectTextExtractionSelectedFile = getOptionalElectronMethod('inspectTextExtractionSelectedFile', {
-        dedupeKey: 'renderer.ipc.inspectTextExtractionSelectedFile.unavailable',
         unavailableMessage: 'inspectTextExtractionSelectedFile unavailable; PDF options cannot be resolved.'
       });
       const executePreparedTextExtraction = getOptionalElectronMethod('executePreparedTextExtraction', {
-        dedupeKey: 'renderer.ipc.executePreparedTextExtraction.unavailable',
         unavailableMessage: 'executePreparedTextExtraction unavailable; text extraction execution cannot continue.'
       });
       if (!prepareTextExtractionSelectedFile || !inspectTextExtractionSelectedFile || !executePreparedTextExtraction) {
@@ -710,7 +723,6 @@
             onRevealGeneratedPdf: retainedGeneratedPdf
               ? async () => {
                 const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-                  dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
                   unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.',
                 });
                 if (!revealTextExtractionGeneratedPdf) {
@@ -793,7 +805,6 @@
             onRevealGeneratedPdf: retainedGeneratedPdf
               ? async () => {
                 const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-                  dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
                   unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action unavailable.'
                 });
                 if (!revealTextExtractionGeneratedPdf) {
@@ -931,7 +942,6 @@
 
       try {
         const openTextExtractionPicker = getOptionalElectronMethod('openTextExtractionPicker', {
-          dedupeKey: 'renderer.ipc.openTextExtractionPicker.unavailable',
           unavailableMessage: 'openTextExtractionPicker unavailable; text extraction entrypoint skipped.'
         });
         if (!openTextExtractionPicker) {
