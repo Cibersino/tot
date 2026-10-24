@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Ukukhansela kuceliwe. Sicela ulinde...",
         "text_extraction_waiting_native": "Kukhishwa umbhalo efayeleni...",
         "text_extraction_waiting_ocr": "Kwenziwa ukukhishwa nge-OCR...",
-        "text_extraction_waiting_ocr_delayed": "Kwenziwa i-OCR. Amanye amafayela athatha isikhathi eside.",
         "text_extraction_unit_progress": "Iyunithi {index}/{count}",
         "text_extraction_input_progress": "Ifayela {index}/{count}",
         "text_extraction_route_native": "I-native",

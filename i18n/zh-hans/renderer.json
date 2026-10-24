@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "已请求取消。请稍候...",
         "text_extraction_waiting_native": "正在从文件提取文本...",
         "text_extraction_waiting_ocr": "正在执行 OCR 提取...",
-        "text_extraction_waiting_ocr_delayed": "正在执行 OCR。有些文件需要更长时间。",
         "text_extraction_unit_progress": "单元 {index}/{count}",
         "text_extraction_input_progress": "文件 {index}/{count}",
         "text_extraction_route_native": "原生",

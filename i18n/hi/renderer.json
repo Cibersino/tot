@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "रद्द करने का अनुरोध किया गया है। कृपया प्रतीक्षा करें...",
         "text_extraction_waiting_native": "फ़ाइल से पाठ निकाला जा रहा है...",
         "text_extraction_waiting_ocr": "OCR एक्सट्रैक्शन चल रहा है...",
-        "text_extraction_waiting_ocr_delayed": "OCR चल रहा है। कुछ फ़ाइलों में अधिक समय लगता है।",
         "text_extraction_unit_progress": "इकाई {index}/{count}",
         "text_extraction_input_progress": "फ़ाइल {index}/{count}",
         "text_extraction_route_native": "नेटिव",

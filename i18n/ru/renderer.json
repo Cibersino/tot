@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Запрошена отмена. Подождите...",
         "text_extraction_waiting_native": "Извлечение текста из файла...",
         "text_extraction_waiting_ocr": "Выполняется OCR-извлечение...",
-        "text_extraction_waiting_ocr_delayed": "Выполняется OCR. Некоторые файлы требуют больше времени.",
         "text_extraction_unit_progress": "Блок {index}/{count}",
         "text_extraction_input_progress": "Файл {index}/{count}",
         "text_extraction_route_native": "Нативный",

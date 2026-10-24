@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Saqiy mañakurun. Suyay...",
         "text_extraction_waiting_native": "Archivomanta qillqata qichuchkan...",
         "text_extraction_waiting_ocr": "OCR qichuyta ruwachkan...",
-        "text_extraction_waiting_ocr_delayed": "OCR ruwachkan. Wakin archivokuna aswan unayta munan.",
         "text_extraction_unit_progress": "Unidad {index}/{count}",
         "text_extraction_input_progress": "Archivo {index}/{count}",
         "text_extraction_route_native": "Nativa",

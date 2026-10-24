@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "İptal istendi. Lütfen bekleyin...",
         "text_extraction_waiting_native": "Dosyadan metin çıkarılıyor...",
         "text_extraction_waiting_ocr": "OCR çıkarma çalışıyor...",
-        "text_extraction_waiting_ocr_delayed": "OCR çalışıyor. Bazı dosyalar daha uzun sürebilir.",
         "text_extraction_unit_progress": "Birim {index}/{count}",
         "text_extraction_input_progress": "Dosya {index}/{count}",
         "text_extraction_route_native": "Yerleşik",

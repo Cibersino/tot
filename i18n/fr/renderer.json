@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Annulation demandée. Veuillez patienter...",
         "text_extraction_waiting_native": "Extraction du texte à partir du fichier...",
         "text_extraction_waiting_ocr": "Exécution de l'extraction OCR...",
-        "text_extraction_waiting_ocr_delayed": "L'OCR est en cours. Certains fichiers prennent plus de temps.",
         "text_extraction_unit_progress": "Unité {index}/{count}",
         "text_extraction_input_progress": "Fichier {index}/{count}",
         "text_extraction_route_native": "Native",

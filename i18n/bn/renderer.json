@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "বাতিল করার অনুরোধ করা হয়েছে। অপেক্ষা করুন...",
         "text_extraction_waiting_native": "ফাইল থেকে লেখা নিষ্কাশন করা হচ্ছে...",
         "text_extraction_waiting_ocr": "OCR নিষ্কাশন চলছে...",
-        "text_extraction_waiting_ocr_delayed": "OCR চলছে। কিছু ফাইলে বেশি সময় লাগে।",
         "text_extraction_unit_progress": "ইউনিট {index}/{count}",
         "text_extraction_input_progress": "ফাইল {index}/{count}",
         "text_extraction_route_native": "নেটিভ",

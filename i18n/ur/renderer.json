@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "منسوخی کی درخواست ہو گئی۔ براہِ کرم انتظار کریں...",
         "text_extraction_waiting_native": "فائل سے متن نکالا جا رہا ہے...",
         "text_extraction_waiting_ocr": "OCR کے ذریعے متن نکالا جا رہا ہے...",
-        "text_extraction_waiting_ocr_delayed": "OCR جاری ہے۔ کچھ فائلوں میں زیادہ وقت لگتا ہے۔",
         "text_extraction_unit_progress": "یونٹ {index}/{count}",
         "text_extraction_input_progress": "فائل {index}/{count}",
         "text_extraction_route_native": "مقامی",

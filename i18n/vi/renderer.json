@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Đã yêu cầu hủy. Vui lòng chờ...",
         "text_extraction_waiting_native": "Đang trích xuất văn bản từ tệp...",
         "text_extraction_waiting_ocr": "Đang chạy trích xuất OCR...",
-        "text_extraction_waiting_ocr_delayed": "Đang chạy OCR. Một số tệp mất nhiều thời gian hơn.",
         "text_extraction_unit_progress": "Đơn vị {index}/{count}",
         "text_extraction_input_progress": "Tệp {index}/{count}",
         "text_extraction_route_native": "Tích hợp",

@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Anilasyon mande. Tanpri tann...",
         "text_extraction_waiting_native": "Ap ekstrè tèks nan fichye a...",
         "text_extraction_waiting_ocr": "Ap fè ekstraksyon OCR...",
-        "text_extraction_waiting_ocr_delayed": "OCR ap fèt. Gen kèk fichye ki pran plis tan.",
         "text_extraction_unit_progress": "Inite {index}/{count}",
         "text_extraction_input_progress": "Fichye {index}/{count}",
         "text_extraction_route_native": "Natif",

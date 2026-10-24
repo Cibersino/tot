@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "لغو درخواست شد. لطفاً صبر کنید...",
         "text_extraction_waiting_native": "در حال استخراج متن از فایل...",
         "text_extraction_waiting_ocr": "در حال اجرای استخراج OCR...",
-        "text_extraction_waiting_ocr_delayed": "OCR در حال اجراست. برخی فایل‌ها زمان بیشتری می‌برند.",
         "text_extraction_unit_progress": "واحد {index}/{count}",
         "text_extraction_input_progress": "فایل {index}/{count}",
         "text_extraction_route_native": "بومی",

@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "キャンセルを要求しました。お待ちください...",
         "text_extraction_waiting_native": "ファイルからテキストを抽出中...",
         "text_extraction_waiting_ocr": "OCR 抽出を実行中...",
-        "text_extraction_waiting_ocr_delayed": "OCR を実行中です。ファイルによっては時間がかかります。",
         "text_extraction_unit_progress": "ユニット {index}/{count}",
         "text_extraction_input_progress": "ファイル {index}/{count}",
         "text_extraction_route_native": "ネイティブ",

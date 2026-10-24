@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Kughairi kumeombwa. Tafadhali subiri...",
         "text_extraction_waiting_native": "Inatoa maandishi kutoka kwenye faili...",
         "text_extraction_waiting_ocr": "Inaendesha utoaji kwa OCR...",
-        "text_extraction_waiting_ocr_delayed": "OCR inaendelea. Baadhi ya faili huchukua muda zaidi. Tafadhali subiri...",
         "text_extraction_unit_progress": "Kitengo {index}/{count}",
         "text_extraction_input_progress": "Kipengee {index}/{count}",
         "text_extraction_route_native": "Asilia",

@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Kua tonoa te whakakore. Taihoa...",
         "text_extraction_waiting_native": "Kei te tango kuputuhi i te kōnae...",
         "text_extraction_waiting_ocr": "Kei te whakahaere tangohanga OCR...",
-        "text_extraction_waiting_ocr_delayed": "Kei te whakahaere OCR. Ka roa ake ētahi kōnae.",
         "text_extraction_unit_progress": "Wāhanga {index}/{count}",
         "text_extraction_input_progress": "Kōnae {index}/{count}",
         "text_extraction_route_native": "Native",

@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Pembatalan diminta. Harap tunggu...",
         "text_extraction_waiting_native": "Mengekstrak teks dari file...",
         "text_extraction_waiting_ocr": "Menjalankan ekstraksi OCR...",
-        "text_extraction_waiting_ocr_delayed": "Menjalankan OCR. Beberapa file membutuhkan waktu lebih lama.",
         "text_extraction_unit_progress": "Unit {index}/{count}",
         "text_extraction_input_progress": "File {index}/{count}",
         "text_extraction_route_native": "Bawaan",

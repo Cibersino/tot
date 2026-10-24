@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "취소가 요청되었습니다. 잠시 기다려 주세요...",
         "text_extraction_waiting_native": "파일에서 텍스트 추출 중...",
         "text_extraction_waiting_ocr": "OCR 추출 실행 중...",
-        "text_extraction_waiting_ocr_delayed": "OCR 실행 중입니다. 일부 파일은 시간이 더 걸립니다.",
         "text_extraction_unit_progress": "단위 {index}/{count}",
         "text_extraction_input_progress": "파일 {index}/{count}",
         "text_extraction_route_native": "네이티브",

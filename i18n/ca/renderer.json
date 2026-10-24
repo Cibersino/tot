@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Cancel·lació sol·licitada. Espera...",
         "text_extraction_waiting_native": "Extraient text del fitxer...",
         "text_extraction_waiting_ocr": "Executant l’extracció OCR...",
-        "text_extraction_waiting_ocr_delayed": "Executant OCR. Alguns fitxers triguen més.",
         "text_extraction_unit_progress": "Unitat {index}/{count}",
         "text_extraction_input_progress": "Fitxer {index}/{count}",
         "text_extraction_route_native": "Nativa",

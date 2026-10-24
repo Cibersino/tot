@@ -37,7 +37,6 @@
         "text_extraction_cancellation_pending": "Ezeztapena eskatu da. Itxaron...",
         "text_extraction_waiting_native": "Fitxategitik testua erauzten...",
         "text_extraction_waiting_ocr": "OCR erauzketa exekutatzen...",
-        "text_extraction_waiting_ocr_delayed": "OCR exekutatzen. Fitxategi batzuek denbora gehiago behar dute.",
         "text_extraction_unit_progress": "Unitatea {index}/{count}",
         "text_extraction_input_progress": "Fitxategia {index}/{count}",
         "text_extraction_route_native": "Natiboa",
