@@ -4,11 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Main-window renderer module for the text extraction status surface.
 // Responsibilities:
-// - Own the main-window text extraction status surface.
-// - Keep prepare UI state separate from processing-mode UI state.
-// - Render route-aware waiting copy and live elapsed time during execution.
-// - Capture final elapsed time for the post-success apply modal.
+// - Receive preparation, processing, and current-text status state through its public API.
+// - Keep those independent activities from overwriting each other's presentation.
+// - Synchronize the processing shell, primary label, filename, abort control, and elapsed display.
+// - Preserve the final extraction elapsed value for consumers after processing ends.
+// - Run the extraction-only elapsed timer.
 
 (() => {
   // =============================================================================
@@ -135,7 +137,7 @@
   let elapsedTimerId = null;
 
   // =============================================================================
-  // Helpers
+  // State normalization and lifecycle helpers
   // =============================================================================
 
   function normalizeRouteKind(rawRoute) {
@@ -288,6 +290,10 @@
   function isCurrentTextAreaPendingActive() {
     return isCurrentTextProcessingActive() || isStandaloneFullRefreshPendingActive();
   }
+
+  // =============================================================================
+  // Display formatting and status selection
+  // =============================================================================
 
   function getElapsedMsSince(rawSinceEpochMs) {
     const sinceEpochMs = Number(rawSinceEpochMs);
@@ -444,6 +450,10 @@
     return pendingSourceFileName;
   }
 
+  // =============================================================================
+  // UI synchronization
+  // =============================================================================
+
   function syncAbortButtonUi() {
     if (!btnTextExtractionAbort) return;
     const abortName = tRenderer('renderer.main.names.text_extraction_abort');
@@ -541,13 +551,17 @@
     syncElapsedUi();
   }
 
+  // =============================================================================
+  // Elapsed timer lifecycle
+  // =============================================================================
+
   function stopElapsedTimer() {
     if (elapsedTimerId === null) return;
     window.clearInterval(elapsedTimerId);
     elapsedTimerId = null;
   }
 
-  // The timer drives extraction elapsed time while processing is active.
+  // The timer updates only elapsed UI. State transitions drive the full sync, so the primary label is not rewritten each tick.
   function ensureElapsedTimer() {
     if (!semanticReady || terminalUnavailable) return;
     if (elapsedTimerId !== null) return;
