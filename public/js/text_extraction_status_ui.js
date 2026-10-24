@@ -408,12 +408,25 @@
     }
 
     // Route/progress labels provide a richer presentation during extraction, without replacing the common set of operation-specific status messages. Retain the basic native/OCR messages as part of that shared structure.
-    if (pendingExecutionRoute === 'native') {
-      return tRenderer('renderer.main.processing.text_extraction_waiting_native');
-    }
-    if (pendingExecutionRoute === 'ocr') {
-      return tRenderer('renderer.main.processing.text_extraction_waiting_ocr');
-
+    if (pendingExecutionRoute === 'native' || pendingExecutionRoute === 'ocr') {
+      if (isProcessingModeActive()
+        && textExtractionProcessingLabel
+        && selectorControlsProcessing
+        && !selectorControlsProcessing.hidden) {
+        log.warn(
+          'Active text extraction is using a retained route-specific waiting message because no usable route/progress label is available:',
+          {
+            pendingRoute: pendingExecutionRoute,
+            lockId: processingModeState.lockId,
+            selectedRoute: processingModeState.selectedRoute,
+          }
+        );
+      }
+      return tRenderer(
+        pendingExecutionRoute === 'native'
+          ? 'renderer.main.processing.text_extraction_waiting_native'
+          : 'renderer.main.processing.text_extraction_waiting_ocr'
+      );
     }
     return tRenderer('renderer.main.processing.text_extraction_placeholder');
   }

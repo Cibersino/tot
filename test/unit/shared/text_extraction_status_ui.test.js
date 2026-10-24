@@ -69,16 +69,19 @@ function createHarness({ semanticReady = true } = {}) {
     'renderer.main.processing.text_extraction_elapsed': 'Elapsed: ',
     'renderer.main.names.text_extraction_abort': 'Abort extraction',
   };
+  const warningEntries = [];
 
   const sandbox = {
     window: {
       getLogger() {
         return {
-          debug() {},
-          info() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
+          debug() { },
+          info() { },
+          warn(...args) {
+            warningEntries.push({ args });
+          },
+          warnOnce() { },
+          error() { },
         };
       },
       RendererI18n: {
@@ -146,6 +149,9 @@ function createHarness({ semanticReady = true } = {}) {
     },
     getElapsedLabelRenderCount() {
       return elapsedLabelRenderCount;
+    },
+    getWarningEntries() {
+      return [...warningEntries];
     },
     setTranslation(key, value) {
       translations[key] = value;
@@ -295,6 +301,50 @@ test('execution state shows route-aware row 1 and elapsed-only row 2', () => {
   assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:00');
   assert.equal(harness.elements.btnTextExtractionAbort.hidden, false);
   assert.equal(harness.elements.btnTextExtractionAbort.disabled, false);
+});
+
+test('retained route waiting status warns only for visible active processing without route/progress metadata', () => {
+  const ordinaryHarness = createHarness();
+  ordinaryHarness.api.beginPrepare();
+  ordinaryHarness.api.setPendingExecutionContext({ routePreference: 'ocr' });
+
+  assert.deepEqual(ordinaryHarness.getWarningEntries(), []);
+
+  ordinaryHarness.api.endPrepare();
+  ordinaryHarness.setNowMs(1000);
+  ordinaryHarness.api.applyProcessingModeState({
+    active: true,
+    lockId: 3,
+    sinceEpochMs: 1000,
+    selectedRoute: 'ocr',
+  }, { source: 'test' });
+
+  assert.deepEqual(ordinaryHarness.getWarningEntries(), []);
+
+  const retainedMessageHarness = createHarness();
+  retainedMessageHarness.api.setPendingExecutionContext({ routePreference: 'ocr' });
+
+  assert.deepEqual(retainedMessageHarness.getWarningEntries(), []);
+
+  retainedMessageHarness.setNowMs(1000);
+  retainedMessageHarness.api.applyProcessingModeState({
+    active: true,
+    lockId: 4,
+    sinceEpochMs: 1000,
+  }, { source: 'test' });
+
+  const [warningEntry] = retainedMessageHarness.getWarningEntries();
+  assert.equal(
+    warningEntry.args[0],
+    'Active text extraction is using a retained route-specific waiting message because no usable route/progress label is available:'
+  );
+  assert.equal(warningEntry.args[1].pendingRoute, 'ocr');
+  assert.equal(warningEntry.args[1].lockId, 4);
+  assert.equal(warningEntry.args[1].selectedRoute, '');
+  assert.equal(
+    Object.keys(warningEntry.args[1]).sort().join(','),
+    'lockId,pendingRoute,selectedRoute'
+  );
 });
 
 test('batch execution state shows unit and input progress plus processing filename from controller state', () => {
