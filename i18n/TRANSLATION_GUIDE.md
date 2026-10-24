@@ -914,13 +914,6 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] extracción de texto; OCR
           // [PROTEGIDO] `OCR`
         },
-        "text_extraction_waiting_ocr_delayed": {
-          "es": "Ejecutando OCR. Algunos archivos tardan más. Por favor, espera...",
-          "en": "Running OCR. Some files take longer. Please wait..."
-          // [PROPÓSITO] Estado prolongado de OCR para indicar espera normal en archivos que tardan más.
-          // [CONCEPTO_APP] extracción de texto; OCR
-          // [PROTEGIDO] `OCR`
-        },
         "text_extraction_unit_progress": {
           "es": "Unidad {index}/{count}",
           "en": "Unit {index}/{count}"

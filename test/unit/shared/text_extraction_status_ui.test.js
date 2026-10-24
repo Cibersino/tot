@@ -60,7 +60,6 @@ function createHarness({ semanticReady = true } = {}) {
     'renderer.main.processing.text_extraction_cancellation_pending': 'Cancellation requested. Please wait...',
     'renderer.main.processing.text_extraction_waiting_native': 'Extracting text from file...',
     'renderer.main.processing.text_extraction_waiting_ocr': 'Running OCR extraction...',
-    'renderer.main.processing.text_extraction_waiting_ocr_delayed': 'Running OCR. Some files take longer.',
     'renderer.main.processing.text_extraction_unit_progress': 'Unit {index}/{count}',
     'renderer.main.processing.text_extraction_input_progress': 'File {index}/{count}',
     'renderer.main.processing.text_extraction_route_native': 'Native',
@@ -341,64 +340,6 @@ test('explicit fileName path-like input is constrained to basename before displa
   assert.equal(
     harness.elements.textExtractionProcessingFilename.getAttribute('data-tot-tooltip'),
     'mixed-name.docx'
-  );
-});
-
-test('elapsed timer updates only row 2 until delayed OCR copy threshold is reached', () => {
-  const harness = createHarness();
-
-  harness.api.beginPrepare({
-    filePath: 'C:\\docs\\very-long-name.tiff',
-  });
-  harness.api.endPrepare();
-  harness.api.setPendingExecutionContext({
-    routePreference: 'ocr',
-    fileName: 'very-long-name.tiff',
-  });
-  harness.setNowMs(1000);
-  harness.api.applyProcessingModeState({
-    active: true,
-    lockId: 1,
-    sinceEpochMs: 1000,
-  }, { source: 'test' });
-
-  const initialLabelWrites = harness.elements.textExtractionProcessingLabel.textContentWriteCount;
-  const initialFilenameWrites = harness.elements.textExtractionProcessingFilename.textContentWriteCount;
-  const initialElapsedWrites = harness.elements.textExtractionProcessingElapsed.textContentWriteCount;
-
-  harness.setNowMs(2250);
-  harness.tickElapsedTimer();
-
-  assert.equal(
-    harness.elements.textExtractionProcessingLabel.textContent,
-    'Running OCR extraction...'
-  );
-  assert.equal(
-    harness.elements.textExtractionProcessingLabel.textContentWriteCount,
-    initialLabelWrites
-  );
-  assert.equal(
-    harness.elements.textExtractionProcessingFilename.textContentWriteCount,
-    initialFilenameWrites
-  );
-  assert.ok(
-    harness.elements.textExtractionProcessingElapsed.textContentWriteCount > initialElapsedWrites
-  );
-  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:01');
-
-  harness.setNowMs(61000);
-  harness.tickElapsedTimer();
-
-  assert.equal(
-    harness.elements.textExtractionProcessingLabel.textContent,
-    'Running OCR. Some files take longer.'
-  );
-  assert.ok(
-    harness.elements.textExtractionProcessingLabel.textContentWriteCount > initialLabelWrites
-  );
-  assert.equal(
-    harness.elements.textExtractionProcessingFilename.textContentWriteCount,
-    initialFilenameWrites
   );
 });
 

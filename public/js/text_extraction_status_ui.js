@@ -88,7 +88,6 @@
   // =============================================================================
 
   const ELAPSED_TICK_MS = 250;
-  const OCR_WAITING_COPY_DELAY_MS = 60000;
 
   // =============================================================================
   // Shared state
@@ -384,7 +383,7 @@
     return parts.join(' · ');
   }
 
-  function getBusyLabelText({ elapsedMsOverride = null } = {}) {
+  function getBusyLabelText() {
     if (isAbortFinalizationActive()) {
       return tRenderer('renderer.main.processing.text_extraction_cancellation_pending');
     }
@@ -407,17 +406,14 @@
     if (isStandaloneFullRefreshPendingActive()) {
       return tRenderer('renderer.main.processing.current_text_recount_waiting');
     }
+
+    // Route/progress labels provide a richer presentation during extraction, without replacing the common set of operation-specific status messages. Retain the basic native/OCR messages as part of that shared structure.
     if (pendingExecutionRoute === 'native') {
       return tRenderer('renderer.main.processing.text_extraction_waiting_native');
     }
     if (pendingExecutionRoute === 'ocr') {
-      const elapsedMs = elapsedMsOverride === null
-        ? getElapsedMsSince(processingModeState.sinceEpochMs)
-        : elapsedMsOverride;
-      if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
-        return tRenderer('renderer.main.processing.text_extraction_waiting_ocr_delayed');
-      }
       return tRenderer('renderer.main.processing.text_extraction_waiting_ocr');
+
     }
     return tRenderer('renderer.main.processing.text_extraction_placeholder');
   }
@@ -472,8 +468,8 @@
     }
   }
 
-  function syncPrimaryRowUi({ elapsedMsOverride = null } = {}) {
-    const busyLabelText = getBusyLabelText({ elapsedMsOverride });
+  function syncPrimaryRowUi() {
+    const busyLabelText = getBusyLabelText();
     if (textExtractionProcessingLabel && textExtractionProcessingLabel.textContent !== busyLabelText) {
       textExtractionProcessingLabel.textContent = busyLabelText;
     }
@@ -525,15 +521,6 @@
     );
   }
 
-  function syncDelayedBusyCopyUi(elapsedMs) {
-    if (pendingExecutionRoute !== 'ocr' || isPrepareActive()) return;
-    const nextBusyLabelText = getBusyLabelText({ elapsedMsOverride: elapsedMs });
-    if (textExtractionProcessingLabel && textExtractionProcessingLabel.textContent === nextBusyLabelText) {
-      return;
-    }
-    syncPrimaryRowUi({ elapsedMsOverride: elapsedMs });
-  }
-
   function syncProcessingUi() {
     if (!semanticReady || terminalUnavailable) return;
     syncProcessingShellUi();
@@ -547,7 +534,7 @@
     elapsedTimerId = null;
   }
 
-  // The timer drives extraction elapsed time and delayed OCR waiting copy only.
+  // The timer drives extraction elapsed time while processing is active.
   function ensureElapsedTimer() {
     if (!semanticReady || terminalUnavailable) return;
     if (elapsedTimerId !== null) return;
@@ -557,7 +544,6 @@
         return;
       }
       const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
-      syncDelayedBusyCopyUi(elapsedMs);
       syncElapsedUi({ elapsedMsOverride: elapsedMs });
     }, ELAPSED_TICK_MS);
   }
