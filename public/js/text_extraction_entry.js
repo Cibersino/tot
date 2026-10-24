@@ -628,7 +628,7 @@
         }
         if (singleFileHeavyAction === 'use_native') {
           routePreference = 'native';
-        } else if (singleFileHeavyAction !== 'split') {
+        } else {
           return;
         }
       }
