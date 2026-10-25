@@ -6,9 +6,9 @@
 // =============================================================================
 // Responsibilities:
 // - Host the pre-consent disclosure modal shown before launching Google OAuth.
-// - Populate disclosure copy from renderer translations at prompt time.
-// - Open the bundled privacy policy through the existing app-doc bridge.
-// - Resolve explicit user consent without bloating renderer orchestration.
+// - Apply renderer translations when the prompt opens and while it remains active.
+// - Open the privacy policy through the app-doc bridge and report failures.
+// - Manage modal focus and resolve the user's consent or dismissal.
 
 (() => {
   // =============================================================================
@@ -26,7 +26,7 @@
   const { tRenderer } = window.RendererI18n;
 
   // =============================================================================
-  // UI elements
+  // UI elements / prompt state
   // =============================================================================
 
   const modal = document.getElementById('textExtractionOcrActivationDisclosureModal');
