@@ -80,10 +80,7 @@
   async function openPrivacyPolicy() {
     const api = window.electronAPI;
     if (!api || typeof api.openAppDoc !== 'function') {
-      log.warnOnce(
-        'renderer.textExtraction.ocrActivationDisclosure.openAppDoc.unavailable',
-        'openAppDoc unavailable; OCR activation disclosure privacy link cannot open.'
-      );
+      log.warn('openAppDoc unavailable; OCR activation disclosure privacy link cannot open.');
       return false;
     }
 
