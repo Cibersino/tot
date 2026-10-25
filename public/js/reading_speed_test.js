@@ -597,6 +597,7 @@
         return;
       }
 
+      // UI refresh may still be pending after unlocking; main rechecks start preconditions and pool eligibility on every start request.
       setStabilizing(false);
       await refreshEntryDataAfterPoolMutation();
       notifyImportSummary(result);
