@@ -176,7 +176,7 @@
     resetDragState();
 
     if (!acceptDrop) {
-      log.info('text extraction drop ignored because the entrypoint is currently blocked.');
+      log.info('text extraction drop ignored because drag/drop is currently unavailable.');
       return;
     }
     const { startFromDroppedFiles } = requireConfiguredDeps();
