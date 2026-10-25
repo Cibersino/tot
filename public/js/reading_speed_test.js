@@ -124,7 +124,7 @@
   let onInteractionStateChanged = () => { };
   let onApplyWpm = () => { };
   let getSettingsCache = () => ({});
-  let sessionState = { active: false, stage: 'idle', blocked: false };
+  let sessionActive = false;
   let poolEntries = [];
   let selection = filtersCore.normalizeSelection({});
   let filterState = filtersCore.computeFilterState(poolEntries, selection);
@@ -151,20 +151,12 @@
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
-  function normalizeSessionState(rawState) {
-    return {
-      active: !!(rawState && rawState.active),
-      stage: rawState && typeof rawState.stage === 'string' ? rawState.stage : 'idle',
-      blocked: !!(rawState && rawState.blocked),
-    };
-  }
-
   function isModalOpen() {
     return modal.getAttribute('aria-hidden') === 'false';
   }
 
   function isSessionActive() {
-    return !!(sessionState && sessionState.active);
+    return sessionActive;
   }
 
   function isUiInteractionLocked() {
@@ -376,13 +368,13 @@
     renderCategorySection('type', typeSection, typeHeading, typeOptions);
     renderCategorySection('difficulty', difficultySection, difficultyHeading, difficultyOptions);
 
-    const managementDisabled = stabilizing || isSessionActive();
-    showBundledCheckbox.disabled = managementDisabled;
-    getMoreFilesLink.setAttribute('aria-disabled', managementDisabled ? 'true' : 'false');
-    importButton.disabled = managementDisabled;
-    resetButton.disabled = stabilizing || isSessionActive();
-    btnStart.disabled = stabilizing || isSessionActive() || filterState.eligibleCount < 1;
-    btnStartCurrentText.disabled = stabilizing || isSessionActive() || !currentTextAvailable;
+    const entryActionsDisabled = stabilizing || isSessionActive();
+    showBundledCheckbox.disabled = entryActionsDisabled;
+    getMoreFilesLink.setAttribute('aria-disabled', entryActionsDisabled ? 'true' : 'false');
+    importButton.disabled = entryActionsDisabled;
+    resetButton.disabled = entryActionsDisabled;
+    btnStart.disabled = entryActionsDisabled || filterState.eligibleCount < 1;
+    btnStartCurrentText.disabled = entryActionsDisabled || !currentTextAvailable;
 
     modal.dataset.stabilizing = stabilizing ? 'true' : 'false';
   }
@@ -472,7 +464,7 @@
           nextState
         );
       }
-      sessionState = normalizeSessionState(nextState);
+      sessionActive = !!(nextState && nextState.active);
       syncLockState();
     } catch (err) {
       log.warn('BOOTSTRAP: reading-test initial session-state fetch failed (ignored):', err);
@@ -826,8 +818,8 @@
               nextState
             );
           }
-          sessionState = normalizeSessionState(nextState);
-          if (sessionState.active && isModalOpen()) {
+          sessionActive = !!(nextState && nextState.active);
+          if (sessionActive && isModalOpen()) {
             closeModal();
             return;
           }
