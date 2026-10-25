@@ -78,6 +78,7 @@
     return activeOperation !== null;
   }
 
+  // Recursive reruns and batch handoffs reuse the same operation token. The admission remains active until all delegated work completes.
   async function runAdmittedOperation({ source, actionId }, work) {
     if (isOperationActive()) {
       log.info('Text extraction entry ignored because another operation is active:', {
@@ -596,6 +597,7 @@
         }
       }
 
+      // Case A handles eligible heavy full-PDF inputs before OCR execution. The user can revise the selection, split the work, or use native text.
       const resolvedRoute = getResolvedOrPreferredRoute(preparation, routePreference);
       if (inspection.isPdf === true
         && resolvedRoute === 'ocr'
@@ -680,6 +682,7 @@
       if (resultState !== 'cancelled') {
         completeAbortFinalization({ textExtractionStatusUi });
       }
+      // Case B recovers after OCR execution rejects an oversized input. Unlike Case A, a retained generated PDF may be available to reveal.
       if (execution.result
         && execution.result.error
         && execution.result.error.code === 'ocr_input_too_large') {
