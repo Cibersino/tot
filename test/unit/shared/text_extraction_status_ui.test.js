@@ -41,6 +41,7 @@ function createElement(id) {
 function createHarness({ semanticReady = true } = {}) {
   let nowMs = 0;
   let nextIntervalId = 1;
+  let elapsedLabelRenderCount = 0;
   const intervals = new Map();
 
   const elements = {
@@ -59,7 +60,6 @@ function createHarness({ semanticReady = true } = {}) {
     'renderer.main.processing.text_extraction_cancellation_pending': 'Cancellation requested. Please wait...',
     'renderer.main.processing.text_extraction_waiting_native': 'Extracting text from file...',
     'renderer.main.processing.text_extraction_waiting_ocr': 'Running OCR extraction...',
-    'renderer.main.processing.text_extraction_waiting_ocr_delayed': 'Running OCR. Some files take longer.',
     'renderer.main.processing.text_extraction_unit_progress': 'Unit {index}/{count}',
     'renderer.main.processing.text_extraction_input_progress': 'File {index}/{count}',
     'renderer.main.processing.text_extraction_route_native': 'Native',
@@ -69,16 +69,19 @@ function createHarness({ semanticReady = true } = {}) {
     'renderer.main.processing.text_extraction_elapsed': 'Elapsed: ',
     'renderer.main.names.text_extraction_abort': 'Abort extraction',
   };
+  const warningEntries = [];
 
   const sandbox = {
     window: {
       getLogger() {
         return {
-          debug() {},
-          info() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
+          debug() { },
+          info() { },
+          warn(...args) {
+            warningEntries.push({ args });
+          },
+          warnOnce() { },
+          error() { },
         };
       },
       RendererI18n: {
@@ -86,6 +89,7 @@ function createHarness({ semanticReady = true } = {}) {
           return translations[key] || key;
         },
         renderLocalizedLabelWithInvariantValue(container, { labelText, valueText }) {
+          elapsedLabelRenderCount += 1;
           container.textContent = `${labelText}${valueText}`;
         },
       },
@@ -139,6 +143,18 @@ function createHarness({ semanticReady = true } = {}) {
       const activeIntervals = Array.from(intervals.values());
       assert.equal(activeIntervals.length, 1);
       activeIntervals[0].callback();
+    },
+    getElapsedTimerCount() {
+      return intervals.size;
+    },
+    getElapsedLabelRenderCount() {
+      return elapsedLabelRenderCount;
+    },
+    getWarningEntries() {
+      return [...warningEntries];
+    },
+    setTranslation(key, value) {
+      translations[key] = value;
     },
   };
 }
@@ -287,6 +303,50 @@ test('execution state shows route-aware row 1 and elapsed-only row 2', () => {
   assert.equal(harness.elements.btnTextExtractionAbort.disabled, false);
 });
 
+test('retained route waiting status warns only for visible active processing without route/progress metadata', () => {
+  const ordinaryHarness = createHarness();
+  ordinaryHarness.api.beginPrepare();
+  ordinaryHarness.api.setPendingExecutionContext({ routePreference: 'ocr' });
+
+  assert.deepEqual(ordinaryHarness.getWarningEntries(), []);
+
+  ordinaryHarness.api.endPrepare();
+  ordinaryHarness.setNowMs(1000);
+  ordinaryHarness.api.applyProcessingModeState({
+    active: true,
+    lockId: 3,
+    sinceEpochMs: 1000,
+    selectedRoute: 'ocr',
+  }, { source: 'test' });
+
+  assert.deepEqual(ordinaryHarness.getWarningEntries(), []);
+
+  const retainedMessageHarness = createHarness();
+  retainedMessageHarness.api.setPendingExecutionContext({ routePreference: 'ocr' });
+
+  assert.deepEqual(retainedMessageHarness.getWarningEntries(), []);
+
+  retainedMessageHarness.setNowMs(1000);
+  retainedMessageHarness.api.applyProcessingModeState({
+    active: true,
+    lockId: 4,
+    sinceEpochMs: 1000,
+  }, { source: 'test' });
+
+  const [warningEntry] = retainedMessageHarness.getWarningEntries();
+  assert.equal(
+    warningEntry.args[0],
+    'Active text extraction is using a retained route-specific waiting message because no usable route/progress label is available:'
+  );
+  assert.equal(warningEntry.args[1].pendingRoute, 'ocr');
+  assert.equal(warningEntry.args[1].lockId, 4);
+  assert.equal(warningEntry.args[1].selectedRoute, '');
+  assert.equal(
+    Object.keys(warningEntry.args[1]).sort().join(','),
+    'lockId,pendingRoute,selectedRoute'
+  );
+});
+
 test('batch execution state shows unit and input progress plus processing filename from controller state', () => {
   const harness = createHarness();
 
@@ -333,17 +393,8 @@ test('explicit fileName path-like input is constrained to basename before displa
   );
 });
 
-test('elapsed timer updates only row 2 until delayed OCR copy threshold is reached', () => {
+test('elapsed rendering skips equivalent content and refreshes changed translations', () => {
   const harness = createHarness();
-
-  harness.api.beginPrepare({
-    filePath: 'C:\\docs\\very-long-name.tiff',
-  });
-  harness.api.endPrepare();
-  harness.api.setPendingExecutionContext({
-    routePreference: 'ocr',
-    fileName: 'very-long-name.tiff',
-  });
   harness.setNowMs(1000);
   harness.api.applyProcessingModeState({
     active: true,
@@ -351,44 +402,26 @@ test('elapsed timer updates only row 2 until delayed OCR copy threshold is reach
     sinceEpochMs: 1000,
   }, { source: 'test' });
 
-  const initialLabelWrites = harness.elements.textExtractionProcessingLabel.textContentWriteCount;
-  const initialFilenameWrites = harness.elements.textExtractionProcessingFilename.textContentWriteCount;
-  const initialElapsedWrites = harness.elements.textExtractionProcessingElapsed.textContentWriteCount;
+  assert.equal(harness.getElapsedLabelRenderCount(), 1);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:00');
 
-  harness.setNowMs(2250);
+  harness.setNowMs(1250);
   harness.tickElapsedTimer();
 
-  assert.equal(
-    harness.elements.textExtractionProcessingLabel.textContent,
-    'Running OCR extraction...'
-  );
-  assert.equal(
-    harness.elements.textExtractionProcessingLabel.textContentWriteCount,
-    initialLabelWrites
-  );
-  assert.equal(
-    harness.elements.textExtractionProcessingFilename.textContentWriteCount,
-    initialFilenameWrites
-  );
-  assert.ok(
-    harness.elements.textExtractionProcessingElapsed.textContentWriteCount > initialElapsedWrites
-  );
+  assert.equal(harness.getElapsedLabelRenderCount(), 1);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:00');
+
+  harness.setNowMs(2000);
+  harness.tickElapsedTimer();
+
+  assert.equal(harness.getElapsedLabelRenderCount(), 2);
   assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Elapsed: 00:01');
 
-  harness.setNowMs(61000);
-  harness.tickElapsedTimer();
+  harness.setTranslation('renderer.main.processing.text_extraction_elapsed', 'Time: ');
+  harness.api.applyTranslations();
 
-  assert.equal(
-    harness.elements.textExtractionProcessingLabel.textContent,
-    'Running OCR. Some files take longer.'
-  );
-  assert.ok(
-    harness.elements.textExtractionProcessingLabel.textContentWriteCount > initialLabelWrites
-  );
-  assert.equal(
-    harness.elements.textExtractionProcessingFilename.textContentWriteCount,
-    initialFilenameWrites
-  );
+  assert.equal(harness.getElapsedLabelRenderCount(), 3);
+  assert.equal(harness.elements.textExtractionProcessingElapsed.textContent, 'Time: 00:01');
 });
 
 test('abort finalization keeps the processing shell visible with frozen elapsed time', () => {
@@ -467,6 +500,55 @@ test('standalone full refresh pending reuses the current-text processing shell w
 
   assert.equal(harness.api.isCurrentTextAreaPendingActive(), false);
   assert.equal(harness.elements.selectorControlsProcessing.hidden, true);
+});
+
+test('only extraction processing owns the periodic elapsed timer', () => {
+  const harness = createHarness();
+  harness.setNowMs(5000);
+
+  harness.api.applyCurrentTextProcessingState({
+    active: true,
+    requestId: 3,
+    sinceEpochMs: 2000,
+    source: 'main-window',
+    action: 'overwrite',
+  }, { source: 'test_current_text' });
+  assert.equal(harness.getElapsedTimerCount(), 0);
+
+  harness.api.applyStandaloneFullRefreshPendingState({
+    active: true,
+    ownerSequence: 4,
+    sinceEpochMs: 2000,
+    reason: 'mode toggle',
+  }, { source: 'test_standalone' });
+  assert.equal(harness.getElapsedTimerCount(), 0);
+
+  harness.api.applyProcessingModeState({
+    active: true,
+    lockId: 5,
+    sinceEpochMs: 2000,
+    selectedRoute: 'ocr',
+  }, { source: 'test_extraction' });
+  assert.equal(harness.getElapsedTimerCount(), 1);
+
+  harness.api.applyCurrentTextProcessingState({
+    active: false,
+    requestId: 0,
+    sinceEpochMs: null,
+  }, { source: 'test_current_text_complete' });
+  harness.api.applyStandaloneFullRefreshPendingState({
+    active: false,
+    ownerSequence: 0,
+    sinceEpochMs: null,
+  }, { source: 'test_standalone_complete' });
+  assert.equal(harness.getElapsedTimerCount(), 1);
+
+  harness.api.applyProcessingModeState({
+    active: false,
+    lockId: 5,
+    sinceEpochMs: null,
+  }, { source: 'test_extraction_complete' });
+  assert.equal(harness.getElapsedTimerCount(), 0);
 });
 
 test('broader processing owner stays visible while standalone full refresh pending is also active', () => {

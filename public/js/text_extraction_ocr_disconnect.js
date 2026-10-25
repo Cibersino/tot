@@ -26,9 +26,11 @@
 
   function configure({
     getOptionalElectronMethod = null,
+    ocrConnectionFlow = null,
   } = {}) {
     deps = {
       getOptionalElectronMethod,
+      ocrConnectionFlow,
     };
   }
 
@@ -58,6 +60,19 @@
   // Public entrypoint
   // =============================================================================
   async function startFromPreferencesMenu() {
+    const ocrConnectionFlow = deps && deps.ocrConnectionFlow;
+    if (!ocrConnectionFlow || typeof ocrConnectionFlow.runDisconnectFlow !== 'function') {
+      log.error('OCR connection flow unavailable; disconnect action blocked.');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.disconnect_failed');
+      return;
+    }
+    const result = await ocrConnectionFlow.runDisconnectFlow(disconnect);
+    if (result && result.code === 'ocr_operation_in_progress') {
+      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.operation_in_progress');
+    }
+  }
+
+  async function disconnect() {
     const failureAlertKey = 'renderer.text_extraction.alerts.ocr.disconnect_failed';
 
     let disconnectTextExtractionOcr = null;
@@ -92,6 +107,8 @@
       return;
     }
 
+    if (result.code === 'ocr_operation_in_progress') return result;
+
     if (result.cancelled === true) {
       return;
     }
@@ -120,5 +137,3 @@
 // =============================================================================
 // End of public/js/text_extraction_ocr_disconnect.js
 // =============================================================================
-
-

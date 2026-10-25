@@ -27,10 +27,10 @@
   let deps = null;
 
   function configure({
-    ocrActivationFlow = null,
+    ocrConnectionFlow = null,
   } = {}) {
     deps = {
-      ocrActivationFlow,
+      ocrConnectionFlow,
     };
   }
 
@@ -46,11 +46,11 @@
   }
 
   function getActivationFlow() {
-    const { ocrActivationFlow } = requireConfiguredDeps();
-    if (!ocrActivationFlow || typeof ocrActivationFlow.startActivationFlow !== 'function') {
-      throw new Error('[text-extraction-ocr-activation-recovery] ocrActivationFlow dependency incomplete');
+    const { ocrConnectionFlow } = requireConfiguredDeps();
+    if (!ocrConnectionFlow || typeof ocrConnectionFlow.startActivationFlow !== 'function') {
+      throw new Error('[text-extraction-ocr-activation-recovery] ocrConnectionFlow dependency incomplete');
     }
-    return ocrActivationFlow;
+    return ocrConnectionFlow;
   }
 
   function resolveRecoveryCode({ preparation, routePreference } = {}) {
@@ -99,6 +99,9 @@
       : {};
     const code = typeof safeResult.code === 'string' ? safeResult.code : '';
 
+    if (code === 'ocr_operation_in_progress') {
+      return 'renderer.text_extraction.alerts.ocr.operation_in_progress';
+    }
     if (safeResult.ok === true) {
       return 'renderer.text_extraction.alerts.ocr.activation_success';
     }

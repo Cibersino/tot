@@ -128,10 +128,9 @@
     const safeRetainedGeneratedPdf = normalizeRetainedGeneratedPdf(retainedGeneratedPdf);
     const isNoText = textApplicability === 'no_text';
     const canApply = !isNoText;
-    const canRevealGeneratedPdf = !!(
-      safeRetainedGeneratedPdf
-      && typeof onRevealGeneratedPdf === 'function'
-    );
+    const hasRetainedGeneratedPdf = !!safeRetainedGeneratedPdf;
+    const canRevealGeneratedPdf = hasRetainedGeneratedPdf
+      && typeof onRevealGeneratedPdf === 'function';
     const normalizedElapsedValueText = typeof elapsedValueText === 'string' ? elapsedValueText.trim() : '';
     let revealPending = false;
 
@@ -162,20 +161,25 @@
       repeatInput.disabled = !canApply;
       btnOverwrite.disabled = !canApply;
       btnAppend.disabled = !canApply;
-      savedPdf.hidden = !canRevealGeneratedPdf;
+      savedPdf.hidden = !hasRetainedGeneratedPdf;
       savedPdf.setAttribute('aria-hidden', savedPdf.hidden ? 'true' : 'false');
-      if (canRevealGeneratedPdf) {
+      if (hasRetainedGeneratedPdf) {
         savedPdfMessage.textContent = tRenderer('renderer.text_extraction.apply_modal.saved_pdf_message');
         renderLocalizedLabelWithInvariantValue(savedPdfFile, {
           labelText: tRenderer('renderer.text_extraction.apply_modal.saved_pdf_label'),
           valueText: safeRetainedGeneratedPdf.fileName,
           valueDirection: 'ltr',
         });
-        btnRevealSavedPdf.textContent = tRenderer('renderer.text_extraction.apply_modal.reveal_saved_pdf_button');
-        btnRevealSavedPdf.disabled = revealPending;
       } else {
         savedPdfMessage.textContent = '';
         savedPdfFile.textContent = '';
+      }
+      btnRevealSavedPdf.hidden = !canRevealGeneratedPdf;
+      btnRevealSavedPdf.setAttribute('aria-hidden', btnRevealSavedPdf.hidden ? 'true' : 'false');
+      if (canRevealGeneratedPdf) {
+        btnRevealSavedPdf.textContent = tRenderer('renderer.text_extraction.apply_modal.reveal_saved_pdf_button');
+        btnRevealSavedPdf.disabled = revealPending;
+      } else {
         btnRevealSavedPdf.textContent = '';
         btnRevealSavedPdf.disabled = true;
       }

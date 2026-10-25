@@ -106,6 +106,21 @@ function createElement(id) {
   };
 }
 
+function createDeferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
+}
+
+async function flushMicrotasks() {
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 function createHarness({ missingElementIds = [] } = {}) {
   const registeredPromptNames = [];
   const elements = {
@@ -128,6 +143,8 @@ function createHarness({ missingElementIds = [] } = {}) {
   });
 
   const windowListeners = new Map();
+  const loggerCalls = [];
+  const notifiedKeys = [];
   const translations = {
     'renderer.text_extraction.single_file_heavy.case_a_title': 'Full PDF too large for OCR',
     'renderer.text_extraction.single_file_heavy.case_a_message': 'The full PDF exceeds the OCR provider limit ({providerLimitMb} MB).',
@@ -155,7 +172,9 @@ function createHarness({ missingElementIds = [] } = {}) {
           initialFocus.focus();
         },
         deactivateModalFocus() {},
-        notifyMain() {},
+        notifyMain(key) {
+          notifiedKeys.push(key);
+        },
         registerCustomPrompt(name, handler) {
           registeredPromptNames.push(name);
           this[name] = handler;
@@ -163,11 +182,21 @@ function createHarness({ missingElementIds = [] } = {}) {
       },
       getLogger() {
         return {
-          debug() {},
-          info() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
+          debug(...args) {
+            loggerCalls.push({ level: 'debug', args });
+          },
+          info(...args) {
+            loggerCalls.push({ level: 'info', args });
+          },
+          warn(...args) {
+            loggerCalls.push({ level: 'warn', args });
+          },
+          warnOnce(...args) {
+            loggerCalls.push({ level: 'warnOnce', args });
+          },
+          error(...args) {
+            loggerCalls.push({ level: 'error', args });
+          },
         };
       },
       RendererI18n: {
@@ -219,6 +248,8 @@ function createHarness({ missingElementIds = [] } = {}) {
 
   return {
     elements,
+    loggerCalls,
+    notifiedKeys,
     translations,
     applyTranslations: sandbox.window.TextExtractionSingleFileHeavyPdfModal.applyTranslations,
     getRegisteredPromptNames() {
@@ -437,6 +468,105 @@ test('single-file heavy PDF modal shows generated PDF filename only when a retai
   harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');
   const result = await promptPromise;
   assert.equal(result, 'cancel');
+});
+
+test('single-file heavy PDF modal prevents concurrent reveals and allows retry after failure', async () => {
+  const harness = createHarness();
+  const firstReveal = createDeferred();
+  const secondReveal = createDeferred();
+  let revealCount = 0;
+
+  const promptPromise = harness.prompt({
+    caseKind: 'case_b',
+    retainedGeneratedPdf: {
+      fileName: 'book_pages_100_220.pdf',
+      artifactPath: 'C:\\tmp\\book_pages_100_220.pdf',
+    },
+    onRevealGeneratedPdf() {
+      revealCount += 1;
+      return revealCount === 1 ? firstReveal.promise : secondReveal.promise;
+    },
+  });
+
+  harness.elements.textExtractionSingleFileHeavyPdfModalReveal.dispatch('click');
+  harness.elements.textExtractionSingleFileHeavyPdfModalReveal.dispatch('click');
+
+  assert.equal(revealCount, 1);
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, true);
+
+  firstReveal.reject(new Error('reveal failed'));
+  await flushMicrotasks();
+
+  assert.deepEqual(harness.notifiedKeys, [
+    'renderer.text_extraction.alerts.generated_pdf_reveal_failed',
+  ]);
+  assert.deepEqual(
+    harness.loggerCalls
+      .filter(({ level, args }) => level === 'error' && args[0] === 'Single-file heavy modal reveal failed:')
+      .map(({ level, args }) => ({ level, message: args[0] })),
+    [{ level: 'error', message: 'Single-file heavy modal reveal failed:' }]
+  );
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, false);
+
+  harness.elements.textExtractionSingleFileHeavyPdfModalReveal.dispatch('click');
+  assert.equal(revealCount, 2);
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, true);
+
+  secondReveal.resolve();
+  await flushMicrotasks();
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, false);
+
+  harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');
+  assert.equal(await promptPromise, 'cancel');
+});
+
+test('single-file heavy PDF modal ignores a settled prompt\'s late reveal completion after reopening', async () => {
+  const harness = createHarness();
+  const firstReveal = createDeferred();
+  const secondReveal = createDeferred();
+
+  const firstPrompt = harness.prompt({
+    caseKind: 'case_b',
+    retainedGeneratedPdf: {
+      fileName: 'first.pdf',
+      artifactPath: 'C:\\tmp\\first.pdf',
+    },
+    onRevealGeneratedPdf() {
+      return firstReveal.promise;
+    },
+  });
+
+  harness.elements.textExtractionSingleFileHeavyPdfModalReveal.dispatch('click');
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, true);
+
+  harness.elements.textExtractionSingleFileHeavyPdfModalSplit.dispatch('click');
+  assert.equal(await firstPrompt, 'split');
+
+  const secondPrompt = harness.prompt({
+    caseKind: 'case_b',
+    retainedGeneratedPdf: {
+      fileName: 'second.pdf',
+      artifactPath: 'C:\\tmp\\second.pdf',
+    },
+    onRevealGeneratedPdf() {
+      return secondReveal.promise;
+    },
+  });
+
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, false);
+  harness.elements.textExtractionSingleFileHeavyPdfModalReveal.dispatch('click');
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, true);
+
+  firstReveal.resolve();
+  await flushMicrotasks();
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, true);
+
+  secondReveal.resolve();
+  await flushMicrotasks();
+  assert.equal(harness.elements.textExtractionSingleFileHeavyPdfModalReveal.disabled, false);
+
+  harness.elements.textExtractionSingleFileHeavyPdfModalCancel.dispatch('click');
+  assert.equal(await secondPrompt, 'cancel');
 });
 
 test('single-file heavy PDF modal refreshes active copy through its canonical render path', async () => {

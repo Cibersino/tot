@@ -76,6 +76,7 @@ tot/
 │ │ ├── ocr_google_drive_bundled_credentials.js
 │ │ ├── ocr_google_drive_credentials_file.js
 │ │ ├── ocr_google_drive_oauth_client.js
+│ │ ├── ocr_google_drive_operation.js
 │ │ ├── ocr_google_drive_provider_failure.js
 │ │ ├── ocr_google_drive_provider_failure_classification.js
 │ │ ├── ocr_google_drive_route.js
@@ -215,7 +216,7 @@ tot/
 │ │ ├── text_extraction_entry.js
 │ │ ├── text_extraction_ocr_activation.js
 │ │ ├── text_extraction_ocr_activation_disclosure_modal.js
-│ │ ├── text_extraction_ocr_activation_flow.js
+│ │ ├── text_extraction_ocr_connection_flow.js
 │ │ ├── text_extraction_ocr_activation_recovery.js
 │ │ ├── text_extraction_ocr_disconnect.js
 │ │ ├── text_extraction_pdf_options_modal.js
@@ -360,6 +361,7 @@ tot/
 - `electron/text_extraction_platform/ocr_google_drive_bundled_credentials.js` — Bootstrap del modelo OCR de producción: consume el lector compartido de `credentials.json`, valida las credenciales OAuth desktop empaquetadas y materializa/repara el espejo runtime bajo `config/ocr_google_drive/credentials.json` sin pedir importación manual al usuario.
 - `electron/text_extraction_platform/ocr_google_drive_credentials_file.js` — Lector/validador low-level compartido para `credentials.json`: lectura BOM-safe, parse JSON, clasificación (`missing_file`/`empty_file`/`invalid_json`/`invalid_shape`/`read_failed`) y validación de la shape OAuth desktop/web.
 - `electron/text_extraction_platform/ocr_google_drive_oauth_client.js` — Helpers compartidos OAuth para OCR: lectura/normalización de `credentials.json`, construcción del cliente OAuth2 y selección del token preferido para revocación.
+- `electron/text_extraction_platform/ocr_google_drive_operation.js` — Coordinación main-process de admisión entre lanzamiento de activación y desconexión OCR: permite una operación a la vez mientras los handlers gestionan OAuth, validación, revocación y token local.
 - `electron/text_extraction_platform/ocr_google_drive_secure_oauth.js` — Helper propio de activación OAuth desktop segura para Google OCR: reutiliza el cliente OAuth instalado ya empaquetado, abre navegador externo del sistema, levanta callback loopback efímero y aplica `state` + PKCE antes de intercambiar el código.
 - `electron/text_extraction_platform/ocr_google_drive_provider_failure_classification.js` — Clasificación compartida post-parse de fallas provider/runtime de Google OCR: centraliza tablas de razones y la política común para `connectivity_failed`, `provider_api_disabled`, `quota_or_rate_limited`, `auth_failed` y `platform_runtime_failed`.
 - `electron/text_extraction_platform/ocr_google_drive_provider_failure.js` — Parser compartido de fallas provider-side de Google para OCR: lee tanto `error.errors[].reason` como `google.rpc.ErrorInfo.reason`, normaliza señales documentadas de API deshabilitada y preserva diagnóstico de conflictos entre ambos formatos.
@@ -423,10 +425,10 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/text_extraction_route_choice_modal.js` — Modal de elección de ruta (`native` / `ocr`) cuando un PDF soporta ambas.
 - `public/js/text_extraction_apply_modal.js` — Modal post-extracción para decidir overwrite/append y repeticiones antes de aplicar el texto extraído; cuando existe un PDF generado retenido, también ofrece la acción `Reveal saved PDF`.
 - `public/js/text_extraction_ocr_activation_disclosure_modal.js` — Modal renderer de preconsentimiento para OCR Google: muestra la divulgación inmediatamente antes del OAuth, enlaza a `privacy-policy` mediante `openAppDoc(...)` y exige acción afirmativa del usuario.
-- `public/js/text_extraction_ocr_activation_flow.js` — Flujo shared de activación OCR en la ventana principal: resuelve los bridges `prepareTextExtractionOcrActivation` / `launchTextExtractionOcrActivation`, ejecuta disclosure + OAuth y devuelve resultados estructurados sin acoplarse a alerts de un caller concreto.
+- `public/js/text_extraction_ocr_connection_flow.js` — Flujo compartido de conexión OCR en la ventana principal: coordina la admisión de activación y desconexión, resuelve los bridges `prepareTextExtractionOcrActivation` / `launchTextExtractionOcrActivation`, ejecuta disclosure + OAuth y devuelve resultados de activación estructurados sin acoplarse a alerts de un caller concreto.
 - `public/js/text_extraction_ocr_activation.js` — Entry point renderer para `Menú > Preferencias > Enable/Activar Google OCR`: reutiliza el flujo shared y traduce sus outcomes a alerts específicas del contexto de activación manual.
 - `public/js/text_extraction_ocr_activation_recovery.js` — Helpers de recuperación para OCR durante text extraction: detectan fallos recuperables de setup/auth, delegan la activación al flujo shared y reintentan `prepare` tras una activación exitosa.
-- `public/js/text_extraction_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: solicita la desconexión al main y muestra feedback de éxito/fallo/not-connected.
+- `public/js/text_extraction_ocr_disconnect.js` — Handler del renderer para `Disconnect Google OCR`: usa la admisión del flujo de conexión, solicita la desconexión al main y muestra feedback de éxito, fallo, operación en curso o not-connected.
 - `public/js/text_extraction_entry.js` — Orquestador compartido del flujo text extraction desde picker o drag/drop: encadena inspect PDF, modal de opciones PDF, prepare, route choice, execute y apply, deriva a batch planning cuando hay múltiples archivos, reutiliza el formatter compartido de `pdfPageSelection` para el handoff heavy-PDF y activa el synthetic full-source split cuando OCR no conviene como una sola unidad.
 - `public/js/text_extraction_batch_flow.js` — Owner renderer del batch extraction: reutiliza contratos prepare/execute/apply/snapshot para múltiples archivos, mantiene cada PDF pesado como input lógico normalmente agrupable con sus partes generadas como hijos de ejecución, canonicaliza/summary de `pdfPageSelection` vía el helper renderer compartido y coordina la ejecución secuencial con failure policy compartida + handoff del single-file heavy split.
 - `public/js/text_extraction_drag_drop.js` — Capa drag/drop del main: overlay de drop y forwarding de uno o varios archivos al entry flow compartido, con branch explícito hacia batch planning cuando corresponde.

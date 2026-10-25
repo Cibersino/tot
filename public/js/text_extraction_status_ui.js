@@ -4,11 +4,13 @@
 // =============================================================================
 // Overview
 // =============================================================================
+// Main-window renderer module for the text extraction status surface.
 // Responsibilities:
-// - Own the main-window text extraction status surface.
-// - Keep prepare UI state separate from processing-mode UI state.
-// - Render route-aware waiting copy and live elapsed time during execution.
-// - Capture final elapsed time for the post-success apply modal.
+// - Receive preparation, processing, and current-text status state through its public API.
+// - Keep those independent activities from overwriting each other's presentation.
+// - Synchronize the processing shell, primary label, filename, abort control, and elapsed display.
+// - Preserve the final extraction elapsed value for consumers after processing ends.
+// - Run the extraction-only elapsed timer.
 
 (() => {
   // =============================================================================
@@ -88,7 +90,6 @@
   // =============================================================================
 
   const ELAPSED_TICK_MS = 250;
-  const OCR_WAITING_COPY_DELAY_MS = 60000;
 
   // =============================================================================
   // Shared state
@@ -136,7 +137,7 @@
   let elapsedTimerId = null;
 
   // =============================================================================
-  // Helpers
+  // State normalization and lifecycle helpers
   // =============================================================================
 
   function normalizeRouteKind(rawRoute) {
@@ -159,14 +160,12 @@
     if (!normalizedValue) return '';
 
     const pathSegments = normalizedValue.split(/[\\/]+/).filter(Boolean);
-    if (pathSegments.length > 0) {
-      const basename = pathSegments[pathSegments.length - 1];
-      const safeBasename = basename.replace(/[\u0000-\u001F\u007F]+/g, ' ').trim();
-      if (safeBasename && safeBasename !== '.' && safeBasename !== '..') {
-        return safeBasename;
-      }
-    }
-    return '';
+    if (pathSegments.length === 0) return '';
+
+    const basename = pathSegments[pathSegments.length - 1];
+    const safeBasename = basename.replace(/[\u0000-\u001F\u007F]+/g, ' ').trim();
+    if (!safeBasename || safeBasename === '.' || safeBasename === '..') return '';
+    return safeBasename;
   }
 
   function resolveSourceFileNameFromPath(rawFilePath) {
@@ -292,6 +291,10 @@
     return isCurrentTextProcessingActive() || isStandaloneFullRefreshPendingActive();
   }
 
+  // =============================================================================
+  // Display formatting and status selection
+  // =============================================================================
+
   function getElapsedMsSince(rawSinceEpochMs) {
     const sinceEpochMs = Number(rawSinceEpochMs);
     if (!Number.isFinite(sinceEpochMs) || sinceEpochMs <= 0) return null;
@@ -334,49 +337,13 @@
 
   function renderElapsedLabelWithValue(container, labelKey, valueText) {
     if (!container) return;
+    const labelText = tRenderer(labelKey);
+    if (container.textContent === `${labelText}${valueText}`) return;
     renderLocalizedLabelWithInvariantValue(container, {
-      labelText: tRenderer(labelKey),
+      labelText,
       valueText,
       valueDirection: 'ltr',
     });
-  }
-
-  function getBusyLabelText({ elapsedMsOverride = null } = {}) {
-    if (isAbortFinalizationActive()) {
-      return tRenderer('renderer.main.processing.text_extraction_cancellation_pending');
-    }
-    const progressLabelText = getProgressLabelText();
-    if (progressLabelText) {
-      return progressLabelText;
-    }
-    if (isPrepareActive()) {
-      return tRenderer('renderer.main.processing.text_extraction_preparing');
-    }
-    if (isCurrentTextProcessingActive()) {
-      if (currentTextProcessingState.action === 'initial_load') {
-        return tRenderer('renderer.main.processing.current_text_waiting_startup');
-      }
-      if (currentTextProcessingState.source === 'editor') {
-        return tRenderer('renderer.main.processing.current_text_waiting_editor');
-      }
-      return tRenderer('renderer.main.processing.current_text_waiting');
-    }
-    if (isStandaloneFullRefreshPendingActive()) {
-      return tRenderer('renderer.main.processing.current_text_recount_waiting');
-    }
-    if (pendingExecutionRoute === 'native') {
-      return tRenderer('renderer.main.processing.text_extraction_waiting_native');
-    }
-    if (pendingExecutionRoute === 'ocr') {
-      const elapsedMs = elapsedMsOverride === null
-        ? getElapsedMsSince(processingModeState.sinceEpochMs)
-        : elapsedMsOverride;
-      if (elapsedMs !== null && elapsedMs >= OCR_WAITING_COPY_DELAY_MS) {
-        return tRenderer('renderer.main.processing.text_extraction_waiting_ocr_delayed');
-      }
-      return tRenderer('renderer.main.processing.text_extraction_waiting_ocr');
-    }
-    return tRenderer('renderer.main.processing.text_extraction_placeholder');
   }
 
   function formatProgressText(key, index, count) {
@@ -422,6 +389,54 @@
     return parts.join(' · ');
   }
 
+  function getBusyLabelText() {
+    if (isAbortFinalizationActive()) {
+      return tRenderer('renderer.main.processing.text_extraction_cancellation_pending');
+    }
+    const progressLabelText = getProgressLabelText();
+    if (progressLabelText) {
+      return progressLabelText;
+    }
+    if (isPrepareActive()) {
+      return tRenderer('renderer.main.processing.text_extraction_preparing');
+    }
+    if (isCurrentTextProcessingActive()) {
+      if (currentTextProcessingState.action === 'initial_load') {
+        return tRenderer('renderer.main.processing.current_text_waiting_startup');
+      }
+      if (currentTextProcessingState.source === 'editor') {
+        return tRenderer('renderer.main.processing.current_text_waiting_editor');
+      }
+      return tRenderer('renderer.main.processing.current_text_waiting');
+    }
+    if (isStandaloneFullRefreshPendingActive()) {
+      return tRenderer('renderer.main.processing.current_text_recount_waiting');
+    }
+
+    // Route/progress labels provide a richer presentation during extraction, without replacing the common set of operation-specific status messages. Retain the basic native/OCR messages as part of that shared structure.
+    if (pendingExecutionRoute === 'native' || pendingExecutionRoute === 'ocr') {
+      if (isProcessingModeActive()
+        && textExtractionProcessingLabel
+        && selectorControlsProcessing
+        && !selectorControlsProcessing.hidden) {
+        log.warn(
+          'Active text extraction is using a retained route-specific waiting message because no usable route/progress label is available:',
+          {
+            pendingRoute: pendingExecutionRoute,
+            lockId: processingModeState.lockId,
+            selectedRoute: processingModeState.selectedRoute,
+          }
+        );
+      }
+      return tRenderer(
+        pendingExecutionRoute === 'native'
+          ? 'renderer.main.processing.text_extraction_waiting_native'
+          : 'renderer.main.processing.text_extraction_waiting_ocr'
+      );
+    }
+    return tRenderer('renderer.main.processing.text_extraction_placeholder');
+  }
+
   function getDisplayedSourceFileName() {
     if (isAbortFinalizationActive() && abortFinalizationState.fileName) {
       return abortFinalizationState.fileName;
@@ -429,14 +444,15 @@
     if (isProcessingModeActive() && processingModeState.processingInputFileName) {
       return processingModeState.processingInputFileName;
     }
-    if (isCurrentTextProcessingActive()) {
-      return '';
-    }
-    if (isStandaloneFullRefreshPendingActive()) {
+    if (isCurrentTextAreaPendingActive()) {
       return '';
     }
     return pendingSourceFileName;
   }
+
+  // =============================================================================
+  // UI synchronization
+  // =============================================================================
 
   function syncAbortButtonUi() {
     if (!btnTextExtractionAbort) return;
@@ -475,8 +491,8 @@
     }
   }
 
-  function syncPrimaryRowUi({ elapsedMsOverride = null } = {}) {
-    const busyLabelText = getBusyLabelText({ elapsedMsOverride });
+  function syncPrimaryRowUi() {
+    const busyLabelText = getBusyLabelText();
     if (textExtractionProcessingLabel && textExtractionProcessingLabel.textContent !== busyLabelText) {
       textExtractionProcessingLabel.textContent = busyLabelText;
     }
@@ -528,15 +544,6 @@
     );
   }
 
-  function syncDelayedBusyCopyUi(elapsedMs) {
-    if (pendingExecutionRoute !== 'ocr' || isPrepareActive()) return;
-    const nextBusyLabelText = getBusyLabelText({ elapsedMsOverride: elapsedMs });
-    if (textExtractionProcessingLabel && textExtractionProcessingLabel.textContent === nextBusyLabelText) {
-      return;
-    }
-    syncPrimaryRowUi({ elapsedMsOverride: elapsedMs });
-  }
-
   function syncProcessingUi() {
     if (!semanticReady || terminalUnavailable) return;
     syncProcessingShellUi();
@@ -544,32 +551,26 @@
     syncElapsedUi();
   }
 
+  // =============================================================================
+  // Elapsed timer lifecycle
+  // =============================================================================
+
   function stopElapsedTimer() {
     if (elapsedTimerId === null) return;
     window.clearInterval(elapsedTimerId);
     elapsedTimerId = null;
   }
 
-  // The timer exists only while processing is active so elapsed updates do not
-  // keep running after the processing-mode lock has been released.
+  // The timer updates only elapsed UI. State transitions drive the full sync, so the primary label is not rewritten each tick.
   function ensureElapsedTimer() {
     if (!semanticReady || terminalUnavailable) return;
     if (elapsedTimerId !== null) return;
     elapsedTimerId = window.setInterval(() => {
-      if (!isProcessingModeActive() && !isCurrentTextAreaPendingActive()) {
+      if (!isProcessingModeActive()) {
         stopElapsedTimer();
         return;
       }
-      const elapsedMs = isProcessingModeActive()
-        ? getElapsedMsSince(processingModeState.sinceEpochMs)
-        : getElapsedMsSince(
-          isCurrentTextProcessingActive()
-            ? currentTextProcessingState.sinceEpochMs
-            : standaloneFullRefreshPendingState.sinceEpochMs
-        );
-      if (isProcessingModeActive()) {
-        syncDelayedBusyCopyUi(elapsedMs);
-      }
+      const elapsedMs = getElapsedMsSince(processingModeState.sinceEpochMs);
       syncElapsedUi({ elapsedMsOverride: elapsedMs });
     }, ELAPSED_TICK_MS);
   }
@@ -632,11 +633,6 @@
     currentTextProcessingState = normalizeCurrentTextProcessingState(rawState);
 
     syncProcessingUi();
-    if (currentTextProcessingState.active && currentTextProcessingState.sinceEpochMs) {
-      ensureElapsedTimer();
-    } else if (!isProcessingModeActive()) {
-      stopElapsedTimer();
-    }
 
     if (prevState.active !== currentTextProcessingState.active
       || (currentTextProcessingState.active && prevState.requestId !== currentTextProcessingState.requestId)) {
@@ -655,11 +651,6 @@
     standaloneFullRefreshPendingState = normalizeStandaloneFullRefreshPendingState(rawState);
 
     syncProcessingUi();
-    if (standaloneFullRefreshPendingState.active && standaloneFullRefreshPendingState.sinceEpochMs) {
-      ensureElapsedTimer();
-    } else if (!isProcessingModeActive() && !isCurrentTextProcessingActive()) {
-      stopElapsedTimer();
-    }
 
     if (prevState.active !== standaloneFullRefreshPendingState.active
       || (standaloneFullRefreshPendingState.active

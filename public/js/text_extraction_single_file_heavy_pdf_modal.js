@@ -8,7 +8,7 @@
 // - Host the blocking modal used for single-file heavy-PDF decisions.
 // - Resolve case-specific copy and detail rows for Case A and Case B.
 // - Wire the modal actions that return split, page-selection, native, or cancel.
-// - Expose retained generated-PDF reveal behavior when the callback is available.
+// - Expose retained generated-PDF reveal through a caller-provided callback.
 
 (() => {
   // =============================================================================
@@ -269,9 +269,11 @@
     revealActions.setAttribute('aria-hidden', revealActions.hidden ? 'true' : 'false');
     btnReveal.hidden = !canRevealGeneratedPdf;
     btnReveal.setAttribute('aria-hidden', btnReveal.hidden ? 'true' : 'false');
+    btnReveal.disabled = !canRevealGeneratedPdf;
 
     return new Promise((resolve) => {
       let settled = false;
+      let revealPending = false;
 
       const cleanup = () => {
         activePromptTranslations = null;
@@ -299,12 +301,20 @@
       const onUseNative = () => finish('use_native');
       const onCancel = () => finish('cancel');
       const onReveal = async () => {
-        if (!canRevealGeneratedPdf) return;
+        if (!canRevealGeneratedPdf || revealPending) return;
+        revealPending = true;
+        btnReveal.disabled = true;
         try {
           await onRevealGeneratedPdf();
         } catch (err) {
-          log.warn('Single-file heavy modal reveal failed (ignored):', err);
+          log.error('Single-file heavy modal reveal failed:', err);
           window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
+        } finally {
+          revealPending = false;
+          // btnReveal is reused by later prompts; stale completions must not update it.
+          if (!settled) {
+            btnReveal.disabled = false;
+          }
         }
       };
       const onWindowKeyDown = (event) => {

@@ -20,6 +20,7 @@ const Log = require('../log');
 const { DEFAULT_LANG } = require('../constants_main');
 const settingsState = require('../settings');
 const menuBuilder = require('../menu_builder');
+const ocrOperation = require('./ocr_google_drive_operation');
 const {
   readEncryptedTokenFile,
   deleteEncryptedTokenFile,
@@ -177,6 +178,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
   ipcMain.handle('text-extraction-disconnect-ocr', async (event, payload = {}) => {
     const request = resolvePayload(payload);
     const mainWin = resolveMainWin();
+    let releaseOperation = null;
 
     try {
       if (!isAuthorizedSender(event, mainWin)) {
@@ -185,6 +187,15 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
             stage: 'authorization',
             reason: 'unauthorized_sender',
           },
+        });
+      }
+
+      releaseOperation = ocrOperation.begin();
+      if (!releaseOperation) {
+        log.warn('Google OCR disconnect ignored because another operation is in progress.');
+        return buildFailure({
+          code: 'ocr_operation_in_progress',
+          alertKey: 'renderer.text_extraction.alerts.ocr.operation_in_progress',
         });
       }
 
@@ -335,6 +346,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       });
       log.error('text-extraction-disconnect-ocr failed unexpectedly:', failure.detailsSafeForLogs);
       return failure;
+    } finally {
+      if (releaseOperation) releaseOperation();
     }
   });
 }

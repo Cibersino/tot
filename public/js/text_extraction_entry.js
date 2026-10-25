@@ -78,6 +78,7 @@
     return activeOperation !== null;
   }
 
+  // Recursive reruns and batch handoffs reuse the same operation token. The admission remains active until all delegated work completes.
   async function runAdmittedOperation({ source, actionId }, work) {
     if (isOperationActive()) {
       log.info('Text extraction entry ignored because another operation is active:', {
@@ -198,13 +199,24 @@
   }
 
   function resolveRetainedGeneratedPdf(resultLike) {
-    const generatedPdfArtifact = resultLike
-      && resultLike.generatedPdfArtifact
-      && typeof resultLike.generatedPdfArtifact === 'object'
-      && !Array.isArray(resultLike.generatedPdfArtifact)
-        ? resultLike.generatedPdfArtifact
-        : null;
-    if (!generatedPdfArtifact || generatedPdfArtifact.retained !== true) {
+    const generatedPdfArtifact = resultLike && typeof resultLike === 'object'
+      ? resultLike.generatedPdfArtifact
+      : null;
+    if (generatedPdfArtifact === null || generatedPdfArtifact === undefined) {
+      return null;
+    }
+    if (typeof generatedPdfArtifact !== 'object' || Array.isArray(generatedPdfArtifact)) {
+      log.warn('Retained generated PDF reveal action omitted because its result contract is invalid:', {
+        artifactType: Array.isArray(generatedPdfArtifact) ? 'array' : typeof generatedPdfArtifact,
+      });
+      return null;
+    }
+    if (generatedPdfArtifact.retained === false) return null;
+    if (generatedPdfArtifact.retained !== true) {
+      log.warn('Retained generated PDF reveal action omitted because its result contract is invalid:', {
+        artifactType: 'object',
+        retainedType: typeof generatedPdfArtifact.retained,
+      });
       return null;
     }
 
@@ -215,6 +227,12 @@
       ? generatedPdfArtifact.retainedArtifactPath.trim()
       : '';
     if (!fileName || !artifactPath) {
+      log.warn('Retained generated PDF reveal action omitted because its result contract is invalid:', {
+        artifactType: 'object',
+        retained: true,
+        hasFileName: !!fileName,
+        hasRetainedArtifactPath: !!artifactPath,
+      });
       return null;
     }
 
@@ -388,7 +406,6 @@
 
     try {
       const checkTextExtractionPreconditions = getOptionalElectronMethod('checkTextExtractionPreconditions', {
-        dedupeKey: 'renderer.ipc.checkTextExtractionPreconditions.unavailable',
         unavailableMessage: 'checkTextExtractionPreconditions unavailable; text extraction precondition check skipped.'
       });
       if (!checkTextExtractionPreconditions) {
@@ -408,15 +425,12 @@
       }
 
       const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
-        dedupeKey: 'renderer.ipc.prepareTextExtractionSelectedFile.unavailable',
         unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; text extraction prepare cannot continue.'
       });
       const inspectTextExtractionSelectedFile = getOptionalElectronMethod('inspectTextExtractionSelectedFile', {
-        dedupeKey: 'renderer.ipc.inspectTextExtractionSelectedFile.unavailable',
         unavailableMessage: 'inspectTextExtractionSelectedFile unavailable; PDF options cannot be resolved.'
       });
       const executePreparedTextExtraction = getOptionalElectronMethod('executePreparedTextExtraction', {
-        dedupeKey: 'renderer.ipc.executePreparedTextExtraction.unavailable',
         unavailableMessage: 'executePreparedTextExtraction unavailable; text extraction execution cannot continue.'
       });
       if (!prepareTextExtractionSelectedFile || !inspectTextExtractionSelectedFile || !executePreparedTextExtraction) {
@@ -583,6 +597,7 @@
         }
       }
 
+      // Case A handles eligible heavy full-PDF inputs before OCR execution. The user can revise the selection, split the work, or use native text.
       const resolvedRoute = getResolvedOrPreferredRoute(preparation, routePreference);
       if (inspection.isPdf === true
         && resolvedRoute === 'ocr'
@@ -628,7 +643,7 @@
         }
         if (singleFileHeavyAction === 'use_native') {
           routePreference = 'native';
-        } else if (singleFileHeavyAction !== 'split') {
+        } else {
           return;
         }
       }
@@ -667,6 +682,7 @@
       if (resultState !== 'cancelled') {
         completeAbortFinalization({ textExtractionStatusUi });
       }
+      // Case B recovers after OCR execution rejects an oversized input. Unlike Case A, a retained generated PDF may be available to reveal.
       if (execution.result
         && execution.result.error
         && execution.result.error.code === 'ocr_input_too_large') {
@@ -710,7 +726,6 @@
             onRevealGeneratedPdf: retainedGeneratedPdf
               ? async () => {
                 const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-                  dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
                   unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.',
                 });
                 if (!revealTextExtractionGeneratedPdf) {
@@ -780,12 +795,6 @@
           ? getClipboardRepeatCount()
           : 1;
         const retainedGeneratedPdf = resolveRetainedGeneratedPdf(execution.result);
-        const revealTextExtractionGeneratedPdf = retainedGeneratedPdf
-          ? getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
-            dedupeKey: 'renderer.ipc.revealTextExtractionGeneratedPdf.unavailable',
-            unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action disabled.'
-          })
-          : null;
         let applyChoice = null;
         try {
           applyChoice = await window.Notify.promptTextExtractionApplyChoice({
@@ -796,8 +805,14 @@
             retainedGeneratedPdf: retainedGeneratedPdf
               ? { fileName: retainedGeneratedPdf.fileName }
               : null,
-            onRevealGeneratedPdf: revealTextExtractionGeneratedPdf
+            onRevealGeneratedPdf: retainedGeneratedPdf
               ? async () => {
+                const revealTextExtractionGeneratedPdf = getOptionalElectronMethod('revealTextExtractionGeneratedPdf', {
+                  unavailableMessage: 'revealTextExtractionGeneratedPdf unavailable; retained generated PDF reveal action unavailable.'
+                });
+                if (!revealTextExtractionGeneratedPdf) {
+                  throw new Error('revealTextExtractionGeneratedPdf unavailable');
+                }
                 const revealResult = await revealTextExtractionGeneratedPdf({
                   artifactPath: retainedGeneratedPdf.artifactPath,
                 });
@@ -930,7 +945,6 @@
 
       try {
         const openTextExtractionPicker = getOptionalElectronMethod('openTextExtractionPicker', {
-          dedupeKey: 'renderer.ipc.openTextExtractionPicker.unavailable',
           unavailableMessage: 'openTextExtractionPicker unavailable; text extraction entrypoint skipped.'
         });
         if (!openTextExtractionPicker) {

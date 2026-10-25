@@ -94,7 +94,7 @@ if (!textExtractionStatusUi
   || typeof textExtractionStatusUi.setPendingExecutionContext !== 'function') {
   throw new Error('[renderer] TextExtractionStatusUi unavailable; cannot continue');
 }
-const textExtractionOcrActivationFlow = window.TextExtractionOcrActivationFlow || null;
+const textExtractionOcrConnectionFlow = window.TextExtractionOcrConnectionFlow || null;
 const textExtractionOcrActivation = window.TextExtractionOcrActivation || null;
 const textExtractionOcrActivationRecovery = window.TextExtractionOcrActivationRecovery || null;
 const textExtractionOcrDisconnect = window.TextExtractionOcrDisconnect || null;
@@ -1659,19 +1659,19 @@ async function resolveDroppedFilePath(file) {
 // renderer.js keeps only app-level wiring here.
 // Shared text extraction behavior stays in delegated window modules.
 function configureTextExtractionModules() {
-  if (textExtractionOcrActivationFlow
-    && typeof textExtractionOcrActivationFlow.configure === 'function') {
-    textExtractionOcrActivationFlow.configure({
+  if (textExtractionOcrConnectionFlow
+    && typeof textExtractionOcrConnectionFlow.configure === 'function') {
+    textExtractionOcrConnectionFlow.configure({
       getOptionalElectronMethod,
     });
   } else {
-    log.warn('TextExtractionOcrActivationFlow.configure unavailable; OCR activation flows will be disabled.');
+    log.warn('TextExtractionOcrConnectionFlow.configure unavailable; OCR connection flows will be disabled.');
   }
 
   if (textExtractionOcrActivation
     && typeof textExtractionOcrActivation.configure === 'function') {
     textExtractionOcrActivation.configure({
-      ocrActivationFlow: textExtractionOcrActivationFlow,
+      ocrConnectionFlow: textExtractionOcrConnectionFlow,
     });
   } else {
     log.warn('TextExtractionOcrActivation.configure unavailable; Preferences > Enable Google OCR will be disabled.');
@@ -1680,7 +1680,7 @@ function configureTextExtractionModules() {
   if (textExtractionOcrActivationRecovery
     && typeof textExtractionOcrActivationRecovery.configure === 'function') {
     textExtractionOcrActivationRecovery.configure({
-      ocrActivationFlow: textExtractionOcrActivationFlow,
+      ocrConnectionFlow: textExtractionOcrConnectionFlow,
     });
   } else {
     log.warn('TextExtractionOcrActivationRecovery.configure unavailable; OCR setup recovery will be disabled.');
@@ -1726,6 +1726,7 @@ function configureTextExtractionModules() {
     && typeof textExtractionOcrDisconnect.configure === 'function') {
     textExtractionOcrDisconnect.configure({
       getOptionalElectronMethod,
+      ocrConnectionFlow: textExtractionOcrConnectionFlow,
     });
   } else {
     log.warn('TextExtractionOcrDisconnect.configure unavailable; Preferences > Disconnect Google OCR will be disabled.');

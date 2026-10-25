@@ -457,7 +457,7 @@ async function createRendererHarness({
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionOcrActivationDisclosureModal'); },
     },
     TextExtractionOcrActivation: createNoopSurface(),
-    TextExtractionOcrActivationFlow: createNoopSurface(),
+    TextExtractionOcrConnectionFlow: createNoopSurface(),
     TextExtractionOcrActivationRecovery: createNoopSurface(),
     TextExtractionOcrDisconnect: createNoopSurface(),
     TextExtractionPdfOptionsModal: {

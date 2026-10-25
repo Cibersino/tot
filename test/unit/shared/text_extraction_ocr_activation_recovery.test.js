@@ -43,7 +43,7 @@ function createHarness({
 
   const recovery = sandbox.window.TextExtractionOcrActivationRecovery;
   recovery.configure({
-    ocrActivationFlow: {
+    ocrConnectionFlow: {
       async startActivationFlow() {
         activationCallCount += 1;
         return activationResult || {

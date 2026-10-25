@@ -914,13 +914,6 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] extracción de texto; OCR
           // [PROTEGIDO] `OCR`
         },
-        "text_extraction_waiting_ocr_delayed": {
-          "es": "Ejecutando OCR. Algunos archivos tardan más. Por favor, espera...",
-          "en": "Running OCR. Some files take longer. Please wait..."
-          // [PROPÓSITO] Estado prolongado de OCR para indicar espera normal en archivos que tardan más.
-          // [CONCEPTO_APP] extracción de texto; OCR
-          // [PROTEGIDO] `OCR`
-        },
         "text_extraction_unit_progress": {
           "es": "Unidad {index}/{count}",
           "en": "Unit {index}/{count}"
@@ -2136,6 +2129,13 @@ Estados de revisión recomendados:
             "es": "La desconexión de Google OCR falló. El estado guardado de inicio de sesión no fue eliminado.",
             "en": "Google OCR disconnect failed. The saved sign-in state was not removed."
             // [CONCEPTO_APP] Google OCR; token local OCR
+            // [PROTEGIDO] `Google OCR`
+          },
+          "operation_in_progress": {
+            "es": "Ya hay una activación o desconexión de Google OCR en curso. Espera a que termine y vuelve a intentarlo.",
+            "en": "A Google OCR activation or disconnection is already in progress. Wait for it to finish, then try again."
+            // [PROPÓSITO] Alerta cuando una solicitud de activación o desconexión se rechaza porque otra de esas operaciones sigue en curso; la persona debe volver a intentarlo.
+            // [CONCEPTO_APP] Google OCR
             // [PROTEGIDO] `Google OCR`
           },
           "connectivity_failed": {
