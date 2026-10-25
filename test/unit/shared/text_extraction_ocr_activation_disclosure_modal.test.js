@@ -27,7 +27,7 @@ function createElement(id) {
     },
     dispatch(type, event = {}) {
       const handlers = listeners.get(type) || [];
-      handlers.forEach((handler) => handler(event));
+      return Promise.all(handlers.map((handler) => handler(event)));
     },
     setAttribute(name, value) {
       attributes[name] = String(value);
@@ -47,8 +47,9 @@ function createElement(id) {
   };
 }
 
-function createHarness({ languageDirection = 'rtl' } = {}) {
+function createHarness({ languageDirection = 'rtl', electronAPI } = {}) {
   const registeredPromptNames = [];
+  const notifications = [];
   let currentLanguageDirection = languageDirection;
   const elements = {
     textExtractionOcrActivationDisclosureModal: createElement('textExtractionOcrActivationDisclosureModal'),
@@ -83,6 +84,9 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
   const sandbox = {
     window: {
       Notify: {
+        notifyMain(key) {
+          notifications.push(key);
+        },
         activateModalFocus(_modal, { initialFocus }) {
           initialFocus.focus();
         },
@@ -97,6 +101,7 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
           return translations[key] || key;
         },
       },
+      electronAPI,
       getLogger() {
         return {
           debug() {},
@@ -142,6 +147,7 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
   return {
     applyTranslations: sandbox.window.TextExtractionOcrActivationDisclosureModal.applyTranslations,
     elements,
+    notifications,
     getRegisteredPromptNames() {
       return registeredPromptNames.slice();
     },
@@ -162,6 +168,45 @@ test('OCR activation disclosure modal registers its public prompt through window
     'promptTextExtractionOcrActivationDisclosure',
   ]);
   assert.equal(typeof harness.prompt, 'function');
+});
+
+test('privacy policy failures notify while the disclosure remains available', async () => {
+  const cases = [
+    undefined,
+    { openAppDoc: async () => ({ ok: false, reason: 'not_found' }) },
+    { openAppDoc: async () => { throw new Error('open failed'); } },
+  ];
+
+  for (const electronAPI of cases) {
+    const harness = createHarness({ electronAPI });
+    const prompt = harness.prompt();
+    await harness.elements.textExtractionOcrActivationDisclosurePrivacy.dispatch('click', { preventDefault() {} });
+    assert.deepEqual(harness.notifications, ['renderer.info.appdoc.error']);
+    assert.equal(harness.elements.textExtractionOcrActivationDisclosureModal.getAttribute('aria-hidden'), 'false');
+    harness.elements.textExtractionOcrActivationDisclosureProceed.dispatch('click');
+    assert.equal(await prompt, true);
+  }
+});
+
+test('privacy policy success and failures after closing do not show an error', async () => {
+  let completeRequest;
+  const harness = createHarness({
+    electronAPI: { openAppDoc: () => new Promise((resolve) => { completeRequest = resolve; }) },
+  });
+  const prompt = harness.prompt();
+  const request = harness.elements.textExtractionOcrActivationDisclosurePrivacy.dispatch('click', { preventDefault() {} });
+  harness.elements.textExtractionOcrActivationDisclosureCancel.dispatch('click');
+  assert.equal(await prompt, false);
+  completeRequest({ ok: false });
+  await request;
+  assert.deepEqual(harness.notifications, []);
+
+  const success = createHarness({ electronAPI: { openAppDoc: async () => ({ ok: true }) } });
+  const successPrompt = success.prompt();
+  await success.elements.textExtractionOcrActivationDisclosurePrivacy.dispatch('click', { preventDefault() {} });
+  assert.deepEqual(success.notifications, []);
+  success.elements.textExtractionOcrActivationDisclosureCancel.dispatch('click');
+  assert.equal(await successPrompt, false);
 });
 
 test('OCR activation disclosure modal uses RTL surface direction for RTL locales', async () => {

@@ -84,16 +84,19 @@
         'renderer.textExtraction.ocrActivationDisclosure.openAppDoc.unavailable',
         'openAppDoc unavailable; OCR activation disclosure privacy link cannot open.'
       );
-      return;
+      return false;
     }
 
     try {
       const result = await api.openAppDoc('privacy-policy');
       if (!result || result.ok !== true) {
         log.warn('openAppDoc("privacy-policy") failed (ignored):', result);
+        return false;
       }
+      return true;
     } catch (err) {
       log.warn('openAppDoc("privacy-policy") request failed (ignored):', err);
+      return false;
     }
   }
 
@@ -155,7 +158,10 @@
       const onCancel = () => finish(false);
       const onPrivacyClick = async (ev) => {
         ev.preventDefault();
-        await openPrivacyPolicy();
+        const opened = await openPrivacyPolicy();
+        if (!opened && !settled) {
+          window.Notify.notifyMain('renderer.info.appdoc.error');
+        }
       };
       const onWindowKeyDown = (ev) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
