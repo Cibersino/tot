@@ -1,3 +1,5 @@
+// electron/text_extraction_platform/ocr_google_drive_operation.js
+
 // Coordinates Google OCR operations that mutate the stored token.
 'use strict';
 
