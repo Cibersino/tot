@@ -6,13 +6,13 @@
 // =============================================================================
 // Responsibilities:
 // - Own main-window drag/drop affordance for text extraction.
-// - Show a visible full-window drop target while a valid file drag is active.
-// - Forward accepted one-or-many file drops into the shared text extraction entry flow.
+// - Show a full-window drop target for file drags that pass the availability guard.
+// - Forward raw dropped files into the shared text extraction entry flow when allowed.
 // - Keep drag/drop availability aligned with renderer-level interaction guards.
 
 (() => {
   // =============================================================================
-  // Imports / logger
+  // Renderer dependencies / logger
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text-extraction-drag-drop] window.getLogger unavailable; cannot continue');
