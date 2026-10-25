@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR বিচ্ছিন্ন হয়েছে। সংরক্ষিত Google টোকেন বাতিল করা হয়েছে এবং লোকাল সাইন-ইন অবস্থা সরানো হয়েছে।",
           "disconnect_not_connected": "এই অ্যাপ ইনস্ট্যান্সে Google OCR বর্তমানে সংযুক্ত নয়।",
           "disconnect_failed": "Google OCR বিচ্ছিন্নকরণ ব্যর্থ হয়েছে। সংরক্ষিত সাইন-ইন অবস্থা সরানো হয়নি।",
+          "operation_in_progress": "Google OCR সক্রিয় বা সংযোগ বিচ্ছিন্ন করার একটি প্রক্রিয়া ইতিমধ্যেই চলছে। সেটি শেষ হওয়া পর্যন্ত অপেক্ষা করুন, তারপর আবার চেষ্টা করুন।",
           "connectivity_failed": "OCR-এর জন্য ইন্টারনেট সংযোগ দরকার। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
           "setup_missing_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অনুপস্থিত।",
           "setup_invalid_credentials": "এই অ্যাপ build-এ OCR উপলব্ধ নয়, কারণ bundled Google OAuth credentials অকার্যকর।",

@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR 已断开连接。已撤销保存的 Google 令牌，并移除了本地登录状态。",
           "disconnect_not_connected": "Google OCR 当前未在此应用实例中连接。",
           "disconnect_failed": "断开 Google OCR 连接失败。已保存的登录状态未被移除。",
+          "operation_in_progress": "Google OCR 的启用或断开连接操作已在进行中。请等待操作完成后重试。",
           "connectivity_failed": "OCR 需要互联网连接。请检查连接后重试。",
           "setup_missing_credentials": "此应用构建中的 OCR 不可用，因为缺少随应用打包的 Google OAuth 凭据。",
           "setup_invalid_credentials": "此应用构建中的 OCR 不可用，因为随应用打包的 Google OAuth 凭据无效。",

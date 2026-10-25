@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR bağlantısı kesildi. Kayıtlı Google token'ı iptal edildi ve yerel oturum açma durumu kaldırıldı.",
           "disconnect_not_connected": "Google OCR bu uygulama örneğinde şu anda bağlı değil.",
           "disconnect_failed": "Google OCR bağlantısını kesme başarısız oldu. Kayıtlı oturum açma durumu kaldırılmadı.",
+          "operation_in_progress": "Google OCR etkinleştirme veya bağlantıyı kesme işlemi zaten devam ediyor. Tamamlanmasını bekleyip yeniden deneyin.",
           "connectivity_failed": "OCR internet bağlantısı gerektirir. Bağlantınızı kontrol edin ve yeniden deneyin.",
           "setup_missing_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri eksik olduğu için OCR kullanılamıyor.",
           "setup_invalid_credentials": "Bu uygulama derlemesinde paketlenmiş Google OAuth kimlik bilgileri geçersiz olduğu için OCR kullanılamıyor.",

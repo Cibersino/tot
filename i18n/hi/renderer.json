@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR डिस्कनेक्ट कर दिया गया। सहेजा गया Google टोकन रद्द कर दिया गया और स्थानीय साइन-इन स्थिति हटा दी गई।",
           "disconnect_not_connected": "इस ऐप इंस्टेंस में Google OCR अभी कनेक्ट नहीं है।",
           "disconnect_failed": "Google OCR डिस्कनेक्शन विफल हुआ। सहेजी गई साइन-इन स्थिति हटाई नहीं गई।",
+          "operation_in_progress": "Google OCR सक्षम करने या डिस्कनेक्ट करने की प्रक्रिया पहले से चल रही है। इसके पूरा होने की प्रतीक्षा करें, फिर प्रयास करें।",
           "connectivity_failed": "OCR के लिए इंटरनेट कनेक्शन आवश्यक है। अपना कनेक्शन जाँचें और फिर प्रयास करें।",
           "setup_missing_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अनुपस्थित हैं।",
           "setup_invalid_credentials": "इस ऐप build में OCR उपलब्ध नहीं है क्योंकि ऐप के साथ शामिल Google OAuth क्रेडेंशियल अमान्य हैं।",

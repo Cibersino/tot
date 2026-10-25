@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR nürüftuy. Google mu elkünutulu token revocadotuy ka local login estado ñamümtuy.",
           "disconnect_not_connected": "Tüfachi app instancia mew Google OCR petu konektalelay.",
           "disconnect_failed": "Google OCR nürüfün welulkuy. Elkünutulu login estado no ñamümtuy.",
+          "operation_in_progress": "Google OCR activación kam desconexión petu amuley. Üngümnge afün mew ka wiño küdaw.",
           "connectivity_failed": "OCR internet conexión müleyafuy. Kintunge tami conexión ka wiño küdaw.",
           "setup_missing_credentials": "OCR mew credentials.json faltaley. Düllinge kiñe valid Google OAuth credenciales archivo ka wiño küdaw.",
           "setup_invalid_credentials": "Düllingelu credenciales archivo no küme Google OAuth mew. Düllinge kiñe valid credentials.json ka wiño küdaw.",

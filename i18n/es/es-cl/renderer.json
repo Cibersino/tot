@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR quedó desconectado. Se revocó el token guardado de Google y se borró el estado local de inicio de sesión.",
           "disconnect_not_connected": "Google OCR no está conectado en esta instancia de la app.",
           "disconnect_failed": "Falló la desconexión de Google OCR. El estado guardado de inicio de sesión no se borró.",
+          "operation_in_progress": "Ya hay una activación o desconexión de Google OCR andando. Espera que termine y prueba otra vez.",
           "connectivity_failed": "OCR necesita internet. Revisa la conexión y prueba otra vez.",
           "setup_missing_credentials": "Falta credentials.json pa' OCR. Elige un archivo válido de credenciales OAuth de Google y prueba otra vez.",
           "setup_invalid_credentials": "El archivo de credenciales elegido no sirve pa' Google OAuth. Elige un credentials.json válido y prueba de nuevo.",

@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR a été déconnecté. Le jeton Google enregistré a été révoqué et l'état de connexion local a été supprimé.",
           "disconnect_not_connected": "Google OCR n'est actuellement pas connecté dans cette instance de l'application.",
           "disconnect_failed": "La déconnexion de Google OCR a échoué. L'état de connexion enregistré n'a pas été supprimé.",
+          "operation_in_progress": "Une activation ou une déconnexion de Google OCR est déjà en cours. Attendez qu’elle se termine, puis réessayez.",
           "connectivity_failed": "L'OCR nécessite une connexion Internet. Vérifiez votre connexion et réessayez.",
           "setup_missing_credentials": "La configuration OCR ne contient pas credentials.json. Sélectionnez un fichier d'identifiants Google OAuth valide et réessayez.",
           "setup_invalid_credentials": "Le fichier d'identifiants sélectionné n'est pas valide pour Google OAuth. Choisissez un credentials.json valide et réessayez.",

@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR telah diputuskan. Token Google yang tersimpan dicabut dan status masuk lokal dihapus.",
           "disconnect_not_connected": "Google OCR saat ini tidak tersambung dalam instance aplikasi ini.",
           "disconnect_failed": "Pemutusan Google OCR gagal. Status masuk yang tersimpan tidak dihapus.",
+          "operation_in_progress": "Aktivasi atau pemutusan koneksi Google OCR sedang berlangsung. Tunggu hingga selesai, lalu coba lagi.",
           "connectivity_failed": "OCR membutuhkan koneksi internet. Periksa koneksi Anda dan coba lagi.",
           "setup_missing_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak ada.",
           "setup_invalid_credentials": "OCR tidak tersedia dalam build aplikasi ini karena kredensial Google OAuth bundled tidak valid.",

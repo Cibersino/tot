@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR dekonekte. Token Google ki sove a te revoke epi eta koneksyon lokal la te retire.",
           "disconnect_not_connected": "Google OCR pa konekte kounye a nan enstans app sa a.",
           "disconnect_failed": "Dekoneksyon Google OCR echwe. Eta koneksyon ki sove a pa t retire.",
+          "operation_in_progress": "Gen yon aktivasyon oswa dekoneksyon Google OCR ki deja ap fèt. Tann li fini, apre sa eseye ankò.",
           "connectivity_failed": "OCR mande koneksyon entènèt. Tcheke koneksyon ou epi eseye ankò.",
           "setup_missing_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo manke.",
           "setup_invalid_credentials": "OCR pa disponib nan build app sa a paske kalifikasyon Google OAuth ki enkli yo pa valab.",

@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR منقطع ہو گیا۔ محفوظ شدہ Google ٹوکن منسوخ کر دیا گیا اور مقامی سائن اِن حالت ہٹا دی گئی۔",
           "disconnect_not_connected": "اس ایپ انسٹینس میں Google OCR فی الحال منسلک نہیں۔",
           "disconnect_failed": "Google OCR منقطع کرنے میں ناکامی۔ محفوظ شدہ سائن اِن حالت نہیں ہٹائی گئی۔",
+          "operation_in_progress": "Google OCR کو فعال کرنے یا منقطع کرنے کا عمل پہلے ہی جاری ہے۔ اس کے مکمل ہونے کا انتظار کریں، پھر دوبارہ کوشش کریں۔",
           "connectivity_failed": "OCR کے لیے انٹرنیٹ کنکشن ضروری ہے۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
           "setup_missing_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials موجود نہیں۔",
           "setup_invalid_credentials": "اس ایپ build میں OCR دستیاب نہیں کیونکہ bundled Google OAuth credentials درست نہیں۔",

@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR ojehekýi. Token Google oñeñongatúva ojerrevoca ha estado local jeike rehegua oñembogue.",
           "disconnect_not_connected": "Google OCR noĩri conectado ko app instancia-pe ko’ág̃a.",
           "disconnect_failed": "Google OCR jehekýi ojavy. Estado jeike rehegua oñeñongatúva noñemboguei.",
+          "operation_in_progress": "Oĩma Google OCR ñemyendy térã jehekýi rehegua tembiapo ojejapóva. Eha’arõ opa peve ha eha’ã jey.",
           "connectivity_failed": "OCR oikotevẽ internet rehe. Ehecha ne conexión ha eha’ã jey.",
           "setup_missing_credentials": "OCR ndojepurukuaái ko app build-pe ofaltágui credencial OAuth Google oúva app ndive.",
           "setup_invalid_credentials": "OCR ndojepurukuaái ko app build-pe credencial OAuth Google oúva app ndive ndoikóigui.",

@@ -282,6 +282,7 @@
           "disconnect_success": "اتصال Google OCR قطع شد. توکن ذخیره‌شده Google لغو و وضعیت ورود محلی حذف شد.",
           "disconnect_not_connected": "Google OCR در حال حاضر در این نمونه برنامه متصل نیست.",
           "disconnect_failed": "قطع اتصال Google OCR ناموفق بود. وضعیت ورود ذخیره‌شده حذف نشد.",
+          "operation_in_progress": "عملیات فعال‌سازی یا قطع اتصال Google OCR از قبل در حال انجام است. صبر کنید تا تمام شود، سپس دوباره تلاش کنید.",
           "connectivity_failed": "OCR به اتصال اینترنت نیاز دارد. اتصال خود را بررسی کنید و دوباره تلاش کنید.",
           "setup_missing_credentials": "OCR در این build برنامه در دسترس نیست، چون اعتبارنامه‌های Google OAuth همراه برنامه وجود ندارند.",
           "setup_invalid_credentials": "OCR در این build برنامه در دسترس نیست، چون اعتبارنامه‌های Google OAuth همراه برنامه نامعتبرند.",

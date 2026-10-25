@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR đã được ngắt kết nối. Token Google đã lưu đã bị thu hồi và trạng thái đăng nhập cục bộ đã bị xóa.",
           "disconnect_not_connected": "Google OCR hiện không được kết nối trong phiên bản ứng dụng này.",
           "disconnect_failed": "Ngắt kết nối Google OCR thất bại. Trạng thái đăng nhập đã lưu chưa bị xóa.",
+          "operation_in_progress": "Một thao tác bật hoặc ngắt kết nối Google OCR đang diễn ra. Hãy đợi thao tác hoàn tất rồi thử lại.",
           "connectivity_failed": "OCR cần kết nối Internet. Hãy kiểm tra kết nối và thử lại.",
           "setup_missing_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thiếu thông tin xác thực Google OAuth được đóng gói.",
           "setup_invalid_credentials": "OCR không khả dụng trong bản dựng ứng dụng này vì thông tin xác thực Google OAuth được đóng gói không hợp lệ.",

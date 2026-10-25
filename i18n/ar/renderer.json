@@ -282,6 +282,7 @@
           "disconnect_success": "تم فصل Google OCR. تم إبطال رمز Google المحفوظ وإزالة حالة تسجيل الدخول المحلية.",
           "disconnect_not_connected": "Google OCR غير متصل حاليًا في هذه النسخة من التطبيق.",
           "disconnect_failed": "فشل فصل Google OCR. لم تُزَل حالة تسجيل الدخول المحفوظة.",
+          "operation_in_progress": "هناك بالفعل عملية تفعيل أو قطع اتصال لـ Google OCR قيد التنفيذ. انتظر حتى تنتهي، ثم حاول مرة أخرى.",
           "connectivity_failed": "يتطلب OCR اتصالًا بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.",
           "setup_missing_credentials": "OCR غير متاح في هذا البناء من التطبيق لأن بيانات اعتماد Google OAuth المضمّنة مفقودة.",
           "setup_invalid_credentials": "OCR غير متاح في هذا البناء من التطبيق لأن بيانات اعتماد Google OAuth المضمّنة غير صالحة.",

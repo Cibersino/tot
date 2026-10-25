@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR 已中斷連線。已撤銷儲存的 Google 權杖，並移除了本機登入狀態。",
           "disconnect_not_connected": "Google OCR 目前未在此應用程式執行個體中連線。",
           "disconnect_failed": "中斷 Google OCR 連線失敗。已儲存的登入狀態未被移除。",
+          "operation_in_progress": "Google OCR 的啟用或中斷連線作業已在進行中。請等待作業完成後重試。",
           "connectivity_failed": "OCR 需要網際網路連線。請檢查連線後重試。",
           "setup_missing_credentials": "此應用程式建置中的 OCR 無法使用，因為缺少隨應用程式打包的 Google OAuth 憑證。",
           "setup_invalid_credentials": "此應用程式建置中的 OCR 無法使用，因為隨應用程式打包的 Google OAuth 憑證無效。",

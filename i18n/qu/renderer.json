@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR t'aqasqa. Waqaychasqa Google token qhichusqa hinaspa local yaykuna estado pichasqa.",
           "disconnect_not_connected": "Google OCRqa kay app instanciapi kunan mana t'inkisqachu.",
           "disconnect_failed": "Google OCR t'aqay pantarun. Waqaychasqa yaykuna estado mana pichasqachu.",
+          "operation_in_progress": "Google OCR activay utaq t'aqay rurayqa ñam ruwachkan. Tukukunankama suyay, chaymanta wakmanta ruwapay.",
           "connectivity_failed": "OCRqa internet t'inkiyta munan. T'inkiykita qhaway hinaspa wakmanta ruwapay.",
           "setup_missing_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna faltan.",
           "setup_invalid_credentials": "Kay app buildpi OCR mana kanchu, imaraykuchus appwan kuska Google OAuth credencialkuna mana allinchu.",

@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR kopplades från. Den sparade Google-token återkallades och den lokala inloggningsstatusen togs bort.",
           "disconnect_not_connected": "Google OCR är för närvarande inte anslutet i denna appinstans.",
           "disconnect_failed": "Frånkoppling av Google OCR misslyckades. Den sparade inloggningsstatusen togs inte bort.",
+          "operation_in_progress": "En aktivering eller frånkoppling av Google OCR pågår redan. Vänta tills den är klar och försök igen.",
           "connectivity_failed": "OCR kräver en internetanslutning. Kontrollera anslutningen och försök igen.",
           "setup_missing_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna saknas.",
           "setup_invalid_credentials": "OCR är inte tillgängligt i denna appversion eftersom de inbäddade Google OAuth-uppgifterna är ogiltiga.",

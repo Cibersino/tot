@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR 연결이 해제되었습니다. 저장된 Google 토큰이 취소되었고 로컬 로그인 상태가 제거되었습니다.",
           "disconnect_not_connected": "이 앱 인스턴스에서 Google OCR은 현재 연결되어 있지 않습니다.",
           "disconnect_failed": "Google OCR 연결 해제에 실패했습니다. 저장된 로그인 상태가 제거되지 않았습니다.",
+          "operation_in_progress": "Google OCR 활성화 또는 연결 해제 작업이 이미 진행 중입니다. 완료될 때까지 기다린 후 다시 시도하세요.",
           "connectivity_failed": "OCR에는 인터넷 연결이 필요합니다. 연결을 확인하고 다시 시도하세요.",
           "setup_missing_credentials": "이 앱 빌드에는 포함된 Google OAuth 자격 증명이 없어 OCR을 사용할 수 없습니다.",
           "setup_invalid_credentials": "이 앱 빌드에는 포함된 Google OAuth 자격 증명이 올바르지 않아 OCR을 사용할 수 없습니다.",

@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR imetenganishwa. Tokeni ya Google iliyohifadhiwa imebatilishwa na hali ya ndani ya kuingia imeondolewa.",
           "disconnect_not_connected": "Google OCR haijaunganishwa kwa sasa katika usakinishaji huu wa programu.",
           "disconnect_failed": "Utenganishaji wa Google OCR umeshindwa. Hali ya kuingia iliyohifadhiwa haikuondolewa.",
+          "operation_in_progress": "Uanzishaji au utenganishaji wa Google OCR tayari unaendelea. Subiri ukamilike, kisha ujaribu tena.",
           "connectivity_failed": "OCR inahitaji muunganisho wa intaneti. Kagua muunganisho wako kisha ujaribu tena.",
           "setup_missing_credentials": "OCR haipatikani katika toleo hili la programu kwa sababu vitambulisho vya Google OAuth vilivyofungashwa havipo.",
           "setup_invalid_credentials": "OCR haipatikani katika toleo hili la programu kwa sababu vitambulisho vya Google OAuth vilivyofungashwa si halali.",

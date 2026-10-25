@@ -282,6 +282,7 @@
           "disconnect_success": "Kua momotuhia a Google OCR. Kua whakakorengia te tōkena Google kua tiakina, ā, kua tangohia te āhua takiuru paetata.",
           "disconnect_not_connected": "Kāore a Google OCR i te tūhono i tēnei tāutanga taupānga.",
           "disconnect_failed": "I rahua te momotu Google OCR. Kāore te āhua takiuru kua tiakina i tangohia.",
+          "operation_in_progress": "Kei te haere kē te whakahohe, te momotu rānei i a Google OCR. Taihoa kia mutu, kātahi ka ngana anō.",
           "connectivity_failed": "Me whai hononga ipurangi te OCR. Tirohia tō hononga ka ngana anō.",
           "setup_missing_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te ngaro o ngā raraunga Google OAuth kua takai ki te taupānga.",
           "setup_invalid_credentials": "Kāore te OCR e wātea ana i tēnei build taupānga nā te muhu o ngā raraunga Google OAuth kua takai ki te taupānga.",

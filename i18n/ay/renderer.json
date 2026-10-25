@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR apsutawa. Imata Google token revocatawa ukat local mantaña estado chhaqtayatäwa.",
           "disconnect_not_connected": "Google OCR jichhax aka app instancia ukan janiw mayachatäkiti.",
           "disconnect_failed": "Google OCR apsuñax pantjasi. Imata mantaña estado janiw chhaqtayatäkiti.",
+          "operation_in_progress": "Google OCR activación jan ukax desconexión lurawix nayratpach sarantaski. Tukuyasiñapkam suyt’am, ukat wasitat yant’am.",
           "connectivity_failed": "OCR ukax internet mayachawi muni. Mayachawim uñakipam ukat wasitat yant’am.",
           "setup_missing_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax faltatap layku.",
           "setup_invalid_credentials": "Aka app build ukan OCR janiw utjkiti, appamp chikt’ata Google OAuth credencialanakax jan walïtap layku.",

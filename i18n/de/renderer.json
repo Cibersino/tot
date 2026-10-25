@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR wurde getrennt. Das gespeicherte Google-Token wurde widerrufen und der lokale Anmeldestatus wurde entfernt.",
           "disconnect_not_connected": "Google OCR ist in dieser App-Instanz derzeit nicht verbunden.",
           "disconnect_failed": "Das Trennen von Google OCR ist fehlgeschlagen. Der gespeicherte Anmeldestatus wurde nicht entfernt.",
+          "operation_in_progress": "Eine Aktivierung oder Trennung von Google OCR läuft bereits. Warten Sie, bis der Vorgang abgeschlossen ist, und versuchen Sie es dann erneut.",
           "connectivity_failed": "OCR benötigt eine Internetverbindung. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
           "setup_missing_credentials": "Für die OCR-Einrichtung fehlt credentials.json. Wählen Sie eine gültige Google-OAuth-Anmeldedatei aus und versuchen Sie es erneut.",
           "setup_invalid_credentials": "Die ausgewählte Anmeldedatei ist für Google OAuth ungültig. Wählen Sie eine gültige credentials.json und versuchen Sie es erneut.",
