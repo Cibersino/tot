@@ -246,6 +246,8 @@ test('reading-test entry modal focuses Show instructions and restores its opener
     resolveTagLabel() { return ''; },
   };
   env.window.electronAPI = {
+    onReadingTestStateChanged() { return () => {}; },
+    async getReadingTestState() { return { active: false }; },
     async getReadingTestEntryData() {
       return {
         ok: true,
@@ -259,6 +261,7 @@ test('reading-test entry modal focuses Show instructions and restores its opener
     },
   };
   env.run('../../../public/js/reading_speed_test.js');
+  env.window.ReadingSpeedTestUi.configure();
 
   env.elements.readingTestOpener.focus();
   await env.window.ReadingSpeedTestUi.openEntryFlow();
@@ -287,7 +290,6 @@ test('reading-test entry modal focuses Show instructions and restores its opener
     'renderer.reading_test.entry.names.reset_pool'
   );
 
-  env.window.ReadingSpeedTestUi.configure();
   env.elements.readingTestEntryModalClose.dispatch('click');
   assert.equal(env.document.activeElement, env.elements.readingTestOpener);
 });
@@ -361,4 +363,148 @@ test('reading-test entry markup relates material help to each actual control', (
       new RegExp(`id="${descriptionId}"[^>]*class="main-accessible-description"`)
     );
   });
+});
+
+function createReadingTestEnvironment({ registration = 'success', getState } = {}) {
+  const env = createEnvironment(READING_TEST_ENTRY_ELEMENT_IDS);
+  const starts = [];
+  const notices = [];
+  const warnings = [];
+  let stateChanged;
+  env.elements.readingTestEntryModal.setAttribute('aria-hidden', 'true');
+  env.window.ReadingTestFiltersCore = require('../../../public/js/lib/reading_test_filters_core');
+  env.window.SnapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
+  env.window.Notify.notifyMain = (key) => notices.push(key);
+  env.window.getLogger = () => ({
+    debug() {},
+    warn(...args) { warnings.push(args); },
+    warnOnce(...args) { warnings.push(args); },
+    error() {},
+  });
+  env.window.electronAPI = {
+    getReadingTestState: getState || (async () => ({ active: false })),
+    async getReadingTestEntryData() {
+      return {
+        ok: true, canOpen: true, entries: [{ used: false, tags: {} }],
+        poolExhausted: false, currentTextAvailable: true,
+        showBundledEntries: true, entryEmptyState: 'none',
+      };
+    },
+    async startReadingTest(payload) {
+      starts.push(payload.sourceMode);
+      return { ok: true };
+    },
+    onReadingTestNotice() {},
+    onReadingTestApplyWpm() {},
+  };
+  if (registration !== 'missing') {
+    env.window.electronAPI.onReadingTestStateChanged = (handler) => {
+      stateChanged = handler;
+      if (registration === 'throws') throw new Error('registration failed');
+      return () => {};
+    };
+  }
+  env.run('../../../public/js/reading_speed_test.js');
+  return { ...env, starts, notices, warnings, emitState: (state) => stateChanged(state) };
+}
+
+async function flushReadingTestWork() {
+  await new Promise((resolve) => setImmediate(resolve));
+}
+
+test('reading-test registration preserves both start paths and live session locking', async () => {
+  for (const [button, mode] of [
+    ['readingTestEntryModalStart', 'pool'],
+    ['readingTestEntryModalStartCurrentText', 'current_text'],
+  ]) {
+    const env = createReadingTestEnvironment();
+    const ui = env.window.ReadingSpeedTestUi;
+    ui.configure();
+    await flushReadingTestWork();
+    await ui.openEntryFlow();
+    assert.equal(env.elements.readingTestEntryModal.getAttribute('aria-hidden'), 'false');
+    env.elements[button].dispatch('click');
+    await flushReadingTestWork();
+    assert.deepEqual(env.starts, [mode]);
+    env.emitState({ active: true });
+    assert.equal(ui.isInteractionLocked(), true);
+    env.emitState({ active: false });
+    assert.equal(ui.isInteractionLocked(), false);
+  }
+});
+
+for (const registration of ['missing', 'throws']) {
+  test(`reading-test ${registration} subscription prevents entry and both start actions`, async () => {
+    const env = createReadingTestEnvironment({ registration });
+    const ui = env.window.ReadingSpeedTestUi;
+    ui.configure();
+    assert.equal(ui.isInteractionLocked(), false);
+    await flushReadingTestWork();
+    assert.equal(ui.isInteractionLocked(), false);
+    await ui.openEntryFlow();
+    env.elements.readingTestEntryModalStart.dispatch('click');
+    env.elements.readingTestEntryModalStartCurrentText.dispatch('click');
+    await flushReadingTestWork();
+    assert.deepEqual(env.starts, []);
+    assert.deepEqual(env.notices, ['renderer.reading_test.alerts.unavailable']);
+    assert.ok(env.warnings.some((args) => args.some((arg) => String(arg).includes('onReadingTestStateChanged'))));
+  });
+}
+
+test('failed subscription leaves Main unlocked when the initial session state is unknown', async () => {
+  for (const getState of [
+    async () => ({}),
+    async () => { throw new Error('state unavailable'); },
+    () => new Promise(() => {}),
+  ]) {
+    const env = createReadingTestEnvironment({ registration: 'missing', getState });
+    const ui = env.window.ReadingSpeedTestUi;
+    ui.configure();
+    await flushReadingTestWork();
+    assert.equal(ui.isSessionActive(), false);
+    assert.equal(ui.isInteractionLocked(), false);
+    ui.applyTranslations();
+    assert.deepEqual(env.notices, []);
+    await ui.openEntryFlow();
+    assert.deepEqual(env.notices, ['renderer.reading_test.alerts.unavailable']);
+    assert.deepEqual(env.starts, []);
+  }
+  const missingQuery = createReadingTestEnvironment({ registration: 'missing' });
+  delete missingQuery.window.electronAPI.getReadingTestState;
+  missingQuery.window.ReadingSpeedTestUi.configure();
+  await flushReadingTestWork();
+  assert.equal(missingQuery.window.ReadingSpeedTestUi.isInteractionLocked(), false);
+});
+
+test('failed subscription locks Main when an active initial session is observed', async () => {
+  const env = createReadingTestEnvironment({
+    registration: 'missing',
+    getState: async () => ({ active: true }),
+  });
+  const ui = env.window.ReadingSpeedTestUi;
+  ui.configure();
+  await flushReadingTestWork();
+  assert.equal(ui.isSessionActive(), true);
+  assert.equal(ui.isInteractionLocked(), true);
+  ui.applyTranslations();
+  assert.deepEqual(env.notices, []);
+  await ui.openEntryFlow();
+  assert.deepEqual(env.starts, []);
+});
+
+test('a failed partial registration cannot release an observed active session using an older snapshot', async () => {
+  let resolveState;
+  const env = createReadingTestEnvironment({
+    registration: 'throws',
+    getState: () => new Promise((resolve) => { resolveState = resolve; }),
+  });
+  const ui = env.window.ReadingSpeedTestUi;
+  ui.configure();
+  assert.equal(ui.isInteractionLocked(), false);
+  env.emitState({ active: true });
+  assert.equal(ui.isInteractionLocked(), true);
+  resolveState({ active: false });
+  await flushReadingTestWork();
+  env.emitState({ active: false });
+  assert.equal(ui.isInteractionLocked(), true);
 });

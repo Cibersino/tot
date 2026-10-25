@@ -116,6 +116,7 @@ async function createRendererHarness({
   statusUiOverrides = {},
   transitionFailureLanguage = '',
   transitionFailure = null,
+  useReadingSpeedTestUi = false,
 } = {}) {
   const absentElectronMethodSet = new Set(absentElectronMethods);
   const createElement = Array.isArray(focusCalls)
@@ -515,6 +516,16 @@ async function createRendererHarness({
     'utf8'
   );
   vm.runInContext(infoModalSource, sandbox, { filename: 'public/js/info_modal.js' });
+  if (useReadingSpeedTestUi) {
+    window.ReadingTestFiltersCore = require('../../../public/js/lib/reading_test_filters_core');
+    window.SnapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
+    getElement('readingTestEntryModal').setAttribute('aria-hidden', 'true');
+    const readingTestSource = fs.readFileSync(
+      path.resolve(__dirname, '../../../public/js/reading_speed_test.js'),
+      'utf8'
+    );
+    vm.runInContext(readingTestSource, sandbox, { filename: 'public/js/reading_speed_test.js' });
+  }
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/renderer.js'),
     'utf8'
@@ -608,6 +619,43 @@ test('main renderer delivers Help tips through Notify toastMain', async () => {
   assert.match(toastKeys[0], /^renderer\.tips\.tip\d+$/);
   assert.deepEqual(notifyKeys, []);
   assert.deepEqual(harness.errors, []);
+});
+
+test('Main stays usable when reading-test registration fails and the session is inactive or unknown', async () => {
+  for (const [registration, stateCase] of [
+    ['missing', 'inactive'],
+    ['throws', 'inactive'],
+    ['missing', 'missing'],
+    ['throws', 'invalid'],
+    ['missing', 'rejects'],
+    ['throws', 'pending'],
+  ]) {
+    const absentElectronMethods = [];
+    if (registration === 'missing') absentElectronMethods.push('onReadingTestStateChanged');
+    if (stateCase === 'missing') absentElectronMethods.push('getReadingTestState');
+    let startCalls = 0;
+    const harness = await createRendererHarness({
+      useReadingSpeedTestUi: true,
+      absentElectronMethods,
+      electronMethodOverrides: {
+        getReadingTestState() {
+          if (stateCase === 'rejects') return Promise.reject(new Error('state unavailable'));
+          if (stateCase === 'pending') return new Promise(() => {});
+          return Promise.resolve(stateCase === 'invalid' ? {} : { active: false });
+        },
+        onReadingTestStateChanged() { throw new Error('registration failed'); },
+        startReadingTest() { startCalls += 1; },
+      },
+    });
+    assert.deepEqual(harness.notifications, []);
+    await harness.selectorActions.onReadingSpeedTest();
+    assert.ok(harness.notifications.includes('renderer.reading_test.alerts.unavailable'));
+    assert.equal(harness.getElement('btnHelp').disabled, false);
+    harness.getElement('btnHelp').dispatch('click');
+    assert.ok(harness.notifications.some((key) => /^renderer\.tips\.tip\d+$/.test(key)));
+    assert.equal(startCalls, 0);
+    assert.deepEqual(harness.errors, []);
+  }
 });
 
 test('main renderer logs Help-tip toast failures without a feature-local dialog fallback', async () => {

@@ -125,6 +125,9 @@
   let onApplyWpm = () => { };
   let getSettingsCache = () => ({});
   let sessionActive = false;
+  let stateSubscriptionEstablished = false;
+  let stateSubscriptionFailed = false;
+  let stateChangeObservedActive = false;
   let poolEntries = [];
   let selection = filtersCore.normalizeSelection({});
   let filterState = filtersCore.computeFilterState(poolEntries, selection);
@@ -457,6 +460,11 @@
 
     try {
       const nextState = await getState();
+      if (stateSubscriptionFailed
+        && (!isPayloadObject(nextState) || typeof nextState.active !== 'boolean')) {
+        log.warn('BOOTSTRAP: reading-test initial session state indeterminate; session state unchanged.', nextState);
+        return;
+      }
       if (!isPayloadObject(nextState)) {
         log.warnOnce(
           'BOOTSTRAP:reading-speed-test.getState.invalid',
@@ -464,6 +472,8 @@
           nextState
         );
       }
+      // A failed subscription cannot reliably order an active event against the initial snapshot.
+      if (stateSubscriptionFailed && !nextState.active && stateChangeObservedActive) return;
       sessionActive = !!(nextState && nextState.active);
       syncLockState();
     } catch (err) {
@@ -483,6 +493,10 @@
 
   async function openEntryFlow() {
     if (stabilizing || isSessionActive()) return;
+    if (!stateSubscriptionEstablished) {
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
+      return;
+    }
 
     const result = await requestEntryData();
     if (!result) return;
@@ -721,6 +735,7 @@
   }
 
   async function handleStart() {
+    if (!stateSubscriptionEstablished) return;
     if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
 
     if (currentTextAvailable) {
@@ -744,6 +759,7 @@
   }
 
   async function handleStartCurrentText() {
+    if (!stateSubscriptionEstablished) return;
     if (stabilizing || isSessionActive() || !currentTextAvailable) return;
 
     const startReadingTest = readElectronMethod('startReadingTest');
@@ -819,6 +835,8 @@
               nextState
             );
           }
+          if (isPayloadObject(nextState) && nextState.active === true) stateChangeObservedActive = true;
+          if (stateSubscriptionFailed && !(isPayloadObject(nextState) && nextState.active === true)) return;
           sessionActive = !!(nextState && nextState.active);
           if (sessionActive && isModalOpen()) {
             closeModal();
@@ -829,18 +847,21 @@
           }
           syncLockState();
         });
+        stateSubscriptionEstablished = true;
       } catch (err) {
         log.warn(
-          'BOOTSTRAP: onReadingTestStateChanged registration failed; renderer lock state will not live-sync.',
+          'BOOTSTRAP: onReadingTestStateChanged registration failed; reading speed test disabled.',
           err
         );
       }
     } else {
       log.warnOnce(
         'BOOTSTRAP:reading-speed-test.onStateChanged.missing',
-        'onReadingTestStateChanged unavailable; renderer lock state will not live-sync.'
+        'BOOTSTRAP: onReadingTestStateChanged unavailable; reading speed test disabled.'
       );
     }
+
+    stateSubscriptionFailed = !stateSubscriptionEstablished;
 
     const onNotice = readElectronMethod('onReadingTestNotice');
     if (onNotice) {
