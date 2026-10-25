@@ -26,6 +26,7 @@ const { describePersistedGoogleToken } = require('./ocr_google_drive_oauth_clien
 const { authenticateGoogleLoopback } = require('./ocr_google_drive_secure_oauth');
 const { validateGoogleDriveOcrSetup } = require('./ocr_google_drive_setup_validation');
 const { writeEncryptedTokenFile } = require('./ocr_google_drive_token_storage');
+const ocrOperation = require('./ocr_google_drive_operation');
 
 const log = Log.get('text-extraction-ocr-activation');
 
@@ -609,6 +610,7 @@ function registerIpc(
 
   ipcMain.handle(LAUNCH_CHANNEL, async (event) => {
     const mainWin = resolveMainWin();
+    let releaseOperation = null;
     try {
       if (!isAuthorizedSender(event, mainWin, {
         warnKey: 'text_extraction_ocr_activation.launch.unauthorized',
@@ -622,6 +624,15 @@ function registerIpc(
             stage: 'authorization',
             reason: 'unauthorized_sender',
           },
+        });
+      }
+
+      releaseOperation = ocrOperation.begin();
+      if (!releaseOperation) {
+        log.warn('Google OCR activation ignored because another operation is in progress.');
+        return buildFailure({
+          code: 'ocr_operation_in_progress',
+          alertKey: 'renderer.text_extraction.alerts.ocr.operation_in_progress',
         });
       }
 
@@ -755,6 +766,8 @@ function registerIpc(
       });
       log.error(`${LAUNCH_CHANNEL} failed unexpectedly:`, failure.detailsSafeForLogs);
       return failure;
+    } finally {
+      if (releaseOperation) releaseOperation();
     }
   });
 }

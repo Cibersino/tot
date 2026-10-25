@@ -2131,6 +2131,13 @@ Estados de revisión recomendados:
             // [CONCEPTO_APP] Google OCR; token local OCR
             // [PROTEGIDO] `Google OCR`
           },
+          "operation_in_progress": {
+            "es": "Ya hay una activación o desconexión de Google OCR en curso. Espera a que termine y vuelve a intentarlo.",
+            "en": "A Google OCR activation or disconnection is already in progress. Wait for it to finish, then try again."
+            // [PROPÓSITO] Alerta cuando una solicitud de activación o desconexión se rechaza porque otra de esas operaciones sigue en curso; la persona debe volver a intentarlo.
+            // [CONCEPTO_APP] Google OCR
+            // [PROTEGIDO] `Google OCR`
+          },
           "connectivity_failed": {
             "es": "OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo.",
             "en": "OCR requires an internet connection. Check your connection and try again."

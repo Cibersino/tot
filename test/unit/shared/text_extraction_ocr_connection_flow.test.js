@@ -44,12 +44,12 @@ function createHarness({
 
   vm.createContext(sandbox);
   const source = fs.readFileSync(
-    path.resolve(__dirname, '../../../public/js/text_extraction_ocr_activation_flow.js'),
+    path.resolve(__dirname, '../../../public/js/text_extraction_ocr_connection_flow.js'),
     'utf8'
   );
-  vm.runInContext(source, sandbox, { filename: 'public/js/text_extraction_ocr_activation_flow.js' });
+  vm.runInContext(source, sandbox, { filename: 'public/js/text_extraction_ocr_connection_flow.js' });
 
-  const flow = sandbox.window.TextExtractionOcrActivationFlow;
+  const flow = sandbox.window.TextExtractionOcrConnectionFlow;
   flow.configure({
     getOptionalElectronMethod(methodName) {
       if (methodName === 'prepareTextExtractionOcrActivation') {
@@ -95,7 +95,7 @@ function createHarness({
   };
 }
 
-test('OCR activation flow returns success without notifying directly', async () => {
+test('OCR connection flow returns activation success without notifying directly', async () => {
   const harness = createHarness();
 
   const result = await harness.flow.startActivationFlow({

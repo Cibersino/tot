@@ -1,11 +1,11 @@
-// public/js/text_extraction_ocr_activation_flow.js
+// public/js/text_extraction_ocr_connection_flow.js
 'use strict';
 
 // =============================================================================
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Own the shared main-window Google OCR activation sequence.
+// - Coordinate main-window Google OCR activation and disconnection.
 // - Resolve the activation IPC bridges and drive the disclosure + OAuth flow.
 // - Return structured outcomes without hardcoding caller-specific alert policy.
 
@@ -14,21 +14,22 @@
   // Logger bootstrap
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
-    throw new Error('[text-extraction-ocr-activation-flow] window.getLogger unavailable; cannot continue');
+    throw new Error('[text-extraction-ocr-connection-flow] window.getLogger unavailable; cannot continue');
   }
-  const log = window.getLogger('text-extraction-ocr-activation-flow');
-  log.debug('Text extraction OCR activation flow starting...');
+  const log = window.getLogger('text-extraction-ocr-connection-flow');
+  log.debug('Text extraction OCR connection flow starting...');
 
   // =============================================================================
   // Shared state
   // =============================================================================
   let deps = null;
+  let operationActive = false;
 
   function configure({
     getOptionalElectronMethod = null,
   } = {}) {
     if (typeof getOptionalElectronMethod !== 'function') {
-      throw new Error('[text-extraction-ocr-activation-flow] configure() requires getOptionalElectronMethod function');
+      throw new Error('[text-extraction-ocr-connection-flow] configure() requires getOptionalElectronMethod function');
     }
     deps = {
       getOptionalElectronMethod,
@@ -40,7 +41,7 @@
   // =============================================================================
   function requireConfiguredDeps() {
     if (!deps) {
-      throw new Error('[text-extraction-ocr-activation-flow] configure() must run before using the activation flow');
+      throw new Error('[text-extraction-ocr-connection-flow] configure() must run before using the activation flow');
     }
     return deps;
   }
@@ -72,7 +73,7 @@
   function getActivationBridgeMethod(methodName, dedupeKey, unavailableMessage) {
     const { getOptionalElectronMethod } = requireConfiguredDeps();
     if (typeof getOptionalElectronMethod !== 'function') {
-      throw new Error('[text-extraction-ocr-activation-flow] getOptionalElectronMethod dependency missing');
+      throw new Error('[text-extraction-ocr-connection-flow] getOptionalElectronMethod dependency missing');
     }
     const bridgeMethod = getOptionalElectronMethod(methodName, {
       dedupeKey,
@@ -82,7 +83,7 @@
       return null;
     }
     if (typeof bridgeMethod !== 'function') {
-      throw new Error(`[text-extraction-ocr-activation-flow] ${methodName} bridge invalid`);
+      throw new Error(`[text-extraction-ocr-connection-flow] ${methodName} bridge invalid`);
     }
     return bridgeMethod;
   }
@@ -104,11 +105,40 @@
   }
 
   // =============================================================================
-  // Public entrypoint
+  // Public entrypoints
   // =============================================================================
+  function runDisconnectFlow(work) {
+    return runAdmittedOperation(work);
+  }
+
+  async function runAdmittedOperation(work) {
+    if (operationActive) {
+      log.warn('Google OCR action ignored because another operation is in progress.');
+      return { ok: false, code: 'ocr_operation_in_progress' };
+    }
+    operationActive = true;
+    try {
+      return await work();
+    } finally {
+      operationActive = false;
+    }
+  }
+
   async function startActivationFlow({
     source = 'unknown',
   } = {}) {
+    const result = await runAdmittedOperation(() => runActivationFlow(source));
+    if (result && result.code === 'ocr_operation_in_progress' && !result.stage) {
+      return buildResult({
+        stage: 'admission',
+        code: 'ocr_operation_in_progress',
+        detailsSafeForLogs: { source, reason: 'operation_in_progress' },
+      });
+    }
+    return result;
+  }
+
+  async function runActivationFlow(source) {
     let prepareTextExtractionOcrActivation = null;
     let launchTextExtractionOcrActivation = null;
 
@@ -280,12 +310,13 @@
   // =============================================================================
   // Module surface
   // =============================================================================
-  window.TextExtractionOcrActivationFlow = {
+  window.TextExtractionOcrConnectionFlow = {
     configure,
     startActivationFlow,
+    runDisconnectFlow,
   };
 })();
 
 // =============================================================================
-// End of public/js/text_extraction_ocr_activation_flow.js
+// End of public/js/text_extraction_ocr_connection_flow.js
 // =============================================================================

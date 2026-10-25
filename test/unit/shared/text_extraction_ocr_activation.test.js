@@ -41,7 +41,7 @@ function createHarness({
 
   const activation = sandbox.window.TextExtractionOcrActivation;
   activation.configure({
-    ocrActivationFlow: {
+    ocrConnectionFlow: {
       async startActivationFlow() {
         activationCallCount += 1;
         return activationResult || {

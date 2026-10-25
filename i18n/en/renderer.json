@@ -282,6 +282,7 @@
           "disconnect_success": "Google OCR was disconnected. The saved Google token was revoked and the local sign-in state was removed.",
           "disconnect_not_connected": "Google OCR is not currently connected in this app instance.",
           "disconnect_failed": "Google OCR disconnect failed. The saved sign-in state was not removed.",
+          "operation_in_progress": "A Google OCR activation or disconnection is already in progress. Wait for it to finish, then try again.",
           "connectivity_failed": "OCR requires an internet connection. Check your connection and try again.",
           "setup_missing_credentials": "OCR is unavailable in this app build because the bundled Google OAuth credentials are missing.",
           "setup_invalid_credentials": "OCR is unavailable in this app build because the bundled Google OAuth credentials are invalid.",

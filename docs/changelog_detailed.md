@@ -48,6 +48,7 @@ Reglas:
 
 ### Resumen de cambios
 
+- Google OCR coordina las solicitudes de activación desde Preferencias y recuperación de extracción con la desconexión: una operación concurrente se rechaza con un aviso localizado para que el usuario vuelva a intentarla cuando termine la operación en curso.
 - Extracción nativa de PDF (Issue #338 — migración del motor): la integración con `pdf-parse@1.1.1` y su PDF.js antiguo se reemplaza por el uso directo de `pdfjs-dist@6.4.299` en Electron Main. Un adaptador dedicado atiende tanto el sondeo de texto seleccionable como la extracción efectiva, sin introducir un parser alternativo ni modificar la selección de páginas mediante `pdf-lib` o los contratos externos de extracción.
 - Snapshots de texto / etiquetas múltiples por categoría (Issue #339): `language`, `type` y `difficulty` admiten cero, una o varias etiquetas independientes por categoría, con representación canónica exclusivamente mediante arrays. El guardado manual, las unidades batch, los snapshots generados y los filtros del pool de Reading Test conservan las asignaciones completas; el modal incorpora chips removibles y un selector de adición consecutiva, con mejoras de distribución, scroll y foco.
 - Extracción de texto (Issue #338, F-01): las extracciones NATIVE/OCR completadas correctamente distinguen texto aplicable de resultados vacíos o de solo espacios; estos últimos no pueden modificar el texto actual, reciben un modal informativo en el flujo individual y el sufijo «Sin texto» en el informe batch. Los splits de PDF pesado exigen éxito técnico de todos sus hijos antes de aplicar un agregado.
@@ -131,6 +132,11 @@ Reglas:
 
 ### Cambiado
 
+- Coordinación de conexión Google OCR:
+  - el flujo renderer compartido pasa a `public/js/text_extraction_ocr_connection_flow.js` y admite una sola activación o desconexión a la vez, desde antes de la preparación y el disclosure hasta la finalización del flujo correspondiente; las solicitudes rechazadas no se encolan;
+  - `electron/text_extraction_platform/ocr_google_drive_operation.js` coordina los handlers main de lanzamiento y desconexión durante OAuth, escritura y validación del token o confirmación, revocación y borrado, respectivamente. La admisión main permanece activa si se recarga el renderer mientras una operación IPC sigue pendiente y se libera al finalizar o fallar;
+  - la activación conserva el disclosure previo a OAuth y la recuperación vuelve a preparar la extracción tras una activación exitosa; si la recuperación encuentra otra operación activa, informa el conflicto y termina sin reintentar automáticamente;
+  - las cadenas ES/EN y `i18n/TRANSLATION_GUIDE.md` incorporan el aviso de operación en curso; la cobertura unitaria verifica conflictos en ambos órdenes, admisión durante validación/revocación, cancelación y fallos.
 - Extracción nativa de PDF / sustitución del parser (Issue #338):
   - `native_pdf_selectable_text_probe.js` y `native_extraction_route.js` delegan sus operaciones PDF en el adaptador directo de PDF.js, conservando los límites de preparación/ejecución, el manejo de cancelación y los resultados estructurados de cada etapa; los demás formatos nativos no cambian de parser;
   - la extracción serializa los ítems textuales de `getTextContent()` en el orden recibido, agrega saltos de línea conforme a `hasEOL`, separa páginas mediante dos saltos y entrega el resultado al `normalizeTextPipeline()` existente; no se incorpora reconstrucción editorial de columnas, tablas ni tarjetas;
@@ -303,6 +309,10 @@ Reglas:
 
 ### Contratos tocados
 
+- Google OCR / activación y desconexión:
+  - los canales existentes `text-extraction-launch-ocr-activation` y `text-extraction-disconnect-ocr` conservan sus payloads y agregan el resultado de conflicto `ok: false`, `code: 'ocr_operation_in_progress'` y `alertKey: 'renderer.text_extraction.alerts.ocr.operation_in_progress'`; el resultado de lanzamiento mantiene además `state: 'failure'` y ambos mantienen `detailsSafeForLogs`;
+  - el flujo renderer expone `window.TextExtractionOcrConnectionFlow` en lugar de `window.TextExtractionOcrActivationFlow` y comparte la admisión entre `startActivationFlow(...)` y `runDisconnectFlow(...)`. Si el flujo de conexión no está disponible, la desconexión renderer se bloquea con su alerta de fallo;
+  - no se agregan canales IPC ni cambia el formato del token persistido. La exclusión main está limitada al proceso de la app; no coordina procesos de app independientes.
 - Extracción nativa de PDF / continuidad contractual (Issue #338 — migración del motor):
   - `probeNativePdfSelectableText(...)` y `runNativeExtractionRoute(...)` conservan sus interfaces y sus fronteras de resultado/error; la detección de texto seleccionable opera sobre el PDF de origen y la extracción sobre el archivo efectivo, incluido el subset materializado por rango;
   - no se agregan canales IPC, métodos preload, opciones de interfaz ni formatos de persistencia por el reemplazo del motor; las reglas de F-01/F-02, el comportamiento NATIVE/OCR, el diagnóstico `pdf_pages:<n>` y la normalización/aplicación del texto permanecen bajo sus owners existentes.
