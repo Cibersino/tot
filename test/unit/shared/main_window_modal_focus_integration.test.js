@@ -473,6 +473,39 @@ test('invalid truthy reading-test state does not close an inactive entry modal',
   assert.equal(env.elements.readingTestEntryModal.getAttribute('aria-hidden'), 'true');
 });
 
+test('invalid initial reading-test state preserves an observed active session and is diagnosed', async () => {
+  for (const invalidState of [null, [], {}, { active: null }, { active: 0 }]) {
+    let resolveState;
+    const env = createReadingTestEnvironment({
+      getState: () => new Promise((resolve) => { resolveState = resolve; }),
+    });
+    const ui = env.window.ReadingSpeedTestUi;
+    ui.configure();
+    env.emitState({ active: true });
+    resolveState(invalidState);
+    await flushReadingTestWork();
+    assert.equal(ui.isSessionActive(), true);
+    assert.equal(ui.isInteractionLocked(), true);
+    assert.ok(env.warnings.some((args) => args.some((arg) => String(arg).includes('initial session state'))));
+  }
+});
+
+test('invalid initial truthy state preserves inactivity and valid snapshots remain effective', async () => {
+  for (const [initialState, expectedActive] of [
+    [{ active: 'false' }, false],
+    [{ active: true }, true],
+    [{ active: false }, false],
+  ]) {
+    const env = createReadingTestEnvironment({ getState: async () => initialState });
+    const ui = env.window.ReadingSpeedTestUi;
+    ui.configure();
+    await flushReadingTestWork();
+    assert.equal(ui.isSessionActive(), expectedActive);
+    assert.equal(ui.isInteractionLocked(), expectedActive);
+    assert.equal(env.warnings.length, typeof initialState.active === 'boolean' ? 0 : 1);
+  }
+});
+
 for (const registration of ['missing', 'throws']) {
   test(`reading-test ${registration} subscription prevents entry and both start actions`, async () => {
     const env = createReadingTestEnvironment({ registration });

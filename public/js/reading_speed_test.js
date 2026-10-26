@@ -460,21 +460,13 @@
 
     try {
       const nextState = await getState();
-      if (stateSubscriptionFailed
-        && (!isPayloadObject(nextState) || typeof nextState.active !== 'boolean')) {
-        log.warn('BOOTSTRAP: reading-test initial session state indeterminate; session state unchanged.', nextState);
+      if (!isPayloadObject(nextState) || typeof nextState.active !== 'boolean') {
+        log.warn('Reading-test initial session state invalid; session state unchanged.', nextState);
         return;
-      }
-      if (!isPayloadObject(nextState)) {
-        log.warnOnce(
-          'BOOTSTRAP:reading-speed-test.getState.invalid',
-          'Reading-test initial session-state payload invalid; using defaults.',
-          nextState
-        );
       }
       // A failed subscription cannot reliably order an active event against the initial snapshot.
       if (stateSubscriptionFailed && !nextState.active && stateChangeObservedActive) return;
-      sessionActive = !!(nextState && nextState.active);
+      sessionActive = nextState.active;
       syncLockState();
     } catch (err) {
       log.warn('BOOTSTRAP: reading-test initial session-state fetch failed (ignored):', err);
