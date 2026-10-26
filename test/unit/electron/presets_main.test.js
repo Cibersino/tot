@@ -103,6 +103,7 @@ function createPresetHarness(t, { failWrite = false, confirmation = 0 } = {}) {
 
   return {
     sent,
+    configPresetsDir: storage.getConfigPresetsDir(),
     initialDisk,
     getDisk: () => fs.readFileSync(settingsFile, 'utf8'),
     getLastRead: () => lastRead,
@@ -119,6 +120,58 @@ const presetMutationCases = [
   { name: 'disable default', channel: 'request-delete-preset', payload: 'Default3', action: 'ignored_default' },
   { name: 'restore defaults', channel: 'request-restore-defaults', action: 'restored' },
 ];
+
+test('get-default-presets omits invalid configured entries and retains valid entries', async (t) => {
+  const harness = createPresetHarness(t);
+  const configDefaults = path.join(
+    harness.configPresetsDir,
+    'defaults_presets.json'
+  );
+  fs.writeFileSync(configDefaults, JSON.stringify([
+    null,
+    { name: 'Valid', wpm: 210, description: 'Configured default' },
+    { name: 'Missing WPM' },
+  ]));
+
+  const defaults = await harness.invoke('get-default-presets');
+
+  assert.deepEqual(defaults.general, [
+    { name: 'Valid', wpm: 210, description: 'Configured default' },
+  ]);
+  assert.deepEqual(defaults.languagePresets.en, []);
+});
+
+test('get-default-presets uses bundled general defaults when no configured entry is valid', async (t) => {
+  const harness = createPresetHarness(t);
+  const configDefaults = path.join(
+    harness.configPresetsDir,
+    'defaults_presets.json'
+  );
+  fs.writeFileSync(configDefaults, JSON.stringify([null, { name: 'Missing WPM' }]));
+
+  const defaults = await harness.invoke('get-default-presets');
+
+  assert.deepEqual(defaults.general, [
+    { name: 'default', wpm: 250, description: 'Default preset.' },
+  ]);
+});
+
+test('request-delete-preset still resolves a valid default beside invalid configured entries', async (t) => {
+  const harness = createPresetHarness(t);
+  const configDefaults = path.join(
+    harness.configPresetsDir,
+    'defaults_presets.json'
+  );
+  fs.writeFileSync(configDefaults, JSON.stringify([
+    null,
+    { name: 'Default', wpm: 210 },
+  ]));
+
+  const result = await harness.invoke('request-delete-preset', 'Default');
+
+  assert.equal(result.ok, true);
+  assert.equal(result.action, 'deleted_and_ignored');
+});
 
 for (const scenario of presetMutationCases) {
   test(`preset ${scenario.name} reports a write failure without publishing or mutating the loaded settings`, async (t) => {

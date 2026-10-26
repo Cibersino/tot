@@ -108,6 +108,30 @@ function sanitizePresetInput(raw) {
   };
 }
 
+function sanitizePresetArray(entries, filePath) {
+  const presets = [];
+  let invalidCount = 0;
+
+  entries.forEach((entry) => {
+    const result = sanitizePresetInput(entry);
+    if (result.ok) {
+      presets.push(result.preset);
+    } else {
+      invalidCount += 1;
+    }
+  });
+
+  if (invalidCount) {
+    log.warn(
+      '[presets_main] Preset JSON contains invalid entries; ignoring:',
+      filePath,
+      { invalidCount }
+    );
+  }
+
+  return presets;
+}
+
 function loadPresetArrayFromJson(filePath) {
   try {
     if (!fs.existsSync(filePath)) return [];
@@ -120,7 +144,7 @@ function loadPresetArrayFromJson(filePath) {
       );
       return [];
     }
-    return arr;
+    return sanitizePresetArray(arr, filePath);
   } catch (err) {
     log.warn(
       '[presets_main] Preset JSON load failed; using empty list (ignored):',
@@ -362,6 +386,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           general = JSON.parse(
             fs.readFileSync(path.join(presetsDir, generalJson), 'utf8')
           );
+          if (Array.isArray(general)) {
+            general = sanitizePresetArray(general, path.join(presetsDir, generalJson));
+          }
         } catch (err) {
           generalParseFailed = true;
           log.warn(
@@ -400,7 +427,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
             const arr = JSON.parse(
               fs.readFileSync(path.join(presetsDir, n), 'utf8')
             );
-            if (Array.isArray(arr)) languagePresets[lang] = arr;
+            if (Array.isArray(arr)) {
+              languagePresets[lang] = sanitizePresetArray(arr, path.join(presetsDir, n));
+            }
           } catch (err) {
             invalidLangs.add(lang);
             log.warn(
