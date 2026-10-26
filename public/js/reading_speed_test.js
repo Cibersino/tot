@@ -6,9 +6,9 @@
 // =============================================================================
 // Responsibilities:
 // - Host the reading-speed-test intro/config modal in the main renderer.
-// - Keep renderer-side reading-test session state in sync with main-owned state.
-// - Render real-combination checkbox filters from current pool metadata.
-// - Trigger pool reset/start IPC without bloating renderer.js.
+// - Track main-owned session state and coordinate interaction locks.
+// - Render selection filters from reading-test pool metadata.
+// - Manage pool actions and request either reading-test mode.
 
 (() => {
   // =============================================================================
@@ -119,7 +119,7 @@
   }
 
   // =============================================================================
-  // Shared state
+  // Shared state and configuration
   // =============================================================================
   let onInteractionStateChanged = () => { };
   let getSettingsCache = () => ({});
@@ -258,6 +258,9 @@
     return nextSelection;
   }
 
+  // =============================================================================
+  // Filter and modal rendering
+  // =============================================================================
   function createCheckboxOption(category, optionState) {
     const row = document.createElement('label');
     row.className = 'reading-test-entry-modal-option native-checkbox-option';
@@ -382,6 +385,9 @@
     modal.dataset.stabilizing = stabilizing ? 'true' : 'false';
   }
 
+  // =============================================================================
+  // Entry data and initial session state
+  // =============================================================================
   function refreshPoolEntriesFromResult(result) {
     if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
       log.error('Reading-test entry-flow result invalid:', result);
@@ -505,6 +511,9 @@
     });
   }
 
+  // =============================================================================
+  // Pool management and session start actions
+  // =============================================================================
   async function handleResetPool() {
     if (stabilizing || isSessionActive()) return;
 
@@ -759,6 +768,9 @@
     await runStartReadingTest(startReadingTest, { sourceMode: 'current_text' });
   }
 
+  // =============================================================================
+  // UI listeners and bridge subscriptions
+  // =============================================================================
   function bindStaticListeners() {
     btnClose.addEventListener('click', closeModal);
     backdrop.addEventListener('click', closeModal);
