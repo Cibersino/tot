@@ -277,6 +277,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `SM-14`
   * supports parts of `REG-READING-TEST-01`
   * supports parts of `REG-READING-TEST-02`
+  * covers completion with and without questions, unchanged Main WPM/selection, and preset opening failure at the session-controller boundary
   * supports parts of `REG-READING-TEST-06`
 * `test/unit/electron/reading_test_session_flow.test.js`
   * supports parts of `REG-READING-TEST-03`
@@ -286,7 +287,7 @@ Important limitations:
 * a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
 * the editor still has no renderer/UI automation for the spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
 * the quick calculator now has contract-style automation for launcher wiring, preload surfaces, shared stopwatch/calculation rules, renderer invalid-state behavior, and live language/number-format refresh, but real BrowserWindow creation/focus/reuse behavior, launcher placement in the main `RESULTS` area, and native layout/scroll verification are still primarily validated through the manual suite;
-* the reading speed test still has no renderer/UI automation; current automated coverage now includes pool core, pool import, entry/reset IPC contract handling, and start/rollback flow contracts, but real modal interaction, guided session windows, stopwatch handoff, comprehension UI, and preset handoff are still primarily validated through the manual suite;
+* reading-test automation covers pool, entry, session-state and selected completion contracts; real modal interaction, guided session windows, stopwatch handoff, comprehension UI, and the cross-window preset workflow are still primarily validated through the manual suite;
 * OCR network/provider behavior is still primarily validated through the manual suite, even though JP2 normalization, OCR route contracts, and the single-file oversized-image alert path now have unit coverage;
 * even with contract-style unit coverage for the batch planner/final report, single-file heavy-PDF modal, and status-bar progress text, the integrated picker/drag-drop entrypoints, PDF options modal, route-choice modal, apply modal reveal path, batch execution handoff, and real window/focus behavior are still primarily validated through the manual suite;
 * the editable snapshot-tag catalog now has contract coverage for catalog derivation, renderer modal behavior, permissive snapshot save/load validation, and the shared combobox keyboard/focus contract, but native save/load dialogs, integrated visual placement, and the full cross-window batch-tag flow are still primarily validated through the manual suite;
@@ -650,7 +651,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 
 ### SM-14 Reading speed test quick path
 **Goal:** the guided reading-test flow reaches the preset handoff cleanly, with or without the inserted questions step.
-1. Click the reading speed test button in the main window.
+1. Record Main's current WPM and selected preset, then click the reading speed test button in the main window.
 2. If the modal shows that no unused pool files remain, use **Reset pool** and confirm.
 3. Confirm the modal shows a live eligible-file count.
 4. Select any combination that leaves at least one eligible file, then click **Start**.
@@ -658,6 +659,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 6. Use the Floating Window to finish the session with **Pause**.
 7. If a questions modal appears, answer the questions, click **Check result**, then continue with **Continue** or the window close affordance.
 8. Confirm the preset modal opens with a prefilled test preset and a WPM value.
+9. Close the modal without saving and confirm Main retains its prior WPM and preset selection. Repeat the test, edit the proposed WPM, and save the new preset.
 
 **Expected:**
 - The entry modal opens even if the pool is exhausted; the reset path is available inline in the same modal.
@@ -666,6 +668,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - If the chosen file has questions, the questions modal appears before the preset modal.
 - If the chosen file has no questions, the flow continues directly to preset creation.
 - The preset modal receives a valid WPM even when the raw measured speed would fall outside the preset range (clamped to supported preset bounds).
+- Opening or canceling the preset modal does not apply the measurement to Main; saving and selecting the preset applies its saved WPM.
 
 ### SM-15 Reading speed test pool acquisition/import
 **Goal:** the pool modal can acquire additional files and refresh the pool in place.
@@ -1867,6 +1870,7 @@ nonconforming persisted data without migration or repair.
 4. In the questions modal, press **Check result** with at least one unanswered question.
 5. Answer all questions, press **Check result**, then change one or more answers and press **Check result** again.
 6. Continue by using either the dedicated **Continue** button or the normal window close affordance.
+7. Close the preset modal without saving and verify Main's WPM and selected preset. Repeat the flow, change the proposed WPM, and save the preset.
 
 **Expected:**
 - `Pause` stops the session and closes the Editor and Floating Window before the questions modal appears.
@@ -1875,7 +1879,8 @@ nonconforming persisted data without migration or repair.
 - Results are aggregate only (`X / T` and percentage), plus the chance of getting at least that score by random guessing; the UI does not reveal which answers were right or wrong.
 - Re-checking updates the aggregate result without altering the overall guided path.
 - Closing the questions modal behaves the same as pressing **Continue**.
-- After the questions step resolves, the preset modal opens immediately and the measured WPM is already applied in main.
+- After the questions step resolves, the preset modal opens with the normalized measured WPM as an editable proposal; Main's WPM and preset selection remain unchanged until a preset is selected.
+- Closing without saving preserves Main's WPM and preset selection; saving and selecting the new preset applies the saved WPM, including an edited value.
 
 #### REG-READING-TEST-05 Finish path without questions modal
 **Goal:** entries without valid questions skip the inserted step and go directly to preset creation.

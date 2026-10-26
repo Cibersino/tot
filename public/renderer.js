@@ -270,7 +270,6 @@ const wpmControls = WpmControls.createController({
   },
 });
 if (!wpmControls
-  || typeof wpmControls.applyExternalWpm !== 'function'
   || typeof wpmControls.bind !== 'function'
   || typeof wpmControls.getAllPresets !== 'function'
   || typeof wpmControls.getWpm !== 'function'
@@ -1508,17 +1507,11 @@ function bindPresetSelection() {
 }
 
 // =============================================================================
-// Manual WPM edits
+// Speed controls
 // =============================================================================
-function applyReadingTestWpm(rawWpm) {
-  wpmControls.applyExternalWpm(rawWpm, { onWpmChanged: updateTimeOnlyFromStats });
-  syncPresetActionButtons();
-}
-
 function bindSpeedControls() {
   readingSpeedTestUi.configure({
     onLockChange: syncMainInteractionLockUi,
-    applyWpm: applyReadingTestWpm,
     getSettingsCache: () => settingsCache,
   });
   wpmControls.bind({

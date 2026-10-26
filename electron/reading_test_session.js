@@ -160,10 +160,6 @@ function createController(options = {}) {
     safeSendToMain('reading-test-notice', { key, params, type });
   }
 
-  function applyMainWindowWpm(wpm) {
-    safeSendToMain('reading-test-apply-wpm', { wpm });
-  }
-
   function setStage(stage, { selectedEntry = state.selectedEntry } = {}) {
     state.active = stage !== 'idle';
     state.stage = stage;
@@ -469,7 +465,6 @@ function createController(options = {}) {
 
   function beginPresetStep(wpm) {
     return readingTestSessionFlow.beginPresetStep(wpm, {
-      applyMainWindowWpm,
       setStage,
       openPresetWindow,
       buildPrefilledPresetPayload,

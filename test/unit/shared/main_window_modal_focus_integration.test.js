@@ -395,7 +395,6 @@ function createReadingTestEnvironment({ registration = 'success', getState } = {
       return { ok: true };
     },
     onReadingTestNotice() {},
-    onReadingTestApplyWpm() {},
   };
   if (registration !== 'missing') {
     env.window.electronAPI.onReadingTestStateChanged = (handler) => {

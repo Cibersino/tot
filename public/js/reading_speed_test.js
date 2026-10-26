@@ -122,7 +122,6 @@
   // Shared state
   // =============================================================================
   let onInteractionStateChanged = () => { };
-  let onApplyWpm = () => { };
   let getSettingsCache = () => ({});
   let sessionActive = false;
   let stateSubscriptionEstablished = false;
@@ -874,48 +873,13 @@
         'onReadingTestNotice unavailable; reading-test notices will not surface in renderer.'
       );
     }
-
-    const onApplyWpmEvent = readElectronMethod('onReadingTestApplyWpm');
-    if (onApplyWpmEvent) {
-      try {
-        onApplyWpmEvent((payload) => {
-          const nextWpm = payload && typeof payload.wpm === 'number'
-            ? payload.wpm
-            : NaN;
-          if (!Number.isFinite(nextWpm)) {
-            log.warnOnce(
-              'reading-speed-test.applyWpm.invalid',
-              'Reading-test apply-WPM payload invalid (ignored):',
-              payload
-            );
-            return;
-          }
-          try {
-            onApplyWpm(nextWpm);
-          } catch (err) {
-            log.error('Reading-test WPM apply callback failed:', err);
-          }
-        });
-      } catch (err) {
-        log.warn(
-          'BOOTSTRAP: onReadingTestApplyWpm registration failed; computed WPM will not sync into main renderer.',
-          err
-        );
-      }
-    } else {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.onApplyWpm.missing',
-        'onReadingTestApplyWpm unavailable; computed WPM will not sync into main renderer.'
-      );
-    }
   }
 
   // =============================================================================
   // Public API
   // =============================================================================
-  function configure({ onLockChange, applyWpm, getSettingsCache: nextGetSettingsCache } = {}) {
+  function configure({ onLockChange, getSettingsCache: nextGetSettingsCache } = {}) {
     onInteractionStateChanged = typeof onLockChange === 'function' ? onLockChange : () => { };
-    onApplyWpm = typeof applyWpm === 'function' ? applyWpm : () => { };
     getSettingsCache = typeof nextGetSettingsCache === 'function' ? nextGetSettingsCache : () => ({});
 
     if (!initialized) {
@@ -925,9 +889,7 @@
       void syncInitialSessionState();
     }
 
-    // Main owns first translated presentation through its initial renderer-i18n
-    // transition. Configure may run before that state exists, so it only wires
-    // callbacks and accepts nonlocalized session state.
+    // Main owns first translated presentation through its initial renderer-i18n transition. Configure may run before that state exists, so it only wires callbacks and accepts nonlocalized session state.
     syncLockState();
   }
 

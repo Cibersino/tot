@@ -60,8 +60,7 @@
     presetDescription,
     onPresetSelectionChanged,
   } = {}) {
-    // Optional curve support should never block the control surface. If the
-    // mapper is missing or breaks, the controller falls back to linear mapping.
+    // Optional curve support should never block the control surface. If the mapper is missing or breaks, the controller falls back to linear mapping.
     const { WpmCurve } = window;
     const hasWpmCurveFactory = !!(
       WpmCurve && typeof WpmCurve.createMapperFromConstants === 'function'
@@ -93,8 +92,7 @@
       }
     }
 
-    // Controller state is kept local so the main renderer owns only one source
-    // of truth for the active WPM and selected preset name.
+    // Controller state is kept local so the main renderer owns only one source of truth for the active WPM and selected preset name.
     let wpm = WPM_MIN;
     let currentPresetName = null;
     let allPresetsCache = [];
@@ -187,8 +185,7 @@
       return clampWpm(rawWpm);
     }
 
-    // Keep the text input and slider synchronized through one normalization path
-    // so presets, manual edits, and external updates apply the same bounds.
+    // Keep the text input and slider synchronized through one normalization path so presets and manual edits apply the same bounds.
     function syncWpmControls(rawWpm) {
       const normalizedWpm = clampWpm(rawWpm);
       if (wpmInput) {
@@ -461,16 +458,8 @@
     }
 
     // =============================================================================
-    // External updates and UI wiring
+    // UI wiring
     // =============================================================================
-    function applyExternalWpm(rawWpm, { onWpmChanged } = {}) {
-      const previousWpm = wpm;
-      wpm = syncWpmControls(rawWpm);
-      resetPresetSelection();
-      notifyWpmChanged(previousWpm, onWpmChanged);
-      return wpm;
-    }
-
     function bind({ guardUserAction, onWpmChanged } = {}) {
       if (listenersBound) return;
       listenersBound = true;
@@ -514,8 +503,7 @@
       }
     }
 
-    // Apply DOM limits before the initial sync so the controls start from a
-    // valid visible state even before any preset load runs.
+    // Apply DOM limits before the initial sync so the controls start from a valid visible state even before any preset load runs.
     if (wpmSlider) {
       wpmSlider.min = String(WPM_MIN);
       wpmSlider.max = String(WPM_MAX);
@@ -551,7 +539,6 @@
       loadPresets,
       handlePresetSelectionChange,
       handlePresetCreated,
-      applyExternalWpm,
       getWpm: () => wpm,
       getSelectedPresetName: () => currentPresetName,
       getAllPresets: () => allPresetsCache.slice(),

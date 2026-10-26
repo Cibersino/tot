@@ -275,6 +275,9 @@ test('handlePresetCreated reports effective post-resolution selection and WPM ou
     selectedPresetChanged: true,
   });
   assert.equal(harness.dom.presetsCombobox.getValue(), 'custom');
+  assert.equal(harness.controller.getWpm(), 333);
+  assert.equal(harness.controller.getSelectedPresetName(), 'custom');
+  assert.deepEqual(harness.selectionPersists, ['custom']);
 });
 
 test('preset selection preserves the existing onWpmChanged time-only callback path', async () => {
@@ -319,20 +322,6 @@ test('preset selection preserves the existing onWpmChanged time-only callback pa
   assert.deepEqual(callbackCalls, [
     { nextWpm: 250, presetName: 'latin' },
   ]);
-});
-
-test('applyExternalWpm preserves the existing WPM callback path used by reading-test apply', () => {
-  const callbackCalls = [];
-  const harness = createHarness();
-
-  const nextWpm = harness.controller.applyExternalWpm(320, {
-    onWpmChanged(value) {
-      callbackCalls.push(value);
-    },
-  });
-
-  assert.equal(nextWpm, 320);
-  assert.deepEqual(callbackCalls, [320]);
 });
 
 test('manual WPM input shows invalid chrome until blur normalizes it', () => {

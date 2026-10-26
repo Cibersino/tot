@@ -194,16 +194,6 @@ const api = {
             'removeListener error (reading-test-notice):'
         );
     },
-    onReadingTestApplyWpm: (cb) => {
-        const listener = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('reading-test-apply-wpm callback error:', err); }
-        };
-        return subscribeWithUnsub(
-            'reading-test-apply-wpm',
-            listener,
-            'removeListener error (reading-test-apply-wpm):'
-        );
-    },
 
     // Startup handshake
     sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),

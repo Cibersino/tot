@@ -4,6 +4,7 @@ process.env.TOT_LOG_LEVEL = 'silent';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { EventEmitter } = require('node:events');
 const {
   installElectronModuleMock,
 } = require('../../helpers/electron_module_mock');
@@ -681,3 +682,106 @@ test('live Questions and Result windows remain settings targets until their actu
     readingTestResultWin: null,
   });
 });
+
+for (const { hasQuestions, presetUnavailable } of [
+  { hasQuestions: false, presetUnavailable: false },
+  { hasQuestions: true, presetUnavailable: false },
+  { hasQuestions: false, presetUnavailable: true },
+]) {
+  test(`reading-test completion ${presetUnavailable ? 'with unavailable preset' : hasQuestions ? 'with questions' : 'without questions'} does not apply WPM to Main`, async (t) => {
+    const messages = [];
+    const mainState = { wpm: 200, preset: 'default' };
+    const senderWin = {
+      isDestroyed: () => false,
+      webContents: {
+        send(channel, payload) {
+          messages.push({ channel, payload });
+          if (channel === 'reading-test-apply-wpm') {
+            mainState.wpm = payload.wpm;
+            mainState.preset = null;
+          }
+        },
+      },
+    };
+    const editorWin = { isDestroyed: () => false };
+    const flotanteWin = { isDestroyed: () => false };
+    const presetWin = new EventEmitter();
+    presetWin.isDestroyed = () => false;
+    const stages = [];
+    let presetPayload;
+    const sessionWindowsMock = {
+      async openReadingSessionWindows() { return { editorWin, flotanteWin }; },
+      async openResultWindow() { stages.push('result'); return { ok: true }; },
+      async openQuestionsWindow() { stages.push('questions'); return { ok: true }; },
+      setEditorPrestartVisible() {},
+      async waitForWindowVisible() {},
+    };
+    const settingsStateMock = {
+      deriveLangKey: () => 'en',
+      getSettings: () => ({ language: 'en', modeConteo: 'simple', presets_by_language: {} }),
+    };
+    const pool = createReadingTestPoolMock({ entries: [{
+      snapshotRelPath: '/reading_speed_test_pool/sample.json',
+      fileName: 'sample.json',
+      text: 'word '.repeat(800),
+      tags: { language: ['en'] },
+      used: false,
+      hasValidQuestions: hasQuestions,
+      questions: hasQuestions ? [{ id: 'q1' }] : [],
+    }] });
+    const { readingTestSession, restore } = loadReadingTestSessionWithMocks(pool, senderWin, {
+      sessionWindowsMock,
+      settingsStateMock,
+    });
+    t.after(restore);
+    let currentText = '';
+    let elapsed = 0;
+    const controller = readingTestSession.createController({
+      resolveMainWindow: () => senderWin,
+      getPreconditionContext: () => ({ openSecondaryWindows: [], stopwatchRunning: false }),
+      isProcessingModeActive: () => false,
+      ensureEditorWindow: async () => editorWin,
+      showEditorWindow() {},
+      ensureFlotanteWindow: async () => flotanteWin,
+      closeEditorWindow() {},
+      closeFlotanteWindow() {},
+      startCrono() { elapsed = 60000; },
+      resetCrono() {},
+      stopCrono() {},
+      getCronoState: () => ({ elapsed }),
+      getCurrentText: () => currentText,
+      applyCurrentText(text) { currentText = text; return { ok: true }; },
+      openPresetWindow(payload) {
+        stages.push('preset');
+        presetPayload = payload;
+        return presetUnavailable ? null : presetWin;
+      },
+    });
+    const ipcMain = createIpcMainDouble();
+    controller.registerIpc(ipcMain);
+    assert.deepEqual(await ipcMain.invoke('reading-test-start', { sender: senderWin.webContents }, {
+      sourceMode: 'pool', selection: {},
+    }), { ok: true });
+    await flushAsyncWork();
+    assert.equal(controller.getState().stage, 'arming');
+    controller.handleFlotanteCommand({ cmd: 'toggle' });
+    controller.handleFlotanteCommand({ cmd: 'toggle' });
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    assert.deepEqual(stages, hasQuestions ? ['result', 'questions', 'preset'] : ['result', 'preset']);
+    assert.equal(presetPayload.wpm, 700);
+    assert.deepEqual(mainState, { wpm: 200, preset: 'default' });
+    assert.equal(messages.some(({ channel }) => channel === 'reading-test-apply-wpm'), false);
+    if (presetUnavailable) {
+      assert.ok(messages.some(({ channel, payload }) => channel === 'reading-test-notice'
+        && payload.key === 'renderer.reading_test.alerts.preset_unavailable'));
+    } else {
+      assert.equal(controller.getState().stage, 'preset');
+      assert.equal(controller.isInteractionLocked(), true);
+      presetWin.emit('closed');
+    }
+    assert.equal(controller.isInteractionLocked(), false);
+    assert.deepEqual(mainState, { wpm: 200, preset: 'default' });
+  });
+}

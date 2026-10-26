@@ -72,6 +72,7 @@ function createHarness({
   loggerMode = 'available',
   missingAppConstants = false,
   captureBootstrapError = false,
+  createPresetImpl = null,
 } = {}) {
   const subscriptions = {};
   const transitionLanguages = [];
@@ -211,7 +212,8 @@ function createHarness({
           },
         }),
         ...(missingRequiredBridgeMethod === 'createPreset' ? {} : {
-          async createPreset() {
+          async createPreset(preset) {
+            if (createPresetImpl) return createPresetImpl(preset);
             return { ok: true };
           },
         }),
@@ -310,6 +312,48 @@ function createHarness({
     },
   };
 }
+
+test('a proposed WPM is editable and the edited value is submitted when creating a preset', async () => {
+  const created = [];
+  const harness = createHarness({
+    createPresetImpl(preset) {
+      created.push(JSON.parse(JSON.stringify(preset)));
+      return { ok: true };
+    },
+  });
+  harness.subscriptions.onInit({ wpm: 700 });
+  await harness.settleSemanticWork();
+  assert.equal(harness.elements.presetWpm.value, 700);
+  harness.elements.presetName.value = 'Measured';
+  harness.elements.presetWpm.value = '325';
+  harness.elements.btnSave.dispatch('click');
+  await harness.settleSemanticWork();
+
+  assert.deepEqual(created, [{ name: 'Measured', wpm: 325, description: '' }]);
+  assert.equal(harness.getCloseCalls(), 1);
+});
+
+test('canceling a preset proposal closes without creating a preset', async () => {
+  let createCalls = 0;
+  const harness = createHarness({ createPresetImpl() { createCalls += 1; return { ok: true }; } });
+  harness.subscriptions.onInit({ wpm: 300 });
+  await harness.settleSemanticWork();
+  harness.elements.btnCancel.dispatch('click');
+
+  assert.equal(createCalls, 0);
+  assert.equal(harness.getCloseCalls(), 1);
+});
+
+test('a rejected preset creation leaves the proposal open', async () => {
+  const harness = createHarness({ createPresetImpl: () => ({ ok: false, code: 'SAVE_FAILED' }) });
+  harness.subscriptions.onInit({ wpm: 300 });
+  await harness.settleSemanticWork();
+  harness.elements.btnSave.dispatch('click');
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.ok(harness.getLogs().some((entry) => entry.args[0] === 'Preset modal createPreset response failed:'));
+});
 
 test('preset modal closes before normal interaction when live settings registration is unavailable or throws', () => {
   for (const settingsListenerMode of ['missing', 'throw']) {
