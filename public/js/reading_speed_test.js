@@ -125,6 +125,7 @@
   let getSettingsCache = () => ({});
   let sessionActive = false;
   let stateSubscriptionEstablished = false;
+  let noticeSubscriptionEstablished = false;
   let stateSubscriptionFailed = false;
   let stateChangeObservedActive = false;
   let poolEntries = [];
@@ -484,7 +485,7 @@
 
   async function openEntryFlow() {
     if (stabilizing || isSessionActive()) return;
-    if (!stateSubscriptionEstablished) {
+    if (!stateSubscriptionEstablished || !noticeSubscriptionEstablished) {
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
       return;
     }
@@ -726,7 +727,7 @@
   }
 
   async function handleStart() {
-    if (!stateSubscriptionEstablished) return;
+    if (!stateSubscriptionEstablished || !noticeSubscriptionEstablished) return;
     if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
 
     if (currentTextAvailable) {
@@ -750,7 +751,7 @@
   }
 
   async function handleStartCurrentText() {
-    if (!stateSubscriptionEstablished) return;
+    if (!stateSubscriptionEstablished || !noticeSubscriptionEstablished) return;
     if (stabilizing || isSessionActive() || !currentTextAvailable) return;
 
     const startReadingTest = readElectronMethod('startReadingTest');
@@ -861,16 +862,17 @@
             log.error('Reading-test notice handler failed:', err);
           }
         });
+        noticeSubscriptionEstablished = true;
       } catch (err) {
         log.warn(
-          'BOOTSTRAP: onReadingTestNotice registration failed; reading-test notices will not surface in renderer.',
+          'BOOTSTRAP: onReadingTestNotice registration failed; reading speed test disabled.',
           err
         );
       }
     } else {
       log.warnOnce(
         'BOOTSTRAP:reading-speed-test.onNotice.missing',
-        'onReadingTestNotice unavailable; reading-test notices will not surface in renderer.'
+        'BOOTSTRAP: onReadingTestNotice unavailable; reading speed test disabled.'
       );
     }
   }

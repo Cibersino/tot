@@ -658,6 +658,30 @@ test('Main stays usable when reading-test registration fails and the session is 
   }
 });
 
+test('Main stays usable when reading-test notice registration is missing or throws', async () => {
+  for (const registration of ['missing', 'throws']) {
+    let startCalls = 0;
+    const harness = await createRendererHarness({
+      useReadingSpeedTestUi: true,
+      absentElectronMethods: registration === 'missing' ? ['onReadingTestNotice'] : [],
+      electronMethodOverrides: {
+        getReadingTestState: async () => ({ active: false }),
+        onReadingTestStateChanged() { return () => {}; },
+        onReadingTestNotice() { throw new Error('notice registration failed'); },
+        startReadingTest() { startCalls += 1; },
+      },
+    });
+    assert.deepEqual(harness.notifications, []);
+    await harness.selectorActions.onReadingSpeedTest();
+    assert.ok(harness.notifications.includes('renderer.reading_test.alerts.unavailable'));
+    assert.equal(harness.getElement('btnHelp').disabled, false);
+    harness.getElement('btnHelp').dispatch('click');
+    assert.ok(harness.notifications.some((key) => /^renderer\.tips\.tip\d+$/.test(key)));
+    assert.equal(startCalls, 0);
+    assert.deepEqual(harness.errors, []);
+  }
+});
+
 test('main renderer logs Help-tip toast failures without a feature-local dialog fallback', async () => {
   const toastFailure = new Error('toast unavailable');
   const toastKeys = [];

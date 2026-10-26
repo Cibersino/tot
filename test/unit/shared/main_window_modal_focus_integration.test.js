@@ -247,6 +247,7 @@ test('reading-test entry modal focuses Show instructions and restores its opener
   };
   env.window.electronAPI = {
     onReadingTestStateChanged() { return () => {}; },
+    onReadingTestNotice() { return () => {}; },
     async getReadingTestState() { return { active: false }; },
     async getReadingTestEntryData() {
       return {
@@ -365,12 +366,13 @@ test('reading-test entry markup relates material help to each actual control', (
   });
 });
 
-function createReadingTestEnvironment({ registration = 'success', getState } = {}) {
+function createReadingTestEnvironment({ registration = 'success', noticeRegistration = 'success', getState } = {}) {
   const env = createEnvironment(READING_TEST_ENTRY_ELEMENT_IDS);
   const starts = [];
   const notices = [];
   const warnings = [];
   let stateChanged;
+  let noticeReceived;
   env.elements.readingTestEntryModal.setAttribute('aria-hidden', 'true');
   env.window.ReadingTestFiltersCore = require('../../../public/js/lib/reading_test_filters_core');
   env.window.SnapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
@@ -394,8 +396,14 @@ function createReadingTestEnvironment({ registration = 'success', getState } = {
       starts.push(payload.sourceMode);
       return { ok: true };
     },
-    onReadingTestNotice() {},
   };
+  if (noticeRegistration !== 'missing') {
+    env.window.electronAPI.onReadingTestNotice = (handler) => {
+      noticeReceived = handler;
+      if (noticeRegistration === 'throws') throw new Error('notice registration failed');
+      return () => {};
+    };
+  }
   if (registration !== 'missing') {
     env.window.electronAPI.onReadingTestStateChanged = (handler) => {
       stateChanged = handler;
@@ -404,7 +412,11 @@ function createReadingTestEnvironment({ registration = 'success', getState } = {
     };
   }
   env.run('../../../public/js/reading_speed_test.js');
-  return { ...env, starts, notices, warnings, emitState: (state) => stateChanged(state) };
+  return {
+    ...env, starts, notices, warnings,
+    emitState: (state) => stateChanged(state),
+    emitNotice: (notice) => noticeReceived(notice),
+  };
 }
 
 async function flushReadingTestWork() {
@@ -425,6 +437,8 @@ test('reading-test registration preserves both start paths and live session lock
     env.elements[button].dispatch('click');
     await flushReadingTestWork();
     assert.deepEqual(env.starts, [mode]);
+    env.emitNotice({ key: 'renderer.reading_test.alerts.start_failed', type: 'error' });
+    assert.deepEqual(env.notices, ['renderer.reading_test.alerts.start_failed']);
     env.emitState({ active: true });
     assert.equal(ui.isInteractionLocked(), true);
     env.emitState({ active: false });
@@ -520,6 +534,41 @@ for (const registration of ['missing', 'throws']) {
     assert.deepEqual(env.starts, []);
     assert.deepEqual(env.notices, ['renderer.reading_test.alerts.unavailable']);
     assert.ok(env.warnings.some((args) => args.some((arg) => String(arg).includes('onReadingTestStateChanged'))));
+  });
+}
+
+for (const noticeRegistration of ['missing', 'throws']) {
+  test(`reading-test ${noticeRegistration} notice subscription prevents entry and both start actions`, async () => {
+    const env = createReadingTestEnvironment({ noticeRegistration });
+    const ui = env.window.ReadingSpeedTestUi;
+    ui.configure();
+    await flushReadingTestWork();
+    assert.equal(ui.isInteractionLocked(), false);
+    await ui.openEntryFlow();
+    env.elements.readingTestEntryModalStart.dispatch('click');
+    env.elements.readingTestEntryModalStartCurrentText.dispatch('click');
+    await flushReadingTestWork();
+    assert.equal(env.elements.readingTestEntryModal.getAttribute('aria-hidden'), 'true');
+    assert.deepEqual(env.starts, []);
+    assert.deepEqual(env.notices, ['renderer.reading_test.alerts.unavailable']);
+    assert.ok(env.warnings.some((args) => args.some((arg) => String(arg).includes('onReadingTestNotice'))));
+  });
+
+  test(`reading-test ${noticeRegistration} notice subscription preserves live and initial session locking`, async () => {
+    const env = createReadingTestEnvironment({ noticeRegistration, getState: async () => ({ active: true }) });
+    const ui = env.window.ReadingSpeedTestUi;
+    ui.configure();
+    await flushReadingTestWork();
+    assert.equal(ui.isInteractionLocked(), true);
+    env.emitState({ active: false });
+    assert.equal(ui.isInteractionLocked(), false);
+    await ui.openEntryFlow();
+    assert.deepEqual(env.notices, ['renderer.reading_test.alerts.unavailable']);
+    env.emitState({ active: true });
+    assert.equal(ui.isInteractionLocked(), true);
+    env.emitState({ active: false });
+    assert.equal(ui.isInteractionLocked(), false);
+    assert.deepEqual(env.starts, []);
   });
 }
 
