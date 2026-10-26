@@ -162,7 +162,11 @@ function readConfiguredPresetArray(filePath) {
  * reads.
  */
 function loadConfiguredDefaultPresetCatalog(lang) {
-  const emptyCatalog = { general: [], languagePresets: {} };
+  const unavailableCatalog = {
+    available: false,
+    general: [],
+    languagePresets: {},
+  };
   let entries;
   let presetsDir;
 
@@ -175,7 +179,7 @@ function loadConfiguredDefaultPresetCatalog(lang) {
       '[presets_main] Configured default-preset catalog is unavailable:',
       err
     );
-    return emptyCatalog;
+    return unavailableCatalog;
   }
 
   const generalFile = entries.find(
@@ -201,7 +205,7 @@ function loadConfiguredDefaultPresetCatalog(lang) {
       );
     });
 
-  return { general, languagePresets };
+  return { available: true, general, languagePresets };
 }
 
 /**
@@ -210,8 +214,12 @@ function loadConfiguredDefaultPresetCatalog(lang) {
  */
 function loadDefaultPresetsCombined(lang) {
   const langCode = normalizeLangBase(lang);
-  const { general, languagePresets } =
-    loadConfiguredDefaultPresetCatalog(langCode);
+  const catalog = loadConfiguredDefaultPresetCatalog(langCode);
+  if (!catalog.available) {
+    return { available: false, presets: [] };
+  }
+
+  const { general, languagePresets } = catalog;
   const combinedByName = new Map();
 
   general.forEach((preset) => combinedByName.set(preset.name, preset));
@@ -221,7 +229,7 @@ function loadDefaultPresetsCombined(lang) {
     languageDefaults.forEach((preset) => combinedByName.set(preset.name, preset));
   }
 
-  return Array.from(combinedByName.values());
+  return { available: true, presets: Array.from(combinedByName.values()) };
 }
 
 /**
@@ -385,7 +393,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   // IPC: return the configured default-preset catalog.
   ipcMain.handle('get-default-presets', () => {
     try {
-      return loadConfiguredDefaultPresetCatalog();
+      const { general, languagePresets } = loadConfiguredDefaultPresetCatalog();
+      return { general, languagePresets };
     } catch (err) {
       log.error(
         '[presets_main] Error providing default presets (get-default-presets):',
@@ -538,7 +547,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       // Resolve defaults from the same configured catalog returned to the renderer.
-      const defaultsCombined = loadDefaultPresetsCombined(lang);
+      const defaultCatalog = loadDefaultPresetsCombined(lang);
+      if (!defaultCatalog.available) {
+        return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
+      }
+      const defaultsCombined = defaultCatalog.presets;
       settings = clonePresetSettings(settings, lang);
 
       // Ensure per-language preset buckets exist before edits.
@@ -617,7 +630,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      const defaultsCombined = loadDefaultPresetsCombined(lang);
+      const defaultCatalog = loadDefaultPresetsCombined(lang);
+      if (!defaultCatalog.available) {
+        return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
+      }
+      const defaultsCombined = defaultCatalog.presets;
       settings = clonePresetSettings(settings, lang);
       const userPresets = getUserPresets(settings, lang);
 
@@ -725,7 +742,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      const defaultsCombined = loadDefaultPresetsCombined(lang);
+      const defaultCatalog = loadDefaultPresetsCombined(lang);
+      if (!defaultCatalog.available) {
+        return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
+      }
+      const defaultsCombined = defaultCatalog.presets;
       settings = clonePresetSettings(settings, lang);
       const userPresets = getUserPresets(settings, lang);
 

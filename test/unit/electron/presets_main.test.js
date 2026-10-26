@@ -157,6 +157,11 @@ function writeActiveAndMalformedOtherLanguageDefaults(harness) {
   return otherLanguagePath;
 }
 
+function makeDefaultPresetCatalogUnavailable(harness) {
+  fs.rmSync(harness.configPresetsDir, { recursive: true, force: true });
+  fs.writeFileSync(harness.configPresetsDir, 'not a directory');
+}
+
 const presetMutationCases = [
   { name: 'create', channel: 'create-preset', payload: { name: 'New', wpm: 300, description: 'New text' }, action: null },
   { name: 'overwrite', channel: 'create-preset', payload: { name: 'Custom', wpm: 300, description: 'Updated' }, action: null },
@@ -265,6 +270,41 @@ test('get-default-presets reads the complete catalog, including malformed unrela
     true
   );
 });
+
+test('get-default-presets preserves its empty public result when the catalog is unavailable', async (t) => {
+  const harness = createPresetHarness(t);
+  makeDefaultPresetCatalogUnavailable(harness);
+
+  assert.deepEqual(
+    await harness.invoke('get-default-presets'),
+    { general: [], languagePresets: {} }
+  );
+});
+
+for (const scenario of [
+  { name: 'delete', channel: 'request-delete-preset', payload: 'Default' },
+  {
+    name: 'edit',
+    channel: 'edit-preset',
+    payload: {
+      originalName: 'Default',
+      newPreset: { name: 'Edited', wpm: 275, description: 'Edited default' },
+    },
+  },
+  { name: 'restore', channel: 'request-restore-defaults' },
+]) {
+  test(`main ${scenario.name} preserves settings when the catalog is unavailable`, async (t) => {
+    const harness = createPresetHarness(t);
+    makeDefaultPresetCatalogUnavailable(harness);
+
+    assert.deepEqual(
+      await harness.invoke(scenario.channel, scenario.payload),
+      { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' }
+    );
+    assert.equal(harness.getDisk(), harness.initialDisk);
+    assert.deepEqual(harness.sent, []);
+  });
+}
 
 for (const scenario of [
   {
