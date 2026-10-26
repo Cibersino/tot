@@ -431,8 +431,7 @@
   async function requestEntryData() {
     const getEntryData = readElectronMethod('getReadingTestEntryData');
     if (!getEntryData) {
-      log.warnOnce(
-        'reading-speed-test.getEntryData.missing',
+      log.warn(
         'getReadingTestEntryData unavailable; reading speed test entry flow skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -451,9 +450,8 @@
   async function syncInitialSessionState() {
     const getState = readElectronMethod('getReadingTestState');
     if (!getState) {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.getState.missing',
-        'getReadingTestState unavailable; reading-test session sync disabled.'
+      log.warn(
+        'getReadingTestState unavailable; initial reading-test state query skipped.'
       );
       return;
     }
@@ -469,7 +467,7 @@
       sessionActive = nextState.active;
       syncLockState();
     } catch (err) {
-      log.warn('BOOTSTRAP: reading-test initial session-state fetch failed (ignored):', err);
+      log.warn('Reading-test initial session-state fetch failed (ignored):', err);
     }
   }
 
@@ -517,8 +515,7 @@
 
     const resetPool = readElectronMethod('resetReadingTestPool');
     if (!resetPool) {
-      log.warnOnce(
-        'reading-speed-test.resetPool.missing',
+      log.warn(
         'resetReadingTestPool unavailable; pool reset skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -569,8 +566,7 @@
 
     const importReadingTestPoolFiles = readElectronMethod('importReadingTestPoolFiles');
     if (!importReadingTestPoolFiles) {
-      log.warnOnce(
-        'reading-speed-test.import.missing',
+      log.warn(
         'importReadingTestPoolFiles unavailable; reading-test pool import skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -622,8 +618,7 @@
 
     const setShowBundledEntries = readElectronMethod('setReadingTestShowBundledEntries');
     if (!setShowBundledEntries) {
-      log.warnOnce(
-        'reading-speed-test.setShowBundledEntries.missing',
+      log.warn(
         'setReadingTestShowBundledEntries unavailable; reading-test bundled visibility toggle skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -666,8 +661,7 @@
 
     const openExternalUrl = readElectronMethod('openExternalUrl');
     if (!openExternalUrl) {
-      log.warnOnce(
-        'reading-speed-test.external-link.missing',
+      log.warn(
         'openExternalUrl unavailable; reading-test external link open failed (ignored).'
       );
       window.Notify.notifyMain('renderer.info.external.blocked');
@@ -739,8 +733,7 @@
 
     const startReadingTest = readElectronMethod('startReadingTest');
     if (!startReadingTest) {
-      log.warnOnce(
-        'reading-speed-test.start.missing',
+      log.warn(
         'startReadingTest unavailable; reading speed test start skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -756,8 +749,7 @@
 
     const startReadingTest = readElectronMethod('startReadingTest');
     if (!startReadingTest) {
-      log.warnOnce(
-        'reading-speed-test.start-current-text.missing',
+      log.warn(
         'startReadingTest unavailable; current-text reading speed test start skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -799,8 +791,7 @@
 
   function handleReadingTestNotice(notice) {
     if (!isPayloadObject(notice) || typeof notice.key !== 'string' || notice.key.length < 1) {
-      log.warnOnce(
-        'reading-speed-test.notice.invalid',
+      log.warn(
         'Reading-test notice payload invalid (ignored):',
         notice
       );
@@ -839,14 +830,13 @@
         stateSubscriptionEstablished = true;
       } catch (err) {
         log.warn(
-          'BOOTSTRAP: onReadingTestStateChanged registration failed; reading speed test disabled.',
+          'onReadingTestStateChanged registration failed; reading speed test disabled.',
           err
         );
       }
     } else {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.onStateChanged.missing',
-        'BOOTSTRAP: onReadingTestStateChanged unavailable; reading speed test disabled.'
+      log.warn(
+        'onReadingTestStateChanged unavailable; reading speed test disabled.'
       );
     }
 
@@ -865,14 +855,13 @@
         noticeSubscriptionEstablished = true;
       } catch (err) {
         log.warn(
-          'BOOTSTRAP: onReadingTestNotice registration failed; reading speed test disabled.',
+          'onReadingTestNotice registration failed; reading speed test disabled.',
           err
         );
       }
     } else {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.onNotice.missing',
-        'BOOTSTRAP: onReadingTestNotice unavailable; reading speed test disabled.'
+      log.warn(
+        'onReadingTestNotice unavailable; reading speed test disabled.'
       );
     }
   }
