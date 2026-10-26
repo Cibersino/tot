@@ -91,6 +91,23 @@ test('main preload keeps editor-first-show-state as an unsubscribe-based listene
   assert.equal(removed[0].listener, subscriptions[0].listener);
 });
 
+test('main preload forwards preset reconciliation payloads and supports unsubscribe', () => {
+  const { exposedApi, subscriptions, removed } = loadMainPreload();
+  const payload = {
+    preset: { name: 'Quick', wpm: 300 },
+    language: 'en',
+    settingsSnapshot: { language: 'en', presets_by_language: { en: [{ name: 'Quick', wpm: 300 }] } },
+  };
+  let received;
+  const unsubscribe = exposedApi.api.onPresetCreated((value) => { received = value; });
+  const subscription = subscriptions.at(-1);
+  assert.equal(subscription.channel, 'preset-created');
+  subscription.listener(null, payload);
+  assert.equal(received, payload);
+  unsubscribe();
+  assert.equal(removed.at(-1).listener, subscription.listener);
+});
+
 test('main preload forwards setCurrentText canonical payloads unchanged', () => {
   const { exposedApi, invoked } = loadMainPreload();
   const payload = {

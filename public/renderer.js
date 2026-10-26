@@ -686,11 +686,13 @@ function getRequiredElectronMethod(methodName) {
 // =============================================================================
 const {
   transitionRendererTranslations,
+  getLangBase,
   tRenderer,
   msgRenderer,
   getRendererValue,
 } = window.RendererI18n || {};
 if (!transitionRendererTranslations
+  || typeof getLangBase !== 'function'
   || !tRenderer
   || !msgRenderer
   || !getRendererValue) {
@@ -1079,6 +1081,25 @@ function settingsChangeHandler(newSettings) {
   return enqueueMainSemanticWork(run);
 }
 
+function enqueuePresetReconciliation({ preset, settingsSnapshot, language }, reason) {
+  return enqueueMainSemanticWork(async () => {
+    if (language !== (getLangBase(idiomaActual) || DEFAULT_LANG)) return;
+
+    const result = preset
+      ? await wpmControls.handlePresetCreated({
+        preset,
+        settingsSnapshot,
+        language: idiomaActual,
+        electronAPI: window.electronAPI,
+      })
+      : await loadPresets({ settingsSnapshot });
+    currentTextRefreshPolicy.dispatchPresetOutcome(
+      result && result.selectionOutcome ? result.selectionOutcome : null,
+      reason
+    );
+  });
+}
+
 function armCurrentTextSubscription() {
   if (hasCurrentTextSubscription) return;
   if (!window.electronAPI || typeof window.electronAPI.onCurrentTextUpdated !== 'function') {
@@ -1099,24 +1120,13 @@ function armIpcSubscriptions() {
 
   // preset-created is accepted only after READY, when its dependent controls and settings are established.
   if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
-    window.electronAPI.onPresetCreated(async (preset) => {
+    window.electronAPI.onPresetCreated(async (payload) => {
       if (!isRendererReady()) {
         log.warn('BOOTSTRAP: preset-created received pre-READY; ignored.');
         return;
       }
       try {
-        const presetCreatedResult = await wpmControls.handlePresetCreated({
-          preset,
-          settingsSnapshot: settingsCache,
-          language: idiomaActual,
-          electronAPI: window.electronAPI,
-        });
-        currentTextRefreshPolicy.dispatchPresetOutcome(
-          presetCreatedResult && presetCreatedResult.selectionOutcome
-            ? presetCreatedResult.selectionOutcome
-            : null,
-          'preset-created sync'
-        );
+        await enqueuePresetReconciliation(payload, 'preset-created sync');
       } catch (err) {
         log.error('Error handling preset-created event:', err);
       }
@@ -2193,13 +2203,7 @@ function bindPresetActions() {
       const res = await requestDeletePreset(name);
 
       if (res && res.ok) {
-        const presetDeleteResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
-        currentTextRefreshPolicy.dispatchPresetOutcome(
-          presetDeleteResult && presetDeleteResult.selectionOutcome
-            ? presetDeleteResult.selectionOutcome
-            : null,
-          'preset delete'
-        );
+        await enqueuePresetReconciliation(res, 'preset delete');
         return;
       } else {
         if (res && res.code === 'CANCELLED') {
@@ -2227,13 +2231,7 @@ function bindPresetActions() {
       const res = await requestRestoreDefaults();
 
       if (res && res.ok) {
-        const presetRestoreResult = await loadPresets({ settingsSnapshot: settingsCache || {} });
-        currentTextRefreshPolicy.dispatchPresetOutcome(
-          presetRestoreResult && presetRestoreResult.selectionOutcome
-            ? presetRestoreResult.selectionOutcome
-            : null,
-          'preset restore'
-        );
+        await enqueuePresetReconciliation(res, 'preset restore');
         return;
       } else {
         if (res && res.code === 'CANCELLED') {

@@ -124,8 +124,8 @@ const api = {
     requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
     requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
     onPresetCreated: (cb) => {
-        const listener = (_e, preset) => {
-            try { cb(preset); } catch (err) { console.error('preset-created callback error:', err); }
+        const listener = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('preset-created callback error:', err); }
         };
         return subscribeWithUnsub('preset-created', listener, 'removeListener error (preset-created):');
     },

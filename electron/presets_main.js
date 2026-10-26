@@ -514,7 +514,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const { mainWin } = resolveWindows();
       try {
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', sanitizedPreset);
+          mainWin.webContents.send('preset-created', {
+            preset: sanitizedPreset,
+            settingsSnapshot: settings,
+            language: lang,
+          });
         } else {
           log.warn(
             '[presets_main] preset-created notify failed (ignored): main window unavailable.'
@@ -609,14 +613,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'deleted_and_ignored' };
+          return { ok: true, action: 'deleted_and_ignored', settingsSnapshot: settings, language: lang };
         } else {
           // Custom-only entry; remove it and keep defaults intact.
           userPresets.splice(idxUser, 1);
           settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'deleted_custom' };
+          return { ok: true, action: 'deleted_custom', settingsSnapshot: settings, language: lang };
         }
       } else {
         // No custom preset; if a default exists, disable it for this language.
@@ -627,7 +631,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'ignored_default' };
+          return { ok: true, action: 'ignored_default', settingsSnapshot: settings, language: lang };
         }
       }
 
@@ -715,7 +719,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
 
-      return { ok: true, action: 'restored', removedCustom, unignored };
+      return { ok: true, action: 'restored', removedCustom, unignored, settingsSnapshot: settings, language: lang };
     } catch (err) {
       log.error(
         '[presets_main] Error restoring default presets:',
@@ -826,7 +830,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         const windows = resolveWindows();
         const { mainWin } = windows;
         if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', sanitizedPreset);
+          mainWin.webContents.send('preset-created', {
+            preset: sanitizedPreset,
+            settingsSnapshot: settings,
+            language: lang,
+          });
         } else {
           log.warn(
             '[presets_main] preset-created notify failed (ignored): main window unavailable.'

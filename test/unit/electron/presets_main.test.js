@@ -159,6 +159,14 @@ for (const scenario of presetMutationCases) {
     }
     assert.equal(harness.sent.some((message) => message.channel === 'settings-updated'), true);
     assert.equal(harness.sent.some((message) => message.channel === 'preset-created'), scenario.channel === 'create-preset' || scenario.channel === 'edit-preset');
+    const created = harness.sent.find((message) => message.channel === 'preset-created');
+    const reconciliation = created ? created.payload : result;
+    assert.equal(reconciliation.language, 'en');
+    assert.deepEqual(reconciliation.settingsSnapshot, saved);
+    if (created) {
+      const expectedPreset = scenario.channel === 'edit-preset' ? scenario.payload.newPreset : scenario.payload;
+      assert.deepEqual(reconciliation.preset, expectedPreset);
+    }
   });
 }
 
