@@ -73,10 +73,12 @@ function createHarness({
   missingAppConstants = false,
   captureBootstrapError = false,
   createPresetImpl = null,
+  editPresetImpl = null,
 } = {}) {
   const subscriptions = {};
   const transitionLanguages = [];
   const logs = [];
+  const notifications = [];
   let establishedLanguage = null;
   let reportRendererI18nFailureCalls = 0;
   let closeCalls = 0;
@@ -218,7 +220,8 @@ function createHarness({
           },
         }),
         ...(missingRequiredBridgeMethod === 'editPreset' ? {} : {
-          async editPreset() {
+          async editPreset(originalName, preset) {
+            if (editPresetImpl) return editPresetImpl(originalName, preset);
             return { ok: true };
           },
         }),
@@ -239,7 +242,7 @@ function createHarness({
         },
       },
       Notify: {
-        notifyMain() {},
+        notifyMain(key) { notifications.push(key); },
       },
       close() {
         closeCalls += 1;
@@ -279,6 +282,7 @@ function createHarness({
     elements,
     subscriptions,
     transitionLanguages,
+    notifications,
     getReportRendererI18nFailureCalls() {
       return reportRendererI18nFailureCalls;
     },
@@ -352,7 +356,23 @@ test('a rejected preset creation leaves the proposal open', async () => {
   await harness.settleSemanticWork();
 
   assert.equal(harness.getCloseCalls(), 0);
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.create_error']);
   assert.ok(harness.getLogs().some((entry) => entry.args[0] === 'Preset modal createPreset response failed:'));
+});
+
+test('a failed preset edit keeps the entered values and displays the error', async () => {
+  const harness = createHarness({ editPresetImpl: () => ({ ok: false, error: 'disk full' }) });
+  harness.subscriptions.onInit({ mode: 'edit', preset: { name: 'Original', wpm: 250, description: 'Before' } });
+  await harness.settleSemanticWork();
+  harness.elements.presetName.value = 'Changed';
+  harness.elements.presetDesc.value = 'After';
+  harness.elements.btnSave.dispatch('click');
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.equal(harness.elements.presetName.value, 'Changed');
+  assert.equal(harness.elements.presetDesc.value, 'After');
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.edit_error']);
 });
 
 test('preset modal closes before normal interaction when live settings registration is unavailable or throws', () => {

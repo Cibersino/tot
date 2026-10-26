@@ -278,6 +278,22 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return normalizeLangBase(lang) || DEFAULT_LANG;
   }
 
+  function clonePresetSettings(settings, lang) {
+    const presetsByLanguage = { ...settings.presets_by_language };
+    const disabledDefaults = { ...settings.disabled_default_presets };
+    if (Array.isArray(presetsByLanguage[lang])) {
+      presetsByLanguage[lang] = presetsByLanguage[lang].slice();
+    }
+    if (Array.isArray(disabledDefaults[lang])) {
+      disabledDefaults[lang] = disabledDefaults[lang].slice();
+    }
+    return {
+      ...settings,
+      presets_by_language: presetsByLanguage,
+      disabled_default_presets: disabledDefaults,
+    };
+  }
+
   function getUserPresets(settings, lang) {
     const langCode = normalizeLangBase(lang) || DEFAULT_LANG;
     if (typeof settings.presets_by_language !== 'object' || settings.presets_by_language === null || Array.isArray(settings.presets_by_language)) {
@@ -480,6 +496,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const sanitizedPreset = sanitized.preset;
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
+      settings = clonePresetSettings(settings, lang);
       const userPresets = getUserPresets(settings, lang);
 
       // Preset names are treated as unique keys; overwrite on match.
@@ -490,7 +507,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         userPresets.push(sanitizedPreset);
       }
 
-      settings = settingsState.saveSettings(settings);
+      settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
 
       // Best-effort notify the main window; window races are ignored.
@@ -572,6 +589,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       // Load default presets with the same fallback rules as get-default-presets.
       const defaultsCombined = loadDefaultPresetsCombined(lang);
+      settings = clonePresetSettings(settings, lang);
 
       // Ensure per-language preset buckets exist before edits.
       const userPresets = getUserPresets(settings, lang);
@@ -588,14 +606,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           if (!disabledDefaults.includes(name)) {
             disabledDefaults.push(name);
           }
-          settings = settingsState.saveSettings(settings);
+          settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
           return { ok: true, action: 'deleted_and_ignored' };
         } else {
           // Custom-only entry; remove it and keep defaults intact.
           userPresets.splice(idxUser, 1);
-          settings = settingsState.saveSettings(settings);
+          settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
           return { ok: true, action: 'deleted_custom' };
@@ -606,7 +624,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           if (!disabledDefaults.includes(name)) {
             disabledDefaults.push(name);
           }
-          settings = settingsState.saveSettings(settings);
+          settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
           return { ok: true, action: 'ignored_default' };
@@ -650,6 +668,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
+      settings = clonePresetSettings(settings, lang);
       const userPresets = getUserPresets(settings, lang);
 
       const defaultNames = new Set(
@@ -693,7 +712,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         delete settings.disabled_default_presets;
       }
 
-      settings = settingsState.saveSettings(settings);
+      settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
 
       return { ok: true, action: 'restored', removedCustom, unignored };
@@ -757,6 +776,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const defaultsCombined = loadDefaultPresetsCombined(lang);
+      settings = clonePresetSettings(settings, lang);
       const userPresets = getUserPresets(settings, lang);
 
       const idxUser = userPresets.findIndex(
@@ -799,7 +819,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         userPresets.push(sanitizedPreset);
       }
 
-      settings = settingsState.saveSettings(settings);
+      settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
 
       try {
