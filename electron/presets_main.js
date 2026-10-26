@@ -5,7 +5,8 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Load bundled and user-configured preset defaults (general + per-language).
+// - Seed missing user-configured default-preset files from bundled JSON.
+// - Load user-configured preset defaults (general + per-language).
 // - Validate and sanitize preset payloads from IPC.
 // - Persist preset changes into settings and broadcast updates.
 // - Show native confirmation dialogs for preset delete, restore, and edit actions.
@@ -132,14 +133,13 @@ function sanitizePresetArray(entries, filePath) {
   return presets;
 }
 
-function loadPresetArrayFromJson(filePath) {
+function readConfiguredPresetArray(filePath) {
   try {
-    if (!fs.existsSync(filePath)) return [];
     const raw = fs.readFileSync(filePath, 'utf8');
-    const arr = JSON.parse(raw || '[]');
+    const arr = JSON.parse(raw);
     if (!Array.isArray(arr)) {
       log.warn(
-        '[presets_main] Preset JSON is not an array; using empty list (ignored):',
+        '[presets_main] Preset JSON is not an array; configured catalog is empty:',
         filePath
       );
       return [];
@@ -147,7 +147,7 @@ function loadPresetArrayFromJson(filePath) {
     return sanitizePresetArray(arr, filePath);
   } catch (err) {
     log.warn(
-      '[presets_main] Preset JSON load failed; using empty list (ignored):',
+      '[presets_main] Preset JSON load failed; configured catalog is empty:',
       filePath,
       err
     );
@@ -156,53 +156,72 @@ function loadPresetArrayFromJson(filePath) {
 }
 
 /**
- * Loads combined default presets (general + per language).
- * Source: userData config presets_defaults JSON (fallback to bundled JSON on missing/empty/parse failure).
+ * Loads the configured default-preset catalog. When a language is supplied,
+ * only that language's configured defaults are read. Bundled files seed
+ * missing configuration files at startup, but do not substitute for runtime
+ * reads.
+ */
+function loadConfiguredDefaultPresetCatalog(lang) {
+  const emptyCatalog = { general: [], languagePresets: {} };
+  let entries;
+  let presetsDir;
+
+  try {
+    ensureConfigPresetsDir();
+    presetsDir = getConfigPresetsDir();
+    entries = fs.readdirSync(presetsDir);
+  } catch (err) {
+    log.error(
+      '[presets_main] Configured default-preset catalog is unavailable:',
+      err
+    );
+    return emptyCatalog;
+  }
+
+  const generalFile = entries.find(
+    (name) => name.toLowerCase() === 'defaults_presets.json'
+  );
+  const general = generalFile
+    ? readConfiguredPresetArray(path.join(presetsDir, generalFile))
+    : [];
+  const languagePresets = {};
+  const langCode = typeof lang === 'undefined'
+    ? null
+    : normalizeLangBase(lang);
+
+  entries
+    .filter((name) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(name))
+    .forEach((name) => {
+      const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(name);
+      if (!match || !match[1]) return;
+      const fileLang = match[1].toLowerCase();
+      if (langCode && fileLang !== langCode) return;
+      languagePresets[fileLang] = readConfiguredPresetArray(
+        path.join(presetsDir, name)
+      );
+    });
+
+  return { general, languagePresets };
+}
+
+/**
+ * Resolves the effective configured defaults for one language using the same
+ * general-then-language precedence as the renderer.
  */
 function loadDefaultPresetsCombined(lang) {
-  ensureConfigPresetsDir();
-  const presetsDir = getConfigPresetsDir();
-
-  const combined =
-    loadPresetArrayFromJson(path.join(presetsDir, 'defaults_presets.json')).slice();
-  if (!combined.length) {
-    log.warn(
-      '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored).'
-    );
-    combined.push(
-      ...loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json'))
-    );
-    if (!combined.length) {
-      log.error(
-        '[presets_main] Bundled default presets missing/empty; presets list will be empty.'
-      );
-    }
-  }
-
   const langCode = normalizeLangBase(lang);
-  if (langCode) {
-    const bundledLangPath = path.join(
-      PRESETS_SOURCE_DIR,
-      `defaults_presets_${langCode}.json`
-    );
-    const langPresets =
-      loadPresetArrayFromJson(
-        path.join(presetsDir, `defaults_presets_${langCode}.json`)
-      ).slice();
-    if (!langPresets.length) {
-      if (fs.existsSync(bundledLangPath)) {
-        log.warn(
-          '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored):',
-          langCode
-        );
-        langPresets.push(
-          ...loadPresetArrayFromJson(bundledLangPath)
-        );
-      }
-    }
-    if (langPresets.length) combined.push(...langPresets);
+  const { general, languagePresets } =
+    loadConfiguredDefaultPresetCatalog(langCode);
+  const combinedByName = new Map();
+
+  general.forEach((preset) => combinedByName.set(preset.name, preset));
+
+  const languageDefaults = langCode ? languagePresets[langCode] : [];
+  if (Array.isArray(languageDefaults)) {
+    languageDefaults.forEach((preset) => combinedByName.set(preset.name, preset));
   }
-  return combined;
+
+  return Array.from(combinedByName.values());
 }
 
 /**
@@ -363,112 +382,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     };
   }
 
-  // IPC: return default presets (config-first, then bundled).
+  // IPC: return the configured default-preset catalog.
   ipcMain.handle('get-default-presets', () => {
     try {
-      ensureConfigPresetsDir();
-      const presetsDir = getConfigPresetsDir();
-
-      let general = [];
-      const languagePresets = {};
-
-      const entries = fs.existsSync(presetsDir)
-        ? fs.readdirSync(presetsDir)
-        : [];
-
-      // Prefer config defaults; parse failures fall back to bundled.
-      let generalParseFailed = false;
-      const generalJson = entries.find(
-        (n) => n.toLowerCase() === 'defaults_presets.json'
-      );
-      if (generalJson) {
-        try {
-          general = JSON.parse(
-            fs.readFileSync(path.join(presetsDir, generalJson), 'utf8')
-          );
-          if (Array.isArray(general)) {
-            general = sanitizePresetArray(general, path.join(presetsDir, generalJson));
-          }
-        } catch (err) {
-          generalParseFailed = true;
-          log.warn(
-            '[presets_main] Default presets parse failed; using bundled defaults (ignored):',
-            generalJson,
-            err
-          );
-          general = [];
-        }
-      }
-      if (!Array.isArray(general) || general.length === 0) {
-        if (!generalParseFailed) {
-          log.warn(
-            '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored).'
-          );
-        }
-        general = loadPresetArrayFromJson(
-          path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json')
-        );
-        if (!general.length) {
-          log.error(
-            '[presets_main] Bundled default presets missing/empty; returning empty list.'
-          );
-        }
-      }
-
-      // Load defaults by language from JSON: defaults_presets_<lang>.json
-      const invalidLangs = new Set();
-      entries
-        .filter((n) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
-        .forEach((n) => {
-          const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(n);
-          if (!match || !match[1]) return;
-          const lang = match[1].toLowerCase();
-          try {
-            const arr = JSON.parse(
-              fs.readFileSync(path.join(presetsDir, n), 'utf8')
-            );
-            if (Array.isArray(arr)) {
-              languagePresets[lang] = sanitizePresetArray(arr, path.join(presetsDir, n));
-            }
-          } catch (err) {
-            invalidLangs.add(lang);
-            log.warn(
-              '[presets_main] Default presets parse failed; using bundled defaults (ignored):',
-              n,
-              err
-            );
-          }
-        });
-
-      // If any language is missing in JSON, try to load from the bundled JSON seeds
-      const srcEntries = fs.existsSync(PRESETS_SOURCE_DIR)
-        ? fs.readdirSync(PRESETS_SOURCE_DIR)
-        : [];
-      srcEntries
-        .filter((n) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
-        .forEach((n) => {
-          const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(n);
-          if (!match || !match[1]) return;
-          const lang = match[1].toLowerCase();
-          if (languagePresets[lang]) return; // already loaded from config JSON
-          if (!invalidLangs.has(lang)) {
-            log.warn(
-              '[presets_main] Default presets missing in config; using bundled defaults (ignored):',
-              lang
-            );
-          }
-          try {
-            const arr = loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, n));
-            if (Array.isArray(arr)) languagePresets[lang] = arr;
-          } catch (err) {
-            log.error('[presets_main] Error loading bundled preset', n, err);
-          }
-        });
-
-      return {
-        general: Array.isArray(general) ? general : [],
-        languagePresets,
-      };
+      return loadConfiguredDefaultPresetCatalog();
     } catch (err) {
       log.error(
         '[presets_main] Error providing default presets (get-default-presets):',
@@ -620,7 +537,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      // Load default presets with the same fallback rules as get-default-presets.
+      // Resolve defaults from the same configured catalog returned to the renderer.
       const defaultsCombined = loadDefaultPresetsCombined(lang);
       settings = clonePresetSettings(settings, lang);
 

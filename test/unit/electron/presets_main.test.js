@@ -29,7 +29,12 @@ test('preset persistence enforces the shared name and description limits', () =>
   );
 });
 
-function createPresetHarness(t, { failWrite = false, confirmation = 0 } = {}) {
+function createPresetHarness(t, {
+  failWrite = false,
+  confirmation = 0,
+  writeConfiguredDefaults = true,
+  initialConfigFiles = null,
+} = {}) {
   const root = createTestTempDir('preset-persistence');
   const modulePaths = ['presets_main', 'settings', 'fs_storage', 'menu_builder']
     .map((name) => path.resolve(__dirname, `../../../electron/${name}.js`));
@@ -95,10 +100,18 @@ function createPresetHarness(t, { failWrite = false, confirmation = 0 } = {}) {
   };
 
   const handlers = new Map();
+  if (initialConfigFiles) {
+    storage.ensureConfigPresetsDir();
+    Object.entries(initialConfigFiles).forEach(([name, content]) => {
+      fs.writeFileSync(path.join(storage.getConfigPresetsDir(), name), content);
+    });
+  }
   const presets = require(modulePaths[0]);
   presets.registerIpc({ handle: (channel, handler) => handlers.set(channel, handler) }, { getWindows: () => ({ mainWin, presetWin }) });
-  fs.writeFileSync(path.join(storage.getConfigPresetsDir(), 'defaults_presets.json'), JSON.stringify([{ name: 'Default', wpm: 210 }, { name: 'Default2', wpm: 220 }, { name: 'Default3', wpm: 230 }]));
-  fs.writeFileSync(path.join(storage.getConfigPresetsDir(), 'defaults_presets_en.json'), '[]');
+  if (writeConfiguredDefaults) {
+    fs.writeFileSync(path.join(storage.getConfigPresetsDir(), 'defaults_presets.json'), JSON.stringify([{ name: 'Default', wpm: 210 }, { name: 'Default2', wpm: 220 }, { name: 'Default3', wpm: 230 }]));
+    fs.writeFileSync(path.join(storage.getConfigPresetsDir(), 'defaults_presets_en.json'), '[]');
+  }
   const initialDisk = fs.readFileSync(settingsFile, 'utf8');
 
   return {
@@ -109,6 +122,39 @@ function createPresetHarness(t, { failWrite = false, confirmation = 0 } = {}) {
     getLastRead: () => lastRead,
     invoke: (channel, payload) => handlers.get(channel)({ sender: (channel === 'create-preset' || channel === 'edit-preset' ? presetWin : mainWin).webContents }, payload),
   };
+}
+
+async function captureWarnings(action) {
+  const Log = require('../../../electron/log');
+  const previousLevel = Log.getLevel();
+  const originalWarn = console.warn;
+  const warnings = [];
+
+  Log.setLevel('warn');
+  console.warn = (...args) => warnings.push(args);
+  try {
+    return { result: await action(), warnings };
+  } finally {
+    console.warn = originalWarn;
+    Log.setLevel(previousLevel);
+  }
+}
+
+function writeActiveAndMalformedOtherLanguageDefaults(harness) {
+  fs.writeFileSync(
+    path.join(harness.configPresetsDir, 'defaults_presets.json'),
+    '[]'
+  );
+  fs.writeFileSync(
+    path.join(harness.configPresetsDir, 'defaults_presets_en.json'),
+    JSON.stringify([{ name: 'Default', wpm: 240, description: 'English default' }])
+  );
+  const otherLanguagePath = path.join(
+    harness.configPresetsDir,
+    'defaults_presets_es.json'
+  );
+  fs.writeFileSync(otherLanguagePath, '{');
+  return otherLanguagePath;
 }
 
 const presetMutationCases = [
@@ -141,7 +187,36 @@ test('get-default-presets omits invalid configured entries and retains valid ent
   assert.deepEqual(defaults.languagePresets.en, []);
 });
 
-test('get-default-presets uses bundled general defaults when no configured entry is valid', async (t) => {
+test('registerIpc seeds missing configured default-preset files from bundled sources', (t) => {
+  const harness = createPresetHarness(t, { writeConfiguredDefaults: false });
+
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(harness.configPresetsDir, 'defaults_presets.json'), 'utf8')),
+    [{ name: 'default', wpm: 250, description: 'Default preset.' }]
+  );
+  assert.equal(
+    fs.existsSync(path.join(harness.configPresetsDir, 'defaults_presets_en.json')),
+    true
+  );
+  assert.equal(
+    fs.existsSync(path.join(harness.configPresetsDir, 'defaults_presets_es.json')),
+    true
+  );
+});
+
+test('registerIpc does not overwrite an existing configured default-preset file', (t) => {
+  const harness = createPresetHarness(t, {
+    writeConfiguredDefaults: false,
+    initialConfigFiles: { 'defaults_presets.json': '[]' },
+  });
+
+  assert.equal(
+    fs.readFileSync(path.join(harness.configPresetsDir, 'defaults_presets.json'), 'utf8'),
+    '[]'
+  );
+});
+
+test('get-default-presets keeps an existing catalog empty when no configured entry is valid', async (t) => {
   const harness = createPresetHarness(t);
   const configDefaults = path.join(
     harness.configPresetsDir,
@@ -151,9 +226,142 @@ test('get-default-presets uses bundled general defaults when no configured entry
 
   const defaults = await harness.invoke('get-default-presets');
 
-  assert.deepEqual(defaults.general, [
-    { name: 'default', wpm: 250, description: 'Default preset.' },
+  assert.deepEqual(defaults.general, []);
+});
+
+test('get-default-presets keeps explicit empty, malformed, and non-array configured catalogs empty', async (t) => {
+  const harness = createPresetHarness(t);
+  const configDefaults = path.join(harness.configPresetsDir, 'defaults_presets.json');
+  const englishDefaults = path.join(harness.configPresetsDir, 'defaults_presets_en.json');
+
+  fs.writeFileSync(configDefaults, '[]');
+  fs.writeFileSync(englishDefaults, '{');
+  let defaults = await harness.invoke('get-default-presets');
+  assert.deepEqual(defaults.general, []);
+  assert.deepEqual(defaults.languagePresets.en, []);
+
+  fs.writeFileSync(configDefaults, '{}');
+  fs.writeFileSync(englishDefaults, '[]');
+  defaults = await harness.invoke('get-default-presets');
+  assert.deepEqual(defaults.general, []);
+  assert.deepEqual(defaults.languagePresets.en, []);
+});
+
+test('get-default-presets reads the complete catalog, including malformed unrelated languages', async (t) => {
+  const harness = createPresetHarness(t);
+  const otherLanguagePath = writeActiveAndMalformedOtherLanguageDefaults(harness);
+
+  const { result: defaults, warnings } = await captureWarnings(() =>
+    harness.invoke('get-default-presets')
+  );
+
+  assert.deepEqual(defaults.general, []);
+  assert.deepEqual(defaults.languagePresets.en, [
+    { name: 'Default', wpm: 240, description: 'English default' },
   ]);
+  assert.deepEqual(defaults.languagePresets.es, []);
+  assert.equal(
+    warnings.some((args) => args.includes(otherLanguagePath)),
+    true
+  );
+});
+
+for (const scenario of [
+  {
+    name: 'delete',
+    channel: 'request-delete-preset',
+    payload: 'Default',
+    assertResult: (result) => assert.equal(result.action, 'deleted_and_ignored'),
+  },
+  {
+    name: 'edit',
+    channel: 'edit-preset',
+    payload: {
+      originalName: 'Default',
+      newPreset: { name: 'Edited', wpm: 275, description: 'Edited default' },
+    },
+    assertResult: (result) => assert.equal(result.deletedAction, 'deleted_and_ignored'),
+  },
+  {
+    name: 'restore',
+    channel: 'request-restore-defaults',
+    assertResult: (result) => assert.deepEqual(result.removedCustom, ['Default']),
+  },
+]) {
+  test(`main ${scenario.name} uses the active-language catalog without reading unrelated languages`, async (t) => {
+    const harness = createPresetHarness(t);
+    const otherLanguagePath = writeActiveAndMalformedOtherLanguageDefaults(harness);
+
+    const { result, warnings } = await captureWarnings(() =>
+      harness.invoke(scenario.channel, scenario.payload)
+    );
+
+    scenario.assertResult(result);
+    assert.equal(
+      warnings.some((args) => args.includes(otherLanguagePath)),
+      false
+    );
+  });
+}
+
+test('delete resolves an empty configured catalog the same way as get-default-presets', async (t) => {
+  const harness = createPresetHarness(t);
+  fs.writeFileSync(path.join(harness.configPresetsDir, 'defaults_presets.json'), '[]');
+
+  assert.deepEqual((await harness.invoke('get-default-presets')).general, []);
+  assert.equal((await harness.invoke('create-preset', {
+    name: 'default',
+    wpm: 250,
+    description: 'User preset',
+  })).ok, true);
+
+  const result = await harness.invoke('request-delete-preset', 'default');
+  const saved = JSON.parse(harness.getDisk());
+
+  assert.equal(result.action, 'deleted_custom');
+  assert.equal(saved.disabled_default_presets.en.includes('default'), false);
+});
+
+test('edit resolves an empty configured catalog the same way as get-default-presets', async (t) => {
+  const harness = createPresetHarness(t);
+  fs.writeFileSync(path.join(harness.configPresetsDir, 'defaults_presets.json'), '[]');
+
+  assert.deepEqual((await harness.invoke('get-default-presets')).general, []);
+  assert.equal((await harness.invoke('create-preset', {
+    name: 'default',
+    wpm: 250,
+    description: 'User preset',
+  })).ok, true);
+
+  const result = await harness.invoke('edit-preset', {
+    originalName: 'default',
+    newPreset: { name: 'Edited', wpm: 275, description: 'Edited user preset' },
+  });
+  const saved = JSON.parse(harness.getDisk());
+
+  assert.equal(result.deletedAction, 'deleted_custom');
+  assert.equal(saved.disabled_default_presets.en.includes('default'), false);
+});
+
+test('restore resolves an empty configured catalog the same way as get-default-presets', async (t) => {
+  const harness = createPresetHarness(t);
+  fs.writeFileSync(path.join(harness.configPresetsDir, 'defaults_presets.json'), '[]');
+
+  assert.deepEqual((await harness.invoke('get-default-presets')).general, []);
+  assert.equal((await harness.invoke('create-preset', {
+    name: 'default',
+    wpm: 250,
+    description: 'User preset',
+  })).ok, true);
+
+  const result = await harness.invoke('request-restore-defaults');
+  const saved = JSON.parse(harness.getDisk());
+
+  assert.deepEqual(result.removedCustom, []);
+  assert.equal(
+    saved.presets_by_language.en.some((preset) => preset.name === 'default'),
+    true
+  );
 });
 
 test('request-delete-preset still resolves a valid default beside invalid configured entries', async (t) => {
