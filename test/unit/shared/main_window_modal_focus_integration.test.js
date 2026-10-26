@@ -433,6 +433,46 @@ test('reading-test registration preserves both start paths and live session lock
   }
 });
 
+test('invalid reading-test state events preserve an active session lock and report the anomaly', async () => {
+  const env = createReadingTestEnvironment();
+  const ui = env.window.ReadingSpeedTestUi;
+  ui.configure();
+  await flushReadingTestWork();
+  ui.applyTranslations();
+  env.emitState({ active: true });
+
+  const invalidStates = [null, [], {}, { active: null }, { active: 0 }, { active: 'false' }];
+  for (const state of invalidStates) {
+    const warningsBefore = env.warnings.length;
+    env.emitState(state);
+    assert.equal(ui.isSessionActive(), true);
+    assert.equal(ui.isInteractionLocked(), true);
+    assert.equal(env.warnings.length, warningsBefore + 1);
+  }
+
+  env.emitState({ active: false });
+  assert.equal(ui.isSessionActive(), false);
+  assert.equal(ui.isInteractionLocked(), false);
+});
+
+test('invalid truthy reading-test state does not close an inactive entry modal', async () => {
+  const env = createReadingTestEnvironment();
+  const ui = env.window.ReadingSpeedTestUi;
+  ui.configure();
+  await flushReadingTestWork();
+  await ui.openEntryFlow();
+  assert.equal(env.elements.readingTestEntryModal.getAttribute('aria-hidden'), 'false');
+
+  env.emitState({ active: 'false' });
+  assert.equal(ui.isSessionActive(), false);
+  assert.equal(env.elements.readingTestEntryModal.getAttribute('aria-hidden'), 'false');
+  assert.ok(env.warnings.some((args) => args.some((arg) => String(arg).includes('state-changed payload invalid'))));
+
+  env.emitState({ active: true });
+  assert.equal(ui.isSessionActive(), true);
+  assert.equal(env.elements.readingTestEntryModal.getAttribute('aria-hidden'), 'true');
+});
+
 for (const registration of ['missing', 'throws']) {
   test(`reading-test ${registration} subscription prevents entry and both start actions`, async () => {
     const env = createReadingTestEnvironment({ registration });

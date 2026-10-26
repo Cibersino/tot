@@ -828,16 +828,13 @@
     if (onStateChanged) {
       try {
         onStateChanged((nextState) => {
-          if (!isPayloadObject(nextState)) {
-            log.warnOnce(
-              'reading-speed-test.onStateChanged.invalid',
-              'Reading-test state-changed payload invalid; using defaults.',
-              nextState
-            );
+          if (!isPayloadObject(nextState) || typeof nextState.active !== 'boolean') {
+            log.warn('Reading-test state-changed payload invalid; session state unchanged.', nextState);
+            return;
           }
-          if (isPayloadObject(nextState) && nextState.active === true) stateChangeObservedActive = true;
-          if (stateSubscriptionFailed && !(isPayloadObject(nextState) && nextState.active === true)) return;
-          sessionActive = !!(nextState && nextState.active);
+          if (nextState.active) stateChangeObservedActive = true;
+          if (stateSubscriptionFailed && !nextState.active) return;
+          sessionActive = nextState.active;
           if (sessionActive && isModalOpen()) {
             closeModal();
             return;
