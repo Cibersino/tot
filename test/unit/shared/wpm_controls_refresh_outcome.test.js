@@ -87,6 +87,7 @@ function createHarness({
   languageDirection = 'rtl',
   onWpmChanged = null,
 } = {}) {
+  const warningCalls = [];
   const document = {
     documentElement: {
       dataset: { languageDirection },
@@ -101,7 +102,9 @@ function createHarness({
       getLogger() {
         return {
           debug() {},
-          warn() {},
+          warn(...args) {
+            warningCalls.push(args);
+          },
           warnOnce() {},
           error() {},
         };
@@ -181,9 +184,85 @@ function createHarness({
     controller,
     dom,
     electronAPI,
+    rendererPresets: sandbox.window.RendererPresets,
     selectionPersists,
+    warningCalls,
   };
 }
+
+test('resolvePresetSelection keeps an intentional empty catalog quiet without a persisted selection', async () => {
+  const harness = createHarness();
+  harness.warningCalls.length = 0;
+
+  const selected = await harness.rendererPresets.resolvePresetSelection({
+    list: [],
+    settings: {
+      language: 'en',
+      selected_preset_by_language: {},
+    },
+    language: 'en',
+    combobox: harness.dom.presetsCombobox,
+    presetDescription: harness.dom.presetDescription,
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.equal(selected, null);
+  assert.equal(harness.dom.presetsCombobox.getValue(), '');
+  assert.equal(harness.dom.presetDescription.textContent, '');
+  assert.deepEqual(harness.warningCalls, []);
+  assert.deepEqual(harness.selectionPersists, []);
+});
+
+test('resolvePresetSelection reports clearing a stale selection when no replacement exists', async () => {
+  const harness = createHarness();
+  harness.warningCalls.length = 0;
+
+  const selected = await harness.rendererPresets.resolvePresetSelection({
+    list: [],
+    settings: {
+      language: 'en',
+      selected_preset_by_language: { en: 'missing' },
+    },
+    language: 'en',
+    combobox: harness.dom.presetsCombobox,
+    presetDescription: harness.dom.presetDescription,
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.equal(selected, null);
+  assert.equal(harness.dom.presetsCombobox.getValue(), '');
+  assert.equal(harness.dom.presetDescription.textContent, '');
+  assert.deepEqual(toPlainObject(harness.warningCalls), [[
+    'Selected preset was not found and no replacement is available; visible preset selection cleared (NOTE: may be normal; configured presets can change independently of a saved selection).',
+    { requested: 'missing', lang: 'en' },
+  ]]);
+  assert.deepEqual(harness.selectionPersists, []);
+});
+
+test('resolvePresetSelection reports an applied replacement without claiming persistence', async () => {
+  const harness = createHarness();
+  harness.warningCalls.length = 0;
+
+  const selected = await harness.rendererPresets.resolvePresetSelection({
+    list: [{ name: 'replacement', wpm: 200, description: '' }],
+    settings: {
+      language: 'en',
+      selected_preset_by_language: { en: 'missing' },
+    },
+    language: 'en',
+    combobox: harness.dom.presetsCombobox,
+    presetDescription: harness.dom.presetDescription,
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.equal(selected.name, 'replacement');
+  assert.equal(harness.dom.presetsCombobox.getValue(), 'replacement');
+  assert.deepEqual(toPlainObject(harness.warningCalls), [[
+    'Selected preset was not found; selected an available replacement (NOTE: may be normal; configured presets can change independently of a saved selection).',
+    { requested: 'missing', selected: 'replacement', lang: 'en' },
+  ]]);
+  assert.deepEqual(harness.selectionPersists, ['replacement']);
+});
 
 test('loadPresets reports effective fallback outcome after the selected preset disappears', async () => {
   let presetsVersion = 0;
