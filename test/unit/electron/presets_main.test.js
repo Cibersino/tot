@@ -34,6 +34,7 @@ function createPresetHarness(t, {
   confirmation = 0,
   writeConfiguredDefaults = true,
   initialConfigFiles = null,
+  windowResolver = null,
 } = {}) {
   const root = createTestTempDir('preset-persistence');
   const modulePaths = ['presets_main', 'settings', 'fs_storage', 'menu_builder']
@@ -107,7 +108,10 @@ function createPresetHarness(t, {
     });
   }
   const presets = require(modulePaths[0]);
-  presets.registerIpc({ handle: (channel, handler) => handlers.set(channel, handler) }, { getWindows: () => ({ mainWin, presetWin }) });
+  const getWindows = typeof windowResolver === 'function'
+    ? () => windowResolver({ mainWin, presetWin })
+    : () => ({ mainWin, presetWin });
+  presets.registerIpc({ handle: (channel, handler) => handlers.set(channel, handler) }, { getWindows });
   if (writeConfiguredDefaults) {
     fs.writeFileSync(path.join(storage.getConfigPresetsDir(), 'defaults_presets.json'), JSON.stringify([{ name: 'Default', wpm: 210 }, { name: 'Default2', wpm: 220 }, { name: 'Default3', wpm: 230 }]));
     fs.writeFileSync(path.join(storage.getConfigPresetsDir(), 'defaults_presets_en.json'), '[]');
@@ -468,6 +472,60 @@ for (const scenario of presetMutationCases) {
       const expectedPreset = scenario.channel === 'edit-preset' ? scenario.payload.newPreset : scenario.payload;
       assert.deepEqual(reconciliation.preset, expectedPreset);
     }
+  });
+}
+
+for (const scenario of [
+  {
+    name: 'create',
+    channel: 'create-preset',
+    payload: { name: 'New', wpm: 300, description: 'New text' },
+    notificationResolutionCall: 2,
+  },
+  {
+    name: 'edit',
+    channel: 'edit-preset',
+    payload: {
+      originalName: 'Default',
+      newPreset: { name: 'New', wpm: 300, description: 'New text' },
+    },
+    notificationResolutionCall: 3,
+  },
+]) {
+  test(`${scenario.name} reports success when post-save preset-created notification window resolution fails`, async (t) => {
+    let resolutionCount = 0;
+    const harness = createPresetHarness(t, {
+      windowResolver(windows) {
+        resolutionCount += 1;
+        if (resolutionCount === scenario.notificationResolutionCall) {
+          throw new Error('notification window lookup failed');
+        }
+        return windows;
+      },
+    });
+
+    const { result, warnings } = await captureWarnings(() =>
+      harness.invoke(scenario.channel, scenario.payload)
+    );
+    const saved = JSON.parse(harness.getDisk());
+
+    assert.equal(result.ok, true);
+    assert.deepEqual(
+      saved.presets_by_language.en.find((preset) => preset.name === 'New'),
+      { name: 'New', wpm: 300, description: 'New text' }
+    );
+    assert.equal(
+      harness.sent.some((message) => message.channel === 'settings-updated'),
+      true
+    );
+    assert.equal(
+      harness.sent.some((message) => message.channel === 'preset-created'),
+      false
+    );
+    assert.equal(
+      warnings.some((args) => args.includes('[presets_main] preset-created notify failed (ignored):')),
+      true
+    );
   });
 }
 

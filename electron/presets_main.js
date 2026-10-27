@@ -319,6 +319,29 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   }
 
+  // Best-effort after persistence: this refreshes Main's preset list and attempts auto-selection. If it is lost, the preset remains saved, but Main may stay stale; a later reload does not replay auto-selection.
+  function notifyMainPresetCreated(preset, settingsSnapshot, language) {
+    try {
+      const { mainWin } = resolveWindows();
+      if (mainWin && !mainWin.isDestroyed()) {
+        mainWin.webContents.send('preset-created', {
+          preset,
+          settingsSnapshot,
+          language,
+        });
+      } else {
+        log.warn(
+          '[presets_main] preset-created notify failed (ignored): main window unavailable.'
+        );
+      }
+    } catch (err) {
+      log.warn(
+        '[presets_main] preset-created notify failed (ignored):',
+        err
+      );
+    }
+  }
+
   // Normalize settings language to a base tag with a safe fallback.
   function getEffectiveLang(settings) {
     const s = settings || settingsState.getSettings();
@@ -464,27 +487,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
-
-      // Best-effort after persistence: this event refreshes Main's preset list and attempts auto-selection. If lost, the preset remains saved, but Main may stay stale; a later reload does not replay auto-selection.
-      const { mainWin } = resolveWindows();
-      try {
-        if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', {
-            preset: sanitizedPreset,
-            settingsSnapshot: settings,
-            language: lang,
-          });
-        } else {
-          log.warn(
-            '[presets_main] preset-created notify failed (ignored): main window unavailable.'
-          );
-        }
-      } catch (err) {
-        log.warn(
-          '[presets_main] preset-created notify failed (ignored):',
-          err
-        );
-      }
+      notifyMainPresetCreated(sanitizedPreset, settings, lang);
 
       return { ok: true };
     } catch (err) {
@@ -792,27 +795,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
       settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
-
-      try {
-        const windows = resolveWindows();
-        const { mainWin } = windows;
-        if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', {
-            preset: sanitizedPreset,
-            settingsSnapshot: settings,
-            language: lang,
-          });
-        } else {
-          log.warn(
-            '[presets_main] preset-created notify failed (ignored): main window unavailable.'
-          );
-        }
-      } catch (err) {
-        log.warn(
-          '[presets_main] preset-created notify failed (ignored):',
-          err
-        );
-      }
+      notifyMainPresetCreated(sanitizedPreset, settings, lang);
 
       return { ok: true, action: 'edited', deletedAction };
     } catch (err) {
