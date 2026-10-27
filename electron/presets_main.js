@@ -465,7 +465,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
 
-      // Best-effort notify the main window; window races are ignored.
+      // Best-effort after persistence: this event refreshes Main's preset list and attempts auto-selection. If lost, the preset remains saved, but Main may stay stale; a later reload does not replay auto-selection.
       const { mainWin } = resolveWindows();
       try {
         if (mainWin && !mainWin.isDestroyed()) {
