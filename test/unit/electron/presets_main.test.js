@@ -41,11 +41,25 @@ function createPresetHarness(t, {
     .map((name) => path.resolve(__dirname, `../../../electron/${name}.js`));
   const originals = new Map(modulePaths.map((modulePath) => [modulePath, require.cache[modulePath]]));
   const sent = [];
+  const dialogCalls = [];
   const mainWin = { isDestroyed: () => false, webContents: { send: (channel, payload) => sent.push({ channel, payload }) } };
   const presetWin = { isDestroyed: () => false, webContents: { send: (channel, payload) => sent.push({ channel, payload }) } };
+  const otherWin = { isDestroyed: () => false, webContents: { send: (channel, payload) => sent.push({ channel, payload }) } };
   const restoreElectron = installElectronModuleMock({
-    BrowserWindow: { fromWebContents: (sender) => sender === mainWin.webContents ? mainWin : sender === presetWin.webContents ? presetWin : null },
-    dialog: { showMessageBox: async () => ({ response: confirmation }) },
+    BrowserWindow: {
+      fromWebContents: (sender) => {
+        if (sender === mainWin.webContents) return mainWin;
+        if (sender === presetWin.webContents) return presetWin;
+        if (sender === otherWin.webContents) return otherWin;
+        return null;
+      },
+    },
+    dialog: {
+      showMessageBox: async (...args) => {
+        dialogCalls.push(args);
+        return { response: confirmation };
+      },
+    },
     shell: {},
   });
 
@@ -109,7 +123,7 @@ function createPresetHarness(t, {
   }
   const presets = require(modulePaths[0]);
   const getWindows = typeof windowResolver === 'function'
-    ? () => windowResolver({ mainWin, presetWin })
+    ? () => windowResolver({ mainWin, presetWin, otherWin })
     : () => ({ mainWin, presetWin });
   presets.registerIpc({ handle: (channel, handler) => handlers.set(channel, handler) }, { getWindows });
   if (writeConfiguredDefaults) {
@@ -120,11 +134,14 @@ function createPresetHarness(t, {
 
   return {
     sent,
+    dialogCalls,
+    windows: { mainWin, presetWin, otherWin },
     configPresetsDir: storage.getConfigPresetsDir(),
     initialDisk,
     getDisk: () => fs.readFileSync(settingsFile, 'utf8'),
     getLastRead: () => lastRead,
     invoke: (channel, payload) => handlers.get(channel)({ sender: (channel === 'create-preset' || channel === 'edit-preset' ? presetWin : mainWin).webContents }, payload),
+    invokeFrom: (channel, sender, payload) => handlers.get(channel)({ sender }, payload),
   };
 }
 
@@ -175,6 +192,81 @@ const presetMutationCases = [
   { name: 'disable default', channel: 'request-delete-preset', payload: 'Default3', action: 'ignored_default' },
   { name: 'restore defaults', channel: 'request-restore-defaults', action: 'restored' },
 ];
+
+const protectedPresetIpcCases = [
+  {
+    name: 'create',
+    channel: 'create-preset',
+    owner: 'presetWin',
+    payload: { name: 'New', wpm: 300, description: 'New text' },
+  },
+  {
+    name: 'delete',
+    channel: 'request-delete-preset',
+    owner: 'mainWin',
+    payload: 'Default',
+  },
+  {
+    name: 'restore',
+    channel: 'request-restore-defaults',
+    owner: 'mainWin',
+  },
+  {
+    name: 'edit',
+    channel: 'edit-preset',
+    owner: 'presetWin',
+    payload: {
+      originalName: 'Default',
+      newPreset: { name: 'New', wpm: 300, description: 'New text' },
+    },
+  },
+];
+
+function assertRejectedPresetMutation(harness, result) {
+  assert.deepEqual(result, { ok: false, code: 'UNAUTHORIZED' });
+  assert.equal(harness.getDisk(), harness.initialDisk);
+  assert.deepEqual(harness.sent, []);
+  assert.deepEqual(harness.dialogCalls, []);
+}
+
+for (const scenario of protectedPresetIpcCases) {
+  test(`${scenario.name} rejects a mismatched sender before side effects`, async (t) => {
+    const harness = createPresetHarness(t);
+    const result = await harness.invokeFrom(
+      scenario.channel,
+      harness.windows.otherWin.webContents,
+      scenario.payload
+    );
+
+    assertRejectedPresetMutation(harness, result);
+  });
+
+  test(`${scenario.name} rejects requests when its expected owner is unavailable`, async (t) => {
+    const harness = createPresetHarness(t, {
+      windowResolver(windows) {
+        return { ...windows, [scenario.owner]: null };
+      },
+    });
+    const result = await harness.invokeFrom(
+      scenario.channel,
+      harness.windows[scenario.owner].webContents,
+      scenario.payload
+    );
+
+    assertRejectedPresetMutation(harness, result);
+  });
+}
+
+test('create rejects an unmappable sender before side effects', async (t) => {
+  const harness = createPresetHarness(t);
+  const result = await harness.invokeFrom(
+    'create-preset',
+    {},
+    { name: 'New', wpm: 300, description: 'New text' }
+  );
+
+  assertRejectedPresetMutation(harness, result);
+});
 
 test('get-default-presets omits invalid configured entries and retains valid entries', async (t) => {
   const harness = createPresetHarness(t);

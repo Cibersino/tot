@@ -43,13 +43,25 @@ const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: 
 // =============================================================================
 // Helpers
 // =============================================================================
-function isAuthorizedSender(event, expectedWin, logMessage) {
+function isAuthorizedSender(event, expectedWin, channelName) {
   try {
     const senderWin = event && event.sender
       ? require('electron').BrowserWindow.fromWebContents(event.sender)
       : null;
-    if (expectedWin && senderWin && senderWin !== expectedWin) {
-      log.warn(logMessage);
+    if (!expectedWin) {
+      log.warn(
+        `${channelName} rejected (ignored): expected owner window unavailable.`
+      );
+      return false;
+    }
+    if (!senderWin) {
+      log.warn(
+        `${channelName} rejected (ignored): sender window could not be resolved.`
+      );
+      return false;
+    }
+    if (senderWin !== expectedWin) {
+      log.warn(`${channelName} unauthorized (ignored).`);
       return false;
     }
     return true;
@@ -459,7 +471,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           presetWin,
-          'create-preset unauthorized (ignored).'
+          'create-preset'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
@@ -504,7 +516,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           mainWin,
-          'request-delete-preset unauthorized (ignored).'
+          'request-delete-preset'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
@@ -612,7 +624,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           mainWin,
-          'request-restore-defaults unauthorized (ignored).'
+          'request-restore-defaults'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
@@ -704,7 +716,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           presetWin,
-          'edit-preset unauthorized (ignored).'
+          'edit-preset'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
