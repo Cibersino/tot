@@ -379,6 +379,34 @@ test('get-default-presets keeps explicit empty, malformed, and non-array configu
   assert.deepEqual(defaults.languagePresets.en, []);
 });
 
+test('get-default-presets logs unusable configured files distinctly from valid empty catalogs', async (t) => {
+  const harness = createPresetHarness(t);
+  const configDefaults = path.join(harness.configPresetsDir, 'defaults_presets.json');
+  const englishDefaults = path.join(harness.configPresetsDir, 'defaults_presets_en.json');
+
+  fs.writeFileSync(configDefaults, '[]');
+  fs.writeFileSync(englishDefaults, '{');
+  let captured = await captureWarnings(() => harness.invoke('get-default-presets'));
+
+  assert.equal(
+    captured.warnings.some((args) => args.includes(
+      '[presets_main] Preset JSON load failed; no usable presets from configured file:'
+    )),
+    true
+  );
+
+  fs.writeFileSync(configDefaults, '{}');
+  fs.writeFileSync(englishDefaults, '[]');
+  captured = await captureWarnings(() => harness.invoke('get-default-presets'));
+
+  assert.equal(
+    captured.warnings.some((args) => args.includes(
+      '[presets_main] Preset JSON is not an array; no usable presets from configured file:'
+    )),
+    true
+  );
+});
+
 test('get-default-presets reads the complete catalog, including malformed unrelated languages', async (t) => {
   const harness = createPresetHarness(t);
   const otherLanguagePath = writeActiveAndMalformedOtherLanguageDefaults(harness);

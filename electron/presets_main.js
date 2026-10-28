@@ -151,7 +151,7 @@ function readConfiguredPresetArray(filePath) {
     const arr = JSON.parse(raw);
     if (!Array.isArray(arr)) {
       log.warn(
-        '[presets_main] Preset JSON is not an array; configured catalog is empty:',
+        '[presets_main] Preset JSON is not an array; no usable presets from configured file:',
         filePath
       );
       return [];
@@ -159,7 +159,7 @@ function readConfiguredPresetArray(filePath) {
     return sanitizePresetArray(arr, filePath);
   } catch (err) {
     log.warn(
-      '[presets_main] Preset JSON load failed; configured catalog is empty:',
+      '[presets_main] Preset JSON load failed; no usable presets from configured file:',
       filePath,
       err
     );
