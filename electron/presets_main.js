@@ -380,6 +380,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     };
   }
 
+  function cloneCurrentSettingsForPresetMutation(lang) {
+    // Confirmation awaits user input, so use the latest settings at the
+    // persistence boundary instead of overwriting changes made while waiting.
+    return clonePresetSettings(settingsState.getSettings(), lang);
+  }
+
   function getUserPresets(settings, lang) {
     const langCode = normalizeLangBase(lang) || DEFAULT_LANG;
     if (typeof settings.presets_by_language !== 'object' || settings.presets_by_language === null || Array.isArray(settings.presets_by_language)) {
@@ -568,7 +574,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
       }
       const defaultsCombined = defaultCatalog.presets;
-      settings = clonePresetSettings(settings, lang);
+      settings = cloneCurrentSettingsForPresetMutation(lang);
 
       // Ensure per-language preset buckets exist before edits.
       const userPresets = getUserPresets(settings, lang);
@@ -651,7 +657,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
       }
       const defaultsCombined = defaultCatalog.presets;
-      settings = clonePresetSettings(settings, lang);
+      settings = cloneCurrentSettingsForPresetMutation(lang);
       const userPresets = getUserPresets(settings, lang);
 
       const defaultNames = new Set(
@@ -763,7 +769,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
       }
       const defaultsCombined = defaultCatalog.presets;
-      settings = clonePresetSettings(settings, lang);
+      settings = cloneCurrentSettingsForPresetMutation(lang);
       const userPresets = getUserPresets(settings, lang);
 
       const idxUser = userPresets.findIndex(

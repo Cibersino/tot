@@ -32,6 +32,7 @@ test('preset persistence enforces the shared name and description limits', () =>
 function createPresetHarness(t, {
   failWrite = false,
   confirmation = 0,
+  deferConfirmation = false,
   writeConfiguredDefaults = true,
   initialConfigFiles = null,
   windowResolver = null,
@@ -42,9 +43,23 @@ function createPresetHarness(t, {
   const originals = new Map(modulePaths.map((modulePath) => [modulePath, require.cache[modulePath]]));
   const sent = [];
   const dialogCalls = [];
-  const mainWin = { isDestroyed: () => false, webContents: { send: (channel, payload) => sent.push({ channel, payload }) } };
-  const presetWin = { isDestroyed: () => false, webContents: { send: (channel, payload) => sent.push({ channel, payload }) } };
-  const otherWin = { isDestroyed: () => false, webContents: { send: (channel, payload) => sent.push({ channel, payload }) } };
+  let resolveDeferredConfirmation = null;
+  let resolveDialogOpened = null;
+  const dialogOpened = deferConfirmation
+    ? new Promise((resolve) => { resolveDialogOpened = resolve; })
+    : null;
+  const deferredConfirmation = deferConfirmation
+    ? new Promise((resolve) => { resolveDeferredConfirmation = resolve; })
+    : null;
+  const createWindow = () => ({
+    isDestroyed: () => false,
+    setMenu: () => {},
+    setMenuBarVisibility: () => {},
+    webContents: { send: (channel, payload) => sent.push({ channel, payload }) },
+  });
+  const mainWin = createWindow();
+  const presetWin = createWindow();
+  const otherWin = createWindow();
   const restoreElectron = installElectronModuleMock({
     BrowserWindow: {
       fromWebContents: (sender) => {
@@ -55,8 +70,12 @@ function createPresetHarness(t, {
       },
     },
     dialog: {
-      showMessageBox: async (...args) => {
+      showMessageBox: (...args) => {
         dialogCalls.push(args);
+        if (deferConfirmation) {
+          resolveDialogOpened();
+          return deferredConfirmation;
+        }
         return { response: confirmation };
       },
     },
@@ -97,6 +116,7 @@ function createPresetHarness(t, {
     disabled_default_presets: { en: ['Default2', 'Other'], es: ['Otro'] },
   });
   const settings = require(modulePaths[1]);
+  const handlers = new Map();
   settings.init({
     loadJson: storage.loadJson,
     saveJson: storage.saveJson,
@@ -107,6 +127,10 @@ function createPresetHarness(t, {
     settingsFile,
   });
   settings.configurePublication({ getWindows: () => ({ mainWin, presetWin }), decorateSettings: (value) => value, onSettingsUpdated: () => {} });
+  settings.registerIpc(
+    { handle: (channel, handler) => handlers.set(channel, handler) },
+    { buildAppMenu: () => {} }
+  );
   let lastRead;
   const getSettings = settings.getSettings;
   settings.getSettings = () => {
@@ -114,7 +138,6 @@ function createPresetHarness(t, {
     return lastRead;
   };
 
-  const handlers = new Map();
   if (initialConfigFiles) {
     storage.ensureConfigPresetsDir();
     Object.entries(initialConfigFiles).forEach(([name, content]) => {
@@ -140,6 +163,14 @@ function createPresetHarness(t, {
     initialDisk,
     getDisk: () => fs.readFileSync(settingsFile, 'utf8'),
     getLastRead: () => lastRead,
+    waitForConfirmation: async () => {
+      if (!dialogOpened) throw new Error('confirmation is not deferred');
+      await dialogOpened;
+    },
+    confirm: () => {
+      if (!resolveDeferredConfirmation) throw new Error('confirmation is not deferred');
+      resolveDeferredConfirmation({ response: confirmation });
+    },
     invoke: (channel, payload) => handlers.get(channel)({ sender: (channel === 'create-preset' || channel === 'edit-preset' ? presetWin : mainWin).webContents }, payload),
     invokeFrom: (channel, sender, payload) => handlers.get(channel)({ sender }, payload),
   };
@@ -515,6 +546,82 @@ test('request-delete-preset still resolves a valid default beside invalid config
 
   assert.equal(result.ok, true);
   assert.equal(result.action, 'deleted_and_ignored');
+});
+
+for (const scenario of [
+  {
+    name: 'delete',
+    channel: 'request-delete-preset',
+    payload: 'Default',
+    assertMutation: (result, saved) => {
+      assert.equal(result.action, 'deleted_and_ignored');
+      assert.equal(saved.disabled_default_presets.en.includes('Default'), true);
+    },
+  },
+  {
+    name: 'restore',
+    channel: 'request-restore-defaults',
+    assertMutation: (result, saved) => {
+      assert.equal(result.action, 'restored');
+      assert.deepEqual(result.removedCustom, ['Default']);
+      assert.equal(saved.presets_by_language.en.some((preset) => preset.name === 'Default'), false);
+    },
+  },
+  {
+    name: 'edit',
+    channel: 'edit-preset',
+    payload: {
+      originalName: 'Default',
+      newPreset: { name: 'Edited', wpm: 275, description: 'Edited default' },
+    },
+    assertMutation: (result, saved) => {
+      assert.equal(result.action, 'edited');
+      assert.deepEqual(
+        saved.presets_by_language.en.find((preset) => preset.name === 'Edited'),
+        { name: 'Edited', wpm: 275, description: 'Edited default' }
+      );
+    },
+  },
+]) {
+  test(`confirmed ${scenario.name} preserves a settings change made while confirmation is open`, async (t) => {
+    const harness = createPresetHarness(t, { deferConfirmation: true });
+    const pendingMutation = harness.invoke(scenario.channel, scenario.payload);
+
+    await harness.waitForConfirmation();
+    assert.deepEqual(
+      await harness.invoke('set-spellcheck-enabled', false),
+      { ok: true, enabled: false }
+    );
+    harness.confirm();
+
+    const result = await pendingMutation;
+    const saved = JSON.parse(harness.getDisk());
+
+    assert.equal(result.ok, true);
+    assert.equal(saved.spellcheckEnabled, false);
+    scenario.assertMutation(result, saved);
+  });
+}
+
+test('confirmed preset deletion preserves an intervening language selection and its original language target', async (t) => {
+  const harness = createPresetHarness(t, { deferConfirmation: true });
+  const pendingDelete = harness.invoke('request-delete-preset', 'Default');
+
+  await harness.waitForConfirmation();
+  assert.deepEqual(
+    await harness.invoke('set-language', 'es'),
+    { ok: true, language: 'es' }
+  );
+  harness.confirm();
+
+  const result = await pendingDelete;
+  const saved = JSON.parse(harness.getDisk());
+
+  assert.equal(result.ok, true);
+  assert.equal(result.language, 'en');
+  assert.equal(saved.language, 'es');
+  assert.equal(saved.disabled_default_presets.en.includes('Default'), true);
+  assert.equal(saved.disabled_default_presets.es.includes('Default'), false);
 });
 
 for (const scenario of presetMutationCases) {
