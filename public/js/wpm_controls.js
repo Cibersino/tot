@@ -223,7 +223,7 @@
       }
     }
 
-    function applySelectedPreset(preset) {
+    function applyPresetSelection(preset) {
       if (!preset) {
         currentPresetName = null;
         applyPresetUiSelection(null);
@@ -260,14 +260,15 @@
     }
 
     function buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName) {
+      const normalizedPreviousSelectedPresetName = normalizePresetName(previousSelectedPresetName);
       const nextSelectedPresetName = normalizePresetName(currentPresetName);
       return {
         previousWpm,
         nextWpm: wpm,
         wpmChanged: wpm !== previousWpm,
-        previousSelectedPresetName: normalizePresetName(previousSelectedPresetName),
+        previousSelectedPresetName: normalizedPreviousSelectedPresetName,
         nextSelectedPresetName,
-        selectedPresetChanged: normalizePresetName(previousSelectedPresetName) !== nextSelectedPresetName,
+        selectedPresetChanged: normalizedPreviousSelectedPresetName !== nextSelectedPresetName,
       };
     }
 
@@ -276,21 +277,6 @@
         presets,
         selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
       };
-    }
-
-    function clearSelectedPreset() {
-      currentPresetName = null;
-      applyPresetUiSelection(null);
-      notifyPresetSelectionChanged(null);
-    }
-
-    function applyResolvedPresetSelection(selected) {
-      if (selected) {
-        applySelectedPreset(selected);
-        return selected;
-      }
-      clearSelectedPreset();
-      return null;
     }
 
     function createPresetSelectionSettings(settingsSnapshot) {
@@ -355,7 +341,7 @@
           presetDescription,
           electronAPI
         });
-        applyResolvedPresetSelection(selected);
+        applyPresetSelection(selected);
         return buildPresetFlowResult(
           previousWpm,
           previousSelectedPresetName,
@@ -406,7 +392,7 @@
           presetDescription,
           electronAPI
         });
-        applyResolvedPresetSelection(selected);
+        applyPresetSelection(selected);
         return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
       } catch (err) {
         log.error('RendererPresets.resolvePresetSelection failed during handlePresetCreated:', err);
@@ -447,7 +433,7 @@
           electronAPI
         });
         if (selected) {
-          applySelectedPreset(selected);
+          applyPresetSelection(selected);
           notifyWpmChanged(previousWpm, onWpmChanged, selected);
         }
         return selected;
