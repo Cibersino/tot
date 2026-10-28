@@ -6,8 +6,8 @@
 // =============================================================================
 // Responsibilities:
 // - Seed missing user-configured default-preset files from bundled JSON.
-// - Load user-configured preset defaults (general + per-language).
-// - Validate and sanitize preset payloads from IPC.
+// - Resolve configured default catalogs without runtime bundled substitution.
+// - Validate configured entries and preset payloads from IPC.
 // - Persist preset changes into settings and broadcast updates.
 // - Show native confirmation dialogs for preset delete, restore, and edit actions.
 // - Register preset-related IPC handlers and emit preset-created notifications.
@@ -37,11 +37,11 @@ const menuBuilder = require('./menu_builder');
 // =============================================================================
 // Constants / config
 // =============================================================================
-// Default presets source folder (bundled JSON seeds).
-const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
+// Bundled source used only to seed missing user configuration files.
+const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets');
 
 // =============================================================================
-// Helpers
+// Validation, dialog, and configured-catalog helpers
 // =============================================================================
 function isAuthorizedSender(event, expectedWin, channelName) {
   try {
@@ -244,9 +244,12 @@ function loadDefaultPresetsCombined(lang) {
   return { available: true, presets: Array.from(combinedByName.values()) };
 }
 
+// =============================================================================
+// Startup default-preset seeding
+// =============================================================================
 /**
- * Initial copy of default presets from electron/presets/*.json
- * to userData config presets_defaults JSON (only if they do not exist).
+ * Seeds missing user default-preset files from bundled JSON.
+ * Existing configured files remain authoritative for runtime reads.
  */
 function copyDefaultPresetsIfMissing() {
   try {
@@ -317,7 +320,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   const resolveMainWin = () => resolveWindows().mainWin || null;
   const resolvePresetWin = () => resolveWindows().presetWin || null;
 
-  // Best-effort: seed user config defaults on startup.
+  // Best-effort seeding runs before handlers read the configured catalog.
   copyDefaultPresetsIfMissing();
 
   function broadcast(settings) {
@@ -544,7 +547,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         name = trimmed;
       }
 
-      // Load settings and dialog texts before any message
+      // Bind the operation language and native text before awaiting confirmation.
       let settings = settingsState.getSettings();
       const { lang, dialogTexts } = getDialogContext(settings);
       const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
@@ -554,7 +557,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, error: 'invalid name', code: 'INVALID_NAME' };
       }
 
-      // Ask confirmation (native dialog)
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
         buttons: [continueLabel, cancelLabel],
@@ -635,6 +637,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
+      // Bind the operation language and native text before awaiting confirmation.
       let settings = settingsState.getSettings();
       const { lang, dialogLang, dialogTexts } = getDialogContext(settings);
       const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
@@ -747,6 +750,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const sanitizedPreset = sanitized.preset;
+      // Bind the operation language and native text before awaiting confirmation.
       let settings = settingsState.getSettings();
       const { lang, dialogTexts } = getDialogContext(settings);
 
