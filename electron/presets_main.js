@@ -425,7 +425,8 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     };
   }
 
-  // IPC: return the configured default-preset catalog.
+  // IPC contract: an unavailable configured-default catalog and a valid empty catalog both produce empty lists.
+  // The renderer combines these lists with user presets and may persist a replacement for a missing saved selection.
   ipcMain.handle('get-default-presets', () => {
     try {
       const { general, languagePresets } = loadConfiguredDefaultPresetCatalog();
