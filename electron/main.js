@@ -904,21 +904,21 @@ function createTaskEditorWindow() {
     }
   }
 
-  function onInitialTaskPreloadError(_event, preloadPath, error) {
+  function onInitialTaskPreloadError(_event, preloadPath, preloadError) {
     if (!observingInitialTaskPreload || preloadPath !== taskEditorPreloadPath) return;
     removeInitialTaskPreloadObserver();
     try {
       taskEditorWindowLifecycleController.handleInitialPreloadFailure({
         taskEditorWin: createdTaskEditorWin,
         preloadPath,
-        error,
+        error: preloadError,
         logContext: 'createTaskEditorWindow.initialPreload',
       });
-    } catch (handlingErr) {
+    } catch (error) {
       log.error('Task Editor initial preload failure handling failed:', {
         preloadPath,
-        preloadError: error,
-      }, handlingErr);
+        preloadError,
+      }, error);
     }
   }
 
@@ -932,18 +932,18 @@ function createTaskEditorWindow() {
     () => {
       removeInitialTaskPreloadObserver();
     },
-    (error) => {
+    (loadError) => {
       removeInitialTaskPreloadObserver();
       try {
         taskEditorWindowLifecycleController.handleInitialDocumentLoadFailure({
           taskEditorWin: createdTaskEditorWin,
-          error,
+          error: loadError,
           logContext: 'createTaskEditorWindow.initialDocumentLoad',
         });
-      } catch (handlingErr) {
+      } catch (error) {
         log.error('Task Editor initial document load handling failed:', {
-          loadError: error,
-        }, handlingErr);
+          loadError,
+        }, error);
       }
     }
   );
