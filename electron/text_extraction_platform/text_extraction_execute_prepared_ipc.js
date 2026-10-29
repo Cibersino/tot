@@ -164,9 +164,9 @@ async function handleExecutePrepared(event, payload = {}, {
     let currentFingerprint = null;
     try {
       currentFingerprint = readSourceFileFingerprint(preparedRecord.fileInfo.filePath);
-    } catch (err) {
+    } catch (error) {
       return warnInvalidPreparedIdAndBuildResponse(request.prepareId, 'fingerprint_read_failed', {
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       });
     }
 
@@ -240,12 +240,12 @@ async function handleExecutePrepared(event, payload = {}, {
     }
 
     return execution;
-  } catch (err) {
-    log.error('text-extraction-execute-prepared failed unexpectedly:', err);
+  } catch (error) {
+    log.error('text-extraction-execute-prepared failed unexpectedly:', error);
     return {
       ok: false,
       code: 'EXECUTE_PREPARED_IPC_FAILED',
-      error: String(err),
+      error: String(error),
     };
   }
 }
@@ -292,9 +292,9 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         controller,
       }
     ));
-  } catch (err) {
-    log.error('text-extraction-execute-prepared IPC registration failed:', err);
-    throw err;
+  } catch (error) {
+    log.error('text-extraction-execute-prepared IPC registration failed:', error);
+    throw error;
   }
 }
 

@@ -87,7 +87,7 @@ function validateProbeSourceFile(source, startedAt, baseMetadata) {
         )
       );
     }
-  } catch (err) {
+  } catch (error) {
     return buildFailure(
       'unknown',
       {
@@ -100,8 +100,8 @@ function validateProbeSourceFile(source, startedAt, baseMetadata) {
         {
           stage: 'preflight',
           reason: 'stat_failed',
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorCode: String(err && err.code ? err.code : ''),
+          errorName: String(error && error.name ? error.name : 'Error'),
+          errorCode: String(error && error.code ? error.code : ''),
         }
       )
     );
@@ -193,8 +193,8 @@ async function probeNativePdfSelectableText({
       selectedPageCount: probe.selectedPageCount,
       elapsedMs: Date.now() - startedAt,
     });
-  } catch (err) {
-    if (String(err && err.code || '') === 'aborted_by_user') {
+  } catch (error) {
+    if (String(error && error.code || '') === 'aborted_by_user') {
       return buildFailure(
         'unknown',
         {
@@ -211,19 +211,19 @@ async function probeNativePdfSelectableText({
 
     log.warn('Native PDF selectable-text probe failed:', {
       sourceFileExt: source.fileExt,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorCode: String(err && err.code ? err.code : ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorCode: String(error && error.code ? error.code : ''),
     });
 
     let errorCode = 'native_extraction_failed';
     let errorMessage = 'Native PDF probe failed due to parser/runtime error.';
     let failureType = 'parser_runtime_error';
 
-    if (isPdfPasswordProtectedError(err)) {
+    if (isPdfPasswordProtectedError(error)) {
       errorCode = 'native_encrypted_or_password_protected';
       errorMessage = 'Selected PDF is encrypted or password-protected for native extraction.';
       failureType = 'pdf_password_protected';
-    } else if (isUnreadableOrCorruptPdfError(err)) {
+    } else if (isUnreadableOrCorruptPdfError(error)) {
       errorCode = 'unreadable_or_corrupt';
       errorMessage = 'Selected PDF is unreadable or corrupt for native extraction.';
       failureType = 'corrupt_or_unreadable';
@@ -242,9 +242,9 @@ async function probeNativePdfSelectableText({
           stage: 'parse',
           nativeFailureType: failureType,
           sourceFileExt: source.fileExt,
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorCode: String(err && err.code ? err.code : ''),
-          errorMessage: String(err && err.message ? err.message : err || ''),
+          errorName: String(error && error.name ? error.name : 'Error'),
+          errorCode: String(error && error.code ? error.code : ''),
+          errorMessage: String(error && error.message ? error.message : error || ''),
         }
       )
     );

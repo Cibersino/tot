@@ -76,20 +76,20 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
-function safeErrorName(err) {
-  if (!err || typeof err !== 'object') return 'Error';
-  const candidate = String(err.name || '').trim();
+function safeErrorName(error) {
+  if (!error || typeof error !== 'object') return 'Error';
+  const candidate = String(error.name || '').trim();
   return candidate || 'Error';
 }
 
-function safeErrorMessage(err) {
-  if (!err || typeof err !== 'object') return String(err || '');
-  const candidate = String(err.message || '').trim();
+function safeErrorMessage(error) {
+  if (!error || typeof error !== 'object') return String(error || '');
+  const candidate = String(error.message || '').trim();
   return candidate || '';
 }
 
-function parseProbeFailure(err) {
-  return parseGoogleProviderFailure(err, safeErrorMessage(err));
+function parseProbeFailure(error) {
+  return parseGoogleProviderFailure(error, safeErrorMessage(error));
 }
 
 function classifyApiFailure(parsedFailure) {
@@ -274,7 +274,7 @@ async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOU
       providerConsumer: '',
       networkErrorCode: '',
     };
-  } catch (err) {
+  } catch (error) {
     if (timeoutTriggered) {
       return {
         ok: false,
@@ -291,7 +291,7 @@ async function probeGoogleDriveApiPath({ oauthClient, timeoutMs = DEFAULT_TIMEOU
       };
     }
 
-    const parsedFailure = parseProbeFailure(err);
+    const parsedFailure = parseProbeFailure(error);
     return {
       ok: false,
       statusCode: parsedFailure.statusCode,
@@ -401,11 +401,11 @@ async function validateGoogleDriveOcrSetup({
       errorName: '',
       data: readEncryptedTokenFile(tokenPath),
     };
-  } catch (err) {
+  } catch (error) {
     tokenRead = {
       ok: false,
-      code: String(err && err.code ? err.code : 'token_read_failed'),
-      errorName: safeErrorName(err),
+      code: String(error && error.code ? error.code : 'token_read_failed'),
+      errorName: safeErrorName(error),
       data: null,
     };
   }
@@ -450,14 +450,14 @@ async function validateGoogleDriveOcrSetup({
   let oauthClient = null;
   try {
     oauthClient = buildGoogleOAuthClient(credentialsRead.parsed, tokenRead.data);
-  } catch (err) {
+  } catch (error) {
     return buildFailureResult({
       code: 'platform_runtime_failed',
       summary: 'Google OCR OAuth client initialization failed for setup validation.',
       checks,
       detailsSafeForLogs: {
         reason: 'oauth_client_init_failed',
-        errorName: safeErrorName(err),
+        errorName: safeErrorName(error),
       },
     });
   }

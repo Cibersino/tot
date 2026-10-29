@@ -97,10 +97,10 @@ const HTML_CONTENT_MIME_TYPES = new Set([
 // =============================================================================
 
 function createEpubError(code, message) {
-  const err = new Error(message);
-  err.name = 'EpubExtractionError';
-  err.code = code;
-  return err;
+  const error = new Error(message);
+  error.name = 'EpubExtractionError';
+  error.code = code;
+  return error;
 }
 
 // =============================================================================
@@ -507,7 +507,7 @@ async function extractEpubText(absPath) {
   let zip = null;
   try {
     zip = new AdmZip(absPath);
-  } catch (_err) {
+  } catch {
     throw createEpubError('EPUB_ARCHIVE_OPEN_FAILED', 'EPUB archive could not be opened.');
   }
 

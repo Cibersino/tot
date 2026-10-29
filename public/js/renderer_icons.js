@@ -213,13 +213,13 @@
           size,
           preserveContent,
         });
-      } catch (err) {
+      } catch (error) {
         log.error('Static icon upgrade failed:', {
           iconName,
           elementId: element.id || '',
-          err,
+          error,
         });
-        throw err;
+        throw error;
       }
     });
   }

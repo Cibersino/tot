@@ -51,8 +51,8 @@ const POOL_STATE_DEFAULTS = Object.freeze({
 function safeRealpath(targetPath) {
   try {
     return fs.realpathSync(targetPath);
-  } catch (err) {
-    log.warn('Reading-test pool path canonicalization failed:', targetPath, err);
+  } catch (error) {
+    log.warn('Reading-test pool path canonicalization failed:', targetPath, error);
     return null;
   }
 }
@@ -67,11 +67,11 @@ function resolvePoolEntryPhysicalIdentity(filePath) {
       ok: true,
       path: fs.realpathSync.native(filePath),
     };
-  } catch (err) {
+  } catch (error) {
     return {
       ok: false,
       code: 'CANONICALIZATION_FAILED',
-      error: err,
+      error,
     };
   }
 }
@@ -156,8 +156,8 @@ function listJsonFilesRecursive(startDir) {
     let entries = [];
     try {
       entries = fs.readdirSync(currentDir, { withFileTypes: true });
-    } catch (err) {
-      failedDirectories.push({ path: currentDir, error: err });
+    } catch (error) {
+      failedDirectories.push({ path: currentDir, error });
       continue;
     }
 
@@ -183,8 +183,8 @@ function loadJsonFileStrict(filePath) {
   let raw = '';
   try {
     raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  } catch (err) {
-    return { ok: false, code: 'READ_FAILED', error: err };
+  } catch (error) {
+    return { ok: false, code: 'READ_FAILED', error };
   }
 
   if (!raw.trim()) {
@@ -193,8 +193,8 @@ function loadJsonFileStrict(filePath) {
 
   try {
     return { ok: true, data: JSON.parse(raw) };
-  } catch (err) {
-    return { ok: false, code: 'INVALID_JSON', error: err };
+  } catch (error) {
+    return { ok: false, code: 'INVALID_JSON', error };
   }
 }
 
@@ -205,11 +205,11 @@ function inspectPathEntry(filePath) {
     if (stats.isFile()) return { ok: true, exists: true, kind: 'file' };
     if (stats.isDirectory()) return { ok: true, exists: true, kind: 'directory' };
     return { ok: true, exists: true, kind: 'other' };
-  } catch (err) {
-    if (err && err.code === 'ENOENT') {
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
       return { ok: true, exists: false, kind: 'missing' };
     }
-    return { ok: false, code: 'INSPECT_FAILED', error: err };
+    return { ok: false, code: 'INSPECT_FAILED', error };
   }
 }
 
@@ -333,11 +333,11 @@ function savePoolStateStrict(state, { stateFilePath } = {}) {
   try {
     saveJsonStrict(targetStateFile, normalizePoolState(state));
     return { ok: true };
-  } catch (err) {
+  } catch (error) {
     return {
       ok: false,
       code: 'WRITE_FAILED',
-      message: String(err),
+      message: String(error),
     };
   }
 }
@@ -448,8 +448,8 @@ function parsePoolFile(filePath, rootPath, stateEntry) {
   let fileCanonical;
   try {
     fileCanonical = fs.realpathSync(filePath);
-  } catch (err) {
-    return { ok: false, code: 'CANONICALIZATION_FAILED', error: err };
+  } catch (error) {
+    return { ok: false, code: 'CANONICALIZATION_FAILED', error };
   }
   const rootCanonical = getCanonicalPath(rootPath);
   if (!isPathInsideRoot(rootCanonical, fileCanonical)) {
@@ -540,8 +540,8 @@ function resolvePoolContext(options = {}) {
   if (!rootEntry.exists) {
     try {
       fs.mkdirSync(snapshotsRootDir, { recursive: true });
-    } catch (err) {
-      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error: err };
+    } catch (error) {
+      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error };
     }
     rootEntry = inspectPathEntry(snapshotsRootDir);
   }
@@ -558,8 +558,8 @@ function resolvePoolContext(options = {}) {
   if (!poolEntry.exists) {
     try {
       fs.mkdirSync(poolDir, { recursive: true });
-    } catch (err) {
-      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error: err };
+    } catch (error) {
+      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error };
     }
     poolEntry = inspectPathEntry(poolDir);
   }
@@ -606,8 +606,8 @@ function resolvePoolDestination(context, relativePathWithinPool, { ensureParent 
       }
       try {
         fs.mkdirSync(parentPath);
-      } catch (err) {
-        return { ok: false, code: 'POOL_PARENT_CREATE_FAILED', error: err };
+      } catch (error) {
+        return { ok: false, code: 'POOL_PARENT_CREATE_FAILED', error };
       }
       parentEntry = inspectPathEntry(parentPath);
     }
@@ -849,11 +849,11 @@ function writePoolJsonEntry(context, relativePathWithinPool, payload, { replace 
       ...(entry.exists ? {} : { flag: 'wx' }),
     });
     return { ok: true, created: !entry.exists, destinationPath };
-  } catch (err) {
-    if (!entry.exists && err && err.code === 'EEXIST') {
+  } catch (error) {
+    if (!entry.exists && error && error.code === 'EEXIST') {
       return { ok: false, code: 'DESTINATION_EXISTS' };
     }
-    return { ok: false, code: 'WRITE_FAILED', error: err };
+    return { ok: false, code: 'WRITE_FAILED', error };
   }
 }
 
@@ -905,9 +905,9 @@ function prunePoolStateEntries(state, {
         try {
           fs.unlinkSync(runtimeInfo.destinationPath);
           removedManagedFiles += 1;
-        } catch (err) {
+        } catch (error) {
           failed += 1;
-          log.warn('Reading-test bundled prune failed to remove retired managed file (ignored):', runtimeInfo.destinationPath, err);
+          log.warn('Reading-test bundled prune failed to remove retired managed file (ignored):', runtimeInfo.destinationPath, error);
           continue;
         }
       }
@@ -1048,12 +1048,12 @@ function synchronizeBundledPoolContent(options = {}) {
           managedBundledHash: bundledContentHash,
         };
         copied += 1;
-      } catch (err) {
-        if (err && err.code === 'EEXIST') {
+      } catch (error) {
+        if (error && error.code === 'EEXIST') {
           skipped += 1;
         } else {
           failed += 1;
-          log.warn('Reading-test bundled sync failed:', { sourcePath, destinationPath: destinationInfo.destinationPath }, err);
+          log.warn('Reading-test bundled sync failed:', { sourcePath, destinationPath: destinationInfo.destinationPath }, error);
         }
       }
       continue;
@@ -1098,9 +1098,9 @@ function synchronizeBundledPoolContent(options = {}) {
         managedBundledHash: bundledContentHash,
       };
       updated += 1;
-    } catch (err) {
+    } catch (error) {
       failed += 1;
-      log.warn('Reading-test bundled sync failed:', { sourcePath, destinationPath: destinationInfo.destinationPath }, err);
+      log.warn('Reading-test bundled sync failed:', { sourcePath, destinationPath: destinationInfo.destinationPath }, error);
     }
   }
 

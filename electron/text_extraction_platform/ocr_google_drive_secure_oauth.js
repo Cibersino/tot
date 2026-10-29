@@ -133,11 +133,11 @@ function writeResponse(res, statusCode, message) {
       'Cache-Control': 'no-store',
     });
     res.end(message);
-  } catch (err) {
+  } catch (error) {
     log.warn('OAuth callback response write failed (ignored):', {
       statusCode,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorMessage: String(err && err.message ? err.message : err || ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorMessage: String(error && error.message ? error.message : error || ''),
     });
   }
 }
@@ -150,10 +150,10 @@ function closeServer(server) {
   }
   try {
     server.close();
-  } catch (err) {
+  } catch (error) {
     log.warn('OAuth callback server cleanup failed (ignored):', {
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorMessage: String(err && err.message ? err.message : err || ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorMessage: String(error && error.message ? error.message : error || ''),
     });
   }
 }
@@ -218,7 +218,7 @@ async function authenticateGoogleLoopback({
   let timeoutHandle = null;
 
   return new Promise((resolve, reject) => {
-    const settle = (err, client) => {
+    const settle = (error, client) => {
       if (settled) return;
       settled = true;
       if (timeoutHandle) {
@@ -226,8 +226,8 @@ async function authenticateGoogleLoopback({
         timeoutHandle = null;
       }
       closeServer(server);
-      if (err) {
-        reject(err);
+      if (error) {
+        reject(error);
         return;
       }
       resolve(client);
@@ -248,27 +248,27 @@ async function authenticateGoogleLoopback({
         const errorCode = String(callbackUrl.searchParams.get('error') || '').trim();
         if (errorCode) {
           writeResponse(res, 200, DENIED_RESPONSE);
-          const err = new Error(errorCode);
-          err.code = 'oauth_access_denied';
-          settle(err);
+          const error = new Error(errorCode);
+          error.code = 'oauth_access_denied';
+          settle(error);
           return;
         }
 
         const returnedState = String(callbackUrl.searchParams.get('state') || '').trim();
         if (!returnedState || returnedState !== expectedState) {
           writeResponse(res, 400, INVALID_STATE_RESPONSE);
-          const err = new Error('Invalid OAuth state.');
-          err.code = 'oauth_state_invalid';
-          settle(err);
+          const error = new Error('Invalid OAuth state.');
+          error.code = 'oauth_state_invalid';
+          settle(error);
           return;
         }
 
         const code = String(callbackUrl.searchParams.get('code') || '').trim();
         if (!code) {
           writeResponse(res, 400, MISSING_CODE_RESPONSE);
-          const err = new Error('Cannot read authentication code.');
-          err.code = 'oauth_missing_code';
-          settle(err);
+          const error = new Error('Cannot read authentication code.');
+          error.code = 'oauth_missing_code';
+          settle(error);
           return;
         }
 
@@ -280,20 +280,20 @@ async function authenticateGoogleLoopback({
         oauthClient.credentials = tokenResult && tokenResult.tokens ? tokenResult.tokens : {};
         writeResponse(res, 200, SUCCESS_RESPONSE);
         settle(null, oauthClient);
-      } catch (err) {
+      } catch (error) {
         writeResponse(res, 500, FAILURE_RESPONSE);
-        settle(err);
+        settle(error);
       }
     });
 
-    server.on('error', (err) => {
-      settle(err);
+    server.on('error', (error) => {
+      settle(error);
     });
 
     timeoutHandle = setTimeout(() => {
-      const err = new Error('OAuth callback timed out.');
-      err.code = 'oauth_timeout';
-      settle(err);
+      const error = new Error('OAuth callback timed out.');
+      error.code = 'oauth_timeout';
+      settle(error);
     }, effectiveCallbackTimeoutMs);
     if (typeof timeoutHandle.unref === 'function') {
       timeoutHandle.unref();
@@ -334,8 +334,8 @@ async function authenticateGoogleLoopback({
         });
 
         await Promise.resolve(openExternal(authorizeUrl));
-      } catch (err) {
-        settle(err);
+      } catch (error) {
+        settle(error);
       }
     });
   });

@@ -163,14 +163,14 @@ function classifyGoogleProviderReasons({ errorsReason, errorInfoReason } = {}) {
   };
 }
 
-function parseGoogleProviderFailure(err, fallbackMessage = '') {
+function parseGoogleProviderFailure(error, fallbackMessage = '') {
   const statusCode = Number(
-    err && err.response && err.response.status
-      ? err.response.status
-      : (typeof err.code === 'number' ? err.code : 0)
+    error && error.response && error.response.status
+      ? error.response.status
+      : (typeof error.code === 'number' ? error.code : 0)
   ) || 0;
-  const networkErrorCode = hasNonEmptyString(err && err.code) ? String(err.code).trim() : '';
-  const parsed = parseGoogleProviderFailurePayload(err && err.response ? err.response.data : null);
+  const networkErrorCode = hasNonEmptyString(error && error.code) ? String(error.code).trim() : '';
+  const parsed = parseGoogleProviderFailurePayload(error && error.response ? error.response.data : null);
   const classified = classifyGoogleProviderReasons({
     errorsReason: parsed.errorsReason,
     errorInfoReason: parsed.errorInfoReason,

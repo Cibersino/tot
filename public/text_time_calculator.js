@@ -339,8 +339,8 @@
     const run = async () => {
       try {
         await applySettings(settings);
-      } catch (err) {
-        reportCalculatorI18nFailure(err);
+      } catch (error) {
+        reportCalculatorI18nFailure(error);
       }
     };
     // Preload listeners intentionally do not await async callbacks. Serialize
@@ -348,16 +348,16 @@
     return enqueueCalculatorSemanticWork(run);
   }
 
-  function reportCalculatorI18nFailure(err, { startup = false } = {}) {
-    const transition = err && err.rendererI18nTransition;
+  function reportCalculatorI18nFailure(error, { startup = false } = {}) {
+    const transition = error && error.rendererI18nTransition;
     if (!transition) {
       return;
     }
     if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-      log.error('Text-time calculator language transition failed; previous translation state remains authoritative:', err);
+      log.error('Text-time calculator language transition failed; previous translation state remains authoritative:', error);
       return;
     }
-    log.error('Text-time calculator i18n failure requires window closure:', err);
+    log.error('Text-time calculator i18n failure requires window closure:', error);
     reportTerminalCalculatorI18nFailure(startup ? 'startup' : 'transition-restoration');
   }
 
@@ -368,8 +368,8 @@
     }
     try {
       window.close();
-    } catch (closeErr) {
-      log.error('Text-time calculator local window close failed; terminal state remains active:', closeErr);
+    } catch (error) {
+      log.error('Text-time calculator local window close failed; terminal state remains active:', error);
     }
   }
 
@@ -379,15 +379,15 @@
     if (calculatorInteractionControlsInitialized) {
       try {
         setCalculatorNormalInteractionAvailable(false);
-      } catch (lockErr) {
-        log.error('Text-time calculator terminal interaction lock failed (ignored); continuing terminal handling:', lockErr);
+      } catch (error) {
+        log.error('Text-time calculator terminal interaction lock failed (ignored); continuing terminal handling:', error);
       }
     }
     return true;
   }
 
-  function terminateCalculatorAfterUnexpectedFailure(message, err) {
-    log.error(message, err);
+  function terminateCalculatorAfterUnexpectedFailure(message, error) {
+    log.error(message, error);
     enterCalculatorTerminalState();
     closeCalculatorAfterTerminalFailure();
   }
@@ -397,8 +397,8 @@
     if (textTimeCalculatorApi && typeof textTimeCalculatorApi.reportRendererI18nFailure === 'function') {
       try {
         textTimeCalculatorApi.reportRendererI18nFailure({ kind });
-      } catch (reportErr) {
-        log.warn('textTimeCalculatorAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+      } catch (error) {
+        log.warn('textTimeCalculatorAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
         closeCalculatorAfterTerminalFailure();
       }
       return;
@@ -424,8 +424,8 @@
     }
     try {
       textTimeCalculatorApi.onSettingsChanged((settings) => enqueueSettingsApplication(settings));
-    } catch (err) {
-      log.error('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged registration failed; closing calculator before normal interaction:', err);
+    } catch (error) {
+      log.error('BOOTSTRAP: textTimeCalculatorAPI.onSettingsChanged registration failed; closing calculator before normal interaction:', error);
       reportTerminalCalculatorI18nFailure('settings-listener');
       return;
     }
@@ -435,8 +435,8 @@
       if (canGetSettings) {
         try {
           initialSettings = await textTimeCalculatorApi.getSettings();
-        } catch (err) {
-          log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; using default language and number formatting:', err);
+        } catch (error) {
+          log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; using default language and number formatting:', error);
         }
       } else if (textTimeCalculatorApi) {
         log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; using default language and number formatting.');
@@ -444,33 +444,33 @@
 
       try {
         await applySettings(initialSettings);
-      } catch (err) {
-        reportCalculatorI18nFailure(err, { startup: true });
+      } catch (error) {
+        reportCalculatorI18nFailure(error, { startup: true });
         return;
       }
 
       try {
         setCalculatorNormalInteractionAvailable(true);
-      } catch (err) {
+      } catch (error) {
         terminateCalculatorAfterUnexpectedFailure(
           'BOOTSTRAP: Text-time calculator normal interaction initialization failed; closing calculator:',
-          err
+          error
         );
         return;
       }
 
       try {
         focusInitialWordsInput();
-      } catch (err) {
-        log.warn('BOOTSTRAP: Text-time calculator initial Words focus failed (ignored):', err);
+      } catch (error) {
+        log.warn('BOOTSTRAP: Text-time calculator initial Words focus failed (ignored):', error);
       }
     });
   }
 
-  bootstrap().catch((err) => {
+  bootstrap().catch((error) => {
     terminateCalculatorAfterUnexpectedFailure(
       'BOOTSTRAP: text-time calculator initialization failed; closing calculator:',
-      err
+      error
     );
   });
 })();

@@ -64,8 +64,8 @@ function safeGetSystemPath(app, key, log) {
   }
   try {
     return app.getPath(key);
-  } catch (err) {
-    log.warn(`app.getPath('${key}') failed; using fallback path resolution:`, err);
+  } catch (error) {
+    log.warn(`app.getPath('${key}') failed; using fallback path resolution:`, error);
     return '';
   }
 }

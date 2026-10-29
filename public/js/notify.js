@@ -200,10 +200,10 @@
     if (!element || typeof element.focus !== 'function') return false;
     try {
       element.focus({ preventScroll: true });
-    } catch (err) {
+    } catch (error) {
       log.warn(
         'focus({ preventScroll: true }) failed; falling back to focus().',
-        err
+        error
       );
       element.focus();
     }
@@ -409,12 +409,12 @@
     const msg = resolveText(key, params);
     try {
       toastText(msg, { containerId: 'totMainToastContainer', position: 'top-right', type, duration });
-    } catch (err) {
-      log.warn('toastMain failed; falling back to alert:', err);
+    } catch (error) {
+      log.warn('toastMain failed; falling back to alert:', error);
       try {
         alertText(msg);
-      } catch (fallbackErr) {
-        log.error('toastMain fallback failed:', fallbackErr);
+      } catch (error) {
+        log.error('toastMain fallback failed:', error);
       }
     }
   }
@@ -422,12 +422,12 @@
   function toastEditorText(text, { type = 'info', duration = 4500 } = {}) {
     try {
       toastText(text, { containerId: 'totEditorToastContainer', position: 'top-right', type, duration });
-    } catch (err) {
-      log.warn('toastEditorText failed; falling back to alert:', err);
+    } catch (error) {
+      log.warn('toastEditorText failed; falling back to alert:', error);
       try {
         alertText(text);
-      } catch (fallbackErr) {
-        log.error('toastEditorText fallback failed:', fallbackErr);
+      } catch (error) {
+        log.error('toastEditorText fallback failed:', error);
       }
     }
   }
@@ -436,12 +436,12 @@
     const msg = resolveText(key, params);
     try {
       toastEditorText(msg, { type, duration });
-    } catch (err) {
-      log.warn('notifyEditor failed; falling back to notifyMain:', err);
+    } catch (error) {
+      log.warn('notifyEditor failed; falling back to notifyMain:', error);
       try {
         notifyMain(key);
-      } catch (fallbackErr) {
-        log.error('notifyEditor fallback failed:', fallbackErr);
+      } catch (error) {
+        log.error('notifyEditor fallback failed:', error);
       }
     }
   }

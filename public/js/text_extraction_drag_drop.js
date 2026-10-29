@@ -96,11 +96,11 @@
     if (!dt) return;
     try {
       dt.dropEffect = effect;
-    } catch (err) {
+    } catch (error) {
       log.warnOnce(
         'textExtractionDragDrop.dropEffect',
         'Drag/drop effect update failed (ignored):',
-        err
+        error
       );
     }
   }
@@ -191,8 +191,8 @@
         files,
         source: 'drop',
       });
-    } catch (err) {
-      log.error('Dropped text extraction flow failed unexpectedly:', err);
+    } catch (error) {
+      log.error('Dropped text extraction flow failed unexpectedly:', error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }

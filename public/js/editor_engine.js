@@ -66,7 +66,7 @@
     function selectAllEditor() {
       if (typeof editor.select === 'function') {
         try { editor.select(); }
-        catch (err) { log.warnOnce('editor.select', 'editor.select() failed; whole-value selection may be incomplete:', err); }
+        catch (error) { log.warnOnce('editor.select', 'editor.select() failed; whole-value selection may be incomplete:', error); }
         return;
       }
       setSelectionSafe(0, editor.value.length);
@@ -76,16 +76,16 @@
       try {
         const ev = new Event('input', { bubbles: true });
         editor.dispatchEvent(ev);
-      } catch (err) {
-        log.error('dispatchNativeInputEvent error:', err);
+      } catch (error) {
+        log.error('dispatchNativeInputEvent error:', error);
       }
     }
 
     function restorePreviousActiveElement(prevActive, warnKey) {
       try {
         if (prevActive && prevActive !== editor) prevActive.focus();
-      } catch (err) {
-        log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', err);
+      } catch (error) {
+        log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', error);
       }
     }
 
@@ -94,11 +94,11 @@
         editor.style.visibility = 'hidden';
         editor.value = nextValue;
         dispatchNativeInputEvent();
-      } catch (err) {
+      } catch (error) {
         log.warnOnce(
           'editor.replaceHidden.visibility',
           'replaceEditorValueHidden visibility update failed; using direct update fallback:',
-          err
+          error
         );
         editor.value = nextValue;
         dispatchNativeInputEvent();
@@ -185,8 +185,8 @@
         setCaretSafe(newCaret);
         dispatchNativeInputEvent();
         return true;
-      } catch (err) {
-        log.error('tryNativeInsertAtSelection error:', err);
+      } catch (error) {
+        log.error('tryNativeInsertAtSelection error:', error);
         return false;
       }
     }
@@ -228,8 +228,8 @@
         setCaretSafe(newCaret);
         dispatchNativeInputEvent();
         return true;
-      } catch (err) {
-        log.error('tryNativeReplaceSelectionWithoutSync error:', err);
+      } catch (error) {
+        log.error('tryNativeReplaceSelectionWithoutSync error:', error);
         return false;
       } finally {
         restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.replaceCurrent.selection');
@@ -248,17 +248,17 @@
           dispatchNativeInputEvent();
         }
         return true;
-      } catch (err) {
+      } catch (error) {
         log.warn(
           'Native whole-value replace failed; using direct update fallback:',
-          err
+          error
         );
         try {
           editor.value = safeNextValue;
           dispatchNativeInputEvent();
           return true;
-        } catch (fallbackErr) {
-          log.error('commitWholeValueNativeFirstWithoutSync error:', fallbackErr);
+        } catch (error) {
+          log.error('commitWholeValueNativeFirstWithoutSync error:', error);
           return false;
         }
       } finally {
@@ -285,8 +285,8 @@
       try {
         replaceEditorValueHidden(safeNextValue);
         return true;
-      } catch (err) {
-        log.error('commitWholeValueWithThresholdPolicy error:', err);
+      } catch (error) {
+        log.error('commitWholeValueWithThresholdPolicy error:', error);
         return false;
       } finally {
         restorePreviousActiveElement(previousActiveElement, directFocusWarnKey);
@@ -433,14 +433,14 @@
     // Main Text Sync And Transfer Handling
     // =============================================================================
 
-    function handleSetCurrentTextFailure(err, onError) {
+    function handleSetCurrentTextFailure(error, onError) {
       if (typeof onError === 'function') {
-        onError(err);
+        onError(error);
         return;
       }
       log.warn(
         'editorAPI.setCurrentText failed (ignored):',
-        err
+        error
       );
     }
 
@@ -454,8 +454,8 @@
         const setCurrentTextResult = editorAPI.setCurrentText(payload);
         handleTruncationResponse(setCurrentTextResult, { onError });
         return true;
-      } catch (err) {
-        handleSetCurrentTextFailure(err, onError);
+      } catch (error) {
+        handleSetCurrentTextFailure(error, onError);
         return false;
       }
     }
@@ -485,25 +485,25 @@
             (result) => {
               try {
                 handleResolvedSetCurrentTextResult(result);
-              } catch (err) {
-                log.error('handleTruncationResponse result handling error:', err);
+              } catch (error) {
+                log.error('handleTruncationResponse result handling error:', error);
               }
             },
-            (err) => {
-              handleSetCurrentTextFailure(err, onError);
+            (error) => {
+              handleSetCurrentTextFailure(error, onError);
             }
           );
           return;
         }
-      } catch (err) {
-        log.error('handleTruncationResponse error:', err);
+      } catch (error) {
+        log.error('handleTruncationResponse error:', error);
         return;
       }
 
       try {
         handleResolvedSetCurrentTextResult(setCurrentTextResult);
-      } catch (err) {
-        log.error('handleTruncationResponse result handling error:', err);
+      } catch (error) {
+        log.error('handleTruncationResponse result handling error:', error);
       }
     }
 
@@ -537,8 +537,8 @@
 
         ctx.ui.restoreFocusToEditor();
         return { inserted: toInsert.length, truncated };
-      } catch (err) {
-        log.error('insertTextAtCursor error:', err);
+      } catch (error) {
+        log.error('insertTextAtCursor error:', error);
         return { inserted: 0, truncated: false };
       }
     }
@@ -600,8 +600,8 @@
         ) {
           sendCurrentTextToMain(action, syncOptions);
         }
-      } catch (err) {
-        log.error(`${source} handler error:`, err);
+      } catch (error) {
+        log.error(`${source} handler error:`, error);
         ctx.ui.restoreFocusToEditor();
       }
     }
@@ -655,10 +655,10 @@
 
         editor.value = editor.value + textToInsert;
         dispatchNativeInputEvent();
-      } catch (err) {
+      } catch (error) {
         log.warn(
           'appendSmallExternalTextWithoutSync native append path failed; using direct append fallback:',
-          err
+          error
         );
         editor.value = editor.value + textToInsert;
         dispatchNativeInputEvent();
@@ -717,8 +717,8 @@
         }
         notifyIfTruncated(truncated);
         return true;
-      } catch (err) {
-        log.error('applyInitialText error:', err);
+      } catch (error) {
+        log.error('applyInitialText error:', error);
         return false;
       }
     }
@@ -772,8 +772,8 @@
           replaceEditorValueHidden(newText);
           notifyIfTruncated(truncated);
         });
-      } catch (err) {
-        log.error('applyExternalUpdate error:', err);
+      } catch (error) {
+        log.error('applyExternalUpdate error:', error);
       }
     }
 

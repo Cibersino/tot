@@ -31,8 +31,8 @@ function isArmingEntry(state, entry) {
   return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
 }
 
-function isLifecycleOwnedEditorStartupFailure(err) {
-  const lifecycle = err && err.editorStartupLifecycle;
+function isLifecycleOwnedEditorStartupFailure(error) {
+  const lifecycle = error && error.editorStartupLifecycle;
   return !!(lifecycle && (lifecycle.disclosure === 'main-native' || lifecycle.disclosure === 'silent'));
 }
 
@@ -77,9 +77,9 @@ async function startPoolSession(selection, options = {}) {
     setStage('arming', { selectedEntry: sessionEntry });
     void continueArmingSession(sessionEntry);
     return { ok: true };
-  } catch (err) {
-    log.error('Reading-test pool session start failed:', err);
-    throw err;
+  } catch (error) {
+    log.error('Reading-test pool session start failed:', error);
+    throw error;
   }
 }
 
@@ -107,9 +107,9 @@ async function startCurrentTextSession(options = {}) {
     });
     void continueArmingSession(sessionEntry);
     return { ok: true };
-  } catch (err) {
-    log.error('Reading-test current-text session start failed:', err);
-    throw err;
+  } catch (error) {
+    log.error('Reading-test current-text session start failed:', error);
+    throw error;
   }
 }
 
@@ -154,11 +154,11 @@ async function continueArmingSession(selectedEntry, options = {}) {
     await waitForWindowVisible(editorWin, 'EDITOR');
     if (!isArmingEntry(state, selectedEntry)) return;
     setArmingReady(true);
-  } catch (err) {
-    log.error('Reading-test session arming failed:', err);
+  } catch (error) {
+    log.error('Reading-test session arming failed:', error);
     failArmingSession(
       selectedEntry,
-      isLifecycleOwnedEditorStartupFailure(err) ? null : 'renderer.reading_test.alerts.start_failed'
+      isLifecycleOwnedEditorStartupFailure(error) ? null : 'renderer.reading_test.alerts.start_failed'
     );
   }
 }
@@ -209,18 +209,18 @@ function startArmedSession(options = {}) {
     startCrono();
     setArmingReady(false);
     setStage('running', { selectedEntry });
-  } catch (err) {
+  } catch (error) {
     if (poolUsageCommitted && selectedEntry.sourceMode === 'pool') {
       try {
         const rollbackInfo = readingTestPool.markPoolEntryUsed(selectedEntry.snapshotRelPath, false);
         if (!rollbackInfo.ok) {
           log.warn('Reading-test pool usage rollback failed (ignored):', rollbackInfo.code || 'POOL_WRITE_FAILED');
         }
-      } catch (rollbackErr) {
-        log.warn('Reading-test pool usage rollback failed (ignored):', rollbackErr);
+      } catch (error) {
+        log.warn('Reading-test pool usage rollback failed (ignored):', error);
       }
     }
-    log.error('Reading-test start-from-arming failed:', err);
+    log.error('Reading-test start-from-arming failed:', error);
     failArmingSession(selectedEntry, 'renderer.reading_test.alerts.start_failed');
   }
 }
@@ -259,15 +259,15 @@ function computeCurrentWpm(options = {}) {
   let stats;
   try {
     stats = countUtils.contarTexto(currentText, countOptions);
-  } catch (err) {
-    if (!countUtils.isPreciseCountFailure(err)) throw err;
+  } catch (error) {
+    if (!countUtils.isPreciseCountFailure(error)) throw error;
     if (typeof fallbackPreciseCountingToSimple !== 'function') {
       throw new Error('Reading-test Precise fallback owner unavailable');
     }
     const fallbackInfo = fallbackPreciseCountingToSimple({
       source: 'reading-test',
-      code: err.code,
-      stage: err.stage,
+      code: error.code,
+      stage: error.stage,
     });
     if (!fallbackInfo || fallbackInfo.ok !== true) {
       return {
@@ -362,8 +362,8 @@ function beginPresetStep(wpm, options = {}) {
   let presetWin = null;
   try {
     presetWin = openPresetWindow(buildPrefilledPresetPayload(wpm));
-  } catch (err) {
-    log.warn('Reading-test preset window open failed (ignored):', err);
+  } catch (error) {
+    log.warn('Reading-test preset window open failed (ignored):', error);
     emitNotice('renderer.reading_test.alerts.preset_unavailable', { type: 'error' });
     clearSession();
     return;
@@ -378,8 +378,8 @@ function beginPresetStep(wpm, options = {}) {
   const onClosed = () => {
     try {
       presetWin.removeListener('closed', onClosed);
-    } catch (err) {
-      log.warn('Reading-test preset close listener detach failed (ignored):', err);
+    } catch (error) {
+      log.warn('Reading-test preset close listener detach failed (ignored):', error);
     }
     clearSession();
   };
@@ -440,8 +440,8 @@ async function finishRunningSession(options = {}) {
     }
 
     beginPresetStep(wpmInfo.wpm);
-  } catch (err) {
-    log.error('Reading-test session finish failed:', err);
+  } catch (error) {
+    log.error('Reading-test session finish failed:', error);
     options.resetAndCloseActiveSession(
       selectedEntry,
       'Reading-test finish failure crono reset failed (ignored):'

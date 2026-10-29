@@ -9,8 +9,8 @@ const subscribeWithUnsub = (channel, listener, removeErrorMessage) => {
     return () => {
         try {
             ipcRenderer.removeListener(channel, listener);
-        } catch (err) {
-            console.error(removeErrorMessage, err);
+        } catch (error) {
+            console.error(removeErrorMessage, error);
         }
     };
 };
@@ -35,7 +35,7 @@ const api = {
     requestTextExtractionAbort: (payload) => ipcRenderer.invoke('text-extraction-request-abort', payload),
     onTextExtractionProcessingModeChanged: (cb) => {
         const listener = (_e, state) => {
-            try { cb(state); } catch (err) { console.error('text-extraction processing-mode callback error:', err); }
+            try { cb(state); } catch (error) { console.error('text-extraction processing-mode callback error:', error); }
         };
         return subscribeWithUnsub(
             'text-extraction-processing-mode-changed',
@@ -57,7 +57,7 @@ const api = {
     loadCurrentTextSnapshot: () => ipcRenderer.invoke('current-text-snapshot-load'),
     onCurrentTextUpdated: (cb) => {
         const listener = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('current-text-updated callback error:', err); }
+            try { cb(payload); } catch (error) { console.error('current-text-updated callback error:', error); }
         };
         return subscribeWithUnsub(
             'current-text-updated',
@@ -67,7 +67,7 @@ const api = {
     },
     onCurrentTextProcessingStateChanged: (cb) => {
         const listener = (_e, state) => {
-            try { cb(state); } catch (err) { console.error('current-text-processing-state callback error:', err); }
+            try { cb(state); } catch (error) { console.error('current-text-processing-state callback error:', error); }
         };
         return subscribeWithUnsub(
             'current-text-processing-state-changed',
@@ -77,7 +77,7 @@ const api = {
     },
     onEditorFirstShowState: (cb) => {
         const listener = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('editor-first-show-state callback error:', err); }
+            try { cb(payload); } catch (error) { console.error('editor-first-show-state callback error:', error); }
         };
         return subscribeWithUnsub(
             'editor-first-show-state',
@@ -99,14 +99,14 @@ const api = {
     getAppDocAvailability: (docKey) => ipcRenderer.invoke('get-app-doc-availability', docKey),
     onSettingsChanged: (cb) => {
         const listener = (ev, newSettings) => {
-            try { cb(newSettings); } catch (err) { console.error('settings callback error:', err); }
+            try { cb(newSettings); } catch (error) { console.error('settings callback error:', error); }
         };
         // return function to remove listener if used by caller
         return subscribeWithUnsub('settings-updated', listener, 'removeListener error:');
     },
     onPreciseCountingFallback: (cb) => {
         const listener = () => {
-            try { cb(); } catch (err) { console.error('precise-counting fallback callback error:', err); }
+            try { cb(); } catch (error) { console.error('precise-counting fallback callback error:', error); }
         };
         return subscribeWithUnsub(
             'precise-counting-fallback',
@@ -125,7 +125,7 @@ const api = {
     requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
     onPresetCreated: (cb) => {
         const listener = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('preset-created callback error:', err); }
+            try { cb(payload); } catch (error) { console.error('preset-created callback error:', error); }
         };
         return subscribeWithUnsub('preset-created', listener, 'removeListener error (preset-created):');
     },
@@ -136,7 +136,7 @@ const api = {
     // Menu / external links / updates
     onMenuClick: (cb) => {
         const wrapper = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('menuAPI callback error:', err); }
+            try { cb(payload); } catch (error) { console.error('menuAPI callback error:', error); }
         };
         // return an unsubscribe function
         return subscribeWithUnsub('menu-click', wrapper, 'Error removing menu listener:');
@@ -151,7 +151,7 @@ const api = {
     setCronoElapsed: (ms) => ipcRenderer.send('crono-set-elapsed', ms),
     getCronoState: () => ipcRenderer.invoke('crono-get-state'),
     onCronoState: (cb) => {
-        const wrapper = (_e, state) => { try { cb(state); } catch (err) { console.error('onCronoState callback error:', err); } };
+        const wrapper = (_e, state) => { try { cb(state); } catch (error) { console.error('onCronoState callback error:', error); } };
         return subscribeWithUnsub('crono-state', wrapper, 'removeListener error (crono-state):');
     },
 
@@ -163,7 +163,7 @@ const api = {
         return ipcRenderer.invoke('flotante-close');
     },
     onFlotanteClosed: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { console.error('flotante closed callback error:', err); } };
+        const listener = () => { try { cb(); } catch (error) { console.error('flotante closed callback error:', error); } };
         return subscribeWithUnsub('flotante-closed', listener, 'removeListener error:');
     },
 
@@ -176,7 +176,7 @@ const api = {
     getReadingTestState: () => ipcRenderer.invoke('reading-test-get-state'),
     onReadingTestStateChanged: (cb) => {
         const listener = (_e, state) => {
-            try { cb(state); } catch (err) { console.error('reading-test-state callback error:', err); }
+            try { cb(state); } catch (error) { console.error('reading-test-state callback error:', error); }
         };
         return subscribeWithUnsub(
             'reading-test-state-changed',
@@ -186,7 +186,7 @@ const api = {
     },
     onReadingTestNotice: (cb) => {
         const listener = (_e, notice) => {
-            try { cb(notice); } catch (err) { console.error('reading-test-notice callback error:', err); }
+            try { cb(notice); } catch (error) { console.error('reading-test-notice callback error:', error); }
         };
         return subscribeWithUnsub(
             'reading-test-notice',
@@ -199,7 +199,7 @@ const api = {
     sendStartupRendererCoreReady: () => ipcRenderer.send('startup:renderer-core-ready'),
     reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
     onStartupReady: (cb) => {
-        const listener = () => { try { cb(); } catch (err) { console.error('startup:ready callback error:', err); } };
+        const listener = () => { try { cb(); } catch (error) { console.error('startup:ready callback error:', error); } };
         return subscribeWithUnsub('startup:ready', listener, 'removeListener error (startup:ready):');
     },
     sendStartupSplashRemoved: () => ipcRenderer.send('startup:splash-removed')

@@ -76,8 +76,8 @@ const taskDurationUtils = taskDurationCore.createTaskDurationUtils();
 function resolveRealpath(targetPath) {
   try {
     return { ok: true, path: fs.realpathSync(targetPath) };
-  } catch (err) {
-    return { ok: false, error: err };
+  } catch (error) {
+    return { ok: false, error };
   }
 }
 
@@ -85,17 +85,17 @@ function inspectPathEntry(targetPath) {
   try {
     fs.lstatSync(targetPath);
     return { ok: true, exists: true };
-  } catch (err) {
-    if (err && err.code === 'ENOENT') return { ok: true, exists: false };
-    return { ok: false, error: err };
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return { ok: true, exists: false };
+    return { ok: false, error };
   }
 }
 
 function ensureTasksRoot() {
   try {
     ensureTasksDirs();
-  } catch (err) {
-    log.error('ensureTasksRoot failed:', err);
+  } catch (error) {
+    log.error('ensureTasksRoot failed:', error);
   }
   const root = getTasksListsDir();
   if (!fs.existsSync(root)) {
@@ -132,8 +132,8 @@ function getDialogTexts() {
     const settings = require('./settings').getSettings();
     const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
     return menuBuilder.getDialogTexts(lang);
-  } catch (err) {
-    log.warn('Using fallback dialog texts:', err);
+  } catch (error) {
+    log.warn('Using fallback dialog texts:', error);
     return {};
   }
 }
@@ -179,23 +179,23 @@ function readJsonFile(filePath) {
   let exists = false;
   try {
     exists = fs.existsSync(filePath);
-  } catch (err) {
-    return { ok: false, code: 'READ_FAILED', error: err };
+  } catch (error) {
+    return { ok: false, code: 'READ_FAILED', error };
   }
   if (!exists) return { ok: false, code: 'NOT_FOUND' };
 
   let raw = '';
   try {
     raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  } catch (err) {
-    return { ok: false, code: 'READ_FAILED', error: err };
+  } catch (error) {
+    return { ok: false, code: 'READ_FAILED', error };
   }
   if (!raw.trim()) return { ok: false, code: 'INVALID_JSON' };
 
   try {
     return { ok: true, data: JSON.parse(raw) };
-  } catch (err) {
-    return { ok: false, code: 'INVALID_JSON', error: err };
+  } catch (error) {
+    return { ok: false, code: 'INVALID_JSON', error };
   }
 }
 
@@ -473,11 +473,11 @@ function normalizeTexto(raw) {
   if (!s) return '';
   try {
     s = s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-  } catch (err) {
+  } catch (error) {
     log.warnOnce(
       'tasks-main:normalize-texto-diacritic-fallback',
       'normalizeTexto preferred diacritic removal failed; using combining-mark fallback:',
-      err
+      error
     );
     s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
@@ -581,8 +581,8 @@ function isAuthorizedSender(event, expectedWin, logMessage) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.error('tasks_main sender validation failed:', err);
+  } catch (error) {
+    log.error('tasks_main sender validation failed:', error);
     return false;
   }
 }
@@ -605,8 +605,8 @@ function sendTaskEditorInit(taskEditorWin, payload, taskEditorLifecycle) {
   }
   try {
     taskEditorWin.webContents.send('task-editor-init', correlatedPayload);
-  } catch (err) {
-    log.error("taskEditorWin send('task-editor-init') failed:", err);
+  } catch (error) {
+    log.error("taskEditorWin send('task-editor-init') failed:", error);
     return false;
   }
   return taskEditorLifecycle.acceptInitializationIssued(taskEditorWin, correlatedPayload.initId);
@@ -628,8 +628,8 @@ function readTaskFilePickerState() {
       statePath,
       state: normalizeTaskFilePickerState(loadJson(statePath, TASK_FILE_PICKER_STATE_FALLBACK)),
     };
-  } catch (err) {
-    log.warn('Failed to read Task Editor file picker state (using defaults):', err);
+  } catch (error) {
+    log.warn('Failed to read Task Editor file picker state (using defaults):', error);
     return {
       statePath: null,
       state: { ...TASK_FILE_PICKER_STATE_FALLBACK },
@@ -641,8 +641,8 @@ function persistTaskFilePickerState(statePath, nextState) {
   if (!statePath) return;
   try {
     saveJson(statePath, nextState);
-  } catch (err) {
-    log.warn('Failed to persist Task Editor file picker state (ignored):', err);
+  } catch (error) {
+    log.warn('Failed to persist Task Editor file picker state (ignored):', error);
   }
 }
 
@@ -872,9 +872,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         return { ok: false, code: 'UNAVAILABLE' };
       }
       return { ok: true };
-    } catch (err) {
-      log.error('Error processing open-task-editor:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('Error processing open-task-editor:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 
@@ -1039,9 +1039,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       }
 
       return { ok: true, path: writePath, meta: taskData.meta };
-    } catch (err) {
-      log.error('task-list-save failed:', err);
-      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('task-list-save failed:', error);
+      return { ok: false, code: 'WRITE_FAILED', message: String(error) };
     }
   });
 
@@ -1092,9 +1092,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
       fs.unlinkSync(targetReal);
       return { ok: true };
-    } catch (err) {
-      log.error('task-list-delete failed:', err);
-      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('task-list-delete failed:', error);
+      return { ok: false, code: 'WRITE_FAILED', message: String(error) };
     }
   });
 
@@ -1117,9 +1117,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         normalizeTexto(a.texto).localeCompare(normalizeTexto(b.texto))
       ));
       return { ok: true, items };
-    } catch (err) {
-      log.error('task-library-list failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('task-library-list failed:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 
@@ -1171,9 +1171,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       items.sort((a, b) => normalizeTexto(a.texto).localeCompare(normalizeTexto(b.texto)));
       saveLibraryData(items);
       return { ok: true };
-    } catch (err) {
-      log.error('task-library-save failed:', err);
-      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('task-library-save failed:', error);
+      return { ok: false, code: 'WRITE_FAILED', message: String(error) };
     }
   });
 
@@ -1218,9 +1218,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       items.splice(idx, 1);
       saveLibraryData(items);
       return { ok: true };
-    } catch (err) {
-      log.error('task-library-delete failed:', err);
-      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('task-library-delete failed:', error);
+      return { ok: false, code: 'WRITE_FAILED', message: String(error) };
     }
   });
 
@@ -1256,8 +1256,8 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         return { ok: true, record: null };
       }
       return { ok: true, record };
-    } catch (err) {
-      log.error('task-columns-load failed:', err);
+    } catch (error) {
+      log.error('task-columns-load failed:', error);
       return { ok: false, code: 'READ_FAILED' };
     }
   });
@@ -1279,8 +1279,8 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       const file = getTasksColumnWidthsFile();
       saveJsonStrict(file, record);
       return { ok: true };
-    } catch (err) {
-      log.error('task-columns-save failed:', err);
+    } catch (error) {
+      log.error('task-columns-save failed:', error);
       return { ok: false, code: 'WRITE_FAILED' };
     }
   });
@@ -1304,9 +1304,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         return res;
       }
       return { ok: true, filePath: res.filePaths[0] };
-    } catch (err) {
-      log.error('task-file-select failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('task-file-select failed:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 
@@ -1326,9 +1326,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
         return res;
       }
       return res;
-    } catch (err) {
-      log.error('task-files-select failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('task-files-select failed:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 
@@ -1431,9 +1431,9 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
 
       await shell.openExternal(parsed.toString());
       return { ok: true };
-    } catch (err) {
-      log.error('task-open-link failed:', err);
-      return { ok: false, code: 'ERROR', message: String(err) };
+    } catch (error) {
+      log.error('task-open-link failed:', error);
+      return { ok: false, code: 'ERROR', message: String(error) };
     }
   });
 }

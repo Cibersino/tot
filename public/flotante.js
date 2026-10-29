@@ -42,11 +42,11 @@ if (typeof window.getLogger !== 'function') {
 let log;
 try {
   log = window.getLogger('flotante');
-} catch (err) {
+} catch (error) {
   terminateFlotanteBootstrap(
     null,
     '[flotante] window.getLogger acquisition failed; cannot continue',
-    err
+    error
   );
 }
 
@@ -137,11 +137,11 @@ if (!transitionRendererTranslations || !tRenderer) {
 
 try {
   setFlotanteControlsLocked(true);
-} catch (err) {
+} catch (error) {
   terminateFlotanteBootstrap(
     log,
     'BOOTSTRAP: Floating Stopwatch initial control lock failed; closing window before normal interaction.',
-    err
+    error
   );
 }
 
@@ -214,16 +214,16 @@ async function applyFlotanteTranslations(lang) {
   });
 }
 
-function reportFlotanteI18nFailure(err, { startup = false } = {}) {
-  const transition = err && err.rendererI18nTransition;
+function reportFlotanteI18nFailure(error, { startup = false } = {}) {
+  const transition = error && error.rendererI18nTransition;
   if (!transition) {
     return;
   }
   if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-    log.error('Floating Stopwatch language transition failed; previous translation state remains authoritative:', err);
+    log.error('Floating Stopwatch language transition failed; previous translation state remains authoritative:', error);
     return;
   }
-  log.error('Floating Stopwatch i18n failure requires window closure:', err);
+  log.error('Floating Stopwatch i18n failure requires window closure:', error);
   reportTerminalFlotanteI18nFailure(startup ? 'startup' : 'transition-restoration');
 }
 
@@ -234,8 +234,8 @@ function closeFlotanteAfterTerminalFailure() {
   }
   try {
     window.close();
-  } catch (closeErr) {
-    log.error('Floating Stopwatch local window close failed; terminal state remains active:', closeErr);
+  } catch (error) {
+    log.error('Floating Stopwatch local window close failed; terminal state remains active:', error);
   }
 }
 
@@ -244,14 +244,14 @@ function enterFlotanteTerminalState() {
   flotanteTerminal = true;
   try {
     setFlotanteControlsLocked(true);
-  } catch (lockErr) {
-    log.error('Floating Stopwatch terminal control lock failed (ignored); continuing terminal handling:', lockErr);
+  } catch (error) {
+    log.error('Floating Stopwatch terminal control lock failed (ignored); continuing terminal handling:', error);
   }
   return true;
 }
 
-function terminateFlotanteAfterUnexpectedFailure(message, err) {
-  log.error(message, err);
+function terminateFlotanteAfterUnexpectedFailure(message, error) {
+  log.error(message, error);
   enterFlotanteTerminalState();
   closeFlotanteAfterTerminalFailure();
 }
@@ -265,8 +265,8 @@ function reportTerminalFlotanteI18nFailure(kind) {
   }
   try {
     window.flotanteAPI.reportRendererI18nFailure({ kind });
-  } catch (reportErr) {
-    log.warn('flotanteAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+  } catch (error) {
+    log.warn('flotanteAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
     closeFlotanteAfterTerminalFailure();
   }
 }
@@ -281,15 +281,15 @@ try {
     if (flotanteTerminal) return;
     try {
       renderState(state);
-    } catch (err) {
-      log.error('Floating Stopwatch state render failed:', err);
+    } catch (error) {
+      log.error('Floating Stopwatch state render failed:', error);
     }
   });
-} catch (err) {
+} catch (error) {
   terminateFlotanteBootstrap(
     log,
     'BOOTSTRAP: flotanteAPI.onState registration failed; closing Floating Stopwatch before normal interaction.',
-    err
+    error
   );
 }
 
@@ -314,8 +314,8 @@ function enqueueFlotanteSettingsApplication(settings) {
     if (!nextLang || nextLang === translationsLoadedFor) return;
     try {
       await applyFlotanteTranslations(nextLang);
-    } catch (err) {
-      reportFlotanteI18nFailure(err);
+    } catch (error) {
+      reportFlotanteI18nFailure(error);
     }
   };
   // Preload listeners do not await async callbacks. Admit full settings snapshots after the preceding root semantic operation has settled.
@@ -328,8 +328,8 @@ if (typeof window.flotanteAPI.onSettingsChanged !== 'function') {
 } else {
   try {
     window.flotanteAPI.onSettingsChanged((settings) => enqueueFlotanteSettingsApplication(settings));
-  } catch (err) {
-    log.error('BOOTSTRAP: flotanteAPI.onSettingsChanged registration failed; closing window before normal interaction:', err);
+  } catch (error) {
+    log.error('BOOTSTRAP: flotanteAPI.onSettingsChanged registration failed; closing window before normal interaction:', error);
     reportTerminalFlotanteI18nFailure('settings-listener');
   }
 }
@@ -343,34 +343,34 @@ enqueueFlotanteSemanticWork(async () => {
     try {
       const settings = await window.flotanteAPI.getSettings();
       if (settings && settings.language) lang = settings.language;
-    } catch (err) {
-      log.warn('BOOTSTRAP: flotanteAPI.getSettings failed; using default language:', err);
+    } catch (error) {
+      log.warn('BOOTSTRAP: flotanteAPI.getSettings failed; using default language:', error);
     }
   }
 
   try {
     await applyFlotanteTranslations(lang);
-  } catch (err) {
-    reportFlotanteI18nFailure(err, { startup: true });
+  } catch (error) {
+    reportFlotanteI18nFailure(error, { startup: true });
     return;
   }
 
   try {
     bindFlotanteControls();
-  } catch (err) {
+  } catch (error) {
     terminateFlotanteAfterUnexpectedFailure(
       'BOOTSTRAP: Floating Stopwatch control binding failed; closing window:',
-      err
+      error
     );
     return;
   }
 
   try {
     setFlotanteControlsLocked(false);
-  } catch (err) {
+  } catch (error) {
     terminateFlotanteAfterUnexpectedFailure(
       'BOOTSTRAP: Floating Stopwatch control unlock failed; closing window:',
-      err
+      error
     );
   }
 });

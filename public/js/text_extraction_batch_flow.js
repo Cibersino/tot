@@ -135,8 +135,8 @@
       if (predicate(operation) === true) {
         return true;
       }
-    } catch (err) {
-      log.error('isCurrentTextExtractionOperation dependency failed; batch continuation blocked:', err);
+    } catch (error) {
+      log.error('isCurrentTextExtractionOperation dependency failed; batch continuation blocked:', error);
       return false;
     }
     log.warn('Batch continuation ignored because its text extraction operation is not active:', {
@@ -779,8 +779,8 @@
               closeAriaKey: 'renderer.text_extraction.batch_plan.tags_modal.close_aria',
             },
           });
-        } catch (err) {
-          log.error('Batch unit tags dialog failed:', err);
+        } catch (error) {
+          log.error('Batch unit tags dialog failed:', error);
           window.Notify.notifyMain('renderer.text_extraction.alerts.batch_tags_error');
           return;
         }
@@ -827,8 +827,8 @@
             generatedPdfArtifactPolicy: null,
           },
         });
-      } catch (err) {
-        log.error('Batch planning input preparation failed unexpectedly:', err);
+      } catch (error) {
+        log.error('Batch planning input preparation failed unexpectedly:', error);
         return null;
       }
       const preparation = preparationRun ? preparationRun.preparation : null;
@@ -886,8 +886,8 @@
       let availabilityResult = null;
       try {
         availabilityResult = await checkTextExtractionOcrAvailability();
-      } catch (err) {
-        log.error('Batch OCR availability check failed unexpectedly:', err);
+      } catch (error) {
+        log.error('Batch OCR availability check failed unexpectedly:', error);
         window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
         return false;
       }
@@ -914,8 +914,8 @@
     let currentText = '';
     try {
       currentText = String(await getCurrentText() || '');
-    } catch (err) {
-      log.error('Batch current-text check failed unexpectedly:', err);
+    } catch (error) {
+      log.error('Batch current-text check failed unexpectedly:', error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return false;
     }
@@ -959,8 +959,8 @@
         textToApply,
         repeatCount: 1,
       });
-    } catch (err) {
-      log.error('Batch text apply failed unexpectedly:', err);
+    } catch (error) {
+      log.error('Batch text apply failed unexpectedly:', error);
       return { ok: false, code: 'apply_failed' };
     }
   }
@@ -989,8 +989,8 @@
       if (name) payload.name = name;
       if (sourceComment) payload.sourceComment = sourceComment;
       return await window.electronAPI.saveCurrentTextSnapshot(payload);
-    } catch (err) {
-      log.warn('saveCurrentTextSnapshot failed (ignored):', err);
+    } catch (error) {
+      log.warn('saveCurrentTextSnapshot failed (ignored):', error);
       return { ok: false, code: 'WRITE_FAILED' };
     }
   }
@@ -1343,8 +1343,8 @@
         status: 'failed',
         code: 'processing_session_state_invalid',
       };
-    } catch (err) {
-      log.error('Batch processing session state check failed unexpectedly:', err);
+    } catch (error) {
+      log.error('Batch processing session state check failed unexpectedly:', error);
       return {
         status: 'failed',
         code: 'processing_session_state_failed',
@@ -1425,9 +1425,9 @@
         reason: 'batch_execution_session',
         ...initialContext,
       });
-    } catch (err) {
+    } catch (error) {
       sessionEnterThrew = true;
-      log.error('Batch processing session start failed unexpectedly:', err);
+      log.error('Batch processing session start failed unexpectedly:', error);
     }
     if (!sessionEnterResult || sessionEnterResult.ok !== true) {
       if (!sessionEnterThrew) {
@@ -1472,9 +1472,9 @@
               processingInputFileName: input.fileName,
               processingInputSource: 'original_selected_file',
             }));
-          } catch (err) {
+          } catch (error) {
             sessionUpdateThrew = true;
-            log.error('Batch processing session update failed unexpectedly:', err);
+            log.error('Batch processing session update failed unexpectedly:', error);
           }
           if (!sessionUpdateResult || sessionUpdateResult.ok !== true) {
             const sessionCancelled = isUserCancelledProcessingSession(sessionUpdateResult);
@@ -1516,8 +1516,8 @@
               prepareTextExtractionSelectedFile,
               preparationRequest,
             });
-          } catch (err) {
-            log.error('Batch execution preparation failed unexpectedly:', err);
+          } catch (error) {
+            log.error('Batch execution preparation failed unexpectedly:', error);
           }
           const processingSessionStatus = await getProcessingSessionStatus(
             getTextExtractionProcessingMode
@@ -1571,8 +1571,8 @@
                 processingInputSource: 'original_selected_file',
               }),
             });
-          } catch (err) {
-            log.error('Batch execution run failed unexpectedly:', err);
+          } catch (error) {
+            log.error('Batch execution run failed unexpectedly:', error);
           }
           textExtractionStatusUi.clearPendingExecutionContext();
 
@@ -1698,8 +1698,8 @@
           source: 'text_extraction_batch_execution',
           reason: getBatchProcessingSessionExitReason(batchTermination),
         });
-      } catch (err) {
-        log.warn('Batch processing session exit failed (ignored):', err);
+      } catch (error) {
+        log.warn('Batch processing session exit failed (ignored):', error);
       }
     }
 
@@ -1713,8 +1713,8 @@
         if (!result || result.ok !== true) {
           log.warn('openCurrentTextSnapshotsFolder failed (ignored):', result);
         }
-      } catch (err) {
-        log.warn('openCurrentTextSnapshotsFolder failed (ignored):', err);
+      } catch (error) {
+        log.warn('openCurrentTextSnapshotsFolder failed (ignored):', error);
       }
     };
 
@@ -1736,8 +1736,8 @@
               log.warn('revealTextExtractionGeneratedPdf failed (ignored):', revealResult);
               window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
             }
-          } catch (err) {
-            log.warn('revealTextExtractionGeneratedPdf failed (ignored):', err);
+          } catch (error) {
+            log.warn('revealTextExtractionGeneratedPdf failed (ignored):', error);
             window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
           }
         },
@@ -1746,10 +1746,10 @@
       textExtractionStatusUi.endAbortFinalization();
       syncMainInteractionLockUi();
       await finalReportPrompt;
-    } catch (err) {
+    } catch (error) {
       textExtractionStatusUi.endAbortFinalization();
       syncMainInteractionLockUi();
-      log.error('Batch final report prompt failed:', err);
+      log.error('Batch final report prompt failed:', error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }
@@ -1805,8 +1805,8 @@
     let preconditions = null;
     try {
       preconditions = await checkTextExtractionPreconditions();
-    } catch (err) {
-      log.error('Batch precondition check failed unexpectedly:', err);
+    } catch (error) {
+      log.error('Batch precondition check failed unexpectedly:', error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
       return;
     }
@@ -1827,8 +1827,8 @@
       plannerDecision = await window.Notify.promptTextExtractionBatchPlan({
         controller: plannerController,
       });
-    } catch (err) {
-      log.error('Batch planning prompt failed:', err);
+    } catch (error) {
+      log.error('Batch planning prompt failed:', error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }

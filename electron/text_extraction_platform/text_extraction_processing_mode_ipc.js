@@ -117,8 +117,8 @@ function createController({ onStateChanged } = {}) {
     }
     try {
       onStateChanged(getState());
-    } catch (err) {
-      log.warn('Processing-mode state change callback failed (ignored):', err);
+    } catch (error) {
+      log.warn('Processing-mode state change callback failed (ignored):', error);
     }
   };
 
@@ -223,8 +223,8 @@ function isAuthorizedSender(event, mainWin) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn('Processing-mode sender validation failed:', err);
+  } catch (error) {
+    log.warn('Processing-mode sender validation failed:', error);
     return false;
   }
 }
@@ -252,9 +252,9 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
       return { ok: true, state: controller.getState() };
-    } catch (err) {
-      log.error('text-extraction-get-processing-mode failed:', err);
-      return { ok: false, code: 'STATE_READ_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('text-extraction-get-processing-mode failed:', error);
+      return { ok: false, code: 'STATE_READ_FAILED', error: String(error) };
     }
   });
 
@@ -271,9 +271,9 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'ALREADY_ACTIVE', state: controller.getState() };
       }
       return { ok: true, state: transition.state };
-    } catch (err) {
-      log.error('text-extraction-enter-processing-session failed:', err);
-      return { ok: false, code: 'SESSION_ENTER_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('text-extraction-enter-processing-session failed:', error);
+      return { ok: false, code: 'SESSION_ENTER_FAILED', error: String(error) };
     }
   });
 
@@ -290,9 +290,9 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
       const context = normalizePayloadContext(payload);
       const transition = controller.update(context);
       return { ok: true, state: transition.state };
-    } catch (err) {
-      log.error('text-extraction-update-processing-session failed:', err);
-      return { ok: false, code: 'SESSION_UPDATE_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('text-extraction-update-processing-session failed:', error);
+      return { ok: false, code: 'SESSION_UPDATE_FAILED', error: String(error) };
     }
   });
 
@@ -309,9 +309,9 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
       const context = normalizePayloadContext(payload);
       const transition = controller.exit(context);
       return { ok: true, state: transition.state };
-    } catch (err) {
-      log.error('text-extraction-exit-processing-session failed:', err);
-      return { ok: false, code: 'SESSION_EXIT_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('text-extraction-exit-processing-session failed:', error);
+      return { ok: false, code: 'SESSION_EXIT_FAILED', error: String(error) };
     }
   });
 
@@ -324,9 +324,9 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
 
       const context = normalizePayloadContext(payload);
       return controller.requestAbort(context);
-    } catch (err) {
-      log.error('text-extraction-request-abort failed:', err);
-      return { ok: false, code: 'ABORT_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('text-extraction-request-abort failed:', error);
+      return { ok: false, code: 'ABORT_FAILED', error: String(error) };
     }
   });
 }

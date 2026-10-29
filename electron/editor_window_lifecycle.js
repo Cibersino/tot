@@ -42,13 +42,13 @@ function isPlainObject(value) {
 }
 
 function buildWaiterError(cause, disclosure) {
-  const err = new Error(cause);
-  err.code = cause;
-  err.editorStartupLifecycle = {
+  const error = new Error(cause);
+  error.code = cause;
+  error.editorStartupLifecycle = {
     cause,
     disclosure,
   };
-  return err;
+  return error;
 }
 
 function requireCreateEditorWindow(createEditorWindow, logContext) {
@@ -84,8 +84,8 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
 
     try {
       showStartupFailureDisclosure(details);
-    } catch (err) {
-      log.error('Text Editor startup failure disclosure failed:', details, err);
+    } catch (error) {
+      log.error('Text Editor startup failure disclosure failed:', details, error);
     }
   }
 
@@ -106,20 +106,20 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
         resolvePromise(value);
         startupCycleWaiters.delete(generation);
       },
-      reject(err) {
+      reject(error) {
         if (this.settled) return;
         this.settled = true;
-        rejectPromise(err);
+        rejectPromise(error);
         startupCycleWaiters.delete(generation);
       },
     };
 
     // Keep the original rejecting waiter for Reading Test while observing every
     // rejection from lifecycle ownership as soon as the waiter exists.
-    waiter.promise.catch((err) => {
-      const details = err && err.editorStartupLifecycle;
+    waiter.promise.catch((error) => {
+      const details = error && error.editorStartupLifecycle;
       if (!details) {
-        log.error('Text Editor startup waiter rejected without lifecycle details:', err);
+        log.error('Text Editor startup waiter rejected without lifecycle details:', error);
         return;
       }
       log.error('Text Editor startup waiter rejected:', details);
@@ -161,8 +161,8 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
     try {
       mainWin.webContents.send('editor-first-show-state', payload);
       return true;
-    } catch (err) {
-      log.warn('editor-first-show-state notification failed (ignored):', logContext, err);
+    } catch (error) {
+      log.warn('editor-first-show-state notification failed (ignored):', logContext, error);
       return false;
     }
   }
@@ -194,11 +194,11 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
         return;
       }
       editorWin.close();
-    } catch (err) {
+    } catch (error) {
       if (pendingLifecycleOwnedCloseWindow === editorWin) {
         pendingLifecycleOwnedCloseWindow = null;
       }
-      log.warn(`Hidden editor disposal failed from ${logContext} (ignored):`, err);
+      log.warn(`Hidden editor disposal failed from ${logContext} (ignored):`, error);
     }
   }
 
@@ -251,8 +251,8 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
       focusEditorWindow(editorWin);
       editorState.notifyWindowState(editorWin, logContext);
       return true;
-    } catch (err) {
-      log.warn(`Late ordinary editor fallback failed from ${logContext} (ignored):`, err);
+    } catch (error) {
+      log.warn(`Late ordinary editor fallback failed from ${logContext} (ignored):`, error);
       return false;
     }
   }
@@ -288,8 +288,8 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
       resolveHiddenStartupCycle(cycle);
       emitOrdinaryFirstShowState(mainWin, cycle, { state: 'ready' }, logContext);
       return true;
-    } catch (err) {
-      log.error('Text Editor ordinary first-show finalization failed:', err);
+    } catch (error) {
+      log.error('Text Editor ordinary first-show finalization failed:', error);
 
       const fallbackSucceeded = attemptLateOrdinaryFallback(
         editorWin,
@@ -393,11 +393,11 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
         editorWin: freshEditorWin,
         baseReadyPromise: waiter.promise,
       };
-    } catch (err) {
+    } catch (error) {
       const lifecycleError = rejectStartupCycle(cycle.generation, 'EDITOR_STARTUP_CREATE_FAILED');
       resolveHiddenStartupCycle(cycle);
       disposeHiddenStartupWindow(freshEditorWin, `${logContext}.createFailure`);
-      log.error('Text Editor hidden startup creation failed:', err);
+      log.error('Text Editor hidden startup creation failed:', error);
       throw lifecycleError;
     }
   }

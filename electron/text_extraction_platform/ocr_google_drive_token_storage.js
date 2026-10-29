@@ -26,15 +26,15 @@ const log = Log.get('ocr-google-drive-token-storage');
 // Helpers
 // =============================================================================
 
-function safeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function safeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
 function buildStorageError(code, message, detailsSafeForLogs = {}) {
-  const err = new Error(message);
-  err.code = code;
-  err.detailsSafeForLogs = detailsSafeForLogs;
-  return err;
+  const error = new Error(message);
+  error.code = code;
+  error.detailsSafeForLogs = detailsSafeForLogs;
+  return error;
 }
 
 function warnWeakLinuxBackendIfNeeded() {
@@ -44,8 +44,8 @@ function warnWeakLinuxBackendIfNeeded() {
   let backend = 'unknown';
   try {
     backend = String(safeStorage.getSelectedStorageBackend() || 'unknown');
-  } catch (err) {
-    log.warn('Could not read safeStorage backend (ignored):', err);
+  } catch (error) {
+    log.warn('Could not read safeStorage backend (ignored):', error);
     return;
   }
 
@@ -77,12 +77,12 @@ function readTokenEnvelope(tokenPath) {
   let raw = '';
   try {
     raw = fs.readFileSync(tokenPath, 'utf8').replace(/^\uFEFF/, '');
-  } catch (err) {
-    if (err && err.code === 'ENOENT') {
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
       throw buildStorageError('missing_file', 'Token file is missing.');
     }
     throw buildStorageError('read_failed', 'Token file read failed.', {
-      errorName: safeErrorName(err),
+      errorName: safeErrorName(error),
     });
   }
 
@@ -129,9 +129,9 @@ function readEncryptedTokenFile(tokenPath) {
   let decryptedJson = '';
   try {
     decryptedJson = safeStorage.decryptString(encryptedBuffer);
-  } catch (err) {
+  } catch (error) {
     throw buildStorageError('decrypt_failed', 'Token decryption failed.', {
-      errorName: safeErrorName(err),
+      errorName: safeErrorName(error),
     });
   }
 
@@ -170,9 +170,9 @@ function writeEncryptedTokenFile({ tokenPath, tokenPayload }) {
   let encryptedBuffer = null;
   try {
     encryptedBuffer = safeStorage.encryptString(plaintext);
-  } catch (err) {
+  } catch (error) {
     throw buildStorageError('encrypt_failed', 'Token encryption failed.', {
-      errorName: safeErrorName(err),
+      errorName: safeErrorName(error),
     });
   }
 
@@ -182,9 +182,9 @@ function writeEncryptedTokenFile({ tokenPath, tokenPayload }) {
 
   try {
     fs.writeFileSync(tokenPath, JSON.stringify(envelope, null, 2), 'utf8');
-  } catch (err) {
+  } catch (error) {
     throw buildStorageError('write_failed', 'Token file write failed.', {
-      errorName: safeErrorName(err),
+      errorName: safeErrorName(error),
     });
   }
 }
@@ -196,12 +196,12 @@ function deleteEncryptedTokenFile(tokenPath) {
 
   try {
     fs.unlinkSync(tokenPath);
-  } catch (err) {
-    if (err && err.code === 'ENOENT') {
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
       throw buildStorageError('missing_file', 'Token file is missing.');
     }
     throw buildStorageError('delete_failed', 'Token file delete failed.', {
-      errorName: safeErrorName(err),
+      errorName: safeErrorName(error),
     });
   }
 }

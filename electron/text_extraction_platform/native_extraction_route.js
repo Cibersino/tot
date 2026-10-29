@@ -105,10 +105,10 @@ function mapMammothWarnings(messages) {
   return warnings;
 }
 
-function isCorruptOrUnreadableParserError(parserType, err) {
-  if (!err) return false;
-  const code = typeof err.code === 'string' ? err.code.trim() : '';
-  const message = String(err && err.message ? err.message : '').toLowerCase();
+function isCorruptOrUnreadableParserError(parserType, error) {
+  if (!error) return false;
+  const code = typeof error.code === 'string' ? error.code.trim() : '';
+  const message = String(error && error.message ? error.message : '').toLowerCase();
 
   if (code === 'ENOENT' || code === 'EISDIR' || code === 'EACCES' || code === 'EPERM') {
     return true;
@@ -125,7 +125,7 @@ function isCorruptOrUnreadableParserError(parserType, err) {
   }
 
   if (parserType === 'pdf_text_layer') {
-    if (isUnreadableOrCorruptPdfError(err)) {
+    if (isUnreadableOrCorruptPdfError(error)) {
       return true;
     }
   }
@@ -137,8 +137,8 @@ function isCorruptOrUnreadableParserError(parserType, err) {
   return false;
 }
 
-function isPdfPasswordProtectedParserError(err) {
-  return isPdfPasswordProtectedError(err);
+function isPdfPasswordProtectedParserError(error) {
+  return isPdfPasswordProtectedError(error);
 }
 
 // =============================================================================
@@ -286,7 +286,7 @@ function validateSourceForNativeRoute(source, provenance) {
         },
       });
     }
-  } catch (err) {
+  } catch (error) {
     return buildPreflightFailureResult({
       summary: 'Native route failed before parse: file metadata check failed.',
       provenance,
@@ -295,8 +295,8 @@ function validateSourceForNativeRoute(source, provenance) {
       detailsSafeForLogs: {
         stage: 'preflight',
         reason: 'stat_failed',
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
+        errorName: String(error && error.name ? error.name : 'Error'),
+        errorCode: String(error && error.code ? error.code : ''),
       },
     });
   }
@@ -321,10 +321,10 @@ function validateSourceForNativeRoute(source, provenance) {
 function buildFailureResultForError({
   source,
   parserType,
-  err,
+  error,
 }) {
-  const isPdfPasswordProtected = parserType === 'pdf_text_layer' && isPdfPasswordProtectedParserError(err);
-  const corruptOrUnreadable = isCorruptOrUnreadableParserError(parserType, err);
+  const isPdfPasswordProtected = parserType === 'pdf_text_layer' && isPdfPasswordProtectedParserError(error);
+  const corruptOrUnreadable = isCorruptOrUnreadableParserError(parserType, error);
   let errorCode = 'native_extraction_failed';
   let errorMessage = 'Native extraction failed due to parser/runtime error.';
   let summary = 'Native extraction route failed during parsing.';
@@ -352,9 +352,9 @@ function buildFailureResultForError({
         nativeFailureType,
         parserType,
         sourceFileExt: source.fileExt,
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorName: String(error && error.name ? error.name : 'Error'),
+        errorCode: String(error && error.code ? error.code : ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       }
     ),
   };
@@ -403,8 +403,8 @@ async function runNativeExtractionRoute({
       provenance,
       error: null,
     });
-  } catch (err) {
-    if (String(err && err.code || '') === 'aborted_by_user') {
+  } catch (error) {
+    if (String(error && error.code || '') === 'aborted_by_user') {
       return buildResult({
         state: 'cancelled',
         summary: 'Native extraction route cancelled by user.',
@@ -420,14 +420,14 @@ async function runNativeExtractionRoute({
     log.warn('Native extraction route failed:', {
       sourceFileExt: source.fileExt,
       parserType: source.parserType,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorCode: String(err && err.code ? err.code : ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorCode: String(error && error.code ? error.code : ''),
     });
 
     const failure = buildFailureResultForError({
       source,
       parserType: source.parserType,
-      err,
+      error,
     });
 
     return buildResult({

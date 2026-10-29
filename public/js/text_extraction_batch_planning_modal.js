@@ -215,8 +215,8 @@
     }
     try {
       target.focus({ preventScroll: true });
-    } catch (err) {
-      log.warn('focus({ preventScroll: true }) failed; falling back to focus().', err);
+    } catch (error) {
+      log.warn('focus({ preventScroll: true }) failed; falling back to focus().', error);
       target.focus();
     }
     if (typeof target.setSelectionRange === 'function'
@@ -224,8 +224,8 @@
       && typeof descriptor.selectionEnd === 'number') {
       try {
         target.setSelectionRange(descriptor.selectionStart, descriptor.selectionEnd);
-      } catch (err) {
-        log.warn('Batch planning selection restoration failed (ignored):', err);
+      } catch (error) {
+        log.warn('Batch planning selection restoration failed (ignored):', error);
       }
     }
   }
@@ -1038,8 +1038,8 @@
           let canStart = false;
           try {
             canStart = await controller.validateStart();
-          } catch (err) {
-            log.error('Batch planning start validation failed unexpectedly:', err);
+          } catch (error) {
+            log.error('Batch planning start validation failed unexpectedly:', error);
             window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
             canStart = false;
           } finally {

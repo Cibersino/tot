@@ -78,8 +78,8 @@
     let disconnectTextExtractionOcr = null;
     try {
       disconnectTextExtractionOcr = getDisconnectMethod();
-    } catch (err) {
-      log.error('Error resolving disconnectTextExtractionOcr bridge:', err);
+    } catch (error) {
+      log.error('Error resolving disconnectTextExtractionOcr bridge:', error);
       window.Notify.notifyMain(failureAlertKey);
       return;
     }
@@ -95,8 +95,8 @@
         source: 'preferences_menu',
         reason: 'user_disconnect_google_ocr',
       });
-    } catch (err) {
-      log.error('Error invoking disconnectTextExtractionOcr:', err);
+    } catch (error) {
+      log.error('Error invoking disconnectTextExtractionOcr:', error);
       window.Notify.notifyMain(failureAlertKey);
       return;
     }

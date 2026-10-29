@@ -75,8 +75,8 @@ function readPickerState() {
       statePath,
       state: normalizePickerState(raw),
     };
-  } catch (err) {
-    log.warn('Failed to read text extraction picker state (using defaults):', err);
+  } catch (error) {
+    log.warn('Failed to read text extraction picker state (using defaults):', error);
     return {
       statePath: null,
       state: { ...PICKER_STATE_FALLBACK },
@@ -88,8 +88,8 @@ function persistPickerState(statePath, nextState) {
   if (!statePath) return;
   try {
     saveJson(statePath, nextState);
-  } catch (err) {
-    log.warn('Failed to persist text extraction picker state (ignored):', err);
+  } catch (error) {
+    log.warn('Failed to persist text extraction picker state (ignored):', error);
   }
 }
 
@@ -103,8 +103,8 @@ function isAuthorizedSender(event, mainWin) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn('text-extraction-open-picker sender validation failed:', err);
+  } catch (error) {
+    log.warn('text-extraction-open-picker sender validation failed:', error);
     return false;
   }
 }
@@ -124,8 +124,8 @@ function getDialogTexts() {
     if (settings && typeof settings.language === 'string' && settings.language.trim()) {
       language = settings.language;
     }
-  } catch (err) {
-    log.warn('Text-extraction picker settings unavailable; using DEFAULT_LANG dialog texts:', err);
+  } catch (error) {
+    log.warn('Text-extraction picker settings unavailable; using DEFAULT_LANG dialog texts:', error);
   }
   return menuBuilder.getDialogTexts(language);
 }
@@ -209,9 +209,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         filePaths: selectedPaths,
         selectedDirectory,
       };
-    } catch (err) {
-      log.error('text-extraction-open-picker failed:', err);
-      return { ok: false, code: 'PICKER_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('text-extraction-open-picker failed:', error);
+      return { ok: false, code: 'PICKER_FAILED', error: String(error) };
     }
   });
 }

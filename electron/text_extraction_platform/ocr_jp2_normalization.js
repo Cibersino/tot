@@ -37,19 +37,19 @@ const log = Log.get('text-extraction-ocr-jp2-normalization');
 // Error and cleanup helpers
 // =============================================================================
 
-function toSafeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function toSafeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
-function toSafeErrorMessage(err) {
-  return String(err && err.message ? err.message : err || '');
+function toSafeErrorMessage(error) {
+  return String(error && error.message ? error.message : error || '');
 }
 
 function buildNormalizationError(code, message, detailsSafeForLogs = {}) {
-  const err = new Error(message);
-  err.code = code;
-  err.detailsSafeForLogs = detailsSafeForLogs;
-  return err;
+  const error = new Error(message);
+  error.code = code;
+  error.detailsSafeForLogs = detailsSafeForLogs;
+  return error;
 }
 
 function buildCleanupFailureWarning(cleanupWarning, tempDirPath) {
@@ -90,15 +90,15 @@ function createBaseName(sourceFileName) {
 function loadSharpLib(sourceFileExt) {
   try {
     return require('sharp');
-  } catch (err) {
+  } catch (error) {
     throw buildNormalizationError(
       'image_normalizer_unavailable',
       'Sharp dependency is unavailable for JP2 normalization.',
       {
         reason: 'sharp_require_failed',
         sourceFileExt,
-        errorName: toSafeErrorName(err),
-        errorMessage: toSafeErrorMessage(err),
+        errorName: toSafeErrorName(error),
+        errorMessage: toSafeErrorMessage(error),
       }
     );
   }
@@ -109,15 +109,15 @@ function loadOpenJpegRuntimeFactory(sourceFileExt) {
 
   try {
     openJpegRuntimeFactory = require('./openjpeg_wasm_runtime');
-  } catch (err) {
+  } catch (error) {
     throw buildNormalizationError(
       'image_normalizer_unavailable',
       'JP2 decoder runtime is unavailable in this app build.',
       {
         reason: 'openjpeg_require_failed',
         sourceFileExt,
-        errorName: toSafeErrorName(err),
-        errorMessage: toSafeErrorMessage(err),
+        errorName: toSafeErrorName(error),
+        errorMessage: toSafeErrorMessage(error),
       }
     );
   }
@@ -150,21 +150,21 @@ function loadOpenJpegRuntime(sourceFileExt) {
         throw new Error('OpenJPEG runtime did not expose J2KDecoder.');
       }
       return runtime;
-    } catch (err) {
+    } catch (error) {
       throw buildNormalizationError(
         'image_normalizer_unavailable',
         'JP2 decoder runtime could not initialize in this app build.',
         {
           reason: 'openjpeg_runtime_init_failed',
           sourceFileExt,
-          errorName: toSafeErrorName(err),
-          errorMessage: toSafeErrorMessage(err),
+          errorName: toSafeErrorName(error),
+          errorMessage: toSafeErrorMessage(error),
         }
       );
     }
-  })().catch((err) => {
+  })().catch((error) => {
     cachedOpenJpegRuntimePromise = null;
-    throw err;
+    throw error;
   });
 
   return cachedOpenJpegRuntimePromise;
@@ -282,7 +282,7 @@ async function normalizeJp2ForOcrUpload({ fileInfo } = {}) {
     if (!stat.isFile() || stat.size <= 0) {
       throw new Error('Converted PNG output is missing or empty.');
     }
-  } catch (err) {
+  } catch (error) {
     const cleanupWarning = cleanupTempDir(tempDirPath);
     throw buildNormalizationError(
       'source_to_png_conversion_failed',
@@ -290,8 +290,8 @@ async function normalizeJp2ForOcrUpload({ fileInfo } = {}) {
       {
         reason: 'jp2_source_to_png_failed',
         sourceFileExt: fileInfo.sourceFileExt,
-        errorName: toSafeErrorName(err),
-        errorMessage: toSafeErrorMessage(err),
+        errorName: toSafeErrorName(error),
+        errorMessage: toSafeErrorMessage(error),
         ...(cleanupWarning
           ? {
             cleanupWarningCode: cleanupWarning.warningCode,
@@ -304,10 +304,10 @@ async function normalizeJp2ForOcrUpload({ fileInfo } = {}) {
     if (decoder && typeof decoder.delete === 'function') {
       try {
         decoder.delete();
-      } catch (err) {
+      } catch (error) {
         log.warn('JP2 decoder teardown failed (ignored):', {
-          errorName: toSafeErrorName(err),
-          errorMessage: toSafeErrorMessage(err),
+          errorName: toSafeErrorName(error),
+          errorMessage: toSafeErrorMessage(error),
         });
       }
     }

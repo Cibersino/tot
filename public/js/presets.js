@@ -133,8 +133,8 @@
     } else {
       try {
         defaults = await electronAPI.getDefaultPresets();
-      } catch (err) {
-        log.warn('Default presets fetch failed; using settings-only presets.', err);
+      } catch (error) {
+        log.warn('Default presets fetch failed; using settings-only presets.', error);
       }
     }
 
@@ -214,8 +214,8 @@
       } else {
         throw new Error('electronAPI.setSelectedPreset unavailable.');
       }
-    } catch (err) {
-      log.warn('Selection persistence failed:', err);
+    } catch (error) {
+      log.warn('Selection persistence failed:', error);
       if (rollbackSelection && rollbackSelection.name !== selected.name) {
         applyPresetSelection(rollbackSelection, { combobox, presetDescription });
         return rollbackSelection;

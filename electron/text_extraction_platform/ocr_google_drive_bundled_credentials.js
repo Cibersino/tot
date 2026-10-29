@@ -30,12 +30,12 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
-function safeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function safeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
-function safeErrorMessage(err) {
-  return String(err && err.message ? err.message : err || '');
+function safeErrorMessage(error) {
+  return String(error && error.message ? error.message : error || '');
 }
 
 function ensureParentDir(filePath) {
@@ -134,11 +134,11 @@ function materializeBundledCredentials({
       reason: repairedRuntimeMirror ? 'runtime_repaired_from_bundle' : 'runtime_created_from_bundle',
       errorCode: '',
     };
-  } catch (err) {
+  } catch (error) {
     const detailsSafeForLogs = {
       runtimeValidationCode: runtimeValidation.code,
-      errorName: safeErrorName(err),
-      errorMessage: safeErrorMessage(err),
+      errorName: safeErrorName(error),
+      errorMessage: safeErrorMessage(error),
     };
 
     log.error('Google OCR bundled credentials materialization failed:', detailsSafeForLogs);

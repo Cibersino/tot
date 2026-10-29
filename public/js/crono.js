@@ -76,8 +76,8 @@
   async function safeRecomputeRealWpm(payload) {
     try {
       return await actualizarVelocidadRealFromElapsed(payload);
-    } catch (err) {
-      log.error('Error updating real WPM:', err);
+    } catch (error) {
+      log.error('Error updating real WPM:', error);
       return 0;
     }
   }
@@ -154,15 +154,15 @@
             applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
             return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
           }
-        } catch (err) {
-          log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', err);
+        } catch (error) {
+          log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', error);
         }
       } else {
         log.warnOnce('crono.getCronoState.missing', '[crono] getCronoState unavailable; using local stopwatch state');
       }
       return null;
-    } catch (err) {
-      log.error('Error loading  flotante:', err);
+    } catch (error) {
+      log.error('Error loading  flotante:', error);
       setToggleChecked(toggleVF, false);
       return null;
     }
@@ -176,8 +176,8 @@
     }
     try {
       await electronAPI.closeFlotanteWindow();
-    } catch (err) {
-      log.error('Error closing flotante:', err);
+    } catch (error) {
+      log.error('Error closing flotante:', error);
     } finally {
       setToggleChecked(toggleVF, false);
     }
@@ -262,8 +262,8 @@
         await electronAPI.setCronoElapsed(msRounded);
         await syncRoundedElapsedUi();
         return msRounded;
-      } catch (err) {
-        log.warn('setCronoElapsed failed; using local stopwatch state:', err);
+      } catch (error) {
+        log.warn('setCronoElapsed failed; using local stopwatch state:', error);
         await fallbackLocal();
         return msRounded;
       }
@@ -451,8 +451,8 @@
           realWpmDisplay: elements.realWpmDisplay
         });
         lastComputedElapsedForWpm = elapsed;
-      } catch (err) {
-        log.error('Error applying text-change stopwatch rules:', err);
+      } catch (error) {
+        log.error('Error applying text-change stopwatch rules:', error);
       }
     };
 
@@ -490,8 +490,8 @@
           if (electronAPI && typeof electronAPI.sendCronoToggle === 'function') {
             try {
               electronAPI.sendCronoToggle();
-            } catch (err) {
-              log.error('sendCronoToggle failed:', err);
+            } catch (error) {
+              log.error('sendCronoToggle failed:', error);
             }
           } else {
             log.warnOnce('crono.sendCronoToggle.missing', '[crono] sendCronoToggle unavailable; toggle action ignored');
@@ -504,8 +504,8 @@
           if (electronAPI && typeof electronAPI.sendCronoReset === 'function') {
             try {
               electronAPI.sendCronoReset();
-            } catch (err) {
-              log.error('sendCronoReset failed:', err);
+            } catch (error) {
+              log.error('sendCronoReset failed:', error);
             }
           } else {
             log.warnOnce('crono.sendCronoReset.missing.button', '[crono] sendCronoReset unavailable; reset action ignored');
@@ -531,8 +531,8 @@
           electronAPI.onFlotanteClosed(() => {
             setToggleChecked(elements.toggleVF, false);
           });
-        } catch (err) {
-          log.warn('onFlotanteClosed registration failed; flotante toggle may desync:', err);
+        } catch (error) {
+          log.warn('onFlotanteClosed registration failed; flotante toggle may desync:', error);
         }
       } else if (electronAPI) {
         log.warnOnce('crono.onFlotanteClosed.missing', '[crono] onFlotanteClosed unavailable; flotante toggle may desync');

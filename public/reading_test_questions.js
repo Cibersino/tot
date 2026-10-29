@@ -35,8 +35,8 @@
   try {
     log = window.getLogger('reading-test-questions');
     log.debug('Reading-test questions window starting...');
-  } catch (err) {
-    failClosedQuestionsBootstrap(err);
+  } catch (error) {
+    failClosedQuestionsBootstrap(error);
   }
 
   const questionsApi = window.readingTestQuestionsAPI || null;
@@ -109,8 +109,8 @@
     }
     try {
       questionsApi.reportRendererI18nFailure({ kind });
-    } catch (reportErr) {
-      log.warn('readingTestQuestionsAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    } catch (error) {
+      log.warn('readingTestQuestionsAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
       if (typeof window.close === 'function') window.close();
     }
   }
@@ -434,8 +434,8 @@
       const beforeTop = actions.getBoundingClientRect().top;
       Promise.resolve()
         .then(() => updateFn())
-        .catch((err) => {
-          log.error('Reading-test questions check update failed:', err);
+        .catch((error) => {
+          log.error('Reading-test questions check update failed:', error);
         })
         .finally(() => {
           requestAnimationFrame(() => {
@@ -552,16 +552,16 @@
       state.translationsLoadedFor = state.currentLanguage;
     }
 
-    function reportQuestionsI18nFailure(err, { startup = false } = {}) {
-      const transition = err && err.rendererI18nTransition;
+    function reportQuestionsI18nFailure(error, { startup = false } = {}) {
+      const transition = error && error.rendererI18nTransition;
       if (!transition) {
         return;
       }
       if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-        log.error('Reading-test questions language transition failed; previous translation state remains authoritative:', err);
+        log.error('Reading-test questions language transition failed; previous translation state remains authoritative:', error);
         return;
       }
-      log.error('Reading-test questions i18n failure requires window closure:', err);
+      log.error('Reading-test questions i18n failure requires window closure:', error);
       reportTerminalQuestionsI18nFailure(startup ? 'startup' : 'transition-restoration');
     }
 
@@ -604,19 +604,19 @@
       return true;
     }
 
-    function handleInitFailure(err) {
-      log.error('Reading-test questions init failed:', err);
-      if (err && err.rendererI18nTransition) {
-        reportQuestionsI18nFailure(err, { startup: !state.translationsLoadedFor });
+    function handleInitFailure(error) {
+      log.error('Reading-test questions init failed:', error);
+      if (error && error.rendererI18nTransition) {
+        reportQuestionsI18nFailure(error, { startup: !state.translationsLoadedFor });
         return;
       }
       setInvalidPayloadState();
       enqueueUiSync(async () => ({
         language: state.currentLanguage,
         settings: state.settingsCache,
-      })).catch((renderErr) => {
-        log.error('Reading-test questions recovery render failed:', renderErr);
-        reportQuestionsI18nFailure(renderErr, { startup: !state.translationsLoadedFor });
+      })).catch((renderError) => {
+        log.error('Reading-test questions recovery render failed:', renderError);
+        reportQuestionsI18nFailure(renderError, { startup: !state.translationsLoadedFor });
       });
     }
 
@@ -635,11 +635,11 @@
         const focusTarget = (acceptedPayload && firstAnswer) || btnContinue;
         try {
           focusTarget.focus({ preventScroll: true });
-        } catch (err) {
-          log.warn('Reading-test questions initial focus failed (ignored):', err);
+        } catch (error) {
+          log.warn('Reading-test questions initial focus failed (ignored):', error);
         }
-      }).catch((err) => {
-        handleInitFailure(err);
+      }).catch((error) => {
+        handleInitFailure(error);
       });
     }
 
@@ -653,8 +653,8 @@
         } else {
           try {
             nextSettings = await questionsApi.getSettings() || {};
-          } catch (err) {
-            log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+          } catch (error) {
+            log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', error);
             nextSettings = {};
           }
         }
@@ -662,9 +662,9 @@
           language: normalizeLanguage(readSettingsLanguage(nextSettings)),
           settings: nextSettings,
         };
-      }).catch((err) => {
-        log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
-        reportQuestionsI18nFailure(err, { startup: !state.translationsLoadedFor });
+      }).catch((error) => {
+        log.error('BOOTSTRAP: Reading-test questions initial render failed:', error);
+        reportQuestionsI18nFailure(error, { startup: !state.translationsLoadedFor });
       });
     }
 
@@ -680,8 +680,8 @@
           return false;
         }
         return { language: nextLanguage, settings: nextSettings };
-      }).catch((err) => {
-        reportQuestionsI18nFailure(err);
+      }).catch((error) => {
+        reportQuestionsI18nFailure(error);
       });
     }
 
@@ -711,18 +711,18 @@
 
     try {
       questionsApi.onInitData(handleInitData);
-    } catch (err) {
+    } catch (error) {
       questionsBootstrapTerminal = true;
       setQuestionsTerminalUnavailable();
-      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onInitData:', err);
+      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onInitData:', error);
       if (typeof window.close === 'function') window.close();
       return;
     }
 
     try {
       questionsApi.onSettingsChanged(handleSettingsChanged);
-    } catch (err) {
-      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onSettingsChanged:', err);
+    } catch (error) {
+      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onSettingsChanged:', error);
       reportTerminalQuestionsI18nFailure('settings-listener');
       return;
     }

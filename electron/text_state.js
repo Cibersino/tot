@@ -115,10 +115,10 @@ function safeSend(win, channel, payload) {
 
   try {
     win.webContents.send(channel, payload);
-  } catch (err) {
+  } catch (error) {
     log.warn(
       `webContents.send('${channel}') failed (ignored):`,
-      err
+      error
     );
   }
 }
@@ -142,8 +142,8 @@ function persistCurrentTextOnQuit() {
         saveJson(settingsFile, settings);
       }
     }
-  } catch (err) {
-    log.error('Error persisting text in quit:', err);
+  } catch (error) {
+    log.error('Error persisting text in quit:', error);
   }
 }
 
@@ -157,8 +157,8 @@ function beginCurrentTextProcessing(rawMeta) {
   }
   try {
     return currentTextProcessingController.begin(rawMeta);
-  } catch (err) {
-    log.error('Current-text processing begin failed:', err);
+  } catch (error) {
+    log.error('Current-text processing begin failed:', error);
     return null;
   }
 }
@@ -208,8 +208,8 @@ function notifyCurrentTextDidBecomeEmpty({ previousText, nextText, requestId, me
       requestId: Number.isInteger(requestId) ? requestId : null,
       meta: sanitizeMeta(meta),
     });
-  } catch (err) {
-    log.error('onCurrentTextDidBecomeEmpty callback failed:', err);
+  } catch (error) {
+    log.error('onCurrentTextDidBecomeEmpty callback failed:', error);
   }
 }
 
@@ -319,8 +319,8 @@ function loadInitialCurrentText() {
     }
 
     currentText = txt;
-  } catch (err) {
-    log.error('Error loading current text file:', err);
+  } catch (error) {
+    log.error('Error loading current text file:', error);
     currentText = '';
   }
 }
@@ -470,12 +470,12 @@ function registerIpc(ipcMain, windowsResolver) {
         action: normalizedAction,
       };
       return applyCurrentText(text, normalizedMeta);
-    } catch (err) {
-      const msg = err && typeof err.message === 'string' ? err.message : '';
+    } catch (error) {
+      const msg = error && typeof error.message === 'string' ? error.message : '';
       if (msg !== 'set-current-text payload too large') {
-        log.error('Error in set-current-text:', err);
+        log.error('Error in set-current-text:', error);
       }
-      return { ok: false, error: String(err) };
+      return { ok: false, error: String(error) };
     }
   });
 }

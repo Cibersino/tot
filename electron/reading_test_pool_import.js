@@ -57,8 +57,8 @@ function readJsonTextWithBomStrip(filePath) {
       ok: true,
       text: fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''),
     };
-  } catch (err) {
-    return { ok: false, code: 'READ_FAILED', error: err };
+  } catch (error) {
+    return { ok: false, code: 'READ_FAILED', error };
   }
 }
 
@@ -67,8 +67,8 @@ function parseJsonText(jsonText) {
   if (!source) return { ok: false, code: 'INVALID_JSON' };
   try {
     return { ok: true, data: JSON.parse(source) };
-  } catch (err) {
-    return { ok: false, code: 'INVALID_JSON', error: err };
+  } catch (error) {
+    return { ok: false, code: 'INVALID_JSON', error };
   }
 }
 
@@ -123,8 +123,8 @@ function collectZipCandidates(zipPath) {
   let zip;
   try {
     zip = new AdmZip(zipPath);
-  } catch (err) {
-    log.warn('Reading-test zip open failed:', zipPath, err);
+  } catch (error) {
+    log.warn('Reading-test zip open failed:', zipPath, error);
     result.failedArchiveEntries += 1;
     return result;
   }
@@ -139,8 +139,8 @@ function collectZipCandidates(zipPath) {
     let entryText = '';
     try {
       entryText = entry.getData().toString('utf8').replace(/^\uFEFF/, '');
-    } catch (err) {
-      log.warn('Reading-test zip entry read failed:', { zipPath, entryName: entry.entryName }, err);
+    } catch (error) {
+      log.warn('Reading-test zip entry read failed:', { zipPath, entryName: entry.entryName }, error);
       result.failedArchiveEntries += 1;
       continue;
     }
@@ -375,10 +375,10 @@ function getDialogTexts() {
     if (settings && typeof settings.language === 'string' && settings.language.trim()) {
       language = settings.language;
     }
-  } catch (err) {
+  } catch (error) {
     log.warn(
       'Reading-test import dialog settings unavailable; using DEFAULT_LANG dialog texts:',
-      err
+      error
     );
   }
   return menuBuilder.getDialogTexts(language);
@@ -408,8 +408,8 @@ function readPickerState() {
       statePath,
       state: normalizePickerState(raw),
     };
-  } catch (err) {
-    log.warn('Failed to read reading-test pool import picker state (using defaults):', err);
+  } catch (error) {
+    log.warn('Failed to read reading-test pool import picker state (using defaults):', error);
     return {
       statePath: null,
       state: { ...DEFAULT_PICKER_STATE },
@@ -421,8 +421,8 @@ function persistPickerState(statePath, nextState) {
   if (!statePath) return;
   try {
     saveJson(statePath, nextState);
-  } catch (err) {
-    log.warn('Failed to persist reading-test pool import picker state (ignored):', err);
+  } catch (error) {
+    log.warn('Failed to persist reading-test pool import picker state (ignored):', error);
   }
 }
 
@@ -471,8 +471,8 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
         return false;
       }
       return true;
-    } catch (err) {
-      log.warn('Reading-test import sender validation failed:', err);
+    } catch (error) {
+      log.warn('Reading-test import sender validation failed:', error);
       return false;
     }
   }
@@ -594,8 +594,8 @@ function registerIpc(ipcMain, { getWindows, isReadingTestInteractionLocked } = {
       }
 
       return result;
-    } catch (err) {
-      log.error('reading-test-import-pool-files failed:', err);
+    } catch (error) {
+      log.error('reading-test-import-pool-files failed:', error);
       return {
         ok: false,
         code: 'IMPORT_FAILED',

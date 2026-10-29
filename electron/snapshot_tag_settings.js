@@ -127,11 +127,11 @@ function init({ loadJsonWithStatus, saveJson, saveJsonStrict, snapshotTagsFile }
   if (isSnapshotTagStorageReadUsable(loadResult.storageReadStatus)) {
     try {
       _saveJson(_snapshotTagsFile, loadResult.snapshotTags);
-    } catch (err) {
+    } catch (error) {
       log.warn(
         'BOOTSTRAP: Snapshot-tag init normalization persist failed (ignored):',
         _snapshotTagsFile,
-        err
+        error
       );
     }
   } else {
@@ -174,14 +174,14 @@ function registerIpc(
         ok: true,
         snapshotTags: loadUsableSnapshotTagPreferences(),
       };
-    } catch (err) {
+    } catch (error) {
       log.error(
         'IPC get-snapshot-tag-preferences failed (using safe fallback):',
-        err
+        error
       );
       return {
         ok: false,
-        error: String(err),
+        error: String(error),
         snapshotTags: createDefaultSnapshotTagPreferences(),
       };
     }
@@ -207,10 +207,10 @@ function registerIpc(
       if (typeof publishSettingsUpdate === 'function') {
         try {
           publishSettingsUpdate();
-        } catch (err) {
+        } catch (error) {
           log.warn(
             'Snapshot-tag settings publish callback failed (ignored):',
-            err
+            error
           );
         }
       } else {
@@ -220,9 +220,9 @@ function registerIpc(
       }
 
       return { ok: true, snapshotTags: savedSnapshotTags };
-    } catch (err) {
-      log.error('IPC set-snapshot-tag-preferences failed:', err);
-      return { ok: false, error: String(err) };
+    } catch (error) {
+      log.error('IPC set-snapshot-tag-preferences failed:', error);
+      return { ok: false, error: String(error) };
     }
   });
 }

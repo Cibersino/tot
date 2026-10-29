@@ -428,8 +428,8 @@
         applyPreviewSpoilerToggleControlState();
         try {
           await persistPreviewSpoilerEnabled(nextEnabled);
-        } catch (err) {
-          log.error('Preview spoiler setting persistence failed; restoring previous value:', err);
+        } catch (error) {
+          log.error('Preview spoiler setting persistence failed; restoring previous value:', error);
           setPreviewSpoilerEnabled(previousEnabled);
         } finally {
           previewSpoilerSavePending = false;

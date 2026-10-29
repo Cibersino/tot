@@ -112,8 +112,8 @@ function isAuthorizedSender(event, mainWin) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn('text-extraction-check-preconditions sender validation failed:', err);
+  } catch (error) {
+    log.warn('text-extraction-check-preconditions sender validation failed:', error);
     return false;
   }
 }
@@ -160,8 +160,8 @@ function registerIpc(ipcMain, { getWindows, getPreconditionContext } = {}) {
       }
 
       return buildReadyResult();
-    } catch (err) {
-      log.error('text-extraction precondition check failed:', err);
+    } catch (error) {
+      log.error('text-extraction precondition check failed:', error);
       return {
         ok: false,
         canStart: false,
@@ -169,8 +169,8 @@ function registerIpc(ipcMain, { getWindows, getPreconditionContext } = {}) {
         reasons: ['precondition_check_failed'],
         guidanceKey: 'renderer.text_extraction.alerts.precondition_error',
         detailsSafeForLogs: {
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorMessage: String(err && err.message ? err.message : err || ''),
+          errorName: String(error && error.name ? error.name : 'Error'),
+          errorMessage: String(error && error.message ? error.message : error || ''),
         },
       };
     }

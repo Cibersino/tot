@@ -147,8 +147,8 @@ function createController(options = {}) {
     }
     try {
       mainWin.webContents.send(channel, payload);
-    } catch (err) {
-      log.warn(`Reading-test main notify failed (ignored): ${channel}`, err);
+    } catch (error) {
+      log.warn(`Reading-test main notify failed (ignored): ${channel}`, error);
     }
   }
 
@@ -231,16 +231,16 @@ function createController(options = {}) {
   function tryResetCrono(warningMessage) {
     try {
       resetCrono();
-    } catch (err) {
-      log.warn(warningMessage, err);
+    } catch (error) {
+      log.warn(warningMessage, error);
     }
   }
 
   function tryClearCurrentText(warningMessage) {
     try {
       applyCurrentText('', { source: 'main-window', action: 'clear' });
-    } catch (err) {
-      log.warn(warningMessage, err);
+    } catch (error) {
+      log.warn(warningMessage, error);
     }
   }
 
@@ -260,8 +260,8 @@ function createController(options = {}) {
   function getSettingsSnapshot() {
     try {
       return settingsState.getSettings();
-    } catch (err) {
-      log.warn('Reading-test settings read failed; using fallback settings.', err);
+    } catch (error) {
+      log.warn('Reading-test settings read failed; using fallback settings.', error);
       return { language: DEFAULT_LANG, modeConteo: 'preciso', presets_by_language: {} };
     }
   }
@@ -342,9 +342,9 @@ function createController(options = {}) {
         entries: visibleEntries.map(readingTestPool.serializePoolEntryMeta),
         poolDirName: readingTestPool.POOL_DIR_NAME,
       };
-    } catch (err) {
-      log.error('Reading-test entry availability check failed:', err);
-      throw err;
+    } catch (error) {
+      log.error('Reading-test entry availability check failed:', error);
+      throw error;
     }
   }
 
@@ -399,13 +399,13 @@ function createController(options = {}) {
     setActiveSessionWindows();
     try {
       closeEditorWindow();
-    } catch (err) {
-      log.warn('Reading-test editor close failed (ignored):', err);
+    } catch (error) {
+      log.warn('Reading-test editor close failed (ignored):', error);
     }
     try {
       closeFlotanteWindow();
-    } catch (err) {
-      log.warn('Reading-test Floating Stopwatch close failed (ignored):', err);
+    } catch (error) {
+      log.warn('Reading-test Floating Stopwatch close failed (ignored):', error);
     }
   }
 
@@ -615,8 +615,8 @@ function createController(options = {}) {
           log.warn('Reading-test IPC request rejected: sender is not authorized as the active main window.');
         }
         return authorized;
-      } catch (err) {
-        log.warn('Reading-test sender validation failed:', err);
+      } catch (error) {
+        log.warn('Reading-test sender validation failed:', error);
         return false;
       }
     }

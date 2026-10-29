@@ -156,8 +156,8 @@
       let segGraf;
       try {
         segGraf = new intlObject.Segmenter(resolvedLanguage, { granularity: 'grapheme' });
-      } catch (err) {
-        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'grapheme-construction', err);
+      } catch (error) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'grapheme-construction', error);
       }
       let conEspacios = 0;
       let sinEspacios = 0;
@@ -168,15 +168,15 @@
             sinEspacios += 1;
           }
         }
-      } catch (err) {
-        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'grapheme-segmentation', err);
+      } catch (error) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'grapheme-segmentation', error);
       }
 
       let segPal;
       try {
         segPal = new intlObject.Segmenter(resolvedLanguage, { granularity: 'word' });
-      } catch (err) {
-        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'word-construction', err);
+      } catch (error) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'word-construction', error);
       }
       const wordState = {
         palabras: 0,
@@ -187,8 +187,8 @@
         for (const seg of segPal.segment(texto)) {
           consumePreciseWordSegment(seg, wordState);
         }
-      } catch (err) {
-        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'word-segmentation', err);
+      } catch (error) {
+        throw createPreciseCountFailure(PRECISE_FAILURE_CODE_EXECUTION, 'word-segmentation', error);
       }
 
       return {

@@ -91,8 +91,8 @@
         return false;
       }
       return true;
-    } catch (err) {
-      log.warn('openAppDoc("privacy-policy") request failed (ignored):', err);
+    } catch (error) {
+      log.warn('openAppDoc("privacy-policy") request failed (ignored):', error);
       return false;
     }
   }

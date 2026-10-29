@@ -10,8 +10,8 @@ const api = {
     const listener = (_event, settings) => {
       try {
         cb(settings);
-      } catch (err) {
-        console.error('settings callback error:', err);
+      } catch (error) {
+        console.error('settings callback error:', error);
       }
     };
 
@@ -20,8 +20,8 @@ const api = {
     return () => {
       try {
         ipcRenderer.removeListener('settings-updated', listener);
-      } catch (err) {
-        console.error('removeListener error (settings-updated):', err);
+      } catch (error) {
+        console.error('removeListener error (settings-updated):', error);
       }
     };
   },

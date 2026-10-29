@@ -338,12 +338,12 @@
             if (ctx.engine && typeof ctx.engine.setCaretSafe === 'function') {
               ctx.engine.setCaretSafe(pos);
             }
-          } catch (err) {
-            log.warnOnce('editor:restoreFocus:inner_catch', 'restoreFocusToEditor failed (ignored):', err);
+          } catch (error) {
+            log.warnOnce('editor:restoreFocus:inner_catch', 'restoreFocusToEditor failed (ignored):', error);
           }
         }, 0);
-      } catch (err) {
-        log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', err);
+      } catch (error) {
+        log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', error);
       }
     }
 
@@ -354,15 +354,15 @@
         if (ctx.engine && typeof ctx.engine.setSelectionSafe === 'function') {
           ctx.engine.setSelectionSafe(0, 0);
         }
-      } catch (err) {
-        log.warn('Failed to set Text Editor selection to top (ignored):', err);
+      } catch (error) {
+        log.warn('Failed to set Text Editor selection to top (ignored):', error);
       }
 
       try {
         editor.scrollTop = 0;
         editor.scrollLeft = 0;
-      } catch (err) {
-        log.warn('Failed to scroll Text Editor to top (ignored):', err);
+      } catch (error) {
+        log.warn('Failed to scroll Text Editor to top (ignored):', error);
       }
 
       scheduleReadProgressUiUpdate();
@@ -373,8 +373,8 @@
 
       try {
         editor.focus();
-      } catch (err) {
-        log.warn('Failed to focus Text Editor at startup (ignored):', err);
+      } catch (error) {
+        log.warn('Failed to focus Text Editor at startup (ignored):', error);
       }
 
       positionEditorAtTop();
@@ -389,10 +389,10 @@
         positionEditorAtTop();
         try {
           readingTestPrestartOverlay.focus();
-        } catch (err) {
+        } catch (error) {
           log.warn(
             'Reading-test prestart focus failed (ignored):',
-            err
+            error
           );
         }
         return;
@@ -426,8 +426,8 @@
           editor.style.wordBreak = 'break-word';
           updateEditorTextDirection();
         }
-      } catch (err) {
-        log.warn('Text Editor wrap styles failed (ignored):', err);
+      } catch (error) {
+        log.warn('Text Editor wrap styles failed (ignored):', error);
       }
     }
 
@@ -455,8 +455,8 @@
           throw new Error(result && result.error ? String(result.error) : 'unknown');
         }
         return true;
-      } catch (err) {
-        log.error('Error updating Text Editor font size setting:', err);
+      } catch (error) {
+        log.error('Error updating Text Editor font size setting:', error);
         setLocalEditorFontSizePx(previousFontSizePx);
         return false;
       }
@@ -493,8 +493,8 @@
           throw new Error(result && result.error ? String(result.error) : 'unknown');
         }
         return true;
-      } catch (err) {
-        log.error('Error updating Text Editor maximized text width setting:', err);
+      } catch (error) {
+        log.error('Error updating Text Editor maximized text width setting:', error);
         setLocalEditorMaximizedTextWidthPx(previousTextWidthPx);
         return false;
       }
@@ -569,8 +569,8 @@
         if (target && typeof target.setPointerCapture === 'function') {
           target.setPointerCapture(pointerId);
         }
-      } catch (err) {
-        log.warn('Text Editor gutter pointer capture failed (ignored):', err);
+      } catch (error) {
+        log.warn('Text Editor gutter pointer capture failed (ignored):', error);
       }
 
       const onPointerMove = (moveEvent) => {
@@ -604,8 +604,8 @@
           ) {
             target.releasePointerCapture(pointerId);
           }
-        } catch (err) {
-          log.warn('Text Editor gutter pointer release failed (ignored):', err);
+        } catch (error) {
+          log.warn('Text Editor gutter pointer release failed (ignored):', error);
         }
       };
 

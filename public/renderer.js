@@ -389,7 +389,7 @@ function isReadingTestSessionActive() {
   return !!(readingSpeedTestUi && readingSpeedTestUi.isSessionActive());
 }
 
-function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
+function setMainLogoLinksCapabilityUnavailable(reason, error = null) {
   const wasAvailable = mainLogoLinksCapabilityAvailable;
   mainLogoLinksCapabilityAvailable = false;
   ['devLogoLink', 'kofiLogoLink'].forEach((id) => {
@@ -397,12 +397,12 @@ function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
     if (element) setControlInteractionLocked(element, true);
   });
   if (wasAvailable) {
-    log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, err || '');
+    log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, error || '');
     return;
   }
   log.warn(
     `Main logo links unavailable for this renderer lifetime: ${reason}`,
-    err || ''
+    error || ''
   );
 }
 
@@ -475,11 +475,11 @@ function hasBrowserExtensionBlockingModalOpen() {
 
   try {
     return !!browserExtensionModal.hasBlockingModalOpen();
-  } catch (err) {
+  } catch (error) {
     log.warnOnce(
       'renderer.browserExtensionModal.hasBlockingModalOpen.failed',
       'BrowserExtensionModal.hasBlockingModalOpen failed; browser extension modal blocking state will be ignored:',
-      err
+      error
     );
     return false;
   }
@@ -589,8 +589,8 @@ function sendRendererCoreReady() {
   }
   try {
     window.electronAPI.sendStartupRendererCoreReady();
-  } catch (err) {
-    throw new Error(`[renderer] sendStartupRendererCoreReady failed; cannot complete renderer READY handshake: ${err}`);
+  } catch (error) {
+    throw new Error(`[renderer] sendStartupRendererCoreReady failed; cannot complete renderer READY handshake: ${error}`);
   }
   rendererCoreReadySent = true;
 }
@@ -602,8 +602,8 @@ function sendSplashRemoved() {
   }
   try {
     window.electronAPI.sendStartupSplashRemoved();
-  } catch (err) {
-    throw new Error(`[renderer] sendStartupSplashRemoved failed; cannot complete renderer READY handshake: ${err}`);
+  } catch (error) {
+    throw new Error(`[renderer] sendStartupSplashRemoved failed; cannot complete renderer READY handshake: ${error}`);
   }
   splashRemovedSent = true;
 }
@@ -735,8 +735,8 @@ function applyTranslations() {
     && mainLogoLinks && typeof mainLogoLinks.applyTranslations === 'function') {
     try {
       mainLogoLinks.applyTranslations({ tRenderer });
-    } catch (err) {
-      setMainLogoLinksCapabilityUnavailable('translation application failed', err);
+    } catch (error) {
+      setMainLogoLinksCapabilityUnavailable('translation application failed', error);
     }
   } else {
     setMainLogoLinksCapabilityUnavailable('translation application unavailable');
@@ -744,8 +744,8 @@ function applyTranslations() {
   if (browserExtensionModal && typeof browserExtensionModal.applyTranslations === 'function') {
     try {
       browserExtensionModal.applyTranslations();
-    } catch (err) {
-      log.warn('BrowserExtensionModal translation application failed; browser extension entry disabled.', err);
+    } catch (error) {
+      log.warn('BrowserExtensionModal translation application failed; browser extension entry disabled.', error);
       disableBrowserExtensionCapability();
     }
   } else {
@@ -853,17 +853,17 @@ async function transitionMainRendererLanguage(
   });
 }
 
-function reportRendererI18nFailure(err, { startup = false } = {}) {
-  const transition = err && err.rendererI18nTransition;
+function reportRendererI18nFailure(error, { startup = false } = {}) {
+  const transition = error && error.rendererI18nTransition;
   if (!transition) {
     return;
   }
   if (!startup && transition && !transition.restorationFailed && transition.hadEstablishedState) {
-    log.error('Renderer language transition failed; previous translation state remains authoritative:', err);
+    log.error('Renderer language transition failed; previous translation state remains authoritative:', error);
     return;
   }
 
-  log.error('Renderer i18n failure requires window closure:', err);
+  log.error('Renderer i18n failure requires window closure:', error);
   reportTerminalRendererI18nFailure(startup ? 'startup' : 'transition-restoration');
 }
 
@@ -881,8 +881,8 @@ function reportTerminalRendererI18nFailure(kind) {
     window.electronAPI.reportRendererI18nFailure({
       kind,
     });
-  } catch (reportErr) {
-    log.warn('electronAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+  } catch (error) {
+    log.warn('electronAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
     if (typeof window.close === 'function') window.close();
   }
 }
@@ -915,8 +915,8 @@ function reportPreciseCountingFailure(error) {
     if (!result || result.ok !== true) {
       log.error('Precise-counting failure report was not committed:', result);
     }
-  }).catch((reportErr) => {
-    log.error('Precise-counting failure report failed:', reportErr);
+  }).catch((reportError) => {
+    log.error('Precise-counting failure report failed:', reportError);
   });
 }
 
@@ -924,11 +924,11 @@ function contarTexto(texto, countContext = null) {
   const options = countContext || { modoConteo, idioma: idiomaActual };
   try {
     return contarTextoModulo(texto, options);
-  } catch (err) {
-    if (isPreciseCountFailure(err)) {
-      reportPreciseCountingFailure(err);
+  } catch (error) {
+    if (isPreciseCountFailure(error)) {
+      reportPreciseCountingFailure(error);
     }
-    throw err;
+    throw error;
   }
 }
 
@@ -962,8 +962,8 @@ if (window.electronAPI && typeof window.electronAPI.onCronoState === 'function')
       if (cronoController && typeof cronoController.handleState === 'function') {
         cronoController.handleState(state);
       }
-    } catch (err) {
-      log.error('Error handling crono-state in renderer:', err);
+    } catch (error) {
+      log.error('Error handling crono-state in renderer:', error);
     }
   });
 } else if (window.electronAPI) {
@@ -1011,9 +1011,9 @@ async function applySettingsChange(newSettings) {
           candidateSettings: nextSettings,
           previousSettings,
         });
-      } catch (err) {
-        reportRendererI18nFailure(err);
-        const transition = err && err.rendererI18nTransition;
+      } catch (error) {
+        reportRendererI18nFailure(error);
+        const transition = error && error.rendererI18nTransition;
         if (!transition || !transition.hadEstablishedState || transition.restorationFailed) {
           return;
         }
@@ -1027,8 +1027,8 @@ async function applySettingsChange(newSettings) {
           presetOutcome = presetLoadResult && presetLoadResult.selectionOutcome
             ? presetLoadResult.selectionOutcome
             : null;
-        } catch (err) {
-          log.error('Error loading presets after language change:', err);
+        } catch (error) {
+          log.error('Error loading presets after language change:', error);
         }
       }
     } else {
@@ -1059,8 +1059,8 @@ async function applySettingsChange(newSettings) {
         cronoController.handleTextChange(null, getCurrentTextValue());
       }
     }
-  } catch (err) {
-    log.error('Error handling settings change:', err);
+  } catch (error) {
+    log.error('Error handling settings change:', error);
   }
 }
 
@@ -1109,8 +1109,8 @@ function armCurrentTextSubscription() {
   window.electronAPI.onCurrentTextUpdated((payload) => {
     try {
       setCurrentTextAndUpdateUI(payload, { applyRules: !mainRendererI18nTerminal });
-    } catch (err) {
-      log.error('Error handling current-text-updated:', err);
+    } catch (error) {
+      log.error('Error handling current-text-updated:', error);
     }
   });
   hasCurrentTextSubscription = true;
@@ -1127,8 +1127,8 @@ function armIpcSubscriptions() {
       }
       try {
         await enqueuePresetReconciliation(payload, 'preset-created sync');
-      } catch (err) {
-        log.error('Error handling preset-created event:', err);
+      } catch (error) {
+        log.error('Error handling preset-created event:', error);
       }
     });
   } else if (window.electronAPI) {
@@ -1168,8 +1168,8 @@ function armIpcSubscriptions() {
         try {
           textExtractionStatusUi.applyProcessingModeState(state, { source: 'ipc_event' });
           syncMainInteractionLockUi();
-        } catch (err) {
-          log.error('Error handling text-extraction-processing-mode-changed:', err);
+        } catch (error) {
+          log.error('Error handling text-extraction-processing-mode-changed:', error);
         }
       });
     } else {
@@ -1182,8 +1182,8 @@ function armIpcSubscriptions() {
           currentTextRuntime.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
           textExtractionStatusUi.applyCurrentTextProcessingState(state, { source: 'ipc_event' });
           syncMainInteractionLockUi();
-        } catch (err) {
-          log.error('Error handling current-text-processing-state-changed:', err);
+        } catch (error) {
+          log.error('Error handling current-text-processing-state-changed:', error);
         }
       });
     } else {
@@ -1246,15 +1246,15 @@ function setupToggleModoPreciso() {
                 : 'setModeConteo returned non-ok result.'
             );
           }
-        } catch (err) {
-          log.error('Error persisting modeConteo using setModeConteo:', err);
+        } catch (error) {
+          log.error('Error persisting modeConteo using setModeConteo:', error);
           syncToggleFromSettings(settingsCache || {});
         } finally {
           isModeConteoPersistencePending = false;
           syncToggleModoPrecisoInteractionState();
         }
-      } catch (err) {
-        log.error('Error handling change of toggleModoPreciso:', err);
+      } catch (error) {
+        log.error('Error handling change of toggleModoPreciso:', error);
       }
     });
 
@@ -1265,19 +1265,19 @@ function setupToggleModoPreciso() {
         const modo = (s && s.modeConteo) ? s.modeConteo : modoConteo;
         toggleModoPreciso.checked = (modo === 'preciso');
         toggleModoPreciso.setAttribute('aria-checked', toggleModoPreciso.checked ? 'true' : 'false');
-      } catch (err) {
-        log.error('Error syncing toggle from settings:', err);
+      } catch (error) {
+        log.error('Error syncing toggle from settings:', error);
       }
     };
 
     // Use the current in-memory mode now; runMainStartup resynchronizes from the startup settings snapshot before READY.
     try {
       syncToggleFromSettings(settingsCache || {});
-    } catch (err) {
-      log.warn('BOOTSTRAP: syncToggleFromSettings failed (ignored):', err);
+    } catch (error) {
+      log.warn('BOOTSTRAP: syncToggleFromSettings failed (ignored):', error);
     }
-  } catch (err) {
-    log.error('Error initializing toggleModoPreciso:', err);
+  } catch (error) {
+    log.error('Error initializing toggleModoPreciso:', error);
   }
 }
 
@@ -1299,8 +1299,8 @@ async function runMainStartup() {
         } else {
           maxIpcChars = maxTextChars * 4;
         }
-      } catch (err) {
-        log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
+      } catch (error) {
+        log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', error);
       }
     }
 
@@ -1316,8 +1316,8 @@ async function runMainStartup() {
         settingsSnapshot = settingsCache;
         idiomaActual = settingsCache.language || DEFAULT_LANG;
         if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
-      } catch (err) {
-        log.warn('BOOTSTRAP: getSettings failed; using defaults:', err);
+      } catch (error) {
+        log.warn('BOOTSTRAP: getSettings failed; using defaults:', error);
         settingsCache = {};
         settingsSnapshot = settingsCache;
       }
@@ -1330,8 +1330,8 @@ async function runMainStartup() {
     // Translation state and required semantic application establish the renderer UI.
     try {
       await transitionMainRendererLanguage(idiomaActual);
-    } catch (err) {
-      reportRendererI18nFailure(err, { startup: true });
+    } catch (error) {
+      reportRendererI18nFailure(error, { startup: true });
       return;
     }
 
@@ -1385,14 +1385,14 @@ async function runMainStartup() {
     if (typeof syncToggleFromSettings === 'function') {
       try {
         syncToggleFromSettings(settingsSnapshot || {});
-      } catch (err) {
-        log.warn('BOOTSTRAP: syncToggleFromSettings failed (ignored):', err);
+      } catch (error) {
+        log.warn('BOOTSTRAP: syncToggleFromSettings failed (ignored):', error);
       }
     }
 
     markRendererInvariantsReady();
-  } catch (err) {
-    log.error('Error initializing renderer:', err);
+  } catch (error) {
+    log.error('Error initializing renderer:', error);
   }
 }
 
@@ -1448,11 +1448,11 @@ function registerMenuActions() {
           return;
         }
 
-        const errMsg = res && res.error ? String(res.error) : 'Unknown';
-        log.error('default presets folder failed to open:', errMsg);
+        const errorMessage = res && res.error ? String(res.error) : 'Unknown';
+        log.error('default presets folder failed to open:', errorMessage);
         window.Notify.notifyMain('renderer.presets.alerts.open_default_folder_failed');
-      } catch (err) {
-        log.error('default presets folder failed to open', err);
+      } catch (error) {
+        log.error('default presets folder failed to open', error);
         window.Notify.notifyMain('renderer.presets.alerts.open_folder_error');
       }
     });
@@ -1486,8 +1486,8 @@ function registerMenuActions() {
         });
         if (!checkForUpdates) return;
         await checkForUpdates(true);
-      } catch (err) {
-        log.error('Error requesting checkForUpdates:', err);
+      } catch (error) {
+        log.error('Error requesting checkForUpdates:', error);
       }
     });
 
@@ -1634,8 +1634,8 @@ async function maybeRecoverTextExtractionOcrSetupAndRetry({
       getOptionalElectronMethod,
       routePreference,
     });
-  } catch (err) {
-    log.error('text extraction OCR setup recovery module failed unexpectedly:', err);
+  } catch (error) {
+    log.error('text extraction OCR setup recovery module failed unexpectedly:', error);
     return { preparation, handled: false };
   }
 }
@@ -1652,8 +1652,8 @@ async function resolveDroppedFilePath(file) {
         return resolvedPath.trim();
       }
       log.warn('getPathForFile returned empty/invalid; dropped file path unresolved.');
-    } catch (err) {
-      log.warn('getPathForFile failed; dropped file path unresolved:', err);
+    } catch (error) {
+      log.warn('getPathForFile failed; dropped file path unresolved:', error);
     }
   }
   return '';
@@ -1844,8 +1844,8 @@ async function handleTextExtractionAbort() {
     }
     syncMainInteractionLockUi();
     window.Notify.notifyMain('renderer.text_extraction.alerts.cancellation_requested');
-  } catch (err) {
-    log.error('Error handling text extraction abort:', err);
+  } catch (error) {
+    log.error('Error handling text extraction abort:', error);
     window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
   }
 }
@@ -1881,8 +1881,8 @@ async function handleClipboardOverwrite() {
     if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
-  } catch (err) {
-    log.error('clipboard error:', err);
+  } catch (error) {
+    log.error('clipboard error:', error);
     window.Notify.notifyMain('renderer.main.alerts.overwrite_clipboard_error');
   }
 }
@@ -1916,8 +1916,8 @@ async function handleClipboardAppend() {
     if (applyResult.truncated) {
       window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
     }
-  } catch (err) {
-    log.error('An error occurred while pasting the clipboard:', err);
+  } catch (error) {
+    log.error('An error occurred while pasting the clipboard:', error);
     window.Notify.notifyMain('renderer.main.alerts.append_clipboard_error');
   }
 }
@@ -1952,8 +1952,8 @@ async function handleOpenEditor() {
       log.error('open-editor returned unsupported launchDisposition:', result);
       hideEditorLoader();
     }
-  } catch (err) {
-    log.error('Error opening Text Editor:', err);
+  } catch (error) {
+    log.error('Error opening Text Editor:', error);
     hideEditorLoader();
   }
 }
@@ -1970,8 +1970,8 @@ async function handleOpenTextTimeCalculator() {
     if (!result || result.ok !== true) {
       log.error('text-time-calculator open failed:', result);
     }
-  } catch (err) {
-    log.error('Error opening text-time calculator:', err);
+  } catch (error) {
+    log.error('Error opening text-time calculator:', error);
   }
 }
 
@@ -1993,8 +1993,8 @@ async function handleClearText() {
       throw new Error(resp.error || 'set-current-text failed');
     }
     assertCurrentTextSubscription();
-  } catch (err) {
-    log.error('Error clearing text from main window:', err);
+  } catch (error) {
+    log.error('Error clearing text from main window:', error);
     window.Notify.notifyMain('renderer.main.alerts.clear_error');
   }
 }
@@ -2010,8 +2010,8 @@ async function handleLoadSnapshot() {
   }
   try {
     await loadSnapshot();
-  } catch (err) {
-    log.error('Error loading snapshot:', err);
+  } catch (error) {
+    log.error('Error loading snapshot:', error);
   }
 }
 
@@ -2023,8 +2023,8 @@ async function handleSaveSnapshot() {
   }
   try {
     await saveSnapshot();
-  } catch (err) {
-    log.error('Error saving snapshot:', err);
+  } catch (error) {
+    log.error('Error saving snapshot:', error);
   }
 }
 
@@ -2068,8 +2068,8 @@ async function handleNewTask() {
     await openTaskEditorForMode('new', {
       unavailableMessage: 'openTaskEditor unavailable; new-task action skipped.'
     });
-  } catch (err) {
-    log.error('Error opening Task Editor (new):', err);
+  } catch (error) {
+    log.error('Error opening Task Editor (new):', error);
     window.Notify.notifyMain('renderer.tasks.alerts.task_open_error');
   }
 }
@@ -2080,8 +2080,8 @@ async function handleLoadTask() {
     await openTaskEditorForMode('load', {
       unavailableMessage: 'openTaskEditor unavailable; load-task action skipped.'
     });
-  } catch (err) {
-    log.error('Error opening Task Editor (load):', err);
+  } catch (error) {
+    log.error('Error opening Task Editor (load):', error);
     window.Notify.notifyMain('renderer.tasks.alerts.task_load_error');
   }
 }
@@ -2113,8 +2113,8 @@ function bindHelpAction() {
 
       try {
         window.Notify.toastMain(tipKey);
-      } catch (err) {
-        log.error('Help tip notification failed:', err);
+      } catch (error) {
+        log.error('Help tip notification failed:', error);
       }
     });
   }
@@ -2124,8 +2124,8 @@ async function handleOpenReadingSpeedTest() {
   if (!guardUserAction('reading-speed-test')) return;
   try {
     await readingSpeedTestUi.openEntryFlow();
-  } catch (err) {
-    log.error('Error opening reading speed test flow:', err);
+  } catch (error) {
+    log.error('Error opening reading speed test flow:', error);
     window.Notify.notifyMain('renderer.reading_test.alerts.start_failed');
   }
 }
@@ -2147,8 +2147,8 @@ async function openPresetModalFromMain(payload) {
       log.error('Preset modal open failed:', res);
       window.Notify.notifyMain('renderer.presets.alerts.open_error');
     }
-  } catch (err) {
-    log.error('Error opening preset modal:', err);
+  } catch (error) {
+    log.error('Error opening preset modal:', error);
     window.Notify.notifyMain('renderer.presets.alerts.open_error');
   }
 }
@@ -2178,8 +2178,8 @@ function bindPresetActions() {
       const payload = { wpm: wpmControls.getWpm(), mode: 'edit', preset: preset };
       log.debug('openPresetModal payload:', payload);
       await openPresetModalFromMain(payload);
-    } catch (err) {
-      log.error('Error preparing edit preset modal payload:', err);
+    } catch (error) {
+      log.error('Error preparing edit preset modal payload:', error);
       window.Notify.notifyMain('renderer.presets.alerts.open_error');
     }
   });
@@ -2212,8 +2212,8 @@ function bindPresetActions() {
         log.error('Error deleting preset:', res && res.error ? res.error : res);
         window.Notify.notifyMain('renderer.presets.alerts.delete_error');
       }
-    } catch (err) {
-      log.error('Error in deletion request:', err);
+    } catch (error) {
+      log.error('Error in deletion request:', error);
       window.Notify.notifyMain('renderer.presets.alerts.delete_error');
     }
   });
@@ -2240,8 +2240,8 @@ function bindPresetActions() {
         log.error('Error restoring presets:', res && res.error ? res.error : res);
         window.Notify.notifyMain('renderer.presets.alerts.restore_error');
       }
-    } catch (err) {
-      log.error('Error in restoring request:', err);
+    } catch (error) {
+      log.error('Error in restoring request:', error);
       window.Notify.notifyMain('renderer.presets.alerts.restore_error');
     }
   });

@@ -116,8 +116,8 @@ const smokeUserDataDir = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
 if (isSmokeTest && smokeUserDataDir) {
   try {
     app.setPath('userData', path.resolve(smokeUserDataDir));
-  } catch (err) {
-    log.error('Failed to override userData path for smoke test mode:', err);
+  } catch (error) {
+    log.error('Failed to override userData path for smoke test mode:', error);
   }
 }
 
@@ -287,11 +287,11 @@ async function ensureFlotanteWindowOpen() {
 
   try {
     broadcastCronoState();
-  } catch (err) {
+  } catch (error) {
     log.warnOnce(
       'broadcastCronoState.after.ensureFlotanteWindowOpen',
       'broadcastCronoState failed after ensureFlotanteWindowOpen (ignored):',
-      err
+      error
     );
   }
 
@@ -309,8 +309,8 @@ function showFlotanteInitialDocumentFailureDisclosure() {
   let dialogTexts = null;
   try {
     dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
-  } catch (err) {
-    log.error('Floating Stopwatch initial document load native dialog translations unavailable:', err);
+  } catch (error) {
+    log.error('Floating Stopwatch initial document load native dialog translations unavailable:', error);
   }
 
   const title = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_title;
@@ -328,8 +328,8 @@ function showFlotanteInitialDocumentFailureDisclosure() {
         defaultId: 0,
         noLink: true,
       });
-    } catch (err) {
-      log.error('Floating Stopwatch initial document load native dialog failed:', err);
+    } catch (error) {
+      log.error('Floating Stopwatch initial document load native dialog failed:', error);
     }
   } else {
     log.error('Floating Stopwatch initial document load native dialog copy unavailable.');
@@ -424,14 +424,14 @@ const textExtractionProcessingModeController = textExtractionProcessingModeIpc.c
               if (targetWin && !targetWin.isDestroyed()) {
                 targetWin.close();
               }
-            } catch (err) {
-              log.warn('Failed to close main window after processing cancellation (ignored):', err);
+            } catch (error) {
+              log.warn('Failed to close main window after processing cancellation (ignored):', error);
             }
           }, 0);
         }
       }
-    } catch (err) {
-      log.warn('Failed to broadcast processing-mode state (ignored):', err);
+    } catch (error) {
+      log.warn('Failed to broadcast processing-mode state (ignored):', error);
     }
   },
 });
@@ -448,8 +448,8 @@ const currentTextProcessingStateController = currentTextProcessingStateIpc.creat
             if (targetWin && !targetWin.isDestroyed()) {
               targetWin.close();
             }
-          } catch (err) {
-            log.warn('Failed to close main window after current-text processing settled (ignored):', err);
+          } catch (error) {
+            log.warn('Failed to close main window after current-text processing settled (ignored):', error);
           }
         }, 0);
       }
@@ -478,8 +478,8 @@ function getSelectedLanguage() {
       return DEFAULT_LANG;
     }
     return lang;
-  } catch (err) {
-    log.warn(`Settings language read failed; using "${DEFAULT_LANG}".`, err);
+  } catch (error) {
+    log.warn(`Settings language read failed; using "${DEFAULT_LANG}".`, error);
     return DEFAULT_LANG;
   }
 }
@@ -554,16 +554,16 @@ function registerDevShortcuts() {
       }
       if (targetWin) targetWin.webContents.reloadIgnoringCache();
     });
-  } catch (err) {
-    log.warn('Error registering development shortcuts:', err);
+  } catch (error) {
+    log.warn('Error registering development shortcuts:', error);
   }
 }
 
 function unregisterShortcuts() {
   try {
     globalShortcut.unregisterAll();
-  } catch (err) {
-    log.warn('Error unregistering global shortcuts:', err);
+  } catch (error) {
+    log.warn('Error unregistering global shortcuts:', error);
   }
 }
 
@@ -609,8 +609,8 @@ function createMainWindow() {
           'reading-test-state-changed seed skipped (ignored): readingTestSessionController unavailable.'
         );
       }
-    } catch (err) {
-      log.warn('Failed to seed main-renderer state on renderer load (ignored):', err);
+    } catch (error) {
+      log.warn('Failed to seed main-renderer state on renderer load (ignored):', error);
     }
   });
 
@@ -620,8 +620,8 @@ function createMainWindow() {
   if (!menuInstalled) {
     try {
       buildAppMenu();
-    } catch (err) {
-      log.error('Error building app menu during main window creation:', err);
+    } catch (error) {
+      log.error('Error building app menu during main window creation:', error);
     }
   }
 
@@ -642,9 +642,9 @@ function createMainWindow() {
           if (authorized && isAliveWindow(mainWin)) {
             mainWin.close();
           }
-        }).catch((err) => {
+        }).catch((error) => {
           pendingMainWindowCloseAfterTaskResolution = false;
-          log.error('Task Editor close resolution failed during main window close:', err);
+          log.error('Task Editor close resolution failed during main window close:', error);
         });
         return;
       }
@@ -676,27 +676,27 @@ function createMainWindow() {
       if (isAliveWindow(editorWin)) {
         try {
           editorWin.close();
-        } catch (err) {
-          log.error('Error closing editorWin from mainWin.close:', err);
+        } catch (error) {
+          log.error('Error closing editorWin from mainWin.close:', error);
         }
       }
 
       try {
         editorFindMain.closeFindWindow();
-      } catch (err) {
-        log.error('Error closing editorFindWin from mainWin.close:', err);
+      } catch (error) {
+        log.error('Error closing editorFindWin from mainWin.close:', error);
       }
 
       if (isAliveWindow(presetWin)) {
         try {
           presetWin.close();
-        } catch (err) {
-          log.error('Error closing presetWin from mainWin.close:', err);
+        } catch (error) {
+          log.error('Error closing presetWin from mainWin.close:', error);
         }
       }
 
-    } catch (err) {
-      log.error('Error in mainWin.close handler:', err);
+    } catch (error) {
+      log.error('Error in mainWin.close handler:', error);
     }
   });
 
@@ -709,8 +709,8 @@ function createMainWindow() {
     // (If something goes wrong here, we still want to see it as an error.)
     try {
       app.quit();
-    } catch (err) {
-      log.error('Error calling app.quit() in mainWin.closed:', err);
+    } catch (error) {
+      log.error('Error calling app.quit() in mainWin.closed:', error);
     }
   });
 }
@@ -789,7 +789,7 @@ function createEditorWindow(options = {}) {
     loadFileOptions
   );
   if (waitForBasePresentationReady && firstShowGeneration) {
-    editorDocumentLoad.catch((err) => {
+    editorDocumentLoad.catch((loadError) => {
       // A close can abort loadFile(). That close is already owned by the
       // established closed-window lifecycle path, not F07/F08.
       if (createdEditorWindowClosing || createdEditorWin.isDestroyed()) return;
@@ -799,14 +799,14 @@ function createEditorWindow(options = {}) {
           editorWin: createdEditorWin,
           mainWin,
           firstShowGeneration,
-          error: err,
+          error: loadError,
           logContext: 'createEditorWindow.initialDocumentLoad',
         });
-      } catch (handlingErr) {
+      } catch (error) {
         log.error('Text Editor initial document load handling failed:', {
           firstShowGeneration,
-          loadError: err,
-        }, handlingErr);
+          loadError,
+        }, error);
       }
     });
   }
@@ -816,8 +816,8 @@ function createEditorWindow(options = {}) {
       shortcutActions: editorTextSizeController.getShortcutActions(),
       showInitialDocumentFailureDisclosure: showEditorFindInitialDocumentFailureDisclosure,
     });
-  } catch (err) {
-    log.warn('Text Editor find listener attachment failed (ignored):', err);
+  } catch (error) {
+    log.warn('Text Editor find listener attachment failed (ignored):', error);
   }
 
   // Keep the editor hidden here when startup presentation must be finalized later.
@@ -829,8 +829,8 @@ function createEditorWindow(options = {}) {
         waitForBasePresentationReady,
         logContext: 'createEditorWindow',
       });
-    } catch (err) {
-      log.error('Error showing Text Editor:', err);
+    } catch (error) {
+      log.error('Error showing Text Editor:', error);
     }
   });
 
@@ -899,26 +899,26 @@ function createTaskEditorWindow() {
     observingInitialTaskPreload = false;
     try {
       createdTaskEditorWin.webContents.removeListener('preload-error', onInitialTaskPreloadError);
-    } catch (err) {
-      log.warn('Task Editor initial preload listener removal failed (ignored):', err);
+    } catch (error) {
+      log.warn('Task Editor initial preload listener removal failed (ignored):', error);
     }
   }
 
-  function onInitialTaskPreloadError(_event, preloadPath, error) {
+  function onInitialTaskPreloadError(_event, preloadPath, preloadError) {
     if (!observingInitialTaskPreload || preloadPath !== taskEditorPreloadPath) return;
     removeInitialTaskPreloadObserver();
     try {
       taskEditorWindowLifecycleController.handleInitialPreloadFailure({
         taskEditorWin: createdTaskEditorWin,
         preloadPath,
-        error,
+        error: preloadError,
         logContext: 'createTaskEditorWindow.initialPreload',
       });
-    } catch (handlingErr) {
+    } catch (error) {
       log.error('Task Editor initial preload failure handling failed:', {
         preloadPath,
-        preloadError: error,
-      }, handlingErr);
+        preloadError,
+      }, error);
     }
   }
 
@@ -932,18 +932,18 @@ function createTaskEditorWindow() {
     () => {
       removeInitialTaskPreloadObserver();
     },
-    (error) => {
+    (loadError) => {
       removeInitialTaskPreloadObserver();
       try {
         taskEditorWindowLifecycleController.handleInitialDocumentLoadFailure({
           taskEditorWin: createdTaskEditorWin,
-          error,
+          error: loadError,
           logContext: 'createTaskEditorWindow.initialDocumentLoad',
         });
-      } catch (handlingErr) {
+      } catch (error) {
         log.error('Task Editor initial document load handling failed:', {
-          loadError: error,
-        }, handlingErr);
+          loadError,
+        }, error);
       }
     }
   );
@@ -957,8 +957,8 @@ function createTaskEditorWindow() {
         createdTaskEditorWin.maximize();
       }
       createdTaskEditorWin.show();
-    } catch (err) {
-      log.error('Error showing Task Editor window:', err);
+    } catch (error) {
+      log.error('Error showing Task Editor window:', error);
     }
   });
 
@@ -969,8 +969,8 @@ function createTaskEditorWindow() {
   createdTaskEditorWin.on('close', (event) => {
     if (taskEditorWindowLifecycleController.isForceCloseAuthorized()) return;
     event.preventDefault();
-    void taskEditorWindowLifecycleController.requestNativeClose(createdTaskEditorWin).catch((err) => {
-      log.error('Task Editor native close resolution failed:', err);
+    void taskEditorWindowLifecycleController.requestNativeClose(createdTaskEditorWin).catch((error) => {
+      log.error('Task Editor native close resolution failed:', error);
     });
   });
 
@@ -990,8 +990,8 @@ function createTextTimeCalculatorWindow() {
     try {
       textTimeCalculatorWin.show();
       textTimeCalculatorWin.focus();
-    } catch (err) {
-      log.warn('textTimeCalculatorWin focus/show failed (ignored):', err);
+    } catch (error) {
+      log.warn('textTimeCalculatorWin focus/show failed (ignored):', error);
     }
     return textTimeCalculatorWin;
   }
@@ -1033,8 +1033,8 @@ function createTextTimeCalculatorWindow() {
     let dialogTexts = null;
     try {
       dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
-    } catch (dialogTextsError) {
-      log.error('Text-time calculator initial document load native dialog translations unavailable:', dialogTextsError);
+    } catch (error) {
+      log.error('Text-time calculator initial document load native dialog translations unavailable:', error);
     }
 
     const title = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_title;
@@ -1052,8 +1052,8 @@ function createTextTimeCalculatorWindow() {
           defaultId: 0,
           noLink: true,
         });
-      } catch (dialogError) {
-        log.error('Text-time calculator initial document load native dialog failed:', dialogError);
+      } catch (error) {
+        log.error('Text-time calculator initial document load native dialog failed:', error);
       }
     } else {
       log.error('Text-time calculator initial document load native dialog copy unavailable.');
@@ -1063,8 +1063,8 @@ function createTextTimeCalculatorWindow() {
       if (isAliveWindow(createdTextTimeCalculatorWin)) {
         createdTextTimeCalculatorWin.close();
       }
-    } catch (closeError) {
-      log.error('Text-time calculator initial document load window close failed:', closeError);
+    } catch (error) {
+      log.error('Text-time calculator initial document load window close failed:', error);
     }
   });
 
@@ -1073,8 +1073,8 @@ function createTextTimeCalculatorWindow() {
       if (isAliveWindow(textTimeCalculatorWin)) {
         textTimeCalculatorWin.show();
       }
-    } catch (err) {
-      log.error('Error showing text_time_calculator window:', err);
+    } catch (error) {
+      log.error('Error showing text_time_calculator window:', error);
     }
   });
 
@@ -1096,8 +1096,8 @@ function createPresetWindow(initialData) {
     try {
       presetWin.focus();
       presetWin.webContents.send('preset-init', initialData || {});
-    } catch (err) {
-      log.warn('Preset window refresh failed (ignored):', err);
+    } catch (error) {
+      log.warn('Preset window refresh failed (ignored):', error);
     }
     return presetWin;
   }
@@ -1138,8 +1138,8 @@ function createPresetWindow(initialData) {
     let dialogTexts = null;
     try {
       dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
-    } catch (dialogTextsError) {
-      log.error('Preset modal initial document load native dialog translations unavailable:', dialogTextsError);
+    } catch (error) {
+      log.error('Preset modal initial document load native dialog translations unavailable:', error);
     }
 
     const title = dialogTexts && dialogTexts.preset_modal_initial_document_failure_title;
@@ -1157,8 +1157,8 @@ function createPresetWindow(initialData) {
           defaultId: 0,
           noLink: true,
         });
-      } catch (dialogError) {
-        log.error('Preset modal initial document load native dialog failed:', dialogError);
+      } catch (error) {
+        log.error('Preset modal initial document load native dialog failed:', error);
       }
     } else {
       log.error('Preset modal initial document load native dialog copy unavailable.');
@@ -1168,8 +1168,8 @@ function createPresetWindow(initialData) {
       if (isAliveWindow(createdPresetWin)) {
         createdPresetWin.close();
       }
-    } catch (closeError) {
-      log.error('Preset modal initial document load window close failed:', closeError);
+    } catch (error) {
+      log.error('Preset modal initial document load window close failed:', error);
     }
   });
 
@@ -1178,12 +1178,12 @@ function createPresetWindow(initialData) {
     presetWin.show();
     try {
       presetWin.webContents.send('preset-init', initialData || {});
-    } catch (err) {
-      log.error('Error sending preset-init:', err);
+    } catch (error) {
+      log.error('Error sending preset-init:', error);
       try {
         if (isAliveWindow(presetWin)) presetWin.close();
-      } catch (closeErr) {
-        log.error('Error closing presetWin after failed preset-init:', closeErr);
+      } catch (error) {
+        log.error('Error closing presetWin after failed preset-init:', error);
       }
     }
   });
@@ -1204,8 +1204,8 @@ function createLanguageWindow() {
   if (isAliveWindow(langWin)) {
     try {
       langWin.focus();
-    } catch (err) {
-      log.warn('langWin.focus failed (ignored):', err);
+    } catch (error) {
+      log.warn('langWin.focus failed (ignored):', error);
     }
     return;
   }
@@ -1252,8 +1252,8 @@ function createLanguageWindow() {
     let dialogTexts = null;
     try {
       dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
-    } catch (dialogTextsError) {
-      log.error('Language chooser initial document load native dialog translations unavailable:', dialogTextsError);
+    } catch (error) {
+      log.error('Language chooser initial document load native dialog translations unavailable:', error);
     }
 
     const title = dialogTexts && dialogTexts.language_chooser_initial_document_failure_title;
@@ -1278,8 +1278,8 @@ function createLanguageWindow() {
         } else {
           dialog.showMessageBoxSync(mainWin, dialogOptions);
         }
-      } catch (dialogError) {
-        log.error('Language chooser initial document load native dialog failed:', dialogError);
+      } catch (error) {
+        log.error('Language chooser initial document load native dialog failed:', error);
       }
     } else {
       log.error('Language chooser initial document load native dialog copy unavailable.');
@@ -1289,8 +1289,8 @@ function createLanguageWindow() {
       if (isAliveWindow(createdLanguageWin)) {
         createdLanguageWin.close();
       }
-    } catch (closeError) {
-      log.error('Language chooser initial document load window close failed:', closeError);
+    } catch (error) {
+      log.error('Language chooser initial document load window close failed:', error);
     }
   });
 
@@ -1306,15 +1306,15 @@ function createLanguageWindow() {
         if (languageSelectionHandler) {
           try {
             ipcMain.removeListener('language-selected', languageSelectionHandler);
-          } catch (err) {
-            log.warn('Error removing language-selected handler after fallback:', err);
+          } catch (error) {
+            log.warn('Error removing language-selected handler after fallback:', error);
           }
           languageSelectionHandler = null;
         }
         resolveLanguage('fallback');
       }
-    } catch (err) {
-      log.error('Error applying fallback language:', err);
+    } catch (error) {
+      log.error('Error applying fallback language:', error);
     } finally {
       langWin = null;
     }
@@ -1350,8 +1350,8 @@ function maybeAuthorizeStartupReady() {
     targetWin.webContents.send('startup:ready');
     startupReadySent = true;
     mainReadyState = 'READY';
-  } catch (err) {
-    log.error('Error emitting startup:ready to renderer:', err);
+  } catch (error) {
+    log.error('Error emitting startup:ready to renderer:', error);
   }
 }
 
@@ -1366,15 +1366,15 @@ function handleSplashRemoved() {
   if (isSmokeTest) {
     try {
       console.log('TOT_SMOKE_READY');
-    } catch (err) {
-      log.error('Failed to emit smoke-test ready marker:', err);
+    } catch (error) {
+      log.error('Failed to emit smoke-test ready marker:', error);
     }
 
     setTimeout(() => {
       try {
         app.quit();
-      } catch (err) {
-        log.error('Failed to quit app after smoke-test ready marker:', err);
+      } catch (error) {
+        log.error('Failed to quit app after smoke-test ready marker:', error);
       }
     }, 0);
     return;
@@ -1382,8 +1382,8 @@ function handleSplashRemoved() {
 
   try {
     updater.scheduleInitialCheck();
-  } catch (err) {
-    log.warn('Updater initial-check scheduling failed (ignored):', err);
+  } catch (error) {
+    log.warn('Updater initial-check scheduling failed (ignored):', error);
   }
 }
 
@@ -1395,8 +1395,8 @@ function showEditorStartupFailureDisclosure(details = {}) {
 
   try {
     dialogTexts = menuBuilder.getDialogTexts(selectedLanguage);
-  } catch (err) {
-    log.error('Text Editor startup failure native dialog translations unavailable:', err);
+  } catch (error) {
+    log.error('Text Editor startup failure native dialog translations unavailable:', error);
   }
 
   const title = dialogTexts && dialogTexts[
@@ -1422,8 +1422,8 @@ function showEditorStartupFailureDisclosure(details = {}) {
       defaultId: 0,
       noLink: true,
     });
-  } catch (err) {
-    log.error('Text Editor startup failure native dialog failed:', { cause }, err);
+  } catch (error) {
+    log.error('Text Editor startup failure native dialog failed:', { cause }, error);
   }
 }
 
@@ -1431,8 +1431,8 @@ function showEditorFindInitialDocumentFailureDisclosure(findWindow) {
   let dialogTexts = null;
   try {
     dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
-  } catch (err) {
-    log.error('Text Editor find initial document load native dialog translations unavailable:', err);
+  } catch (error) {
+    log.error('Text Editor find initial document load native dialog translations unavailable:', error);
   }
 
   const title = dialogTexts && dialogTexts.editor_find_initial_document_failure_title;
@@ -1454,8 +1454,8 @@ function showEditorFindInitialDocumentFailureDisclosure(findWindow) {
       defaultId: 0,
       noLink: true,
     });
-  } catch (err) {
-    log.error('Text Editor find initial document load native dialog failed:', err);
+  } catch (error) {
+    log.error('Text Editor find initial document load native dialog failed:', error);
   }
 }
 
@@ -1480,8 +1480,8 @@ function closeRendererAfterI18nFailure(event, payload) {
   let dialogTexts = null;
   try {
     dialogTexts = menuBuilder.getDialogTexts(selectedLanguage);
-  } catch (err) {
-    log.error('Renderer i18n failure native dialog translations unavailable:', err);
+  } catch (error) {
+    log.error('Renderer i18n failure native dialog translations unavailable:', error);
   }
 
   const isSettingsListenerFailure = failureKind === 'settings-listener';
@@ -1504,8 +1504,8 @@ function closeRendererAfterI18nFailure(event, payload) {
         defaultId: 0,
         noLink: true,
       });
-    } catch (err) {
-      log.error('Renderer i18n failure native dialog failed:', err);
+    } catch (error) {
+      log.error('Renderer i18n failure native dialog failed:', error);
     }
   } else {
     log.error('Renderer i18n failure native dialog copy unavailable; closing window without dialog.');
@@ -1517,8 +1517,8 @@ function closeRendererAfterI18nFailure(event, payload) {
   });
   try {
     sourceWindow.close();
-  } catch (err) {
-    log.error('Renderer i18n failure window close failed:', err);
+  } catch (error) {
+    log.error('Renderer i18n failure window close failed:', error);
   }
 }
 
@@ -1539,14 +1539,14 @@ function resolveLanguage(reason) {
 
   try {
     buildAppMenu();
-  } catch (err) {
-    log.error('Error building menu after language resolution:', err);
+  } catch (error) {
+    log.error('Error building menu after language resolution:', error);
   }
 
   try {
     if (!mainWin) createMainWindow();
-  } catch (err) {
-    log.error('Error creating mainWin after language resolution:', err);
+  } catch (error) {
+    log.error('Error creating mainWin after language resolution:', error);
   }
 
   maybeMarkMainInvariantsReady();
@@ -1707,8 +1707,8 @@ async function createFlotanteWindow(options = {}) {
         const nx = (typeof options.x === 'number') ? options.x : b.x;
         const ny = (typeof options.y === 'number') ? options.y : b.y;
         flotanteWin.setBounds({ x: nx, y: ny });
-      } catch (err) {
-        log.warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', err);
+      } catch (error) {
+        log.warnOnce('flotanteWin.setBounds', 'flotanteWin.setBounds failed (ignored):', error);
       }
     }
     return flotanteWin;
@@ -1754,8 +1754,8 @@ async function createFlotanteWindow(options = {}) {
       pos.x = wa.x + wa.width - bwOpts.width - marginRight;
       pos.y = wa.y + wa.height - bwOpts.height - marginBottom;
     }
-  } catch (err) {
-    log.warn('Flotante position: screen.getPrimaryDisplay failed; using OS defaults.', err);
+  } catch (error) {
+    log.warn('Flotante position: screen.getPrimaryDisplay failed; using OS defaults.', error);
   }
 
   // Allow explicit overrides.
@@ -1791,18 +1791,18 @@ async function createFlotanteWindow(options = {}) {
       } else {
         log.warn('flotante-closed notification skipped (ignored): main window unavailable.');
       }
-    } catch (err) {
-      log.warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", err);
+    } catch (error) {
+      log.warnOnce('mainWin.send.flotante-closed', "mainWin send('flotante-closed') failed (ignored):", error);
     }
   });
 
   // An already-started close can reject loadFile; a still-live initial load failure must reach its caller.
   try {
     await win.loadFile(FLOTANTE_HTML);
-  } catch (err) {
+  } catch (error) {
     if (!winClosing && !win.isDestroyed()) {
-      log.error('Floating Stopwatch initial document load failed:', err);
-      const initialDocumentLoadError = new Error(FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED, { cause: err });
+      log.error('Floating Stopwatch initial document load failed:', error);
+      const initialDocumentLoadError = new Error(FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED, { cause: error });
       initialDocumentLoadError.code = FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED;
       throw initialDocumentLoadError;
     }
@@ -1811,8 +1811,8 @@ async function createFlotanteWindow(options = {}) {
   // Final safety: ensure it's fully visible.
   try {
     snapWindowFullyIntoWorkArea(win);
-  } catch (err) {
-    log.warnOnce('snapWindowFullyIntoWorkArea', 'snapWindowFullyIntoWorkArea failed (ignored):', err);
+  } catch (error) {
+    log.warnOnce('snapWindowFullyIntoWorkArea', 'snapWindowFullyIntoWorkArea failed (ignored):', error);
   }
 
   return win;
@@ -1865,14 +1865,14 @@ function broadcastCronoState() {
         'crono-state broadcast skipped (ignored): main window unavailable.'
       );
     }
-  } catch (err) {
-    log.warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', err);
+  } catch (error) {
+    log.warnOnce('send.crono-state.mainWin', 'send crono-state to mainWin failed (ignored):', error);
   }
 
   try {
     if (isAliveWindow(flotanteWin)) flotanteWin.webContents.send('crono-state', state);
-  } catch (err) {
-    log.warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', err);
+  } catch (error) {
+    log.warnOnce('send.crono-state.flotanteWin', 'send crono-state to flotanteWin failed (ignored):', error);
   }
 }
 
@@ -1994,8 +1994,8 @@ ipcMain.handle('get-available-languages', async () => {
     }
 
     return filtered;
-  } catch (err) {
-    log.warn('Language manifest load failed; using fallback:', err);
+  } catch (error) {
+    log.warn('Language manifest load failed; using fallback:', error);
     return FALLBACK_LANGUAGES;
   }
 });
@@ -2009,8 +2009,8 @@ ipcMain.on('crono-toggle', () => {
   if (!guardMainUserAction('crono-toggle', 'crono-toggle ignored (pre-READY).')) return;
   try {
     toggleCrono();
-  } catch (err) {
-    log.error('Error in crono-toggle:', err);
+  } catch (error) {
+    log.error('Error in crono-toggle:', error);
   }
 });
 
@@ -2018,8 +2018,8 @@ ipcMain.on('crono-reset', () => {
   if (!guardMainUserAction('crono-reset', 'crono-reset ignored (pre-READY).')) return;
   try {
     resetCrono();
-  } catch (err) {
-    log.error('Error in crono-reset:', err);
+  } catch (error) {
+    log.error('Error in crono-reset:', error);
   }
 });
 
@@ -2027,8 +2027,8 @@ ipcMain.on('crono-set-elapsed', (_ev, ms) => {
   if (!guardMainUserAction('crono-set-elapsed', 'crono-set-elapsed ignored (pre-READY).')) return;
   try {
     setCronoElapsed(ms);
-  } catch (err) {
-    log.error('Error in crono-set-elapsed:', err);
+  } catch (error) {
+    log.error('Error in crono-set-elapsed:', error);
   }
 });
 
@@ -2040,18 +2040,18 @@ ipcMain.handle('flotante-open', async () => {
   try {
     await ensureFlotanteWindowOpen();
     return { ok: true };
-  } catch (err) {
-    if (err && err.code === FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED) {
+  } catch (error) {
+    if (error && error.code === FLOTANTE_INITIAL_DOCUMENT_LOAD_FAILED) {
       showFlotanteInitialDocumentFailureDisclosure();
       try {
         requestCloseFlotanteWindow();
-      } catch (closeError) {
-        log.error('Floating Stopwatch initial document load window close failed:', closeError);
+      } catch (error) {
+        log.error('Floating Stopwatch initial document load window close failed:', error);
       }
-      return { ok: false, error: err.code };
+      return { ok: false, error: error.code };
     }
-    log.error('Error processing flotante-open:', err);
-    return { ok: false, error: String(err) };
+    log.error('Error processing flotante-open:', error);
+    return { ok: false, error: String(error) };
   }
 });
 
@@ -2062,9 +2062,9 @@ ipcMain.handle('flotante-close', () => {
   try {
     requestCloseFlotanteWindow();
     return { ok: true };
-  } catch (err) {
-    log.error('Error processing flotante-close:', err);
-    return { ok: false, error: String(err) };
+  } catch (error) {
+    log.error('Error processing flotante-close:', error);
+    return { ok: false, error: String(error) };
   }
 });
 
@@ -2117,8 +2117,8 @@ ipcMain.on('flotante-command', (_ev, cmd) => {
       'flotante-command ignored: unknown cmd (ignored):',
       String(cmd.cmd)
     );
-  } catch (err) {
-    log.error('Error processing flotante-command in main:', err);
+  } catch (error) {
+    log.error('Error processing flotante-command in main:', error);
   }
 });
 
@@ -2133,9 +2133,9 @@ ipcMain.handle('open-editor', () => {
       startupState: editorState.loadInitialState(loadJson),
       logContext: 'open-editor',
     });
-  } catch (err) {
-    log.error('Error processing open-editor:', err);
-    return { ok: false, error: String(err) };
+  } catch (error) {
+    log.error('Error processing open-editor:', error);
+    return { ok: false, error: String(error) };
   }
 });
 
@@ -2148,24 +2148,24 @@ ipcMain.on('editor-report-base-presentation-state', (event, payload) => {
       payload,
       logContext: 'editor-report-base-presentation-state',
     });
-  } catch (err) {
-    log.error('Error processing editor-report-base-presentation-state:', err);
+  } catch (error) {
+    log.error('Error processing editor-report-base-presentation-state:', error);
   }
 });
 
 ipcMain.on('task-editor-close-response', (event, payload) => {
   try {
     taskEditorWindowLifecycleController.handleCloseResponse(event, payload);
-  } catch (err) {
-    log.error('Error processing task-editor-close-response:', err);
+  } catch (error) {
+    log.error('Error processing task-editor-close-response:', error);
   }
 });
 
 ipcMain.on('task-editor-terminal', (event, payload) => {
   try {
     taskEditorWindowLifecycleController.acceptTerminalOutcome(event, payload);
-  } catch (err) {
-    log.error('Error processing task-editor-terminal:', err);
+  } catch (error) {
+    log.error('Error processing task-editor-terminal:', error);
   }
 });
 
@@ -2186,9 +2186,9 @@ ipcMain.handle('text-time-calculator-open', (event) => {
 
     createTextTimeCalculatorWindow();
     return { ok: true };
-  } catch (err) {
-    log.error('Error processing text-time-calculator-open:', err);
-    return { ok: false, error: String(err) };
+  } catch (error) {
+    log.error('Error processing text-time-calculator-open:', error);
+    return { ok: false, error: String(error) };
   }
 });
 
@@ -2245,9 +2245,9 @@ ipcMain.handle('open-preset-modal', (event, payload) => {
 
     createPresetWindow(initialData);
     return { ok: true };
-  } catch (err) {
-    log.error('Error processing open-preset-modal:', err);
-    return { ok: false, error: String(err) };
+  } catch (error) {
+    log.error('Error processing open-preset-modal:', error);
+    return { ok: false, error: String(error) };
   }
 });
 
@@ -2255,17 +2255,17 @@ ipcMain.handle('open-preset-modal', (event, payload) => {
 ipcMain.handle('get-app-config', () => {
   try {
     return { ok: true, maxTextChars: MAX_TEXT_CHARS, maxIpcChars: MAX_IPC_CHARS };
-  } catch (err) {
-    log.error('Error processing get-app-config:', err);
-    return { ok: false, error: String(err), maxTextChars: MAX_TEXT_CHARS, maxIpcChars: MAX_IPC_CHARS };
+  } catch (error) {
+    log.error('Error processing get-app-config:', error);
+    return { ok: false, error: String(error), maxTextChars: MAX_TEXT_CHARS, maxIpcChars: MAX_IPC_CHARS };
   }
 });
 
 ipcMain.handle('get-app-version', () => {
   try {
     return String(app.getVersion() || '').trim();
-  } catch (err) {
-    log.error('Error processing get-app-version:', err);
+  } catch (error) {
+    log.error('Error processing get-app-version:', error);
     return '';
   }
 });
@@ -2279,8 +2279,8 @@ ipcMain.handle('get-app-runtime-info', () => {
       chromeVersion: String((process.versions && process.versions.chrome) || '').trim(),
       nodeVersion: String((process.versions && process.versions.node) || '').trim(),
     };
-  } catch (err) {
-    log.error('Error processing get-app-runtime-info:', err);
+  } catch (error) {
+    log.error('Error processing get-app-runtime-info:', error);
     return { platform: '', arch: '', electronVersion: '', chromeVersion: '', nodeVersion: '' };
   }
 });
@@ -2315,9 +2315,9 @@ ipcMain.on('renderer-i18n-failed', closeRendererAfterI18nFailure);
 app.whenReady().then(() => {
   try {
     initStorage(app);
-  } catch (err) {
-    log.error('Storage init failed:', err);
-    throw err;
+  } catch (error) {
+    log.error('Storage init failed:', error);
+    throw error;
   }
 
   // Ensure config directory exists before any module tries to read/write JSON.
@@ -2537,15 +2537,15 @@ app.whenReady().then(() => {
     languageSelectionHandler = () => {
       try {
         resolveLanguage('selected');
-      } catch (err) {
-        log.error('Error resolving language selection:', err);
+      } catch (error) {
+        log.error('Error resolving language selection:', error);
       } finally {
         languageSelectionHandler = null;
         // Close the language window if it is still open.
         try {
           if (isAliveWindow(langWin)) langWin.close();
-        } catch (err) {
-          log.warn('langWin.close failed after language-selected (ignored):', err);
+        } catch (error) {
+          log.warn('langWin.close failed after language-selected (ignored):', error);
         }
       }
     };
@@ -2576,8 +2576,8 @@ app.on('will-quit', () => {
       clearInterval(cronoInterval);
       cronoInterval = null;
     }
-  } catch (err) {
-    log.error('Error clearing stopwatch in will-quit:', err);
+  } catch (error) {
+    log.error('Error clearing stopwatch in will-quit:', error);
   }
 
   const runtimeTempCleanupWarning = cleanupRuntimeTempRoot();

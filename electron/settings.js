@@ -159,13 +159,13 @@ function loadNumberFormatDefaults(lang) {
     }
 
     return { thousands, decimal };
-  } catch (err) {
+  } catch (error) {
     // Recoverable: caller will apply default separators (fallback).
     log.warnOnce(
       `settings.loadNumberFormatDefaults.read:${langCode}`,
       'numberFormat defaults load failed (using fallback):',
       { langCode, filePath },
-      err
+      error
     );
     return null;
   }
@@ -497,8 +497,8 @@ function init({ loadJson, saveJson, saveJsonStrict, settingsFile }) {
 
   try {
     _saveJson(_settingsFile, _currentSettings);
-  } catch (err) {
-    log.error('init failed to persist settings:', _settingsFile, err);
+  } catch (error) {
+    log.error('init failed to persist settings:', _settingsFile, error);
   }
 
   return _currentSettings;
@@ -534,11 +534,11 @@ function saveSettings(nextSettings) {
 
   try {
     _saveJson(_settingsFile, normalizedSettings);
-  } catch (err) {
+  } catch (error) {
     log.error(
       'saveSettings failed (not persisted):',
       _settingsFile,
-      err
+      error
     );
   }
 
@@ -607,11 +607,11 @@ function decorateSettingsPayload(settings) {
       return null;
     }
     return decoratedSettings;
-  } catch (err) {
+  } catch (error) {
     log.errorOnce(
       'settings.decorateSettings.failed',
       'Renderer settings decorator failed; settings payload dropped:',
-      err
+      error
     );
     return null;
   }
@@ -645,11 +645,11 @@ function resolvePublicationWindows() {
       return {};
     }
     return windows;
-  } catch (err) {
+  } catch (error) {
     log.warnOnce(
       'settings.getWindows.failed',
       'getWindows failed (window-targeted updates skipped):',
-      err
+      error
     );
     return {};
   }
@@ -667,8 +667,8 @@ function notifySettingsUpdated(settings) {
 
   try {
     onSettingsUpdated(settings);
-  } catch (err) {
-    log.warn('onSettingsUpdated callback failed (ignored):', err);
+  } catch (error) {
+    log.warn('onSettingsUpdated callback failed (ignored):', error);
   }
 }
 
@@ -700,12 +700,12 @@ function sendSettingsUpdated(settingsPayload, windows) {
     try {
       if (!win || win.isDestroyed()) return;
       win.webContents.send('settings-updated', settingsPayload);
-    } catch (err) {
+    } catch (error) {
       log.warnOnce(
         `settings.broadcastSettingsUpdated.${name}`,
         'settings-updated notify failed (ignored):',
         name,
-        err
+        error
       );
     }
   });
@@ -743,8 +743,8 @@ function sendPreciseCountingFallbackNotice() {
       return;
     }
     mainWin.webContents.send('precise-counting-fallback');
-  } catch (err) {
-    log.warn('Precise-counting fallback notice delivery failed (ignored):', err);
+  } catch (error) {
+    log.warn('Precise-counting fallback notice delivery failed (ignored):', error);
   }
 }
 
@@ -773,15 +773,15 @@ function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
     const nextSettings = cloneSettingsForMutation(settings);
     nextSettings.modeConteo = 'simple';
     savedSettings = saveSettingsStrict(nextSettings);
-  } catch (err) {
-    log.error('Precise-counting fallback persistence failed:', details, err);
+  } catch (error) {
+    log.error('Precise-counting fallback persistence failed:', details, error);
     return { ok: false, code: 'PERSIST_FAILED' };
   }
 
   try {
     publishSettingsUpdated(savedSettings);
-  } catch (err) {
-    log.warn('Precise-counting fallback settings publication failed (ignored):', err);
+  } catch (error) {
+    log.warn('Precise-counting fallback settings publication failed (ignored):', error);
   }
   try {
     log.warn('Precise counting failed; switched modeConteo to simple:', details);
@@ -813,8 +813,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
       );
       saveSettings(settings);
     }
-  } catch (err) {
-    log.error('applyFallbackLanguageIfUnset failed:', err);
+  } catch (error) {
+    log.error('applyFallbackLanguageIfUnset failed:', error);
   }
 }
 
@@ -841,8 +841,8 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     try {
       win.setMenu(null);
       win.setMenuBarVisibility(false);
-    } catch (err) {
-      log.warn('hide window menu failed (ignored):', name, err);
+    } catch (error) {
+      log.warn('hide window menu failed (ignored):', name, error);
     }
   }
 
@@ -851,10 +851,10 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     let settings;
     try {
       settings = getSettings();
-    } catch (err) {
+    } catch (error) {
       log.warn(
         'IPC get-settings failed (using safe fallback):',
-        err
+        error
       );
       settings = normalizeSettings(createDefaultSettings(DEFAULT_LANG));
     }
@@ -865,9 +865,9 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
   ipcMain.handle('get-current-language', async () => {
     try {
       return getSettings().language;
-    } catch (err) {
-      log.error('IPC get-current-language failed:', err);
-      throw err;
+    } catch (error) {
+      log.error('IPC get-current-language failed:', error);
+      throw error;
     }
   });
 
@@ -902,8 +902,8 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       } else {
         try {
           buildAppMenu(menuLang);
-        } catch (err) {
-          log.warn('menu rebuild failed (ignored):', menuLang, err);
+        } catch (error) {
+          log.warn('menu rebuild failed (ignored):', menuLang, error);
         }
       }
 
@@ -919,9 +919,9 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       publishSettingsUpdated(settings);
 
       return { ok: true, language: chosen };
-    } catch (err) {
-      log.error('IPC set-language failed:', err);
-      throw err;
+    } catch (error) {
+      log.error('IPC set-language failed:', error);
+      throw error;
     }
   });
 
@@ -940,9 +940,9 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       const savedSettings = saveAndPublishSettingsStrict(nextSettings);
 
       return { ok: true, mode: savedSettings.modeConteo };
-    } catch (err) {
-      log.error('IPC set-mode-conteo failed:', err);
-      throw err;
+    } catch (error) {
+      log.error('IPC set-mode-conteo failed:', error);
+      throw error;
     }
   });
 
@@ -984,9 +984,9 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       nextSettings.selected_preset_by_language[langKey] = name;
       saveSettingsStrict(nextSettings);
       return { ok: true, langKey, name };
-    } catch (err) {
-      log.error('IPC set-selected-preset failed:', err);
-      throw err;
+    } catch (error) {
+      log.error('IPC set-selected-preset failed:', error);
+      throw error;
     }
   });
 
@@ -1009,9 +1009,9 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       nextSettings.previewSpoilerEnabled = enabled;
       saveSettingsStrict(nextSettings);
       return { ok: true, enabled };
-    } catch (err) {
-      log.error('IPC set-preview-spoiler-enabled failed:', err);
-      throw err;
+    } catch (error) {
+      log.error('IPC set-preview-spoiler-enabled failed:', error);
+      throw error;
     }
   });
 
@@ -1035,9 +1035,9 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       const savedSettings = saveAndPublishSettingsStrict(nextSettings);
 
       return { ok: true, enabled: savedSettings.spellcheckEnabled };
-    } catch (err) {
-      log.error('IPC set-spellcheck-enabled failed:', err);
-      throw err;
+    } catch (error) {
+      log.error('IPC set-spellcheck-enabled failed:', error);
+      throw error;
     }
   });
 

@@ -15,8 +15,8 @@ ipcRenderer.on('editor-find-init', (_event, payload) => {
   for (const cb of Array.from(initCallbacks)) {
     try {
       cb(payload);
-    } catch (err) {
-      console.error('editor-find-init callback error:', err);
+    } catch (error) {
+      console.error('editor-find-init callback error:', error);
     }
   }
 });
@@ -26,8 +26,8 @@ ipcRenderer.on('editor-find-state', (_event, payload) => {
   for (const cb of Array.from(stateCallbacks)) {
     try {
       cb(payload);
-    } catch (err) {
-      console.error('editor-find-state callback error:', err);
+    } catch (error) {
+      console.error('editor-find-state callback error:', error);
     }
   }
 });
@@ -44,8 +44,8 @@ function onInit(cb) {
       if (!initCallbacks.has(cb)) return;
       try {
         cb(lastInitPayload);
-      } catch (err) {
-        console.error('editor-find-init replay callback error:', err);
+      } catch (error) {
+        console.error('editor-find-init replay callback error:', error);
       }
     }, 0);
   }
@@ -53,8 +53,8 @@ function onInit(cb) {
   return () => {
     try {
       initCallbacks.delete(cb);
-    } catch (err) {
-      console.error('editor-find-init unsubscribe error:', err);
+    } catch (error) {
+      console.error('editor-find-init unsubscribe error:', error);
     }
   };
 }
@@ -71,8 +71,8 @@ function onState(cb) {
       if (!stateCallbacks.has(cb)) return;
       try {
         cb(lastStatePayload);
-      } catch (err) {
-        console.error('editor-find-state replay callback error:', err);
+      } catch (error) {
+        console.error('editor-find-state replay callback error:', error);
       }
     }, 0);
   }
@@ -80,8 +80,8 @@ function onState(cb) {
   return () => {
     try {
       stateCallbacks.delete(cb);
-    } catch (err) {
-      console.error('editor-find-state unsubscribe error:', err);
+    } catch (error) {
+      console.error('editor-find-state unsubscribe error:', error);
     }
   };
 }
@@ -105,16 +105,16 @@ const api = {
     const listener = (_event, payload) => {
       try {
         cb(payload || {});
-      } catch (err) {
-        console.error('editor-find-focus-target callback error:', err);
+      } catch (error) {
+        console.error('editor-find-focus-target callback error:', error);
       }
     };
     ipcRenderer.on('editor-find-focus-target', listener);
     return () => {
       try {
         ipcRenderer.removeListener('editor-find-focus-target', listener);
-      } catch (err) {
-        console.error('editor-find-focus-target unsubscribe error:', err);
+      } catch (error) {
+        console.error('editor-find-focus-target unsubscribe error:', error);
       }
     };
   },
@@ -127,16 +127,16 @@ const api = {
     const listener = (_event, settings) => {
       try {
         cb(settings);
-      } catch (err) {
-        console.error('editor-find settings callback error:', err);
+      } catch (error) {
+        console.error('editor-find settings callback error:', error);
       }
     };
     ipcRenderer.on('settings-updated', listener);
     return () => {
       try {
         ipcRenderer.removeListener('settings-updated', listener);
-      } catch (err) {
-        console.error('editor-find settings unsubscribe error:', err);
+      } catch (error) {
+        console.error('editor-find settings unsubscribe error:', error);
       }
     };
   },

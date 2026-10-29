@@ -128,15 +128,15 @@ function safeSendToFindWindow(channel, payload) {
 
   try {
     wc.send(channel, payload);
-  } catch (err) {
+  } catch (error) {
     if (channel === 'editor-find-state') {
       log.warnOnce(
         'editorFind.send.editor-find-state',
         `Text Editor find send('${channel}') failed (ignored):`,
-        err
+        error
       );
     } else {
-      log.warn(`Text Editor find send('${channel}') failed (ignored):`, err);
+      log.warn(`Text Editor find send('${channel}') failed (ignored):`, error);
     }
   }
 }
@@ -154,8 +154,8 @@ function sendToFindWindowAfterLoad(wc, channel, payload) {
 
   try {
     wc.send(channel, payload);
-  } catch (err) {
-    log.warn(`Text Editor find post-load send('${channel}') failed (ignored):`, err);
+  } catch (error) {
+    log.warn(`Text Editor find post-load send('${channel}') failed (ignored):`, error);
   }
 }
 
@@ -174,8 +174,8 @@ function focusEditorWindow() {
   try {
     editorWin.focus();
     editorWin.webContents.focus();
-  } catch (err) {
-    log.warn('Unable to focus Text Editor after find close (ignored):', err);
+  } catch (error) {
+    log.warn('Unable to focus Text Editor after find close (ignored):', error);
   }
 }
 
@@ -206,8 +206,8 @@ function runEditorShortcutAction(actionName) {
 
   try {
     actions[actionName]();
-  } catch (err) {
-    log.error(`Error running Text Editor shortcut action '${actionName}':`, err);
+  } catch (error) {
+    log.error(`Error running Text Editor shortcut action '${actionName}':`, error);
   }
 }
 
@@ -303,11 +303,11 @@ function positionFindWindow() {
       width: FIND_WIN_WIDTH,
       height,
     }, false);
-  } catch (err) {
+  } catch (error) {
     log.warnOnce(
       'editorFind.position.failed',
       'Unable to position Text Editor find window (ignored):',
-      err
+      error
     );
   }
 }
@@ -315,8 +315,8 @@ function positionFindWindow() {
 function removeListenerWithWarn(target, eventName, listener, warnMessage) {
   try {
     target.removeListener(eventName, listener);
-  } catch (err) {
-    log.warn(warnMessage, err);
+  } catch (error) {
+    log.warn(warnMessage, error);
   }
 }
 
@@ -369,8 +369,8 @@ function attachFindWindow(win) {
   const onBeforeInput = (event, input) => {
     try {
       handleFindBeforeInput(event, input);
-    } catch (err) {
-      log.error('Error in find before-input-event handler:', err);
+    } catch (error) {
+      log.error('Error in find before-input-event handler:', error);
     }
   };
 
@@ -390,8 +390,8 @@ function attachFindWindow(win) {
     tryDispatchPendingFocus();
     Promise.resolve()
       .then(() => session.refreshCurrentQueryKeepingActiveMatch())
-      .catch((err) => {
-        log.error('Error in find focus handler:', err);
+      .catch((error) => {
+        log.error('Error in find focus handler:', error);
       });
   };
 
@@ -464,8 +464,8 @@ function createFindWindow() {
     if (typeof showInitialFindDocumentFailureDisclosure === 'function') {
       try {
         showInitialFindDocumentFailureDisclosure(createdFindWindow);
-      } catch (disclosureError) {
-        log.error('Text Editor find initial document load native disclosure failed:', disclosureError);
+      } catch (error) {
+        log.error('Text Editor find initial document load native disclosure failed:', error);
       }
     } else {
       log.error('Text Editor find initial document load native disclosure unavailable.');
@@ -475,8 +475,8 @@ function createFindWindow() {
       if (isAliveWindow(createdFindWindow)) {
         createdFindWindow.close();
       }
-    } catch (closeError) {
-      log.error('Text Editor find initial document load window close failed:', closeError);
+    } catch (error) {
+      log.error('Text Editor find initial document load window close failed:', error);
     }
   });
 
@@ -498,9 +498,9 @@ function closeFindWindow() {
   closingFindWindow = true;
   try {
     win.close();
-  } catch (err) {
+  } catch (error) {
     closingFindWindow = false;
-    log.error('Error closing Text Editor find window:', err);
+    log.error('Error closing Text Editor find window:', error);
   }
 }
 
@@ -535,8 +535,8 @@ function openFindUi({
   try {
     win.show();
     win.focus();
-  } catch (err) {
-    log.error('Error showing/focusing find window:', err);
+  } catch (error) {
+    log.error('Error showing/focusing find window:', error);
   }
 
   publishInit();
@@ -719,15 +719,15 @@ function attachEditorWindow(editorWin, options = {}) {
   const onBeforeInput = (event, input) => {
     try {
       handleEditorBeforeInput(event, input);
-    } catch (err) {
-      log.error('Error in Text Editor before-input-event handler:', err);
+    } catch (error) {
+      log.error('Error in Text Editor before-input-event handler:', error);
     }
   };
   const onFoundInPage = (_event, result) => {
     try {
       session.handleFoundInPage(result);
-    } catch (err) {
-      log.error('Error in Text Editor found-in-page handler:', err);
+    } catch (error) {
+      log.error('Error in Text Editor found-in-page handler:', error);
     }
   };
 

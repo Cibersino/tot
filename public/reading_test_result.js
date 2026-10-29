@@ -35,8 +35,8 @@
   try {
     log = window.getLogger('reading-test-result');
     log.debug('Reading-test result window starting...');
-  } catch (err) {
-    failClosedResultBootstrap(err);
+  } catch (error) {
+    failClosedResultBootstrap(error);
   }
 
   const resultApi = window.readingTestResultAPI || null;
@@ -103,8 +103,8 @@
     }
     try {
       resultApi.reportRendererI18nFailure({ kind });
-    } catch (reportErr) {
-      log.warn('readingTestResultAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    } catch (error) {
+      log.warn('readingTestResultAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
       if (typeof window.close === 'function') window.close();
     }
   }
@@ -179,16 +179,16 @@
       state.translationsLoadedFor = state.currentLanguage;
     }
 
-    function reportResultI18nFailure(err, { startup = false } = {}) {
-      const transition = err && err.rendererI18nTransition;
+    function reportResultI18nFailure(error, { startup = false } = {}) {
+      const transition = error && error.rendererI18nTransition;
       if (!transition) {
         return;
       }
       if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-        log.error('Reading-test result language transition failed; previous translation state remains authoritative:', err);
+        log.error('Reading-test result language transition failed; previous translation state remains authoritative:', error);
         return;
       }
-      log.error('Reading-test result i18n failure requires window closure:', err);
+      log.error('Reading-test result i18n failure requires window closure:', error);
       reportTerminalResultI18nFailure(startup ? 'startup' : 'transition-restoration');
     }
 
@@ -305,9 +305,9 @@
       }).then(() => {
         if (resultI18nTerminal || resultBootstrapTerminal) return;
         elements.btnContinue.focus({ preventScroll: true });
-      }).catch((err) => {
-        log.error('Reading-test result init failed:', err);
-        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
+      }).catch((error) => {
+        log.error('Reading-test result init failed:', error);
+        reportResultI18nFailure(error, { startup: !state.translationsLoadedFor });
       });
     }
 
@@ -321,8 +321,8 @@
         } else {
           try {
             nextSettings = await resultApi.getSettings() || {};
-          } catch (err) {
-            log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
+          } catch (error) {
+            log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', error);
             nextSettings = {};
           }
         }
@@ -330,9 +330,9 @@
           language: normalizeLanguage(nextSettings.language),
           settings: nextSettings,
         };
-      }).catch((err) => {
-        log.error('BOOTSTRAP: Reading-test result initial render failed:', err);
-        reportResultI18nFailure(err, { startup: !state.translationsLoadedFor });
+      }).catch((error) => {
+        log.error('BOOTSTRAP: Reading-test result initial render failed:', error);
+        reportResultI18nFailure(error, { startup: !state.translationsLoadedFor });
       });
     }
 
@@ -348,8 +348,8 @@
           return false;
         }
         return { language: nextLanguage, settings: nextSettings };
-      }).catch((err) => {
-        reportResultI18nFailure(err);
+      }).catch((error) => {
+        reportResultI18nFailure(error);
       });
     }
 
@@ -362,17 +362,17 @@
 
     try {
       resultApi.onInitData(handleInitData);
-    } catch (err) {
+    } catch (error) {
       resultBootstrapTerminal = true;
-      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onInitData:', err);
+      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onInitData:', error);
       if (typeof window.close === 'function') window.close();
       return;
     }
 
     try {
       resultApi.onSettingsChanged(handleSettingsChanged);
-    } catch (err) {
-      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onSettingsChanged:', err);
+    } catch (error) {
+      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onSettingsChanged:', error);
       reportTerminalResultI18nFailure('settings-listener');
       return;
     }

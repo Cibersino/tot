@@ -44,8 +44,8 @@ function waitForWindowVisible(win, label, log, timeoutMs) {
       try {
         win.removeListener('show', handleShow);
         win.removeListener('closed', handleClosed);
-      } catch (err) {
-        log.warn(`Reading-test ${label} window visibility cleanup failed (ignored):`, err);
+      } catch (error) {
+        log.warn(`Reading-test ${label} window visibility cleanup failed (ignored):`, error);
       }
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -53,12 +53,12 @@ function waitForWindowVisible(win, label, log, timeoutMs) {
       }
     };
 
-    const settle = (err) => {
+    const settle = (error) => {
       if (settled) return;
       settled = true;
       cleanup();
-      if (err) {
-        reject(err);
+      if (error) {
+        reject(error);
         return;
       }
       resolve();
@@ -109,8 +109,8 @@ function waitForWindowRendererLoad(win, label, log, timeoutMs) {
         webContents.removeListener('did-finish-load', handleDidFinishLoad);
         webContents.removeListener('destroyed', handleDestroyed);
         win.removeListener('closed', handleClosed);
-      } catch (err) {
-        log.warn(`Reading-test ${label} renderer-load cleanup failed (ignored):`, err);
+      } catch (error) {
+        log.warn(`Reading-test ${label} renderer-load cleanup failed (ignored):`, error);
       }
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -118,12 +118,12 @@ function waitForWindowRendererLoad(win, label, log, timeoutMs) {
       }
     };
 
-    const settle = (err) => {
+    const settle = (error) => {
       if (settled) return;
       settled = true;
       cleanup();
-      if (err) {
-        reject(err);
+      if (error) {
+        reject(error);
         return;
       }
       resolve();
@@ -208,8 +208,8 @@ function openQuestionsWindow(questions, options = {}) {
     function tryCloseWindowIfAlive(winToClose) {
       try {
         if (!winToClose.isDestroyed()) winToClose.close();
-      } catch (closeErr) {
-        log.warn('Reading-test questions window forced close failed (ignored):', closeErr);
+      } catch (error) {
+        log.warn('Reading-test questions window forced close failed (ignored):', error);
       }
     }
 
@@ -249,8 +249,8 @@ function openQuestionsWindow(questions, options = {}) {
           sandbox: true,
         },
       });
-    } catch (err) {
-      log.warn('Reading-test questions window create failed (ignored):', err);
+    } catch (error) {
+      log.warn('Reading-test questions window create failed (ignored):', error);
       settle({ ok: false, code: 'QUESTIONS_WINDOW_CREATE_FAILED' });
       return;
     }
@@ -259,8 +259,8 @@ function openQuestionsWindow(questions, options = {}) {
     if (typeof onWindowCreated === 'function') {
       try {
         onWindowCreated(win);
-      } catch (err) {
-        log.warn('Reading-test questions window registration failed (ignored):', err);
+      } catch (error) {
+        log.warn('Reading-test questions window registration failed (ignored):', error);
       }
     }
     win.once('ready-to-show', () => {
@@ -271,8 +271,8 @@ function openQuestionsWindow(questions, options = {}) {
           developerEmail,
           questions,
         });
-      } catch (err) {
-        log.warn('Reading-test questions init failed (ignored):', err);
+      } catch (error) {
+        log.warn('Reading-test questions init failed (ignored):', error);
         if (settle({ ok: false, code: 'QUESTIONS_WINDOW_INIT_FAILED' })) {
           tryCloseWindowIfAlive(win);
         }
@@ -283,16 +283,16 @@ function openQuestionsWindow(questions, options = {}) {
       if (typeof onWindowClosed === 'function') {
         try {
           onWindowClosed(win);
-        } catch (err) {
-          log.warn('Reading-test questions window close registration failed (ignored):', err);
+        } catch (error) {
+          log.warn('Reading-test questions window close registration failed (ignored):', error);
         }
       }
       if (settled) return;
       settle({ ok: true });
     });
 
-    win.loadFile(questionsWindowHtml).catch((err) => {
-      log.warn('Reading-test questions window load failed (ignored):', err);
+    win.loadFile(questionsWindowHtml).catch((error) => {
+      log.warn('Reading-test questions window load failed (ignored):', error);
       if (settle({ ok: false, code: 'QUESTIONS_WINDOW_LOAD_FAILED' })) {
         tryCloseWindowIfAlive(win);
       }
@@ -314,8 +314,8 @@ function openResultWindow(resultInfo, options = {}) {
     function tryCloseWindowIfAlive(winToClose) {
       try {
         if (!winToClose.isDestroyed()) winToClose.close();
-      } catch (closeErr) {
-        log.warn('Reading-test result window forced close failed (ignored):', closeErr);
+      } catch (error) {
+        log.warn('Reading-test result window forced close failed (ignored):', error);
       }
     }
 
@@ -355,8 +355,8 @@ function openResultWindow(resultInfo, options = {}) {
           sandbox: true,
         },
       });
-    } catch (err) {
-      log.warn('Reading-test result window create failed (ignored):', err);
+    } catch (error) {
+      log.warn('Reading-test result window create failed (ignored):', error);
       settle({ ok: false, code: 'RESULT_WINDOW_CREATE_FAILED' });
       return;
     }
@@ -365,8 +365,8 @@ function openResultWindow(resultInfo, options = {}) {
     if (typeof onWindowCreated === 'function') {
       try {
         onWindowCreated(win);
-      } catch (err) {
-        log.warn('Reading-test result window registration failed (ignored):', err);
+      } catch (error) {
+        log.warn('Reading-test result window registration failed (ignored):', error);
       }
     }
     win.once('ready-to-show', () => {
@@ -374,8 +374,8 @@ function openResultWindow(resultInfo, options = {}) {
       win.show();
       try {
         win.webContents.send('reading-test-result-init', resultInfo);
-      } catch (err) {
-        log.warn('Reading-test result init failed (ignored):', err);
+      } catch (error) {
+        log.warn('Reading-test result init failed (ignored):', error);
         if (settle({ ok: false, code: 'RESULT_WINDOW_INIT_FAILED' })) {
           tryCloseWindowIfAlive(win);
         }
@@ -386,16 +386,16 @@ function openResultWindow(resultInfo, options = {}) {
       if (typeof onWindowClosed === 'function') {
         try {
           onWindowClosed(win);
-        } catch (err) {
-          log.warn('Reading-test result window close registration failed (ignored):', err);
+        } catch (error) {
+          log.warn('Reading-test result window close registration failed (ignored):', error);
         }
       }
       if (settled) return;
       settle({ ok: true });
     });
 
-    win.loadFile(resultWindowHtml).catch((err) => {
-      log.warn('Reading-test result window load failed (ignored):', err);
+    win.loadFile(resultWindowHtml).catch((error) => {
+      log.warn('Reading-test result window load failed (ignored):', error);
       if (settle({ ok: false, code: 'RESULT_WINDOW_LOAD_FAILED' })) {
         tryCloseWindowIfAlive(win);
       }

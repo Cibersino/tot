@@ -9,10 +9,10 @@ const api = {
   // Receive status updates from main (channel is now 'crono-state')
   onState: (cb) => {
     const wrapper = (_e, state) => {
-      try { cb(state); } catch (err) { console.error(err); }
+      try { cb(state); } catch (error) { console.error(error); }
     };
     ipcRenderer.on('crono-state', wrapper);
-    return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (err) { console.error('removeListener error (crono-state):', err); } };
+    return () => { try { ipcRenderer.removeListener('crono-state', wrapper); } catch (error) { console.error('removeListener error (crono-state):', error); } };
   },
 
   // Send command to main (main will process the command: toggle/reset/set)
@@ -24,10 +24,10 @@ const api = {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {
-      try { cb(settings); } catch (err) { console.error('settings callback error:', err); }
+      try { cb(settings); } catch (error) { console.error('settings callback error:', error); }
     };
     ipcRenderer.on('settings-updated', listener);
-    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
+    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (error) { console.error('removeListener error (settings-updated):', error); } };
   }
 };
 

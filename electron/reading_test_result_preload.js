@@ -11,8 +11,8 @@ ipcRenderer.on('reading-test-result-init', (_event, payload) => {
   for (const listener of initDataListeners) {
     try {
       listener(payload);
-    } catch (err) {
-      console.error('reading-test-result-init callback error:', err);
+    } catch (error) {
+      console.error('reading-test-result-init callback error:', error);
     }
   }
 });
@@ -28,16 +28,16 @@ contextBridge.exposeInMainWorld('readingTestResultAPI', {
     const listener = (_event, settings) => {
       try {
         cb(settings);
-      } catch (err) {
-        console.error('reading-test-result settings callback error:', err);
+      } catch (error) {
+        console.error('reading-test-result settings callback error:', error);
       }
     };
     ipcRenderer.on('settings-updated', listener);
     return () => {
       try {
         ipcRenderer.removeListener('settings-updated', listener);
-      } catch (err) {
-        console.error('removeListener error (reading-test-result settings-updated):', err);
+      } catch (error) {
+        console.error('removeListener error (reading-test-result settings-updated):', error);
       }
     };
   },
@@ -52,16 +52,16 @@ contextBridge.exposeInMainWorld('readingTestResultAPI', {
     if (latestInitData !== null) {
       try {
         cb(latestInitData);
-      } catch (err) {
-        console.error('reading-test-result-init callback error:', err);
+      } catch (error) {
+        console.error('reading-test-result-init callback error:', error);
       }
     }
 
     return () => {
       try {
         initDataListeners.delete(cb);
-      } catch (err) {
-        console.error('reading-test-result-init unsubscribe failed (ignored):', err);
+      } catch (error) {
+        console.error('reading-test-result-init unsubscribe failed (ignored):', error);
       }
     };
   },

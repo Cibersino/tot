@@ -24,15 +24,15 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
-function safeErrorName(err) {
-  if (!err || typeof err !== 'object') return 'Error';
-  const candidate = String(err.name || '').trim();
+function safeErrorName(error) {
+  if (!error || typeof error !== 'object') return 'Error';
+  const candidate = String(error.name || '').trim();
   return candidate || 'Error';
 }
 
-function safeErrorMessage(err) {
-  if (!err || typeof err !== 'object') return String(err || '');
-  const candidate = String(err.message || '').trim();
+function safeErrorMessage(error) {
+  if (!error || typeof error !== 'object') return String(error || '');
+  const candidate = String(error.message || '').trim();
   return candidate || '';
 }
 
@@ -61,8 +61,8 @@ function readGoogleOAuthCredentialsFile(filePath) {
   let raw = '';
   try {
     raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  } catch (err) {
-    if (err && err.code === 'ENOENT') {
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
       return {
         ok: false,
         code: 'missing_file',
@@ -76,21 +76,21 @@ function readGoogleOAuthCredentialsFile(filePath) {
       ok: false,
       code: 'read_failed',
       parsed: null,
-      errorName: safeErrorName(err),
-      errorMessage: safeErrorMessage(err),
+      errorName: safeErrorName(error),
+      errorMessage: safeErrorMessage(error),
     };
   }
 
   if (!raw.trim()) {
     try {
       JSON.parse(raw);
-    } catch (err) {
+    } catch (error) {
       return {
         ok: false,
         code: 'empty_file',
         parsed: null,
-        errorName: safeErrorName(err),
-        errorMessage: safeErrorMessage(err),
+        errorName: safeErrorName(error),
+        errorMessage: safeErrorMessage(error),
       };
     }
   }
@@ -98,13 +98,13 @@ function readGoogleOAuthCredentialsFile(filePath) {
   let parsed = null;
   try {
     parsed = JSON.parse(raw);
-  } catch (err) {
+  } catch (error) {
     return {
       ok: false,
       code: 'invalid_json',
       parsed: null,
-      errorName: safeErrorName(err),
-      errorMessage: safeErrorMessage(err),
+      errorName: safeErrorName(error),
+      errorMessage: safeErrorMessage(error),
     };
   }
 

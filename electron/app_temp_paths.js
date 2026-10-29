@@ -35,11 +35,11 @@ function toTrimmedString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function getErrorDetails(err) {
+function getErrorDetails(error) {
   return {
-    errorName: String(err && err.name ? err.name : 'Error'),
-    errorCode: String(err && err.code ? err.code : ''),
-    errorMessage: String(err && err.message ? err.message : err || ''),
+    errorName: String(error && error.name ? error.name : 'Error'),
+    errorCode: String(error && error.code ? error.code : ''),
+    errorMessage: String(error && error.message ? error.message : error || ''),
   };
 }
 
@@ -75,7 +75,7 @@ function buildCleanupWarning(warningCode, stage, detailsSafeForLogs = {}) {
 function resolveRealPathOrFallback(candidatePath) {
   try {
     return fs.realpathSync(candidatePath);
-  } catch (_err) {
+  } catch {
     return path.resolve(candidatePath);
   }
 }
@@ -151,7 +151,7 @@ function cleanupRuntimeTempRunDir(runDir, { force = true } = {}) {
   try {
     fs.rmSync(resolvedRunDir, { recursive: true, force });
     return null;
-  } catch (err) {
+  } catch (error) {
     return buildCleanupWarning(
       'cleanup:runtime_temp_run_dir_cleanup_failed',
       'cleanup_runtime_temp_run_dir',
@@ -159,7 +159,7 @@ function cleanupRuntimeTempRunDir(runDir, { force = true } = {}) {
         runDir: safeRunDir,
         resolvedRunDir,
         runtimeTempRoot,
-        ...getErrorDetails(err),
+        ...getErrorDetails(error),
       }
     );
   }
@@ -172,13 +172,13 @@ function cleanupRuntimeTempRoot() {
   try {
     fs.rmSync(runtimeTempRoot, { recursive: true, force: true });
     return null;
-  } catch (err) {
+  } catch (error) {
     return buildCleanupWarning(
       'cleanup:runtime_temp_root_cleanup_failed',
       'cleanup_runtime_temp_root',
       {
         runtimeTempRoot: path.resolve(runtimeTempRoot),
-        ...getErrorDetails(err),
+        ...getErrorDetails(error),
       }
     );
   }

@@ -71,11 +71,11 @@
     if (hasWpmCurveFactory) {
       try {
         wpmCurveMapper = WpmCurve.createMapperFromConstants(AppConstants);
-      } catch (err) {
+      } catch (error) {
         wpmCurveFactoryFailed = true;
         log.warn(
           'BOOTSTRAP: WpmCurve.createMapperFromConstants failed; using linear slider mapping.',
-          err
+          error
         );
       }
     }
@@ -152,10 +152,10 @@
         }
         try {
           return clampWpm(wpmCurveMapper.wpmFromControl(rawControl));
-        } catch (err) {
+        } catch (error) {
           log.warn(
             'WpmCurve.wpmFromControl failed; using linear slider mapping.',
-            err
+            error
           );
           wpmCurveMapper = null;
         }
@@ -174,10 +174,10 @@
         }
         try {
           return wpmCurveMapper.controlFromWpm(rawWpm);
-        } catch (err) {
+        } catch (error) {
           log.warn(
             'WpmCurve.controlFromWpm failed; using linear slider mapping.',
-            err
+            error
           );
           wpmCurveMapper = null;
         }
@@ -323,8 +323,8 @@
           presets: allPresetsCache,
           stateBeforeReset: null,
         };
-      } catch (err) {
-        log.error('RendererPresets.loadPresetsIntoCombobox failed:', err);
+      } catch (error) {
+        log.error('RendererPresets.loadPresetsIntoCombobox failed:', error);
         const stateBeforeReset = capturePresetState();
         return {
           presets: resetPresetsState(),
@@ -365,8 +365,8 @@
         const previousState = stateBeforeReloadReset || capturePresetState();
         applyPresetSelection(selected);
         return buildPresetFlowResult(previousState, allPresetsCache);
-      } catch (err) {
-        log.error('Preset loading failed:', err);
+      } catch (error) {
+        log.error('Preset loading failed:', error);
         const previousState = stateBeforeReloadReset || capturePresetState();
         const presets = resetPresetsState();
         return buildPresetFlowResult(previousState, presets);
@@ -413,8 +413,8 @@
         const previousState = stateBeforeReloadReset || capturePresetState();
         applyPresetSelection(selected);
         return buildPresetFlowResult(previousState, updated);
-      } catch (err) {
-        log.error('Preset-created reconciliation failed:', err);
+      } catch (error) {
+        log.error('Preset-created reconciliation failed:', error);
         return buildPresetFlowResult(
           stateBeforeReloadReset || capturePresetState(),
           allPresetsCache
@@ -460,8 +460,8 @@
           notifyWpmChanged(previousWpm, onWpmChanged, selected);
         }
         return selected;
-      } catch (err) {
-        log.error('Preset selection change failed:', err);
+      } catch (error) {
+        log.error('Preset selection change failed:', error);
         return null;
       }
     }
@@ -525,10 +525,10 @@
               'BOOTSTRAP: WpmCurve.controlStep invalid; using default slider step.'
             );
           }
-        } catch (err) {
+        } catch (error) {
           log.warn(
             'BOOTSTRAP: WpmCurve.controlStep failed; using default slider step.',
-            err
+            error
           );
           wpmCurveMapper = null;
         }

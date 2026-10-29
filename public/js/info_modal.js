@@ -68,8 +68,8 @@
       const res = await fetch(path, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
-    } catch (err) {
-      log.warn('fetchText failed; info modal will show unavailable content:', path, err);
+    } catch (error) {
+      log.warn('fetchText failed; info modal will show unavailable content:', path, error);
       return null;
     }
   }
@@ -87,8 +87,8 @@
         el.textContent = tRenderer(translationKey);
       });
       return doc.body.innerHTML;
-    } catch (err) {
-      log.warn('translateInfoHtml failed:', err);
+    } catch (error) {
+      log.warn('translateInfoHtml failed:', error);
       return null;
     }
   }
@@ -98,8 +98,8 @@
       if (typeof htmlString !== 'string' || !htmlString.trim()) return null;
       const doc = new DOMParser().parseFromString(htmlString, 'text/html');
       return doc && doc.body ? doc.body.innerHTML : null;
-    } catch (err) {
-      log.warn('extractInfoBodyHtml failed:', err);
+    } catch (error) {
+      log.warn('extractInfoBodyHtml failed:', error);
       return null;
     }
   }
@@ -132,8 +132,8 @@
         }
         try {
           target.scrollIntoView({ behavior: 'auto', block: 'start' });
-        } catch (err) {
-          log.warn('Info modal native section scroll failed; using panel scroll fallback:', sectionId, err);
+        } catch (error) {
+          log.warn('Info modal native section scroll failed; using panel scroll fallback:', sectionId, error);
           const panelRect = panel.getBoundingClientRect();
           const targetRect = target.getBoundingClientRect();
           const desired = (targetRect.top - panelRect.top) + panel.scrollTop;
@@ -146,8 +146,8 @@
           return;
         }
         indexLink.focus({ preventScroll: true });
-      } catch (err) {
-        log.warn('Info modal section targeting failed; retaining Close focus:', sectionId, err);
+      } catch (error) {
+        log.warn('Info modal section targeting failed; retaining Close focus:', sectionId, error);
         focusClose();
       }
     });
@@ -168,8 +168,8 @@
         const value = typeof version === 'string' ? version.trim() : '';
         if (!value) log.warn('getAppVersion returned empty; About modal shows unavailable.');
         return { value };
-      } catch (err) {
-        log.warn('getAppVersion failed; About modal shows unavailable:', err);
+      } catch (error) {
+        log.warn('getAppVersion failed; About modal shows unavailable:', error);
         return { value: '' };
       }
     })();
@@ -233,8 +233,8 @@
             ]);
             licenseAvailable = !!(license && license.available);
             noticeAvailable = !!(notice && notice.available);
-          } catch (err) {
-            log.warn('getAppDocAvailability failed; About modal document availability defaults to hidden:', err);
+          } catch (error) {
+            log.warn('getAppDocAvailability failed; About modal document availability defaults to hidden:', error);
           }
         } else {
           log.warn('getAppDocAvailability unavailable; About modal document availability defaults to hidden.');
@@ -250,8 +250,8 @@
           licenseAvailable,
           noticeAvailable,
         };
-      } catch (err) {
-        log.warn('getAppRuntimeInfo failed; About modal shows unavailable:', err);
+      } catch (error) {
+        log.warn('getAppRuntimeInfo failed; About modal shows unavailable:', error);
         return {
           unavailable: true,
           includeSharpRuntimeNames: true,
@@ -346,8 +346,8 @@
       infoModal.setAttribute('aria-hidden', 'true');
       window.Notify.deactivateModalFocus(infoModal);
       infoModalContent.innerHTML = `<div id="infoModalLoading" class="info-loading">${tRenderer('renderer.info.loading')}</div>`;
-    } catch (err) {
-      log.error('Error closing info modal:', err);
+    } catch (error) {
+      log.error('Error closing info modal:', error);
     }
   }
 
@@ -467,8 +467,8 @@
     if (window.InfoModalLinks && typeof window.InfoModalLinks.applyTranslations === 'function') {
       window.InfoModalLinks.applyTranslations();
     }
-    void refreshOpenModal().catch((err) => {
-      log.warn('Open Info modal language refresh failed (ignored):', err);
+    void refreshOpenModal().catch((error) => {
+      log.warn('Open Info modal language refresh failed (ignored):', error);
     });
   }
 

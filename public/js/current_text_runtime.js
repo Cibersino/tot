@@ -600,8 +600,8 @@
       }
       applyLocalResolvedProcessingState(requestId);
       return true;
-    } catch (err) {
-      log.error('Current-text processing resolve failed:', err);
+    } catch (error) {
+      log.error('Current-text processing resolve failed:', error);
       return false;
     }
   }
@@ -630,11 +630,11 @@
           }
           await resolveCurrentTextProcessing(requestId, true);
           return;
-        } catch (err) {
+        } catch (error) {
           if (!isActivePendingRequest(requestId)) {
             return;
           }
-          log.error('Current-text pending settle failed:', err);
+          log.error('Current-text pending settle failed:', error);
           degradedRequestId = requestId;
           renderDegradedDerivedValues();
           await resolveCurrentTextProcessing(requestId, false);
@@ -719,11 +719,11 @@
         }
         applyStatsDisplayDerivedState(derivedState);
       })
-      .catch((err) => {
+      .catch((error) => {
         if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
           return;
         }
-        log.error(`Current-text display-only refresh failed after ${reason}:`, err);
+        log.error(`Current-text display-only refresh failed after ${reason}:`, error);
       });
   }
 
@@ -783,7 +783,7 @@
         }
         runQueuedStandaloneFollowup(refreshSequence);
       })
-      .catch((err) => {
+      .catch((error) => {
         if (refreshSequence !== renderAuthoritySequence || currentTextProcessingState.active) {
           releaseStandaloneRefreshOwner(refreshSequence, 'standalone_full_refresh_abandoned');
           return;
@@ -797,7 +797,7 @@
             source: 'standalone_full_refresh_failed',
           });
         }
-        log.error(`Current-text standalone derived refresh failed after ${reason}:`, err);
+        log.error(`Current-text standalone derived refresh failed after ${reason}:`, error);
       })
       .finally(() => {
         if (standaloneDerivedRefreshSequence === refreshSequence) {
