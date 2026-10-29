@@ -217,7 +217,7 @@
         log.error('Static icon upgrade failed:', {
           iconName,
           elementId: element.id || '',
-          err: error,
+          error,
         });
         throw error;
       }

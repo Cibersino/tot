@@ -321,10 +321,10 @@ function validateSourceForNativeRoute(source, provenance) {
 function buildFailureResultForError({
   source,
   parserType,
-  err,
+  error,
 }) {
-  const isPdfPasswordProtected = parserType === 'pdf_text_layer' && isPdfPasswordProtectedParserError(err);
-  const corruptOrUnreadable = isCorruptOrUnreadableParserError(parserType, err);
+  const isPdfPasswordProtected = parserType === 'pdf_text_layer' && isPdfPasswordProtectedParserError(error);
+  const corruptOrUnreadable = isCorruptOrUnreadableParserError(parserType, error);
   let errorCode = 'native_extraction_failed';
   let errorMessage = 'Native extraction failed due to parser/runtime error.';
   let summary = 'Native extraction route failed during parsing.';
@@ -352,9 +352,9 @@ function buildFailureResultForError({
         nativeFailureType,
         parserType,
         sourceFileExt: source.fileExt,
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorName: String(error && error.name ? error.name : 'Error'),
+        errorCode: String(error && error.code ? error.code : ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       }
     ),
   };
@@ -427,7 +427,7 @@ async function runNativeExtractionRoute({
     const failure = buildFailureResultForError({
       source,
       parserType: source.parserType,
-      err: error,
+      error,
     });
 
     return buildResult({

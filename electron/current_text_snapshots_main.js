@@ -468,7 +468,7 @@ function parseSnapshotFile(selectedReal) {
   try {
     parsed = JSON.parse(raw);
   } catch (error) {
-    log.warn('snapshot JSON parse failed:', { selectedReal, err: String(error) });
+    log.warn('snapshot JSON parse failed:', { selectedReal, error: String(error) });
     return { ok: false, code: 'INVALID_JSON', message: String(error) };
   }
 
