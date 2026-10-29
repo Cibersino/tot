@@ -200,7 +200,7 @@
           ? { ok: true }
           : { ok: false, code: 'INVALID_OR_FAILED_RESULT', result };
       } catch (error) {
-        return { ok: false, code: 'INVOKE_REJECTED', error: error };
+        return { ok: false, code: 'INVOKE_REJECTED', error };
       }
     }
 

@@ -71,7 +71,7 @@ function resolvePoolEntryPhysicalIdentity(filePath) {
     return {
       ok: false,
       code: 'CANONICALIZATION_FAILED',
-      error: error,
+      error,
     };
   }
 }
@@ -157,7 +157,7 @@ function listJsonFilesRecursive(startDir) {
     try {
       entries = fs.readdirSync(currentDir, { withFileTypes: true });
     } catch (error) {
-      failedDirectories.push({ path: currentDir, error: error });
+      failedDirectories.push({ path: currentDir, error });
       continue;
     }
 
@@ -184,7 +184,7 @@ function loadJsonFileStrict(filePath) {
   try {
     raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
   } catch (error) {
-    return { ok: false, code: 'READ_FAILED', error: error };
+    return { ok: false, code: 'READ_FAILED', error };
   }
 
   if (!raw.trim()) {
@@ -194,7 +194,7 @@ function loadJsonFileStrict(filePath) {
   try {
     return { ok: true, data: JSON.parse(raw) };
   } catch (error) {
-    return { ok: false, code: 'INVALID_JSON', error: error };
+    return { ok: false, code: 'INVALID_JSON', error };
   }
 }
 
@@ -209,7 +209,7 @@ function inspectPathEntry(filePath) {
     if (error && error.code === 'ENOENT') {
       return { ok: true, exists: false, kind: 'missing' };
     }
-    return { ok: false, code: 'INSPECT_FAILED', error: error };
+    return { ok: false, code: 'INSPECT_FAILED', error };
   }
 }
 
@@ -449,7 +449,7 @@ function parsePoolFile(filePath, rootPath, stateEntry) {
   try {
     fileCanonical = fs.realpathSync(filePath);
   } catch (error) {
-    return { ok: false, code: 'CANONICALIZATION_FAILED', error: error };
+    return { ok: false, code: 'CANONICALIZATION_FAILED', error };
   }
   const rootCanonical = getCanonicalPath(rootPath);
   if (!isPathInsideRoot(rootCanonical, fileCanonical)) {
@@ -541,7 +541,7 @@ function resolvePoolContext(options = {}) {
     try {
       fs.mkdirSync(snapshotsRootDir, { recursive: true });
     } catch (error) {
-      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error: error };
+      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error };
     }
     rootEntry = inspectPathEntry(snapshotsRootDir);
   }
@@ -559,7 +559,7 @@ function resolvePoolContext(options = {}) {
     try {
       fs.mkdirSync(poolDir, { recursive: true });
     } catch (error) {
-      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error: error };
+      return { ok: false, code: 'POOL_CONTEXT_UNAVAILABLE', error };
     }
     poolEntry = inspectPathEntry(poolDir);
   }
@@ -607,7 +607,7 @@ function resolvePoolDestination(context, relativePathWithinPool, { ensureParent 
       try {
         fs.mkdirSync(parentPath);
       } catch (error) {
-        return { ok: false, code: 'POOL_PARENT_CREATE_FAILED', error: error };
+        return { ok: false, code: 'POOL_PARENT_CREATE_FAILED', error };
       }
       parentEntry = inspectPathEntry(parentPath);
     }
@@ -853,7 +853,7 @@ function writePoolJsonEntry(context, relativePathWithinPool, payload, { replace 
     if (!entry.exists && error && error.code === 'EEXIST') {
       return { ok: false, code: 'DESTINATION_EXISTS' };
     }
-    return { ok: false, code: 'WRITE_FAILED', error: error };
+    return { ok: false, code: 'WRITE_FAILED', error };
   }
 }
 

@@ -77,7 +77,7 @@ function resolveRealpath(targetPath) {
   try {
     return { ok: true, path: fs.realpathSync(targetPath) };
   } catch (error) {
-    return { ok: false, error: error };
+    return { ok: false, error };
   }
 }
 
@@ -87,7 +87,7 @@ function inspectPathEntry(targetPath) {
     return { ok: true, exists: true };
   } catch (error) {
     if (error && error.code === 'ENOENT') return { ok: true, exists: false };
-    return { ok: false, error: error };
+    return { ok: false, error };
   }
 }
 
@@ -180,7 +180,7 @@ function readJsonFile(filePath) {
   try {
     exists = fs.existsSync(filePath);
   } catch (error) {
-    return { ok: false, code: 'READ_FAILED', error: error };
+    return { ok: false, code: 'READ_FAILED', error };
   }
   if (!exists) return { ok: false, code: 'NOT_FOUND' };
 
@@ -188,14 +188,14 @@ function readJsonFile(filePath) {
   try {
     raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
   } catch (error) {
-    return { ok: false, code: 'READ_FAILED', error: error };
+    return { ok: false, code: 'READ_FAILED', error };
   }
   if (!raw.trim()) return { ok: false, code: 'INVALID_JSON' };
 
   try {
     return { ok: true, data: JSON.parse(raw) };
   } catch (error) {
-    return { ok: false, code: 'INVALID_JSON', error: error };
+    return { ok: false, code: 'INVALID_JSON', error };
   }
 }
 

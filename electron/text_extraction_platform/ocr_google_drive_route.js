@@ -728,7 +728,7 @@ async function runGoogleDriveOcrRoute({
         stage,
         provenance,
         parsedFailure,
-        error: error,
+        error,
       });
     }
   } finally {

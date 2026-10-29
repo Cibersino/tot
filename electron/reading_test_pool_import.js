@@ -58,7 +58,7 @@ function readJsonTextWithBomStrip(filePath) {
       text: fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''),
     };
   } catch (error) {
-    return { ok: false, code: 'READ_FAILED', error: error };
+    return { ok: false, code: 'READ_FAILED', error };
   }
 }
 
@@ -68,7 +68,7 @@ function parseJsonText(jsonText) {
   try {
     return { ok: true, data: JSON.parse(source) };
   } catch (error) {
-    return { ok: false, code: 'INVALID_JSON', error: error };
+    return { ok: false, code: 'INVALID_JSON', error };
   }
 }
 
