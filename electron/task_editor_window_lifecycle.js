@@ -63,8 +63,8 @@ function createController({ dialog, getDialogTexts }) {
   function getDialogTextsSafely() {
     try {
       return typeof getDialogTexts === 'function' ? getDialogTexts() : null;
-    } catch (err) {
-      log.error('Task Editor native dialog copy acquisition failed:', err);
+    } catch (error) {
+      log.error('Task Editor native dialog copy acquisition failed:', error);
       return null;
     }
   }
@@ -103,10 +103,10 @@ function createController({ dialog, getDialogTexts }) {
       taskWindow.close();
       settleCloseRequest(true);
       return true;
-    } catch (err) {
+    } catch (error) {
       forceCloseAuthorized = false;
       settleCloseRequest(false);
-      log.error('Task Editor force close failed:', err);
+      log.error('Task Editor force close failed:', error);
       return false;
     }
   }
@@ -134,8 +134,8 @@ function createController({ dialog, getDialogTexts }) {
         noLink: true,
       });
       return true;
-    } catch (err) {
-      log.error('Task Editor terminal disclosure failed:', { messageKey }, err);
+    } catch (error) {
+      log.error('Task Editor terminal disclosure failed:', { messageKey }, error);
       return false;
     }
   }
@@ -161,8 +161,8 @@ function createController({ dialog, getDialogTexts }) {
         noLink: true,
       });
       return !!result && result.response === 0;
-    } catch (err) {
-      log.error('Task Editor terminal discard decision failed:', err);
+    } catch (error) {
+      log.error('Task Editor terminal discard decision failed:', error);
       return false;
     }
   }
@@ -205,8 +205,8 @@ function createController({ dialog, getDialogTexts }) {
         const didClose = await resolveTerminalOutcome(outcome, ownerWin);
         if (!didClose) settleCloseRequest(false);
         return didClose;
-      } catch (err) {
-        log.error('Task Editor terminal resolution failed:', err);
+      } catch (error) {
+        log.error('Task Editor terminal resolution failed:', error);
         settleCloseRequest(false);
         return false;
       }
@@ -445,8 +445,8 @@ function createController({ dialog, getDialogTexts }) {
     try {
       taskWindow.webContents.send('task-editor-request-close');
       return closeRequestResult;
-    } catch (err) {
-      log.warn('Task Editor close request failed (ignored); requiring native discard decision:', err);
+    } catch (error) {
+      log.warn('Task Editor close request failed (ignored); requiring native discard decision:', error);
       if (currentInitId === 0) {
         settleCloseRequest(false);
         return Promise.resolve(false);
@@ -494,8 +494,8 @@ function createController({ dialog, getDialogTexts }) {
           return false;
         }
         return !!result && result.response === 0;
-      } catch (err) {
-        log.error('Task Editor replacement discard decision failed:', err);
+      } catch (error) {
+        log.error('Task Editor replacement discard decision failed:', error);
         return false;
       }
     }

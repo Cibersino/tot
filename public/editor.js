@@ -54,11 +54,11 @@ function reportBasePresentationState(payload) {
         ? { reason: payload.reason.trim() }
         : {}),
     });
-  } catch (err) {
+  } catch (error) {
     if (log) {
-      log.error('BOOTSTRAP: reportBasePresentationState call failed:', err);
+      log.error('BOOTSTRAP: reportBasePresentationState call failed:', error);
     } else {
-      console.error('BOOTSTRAP: reportBasePresentationState call failed before logger initialization:', err);
+      console.error('BOOTSTRAP: reportBasePresentationState call failed before logger initialization:', error);
     }
   }
 }
@@ -139,9 +139,9 @@ if (typeof window.getLogger !== 'function') {
 }
 try {
   log = window.getLogger('editor');
-} catch (err) {
+} catch (error) {
   reportBasePresentationState({ status: 'failed', reason: 'bootstrap-failed' });
-  throw err;
+  throw error;
 }
 try {
   log.debug('Text Editor starting...');
@@ -164,8 +164,8 @@ try {
     EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX: editorMaximizedTextWidthDefaultPx,
     EDITOR_MAXIMIZED_GUTTER_MIN_PX: editorMaximizedGutterMinPx,
   } = appConstants);
-} catch (err) {
-  bootstrapSetupError = err;
+} catch (error) {
+  bootstrapSetupError = error;
 }
 
 const editorMaximizedLayoutCore = window.EditorMaximizedLayoutCore;
@@ -475,8 +475,8 @@ function reportTerminalEditorI18nFailure(kind) {
     window.editorAPI.reportRendererI18nFailure({
       kind,
     });
-  } catch (reportErr) {
-    log.warn('editorAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+  } catch (error) {
+    log.warn('editorAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
     if (typeof window.close === 'function') window.close();
   }
 }
@@ -497,8 +497,8 @@ async function bootstrapEditorEnvironment() {
           ctx.state.maxTextChars = Number(cfg.maxTextChars) || ctx.state.maxTextChars;
         }
       }
-    } catch (err) {
-      log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', err);
+    } catch (error) {
+      log.warn('BOOTSTRAP: getAppConfig failed; using defaults:', error);
     }
 
     let settings = null;
@@ -508,16 +508,16 @@ async function bootstrapEditorEnvironment() {
       } else {
         log.warn('BOOTSTRAP: editorAPI.getSettings missing; using default language.');
       }
-    } catch (err) {
-      log.warn('BOOTSTRAP: getSettings failed; using default editor settings:', err);
+    } catch (error) {
+      log.warn('BOOTSTRAP: getSettings failed; using default editor settings:', error);
     }
 
     try {
       captureActualWindowState(await ctx.editorAPI.getWindowState(), { bootstrap: true });
-    } catch (err) {
+    } catch (error) {
       log.warn(
         'BOOTSTRAP: getWindowState failed; keeping startup presentation until a live window-state update arrives:',
-        err
+        error
       );
     }
 
@@ -535,8 +535,8 @@ async function bootstrapInitialEditorText() {
 
   try {
     snapshot = await ctx.editorAPI.getInitialCurrentTextSnapshot();
-  } catch (err) {
-    throw new Error(`[editor] editorAPI.getInitialCurrentTextSnapshot failed during bootstrap: ${String(err)}`);
+  } catch (error) {
+    throw new Error(`[editor] editorAPI.getInitialCurrentTextSnapshot failed during bootstrap: ${String(error)}`);
   }
 
   if (!snapshot || snapshot.ok !== true || typeof snapshot.text !== 'string'
@@ -606,14 +606,14 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
   if (languageChanged) {
     try {
       await transitionEditorTranslations(nextLang);
-    } catch (err) {
-      const transition = err && err.rendererI18nTransition;
+    } catch (error) {
+      const transition = error && error.rendererI18nTransition;
       if (!transition) {
-        log.error('Text Editor settings update failed:', err);
+        log.error('Text Editor settings update failed:', error);
         return false;
       }
       if (!startup) {
-        reportEditorI18nFailure(err, { startup: false });
+        reportEditorI18nFailure(error, { startup: false });
       }
       if (!transition.hadEstablishedState || transition.restorationFailed) {
         return false;
@@ -636,8 +636,8 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
     } else if (languageChanged) {
       ctx.ui.updateEditorTextSizeUi();
     }
-  } catch (err) {
-    log.error('Text Editor settings update failed:', err);
+  } catch (error) {
+    log.error('Text Editor settings update failed:', error);
     return false;
   }
 
@@ -685,13 +685,13 @@ function registerEditorBridgeListeners() {
         .then((response) => {
           try {
             ctx.editorAPI.sendReplaceResponse(response);
-          } catch (err) {
-            log.warn('Text Editor replace response send failed (ignored):', err);
+          } catch (error) {
+            log.warn('Text Editor replace response send failed (ignored):', error);
           }
         });
     });
-  } catch (err) {
-    throw new Error(`[editor] required live listener registration failed: ${String(err)}`);
+  } catch (error) {
+    throw new Error(`[editor] required live listener registration failed: ${String(error)}`);
   }
 
   if (typeof ctx.editorAPI.onSettingsChanged !== 'function') {
@@ -700,9 +700,9 @@ function registerEditorBridgeListeners() {
   }
   try {
     ctx.editorAPI.onSettingsChanged((settings) => enqueueEditorSettingsApplication(settings));
-  } catch (err) {
+  } catch (error) {
     reportTerminalEditorI18nFailure('settings-listener');
-    throw new Error(`[editor] editorAPI.onSettingsChanged registration failed: ${String(err)}`);
+    throw new Error(`[editor] editorAPI.onSettingsChanged registration failed: ${String(error)}`);
   }
 
   if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
@@ -711,10 +711,10 @@ function registerEditorBridgeListeners() {
         if (editorI18nTerminal) return;
         captureActualWindowState(windowState, { bootstrap: false });
       });
-    } catch (err) {
+    } catch (error) {
       log.warn(
         'BOOTSTRAP: editorAPI.onWindowStateChanged registration failed; live maximized layout updates disabled:',
-        err
+        error
       );
     }
   } else {
@@ -727,10 +727,10 @@ function registerEditorBridgeListeners() {
         if (editorI18nTerminal) return;
         ctx.ui.applyReadingTestPrestartState(payload);
       });
-    } catch (err) {
+    } catch (error) {
       log.warn(
         'BOOTSTRAP: editorAPI.onReadingTestPrestartStateChanged registration failed; reading-test prestart overlay disabled:',
-        err
+        error
       );
     }
   } else {
@@ -755,10 +755,10 @@ if (readingTestPrestartOverlay) {
 try {
   if (bootstrapSetupError) throw bootstrapSetupError;
   initializeEditorBootstrap();
-} catch (err) {
-  bootstrapSetupError = err;
+} catch (error) {
+  bootstrapSetupError = error;
   if (log) {
-    log.error('BOOTSTRAP: Text Editor required startup setup failed:', err);
+    log.error('BOOTSTRAP: Text Editor required startup setup failed:', error);
   }
 }
 
@@ -850,8 +850,8 @@ if (!bootstrapSetupError && editor) {
         window.Notify.notifyEditor('renderer.editor.alerts.type_limit', { type: 'warn', duration: 5000 });
         ctx.ui.restoreFocusToEditor(start);
       }
-    } catch (err) {
-      log.error('Text Editor beforeinput guard failed:', err);
+    } catch (error) {
+      log.error('Text Editor beforeinput guard failed:', error);
     }
   });
 }
@@ -968,8 +968,8 @@ if (!bootstrapSetupError && spellcheckToggle) {
       if (!result || result.ok !== true) {
         throw new Error(result && result.error ? String(result.error) : 'unknown');
       }
-    } catch (err) {
-      log.error('Text Editor spellcheck update failed:', err);
+    } catch (error) {
+      log.error('Text Editor spellcheck update failed:', error);
       ctx.ui.setLocalSpellcheckState({
         preferenceEnabled: previousEnabled,
         available: previousAvailable,

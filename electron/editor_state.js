@@ -178,8 +178,8 @@ function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowStat
   try {
     editorWin.webContents.send('editor-window-state-changed', getWindowState(editorWin));
     return true;
-  } catch (err) {
-    log.warn(`editor-window-state notification failed (ignored) from ${logContext}:`, err);
+  } catch (error) {
+    log.warn(`editor-window-state notification failed (ignored) from ${logContext}:`, error);
     return false;
   }
 }
@@ -194,8 +194,8 @@ function loadInitialState(customLoadJson) {
     const filePath = getEditorStateFile();
     const raw = loader(filePath, DEFAULT_STATE);
     return normalizeState(raw);
-  } catch (err) {
-    log.error('[editor_state] Error reading initial state:', err);
+  } catch (error) {
+    log.error('[editor_state] Error reading initial state:', error);
     return { ...DEFAULT_STATE };
   }
 }
@@ -209,8 +209,8 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
   try {
     editorStateFile = getEditorStateFile();
-  } catch (err) {
-    log.error('[editor_state] getEditorStateFile failed:', err);
+  } catch (error) {
+    log.error('[editor_state] getEditorStateFile failed:', error);
     return;
   }
 
@@ -236,8 +236,8 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       };
 
       saver(editorStateFile, state);
-    } catch (err) {
-      log.error('[editor_state] Error saving Text Editor reduced state:', err);
+    } catch (error) {
+      log.error('[editor_state] Error saving Text Editor reduced state:', error);
     }
   };
 
@@ -252,8 +252,8 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       state.maximized = true;
       saver(editorStateFile, state);
       notifyWindowState(editorWin, 'editorWin.maximize');
-    } catch (err) {
-      log.error('[editor_state] Error updating state in maximize:', err);
+    } catch (error) {
+      log.error('[editor_state] Error updating state in maximize:', error);
     }
   });
 
@@ -300,8 +300,8 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
 
       saver(editorStateFile, state);
       notifyWindowState(editorWin, 'editorWin.unmaximize');
-    } catch (err) {
-      log.error('[editor_state] Error handling Text Editor unmaximize:', err);
+    } catch (error) {
+      log.error('[editor_state] Error handling Text Editor unmaximize:', error);
     }
   });
 
@@ -312,8 +312,8 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       const state = normalizeState(current);
       state.maximized = editorWin.isMaximized();
       saver(editorStateFile, state);
-    } catch (err) {
-      log.error('[editor_state] Error saving Text Editor closed state:', err);
+    } catch (error) {
+      log.error('[editor_state] Error saving Text Editor closed state:', error);
     }
   });
 }
@@ -359,11 +359,11 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
       }
 
       return { ok: true, ...getWindowState(editorWin) };
-    } catch (err) {
-      log.error('Error processing get-editor-window-state:', err);
+    } catch (error) {
+      log.error('Error processing get-editor-window-state:', error);
       return {
         ok: false,
-        error: String(err),
+        error: String(error),
         maximized: false,
         maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
       };
@@ -413,9 +413,9 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
       notifyWindowState(editorWin, 'editorState.setMaximizedTextWidthPx');
 
       return { ok: true, maximizedTextWidthPx: state.maximizedTextWidthPx };
-    } catch (err) {
-      log.error('Error processing set-editor-maximized-text-width-px:', err);
-      return { ok: false, error: String(err) };
+    } catch (error) {
+      log.error('Error processing set-editor-maximized-text-width-px:', error);
+      return { ok: false, error: String(error) };
     }
   });
 }

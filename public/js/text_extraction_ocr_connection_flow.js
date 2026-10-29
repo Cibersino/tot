@@ -145,8 +145,8 @@
     try {
       prepareTextExtractionOcrActivation = getPrepareMethod();
       launchTextExtractionOcrActivation = getLaunchMethod();
-    } catch (err) {
-      log.error('OCR activation bridge resolution failed:', err);
+    } catch (error) {
+      log.error('OCR activation bridge resolution failed:', error);
       return buildResult({
         ok: false,
         state: 'unavailable',
@@ -182,8 +182,8 @@
     let prepareResult = null;
     try {
       prepareResult = await prepareTextExtractionOcrActivation();
-    } catch (err) {
-      log.error('OCR activation prepare IPC failed:', err);
+    } catch (error) {
+      log.error('OCR activation prepare IPC failed:', error);
       return buildResult({
         ok: false,
         state: 'failure',
@@ -221,8 +221,8 @@
     let disclosureAccepted = false;
     try {
       disclosureAccepted = await window.Notify.promptTextExtractionOcrActivationDisclosure();
-    } catch (err) {
-      log.error('OCR activation disclosure modal failed:', err);
+    } catch (error) {
+      log.error('OCR activation disclosure modal failed:', error);
       return buildResult({
         ok: false,
         state: 'failure',
@@ -255,8 +255,8 @@
     let activationResult = null;
     try {
       activationResult = await launchTextExtractionOcrActivation();
-    } catch (err) {
-      log.error('OCR activation launch IPC failed:', err);
+    } catch (error) {
+      log.error('OCR activation launch IPC failed:', error);
       return buildResult({
         ok: false,
         state: 'failure',

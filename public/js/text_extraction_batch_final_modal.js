@@ -479,16 +479,16 @@
         }
         try {
           await onRevealGeneratedPdf(target.getAttribute('data-artifact-path') || '');
-        } catch (err) {
-          log.error('Generated PDF reveal failed (ignored):', err);
+        } catch (error) {
+          log.error('Generated PDF reveal failed (ignored):', error);
           window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         }
       };
       const onCopy = async () => {
         try {
           await copyReportText(reportText);
-        } catch (err) {
-          log.error('Batch report copy failed (ignored):', err);
+        } catch (error) {
+          log.error('Batch report copy failed (ignored):', error);
         }
       };
       const onOpenSnapshots = async () => {
@@ -498,8 +498,8 @@
         }
         try {
           await onOpenSnapshotsFolder();
-        } catch (err) {
-          log.error('Open snapshots folder failed (ignored):', err);
+        } catch (error) {
+          log.error('Open snapshots folder failed (ignored):', error);
         }
       };
       const onOk = () => finish();

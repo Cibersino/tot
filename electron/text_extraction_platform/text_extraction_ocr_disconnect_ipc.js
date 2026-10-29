@@ -55,11 +55,11 @@ function getDialogTexts() {
     const settings = settingsState.getSettings();
     const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
     return menuBuilder.getDialogTexts(lang);
-  } catch (err) {
+  } catch (error) {
     log.warnOnce(
       'text_extraction_ocr_disconnect.dialogTexts',
       'Using fallback dialog texts:',
-      err
+      error
     );
     return {};
   }
@@ -104,8 +104,8 @@ function isAuthorizedSender(event, mainWin) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn('text-extraction-disconnect-ocr sender validation failed:', err);
+  } catch (error) {
+    log.warn('text-extraction-disconnect-ocr sender validation failed:', error);
     return false;
   }
 }
@@ -217,8 +217,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
       let tokenJson = null;
       try {
         tokenJson = readEncryptedTokenFile(tokenPath);
-      } catch (err) {
-        const tokenReadCode = String(err && err.code ? err.code : '');
+      } catch (error) {
+        const tokenReadCode = String(error && error.code ? error.code : '');
         if (tokenReadCode === 'missing_file') {
           log.info('text extraction OCR disconnect requested but no local token exists:', {
             source: request.source,
@@ -240,14 +240,14 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           source: request.source,
           reason: request.reason,
           tokenReadCode,
-          errorName: safeErrorName(err),
+          errorName: safeErrorName(error),
         });
         return buildFailure({
           detailsSafeForLogs: {
             stage: 'token_read',
             reason: 'token_read_failed',
             tokenReadCode,
-            errorName: safeErrorName(err),
+            errorName: safeErrorName(error),
             source: request.source,
             requestReason: request.reason,
           },
@@ -277,19 +277,19 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
         revocation = await revokeStoredToken({
           tokenJson,
         });
-      } catch (err) {
+      } catch (error) {
         log.warn('text extraction OCR disconnect blocked: token revocation failed.', {
           source: request.source,
           reason: request.reason,
-          errorName: safeErrorName(err),
-          errorMessage: safeErrorMessage(err),
+          errorName: safeErrorName(error),
+          errorMessage: safeErrorMessage(error),
         });
         return buildFailure({
           detailsSafeForLogs: {
             stage: 'token_revoke',
             reason: 'revoke_failed',
-            errorName: safeErrorName(err),
-            errorMessage: safeErrorMessage(err),
+            errorName: safeErrorName(error),
+            errorMessage: safeErrorMessage(error),
             source: request.source,
             requestReason: request.reason,
           },
@@ -301,21 +301,21 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
 
       try {
         deleteEncryptedTokenFile(tokenPath);
-      } catch (err) {
+      } catch (error) {
         log.error('text extraction OCR disconnect failed after revocation: token delete failed.', {
           source: request.source,
           reason: request.reason,
           revokedTokenKind,
-          errorName: safeErrorName(err),
-          errorMessage: safeErrorMessage(err),
+          errorName: safeErrorName(error),
+          errorMessage: safeErrorMessage(error),
         });
         return buildFailure({
           detailsSafeForLogs: {
             stage: 'token_delete',
             reason: 'delete_failed',
             revokedTokenKind,
-            errorName: safeErrorName(err),
-            errorMessage: safeErrorMessage(err),
+            errorName: safeErrorName(error),
+            errorMessage: safeErrorMessage(error),
             source: request.source,
             requestReason: request.reason,
           },
@@ -334,12 +334,12 @@ function registerIpc(ipcMain, { getWindows, resolvePaths } = {}) {
           revokedTokenKind,
         },
       });
-    } catch (err) {
+    } catch (error) {
       const failure = buildFailure({
         detailsSafeForLogs: {
           stage: 'ipc_handler_failure',
-          errorName: safeErrorName(err),
-          errorMessage: safeErrorMessage(err),
+          errorName: safeErrorName(error),
+          errorMessage: safeErrorMessage(error),
           source: request.source,
           requestReason: request.reason,
         },

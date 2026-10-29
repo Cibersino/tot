@@ -154,8 +154,8 @@
     let activationFlow = null;
     try {
       activationFlow = getActivationFlow();
-    } catch (err) {
-      log.warn('text extraction OCR activation flow unavailable for setup recovery:', err);
+    } catch (error) {
+      log.warn('text extraction OCR activation flow unavailable for setup recovery:', error);
       return { preparation, handled: false };
     }
 

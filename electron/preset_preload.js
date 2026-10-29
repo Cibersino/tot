@@ -15,8 +15,8 @@ ipcRenderer.on('preset-init', (_e, data) => {
   for (const cb of Array.from(initCallbacks)) {
     try {
       cb(data);
-    } catch (err) {
-      console.error('preset-init callback error:', err);
+    } catch (error) {
+      console.error('preset-init callback error:', error);
     }
   }
 });
@@ -36,8 +36,8 @@ function onInit(cb) {
       if (!initCallbacks.has(cb)) return;
       try {
         cb(lastInitData);
-      } catch (err) {
-        console.error('preset-init replay callback error:', err);
+      } catch (error) {
+        console.error('preset-init replay callback error:', error);
       }
     }, 0);
   }
@@ -46,8 +46,8 @@ function onInit(cb) {
   return () => {
     try {
       initCallbacks.delete(cb);
-    } catch (err) {
-      console.error('preset-init unsubscribe error:', err);
+    } catch (error) {
+      console.error('preset-init unsubscribe error:', error);
     }
   };
 }
@@ -66,10 +66,10 @@ const api = {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {
-      try { cb(settings); } catch (err) { console.error('settings callback error:', err); }
+      try { cb(settings); } catch (error) { console.error('settings callback error:', error); }
     };
     ipcRenderer.on('settings-updated', listener);
-    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
+    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (error) { console.error('removeListener error (settings-updated):', error); } };
   },
 };
 

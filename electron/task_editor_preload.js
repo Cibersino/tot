@@ -13,8 +13,8 @@ ipcRenderer.on('task-editor-init', (_e, data) => {
   for (const cb of Array.from(initCallbacks)) {
     try {
       cb(data);
-    } catch (err) {
-      console.error('task-editor-init callback error:', err);
+    } catch (error) {
+      console.error('task-editor-init callback error:', error);
     }
   }
 });
@@ -32,8 +32,8 @@ function onInit(cb) {
       if (!initCallbacks.has(cb)) return;
       try {
         cb(lastInitData);
-      } catch (err) {
-        console.error('task-editor-init replay callback error:', err);
+      } catch (error) {
+        console.error('task-editor-init replay callback error:', error);
       }
     }, 0);
   }
@@ -41,8 +41,8 @@ function onInit(cb) {
   return () => {
     try {
       initCallbacks.delete(cb);
-    } catch (err) {
-      console.error('task-editor-init unsubscribe error:', err);
+    } catch (error) {
+      console.error('task-editor-init unsubscribe error:', error);
     }
   };
 }
@@ -81,15 +81,15 @@ const api = {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   onSettingsChanged: (cb) => {
     const listener = (_e, settings) => {
-      try { cb(settings); } catch (err) { console.error('settings callback error:', err); }
+      try { cb(settings); } catch (error) { console.error('settings callback error:', error); }
     };
     ipcRenderer.on('settings-updated', listener);
-    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (err) { console.error('removeListener error (settings-updated):', err); } };
+    return () => { try { ipcRenderer.removeListener('settings-updated', listener); } catch (error) { console.error('removeListener error (settings-updated):', error); } };
   },
   onRequestClose: (cb) => {
-    const listener = () => { try { cb(); } catch (err) { console.error('task editor close request error:', err); } };
+    const listener = () => { try { cb(); } catch (error) { console.error('task editor close request error:', error); } };
     ipcRenderer.on('task-editor-request-close', listener);
-    return () => { try { ipcRenderer.removeListener('task-editor-request-close', listener); } catch (err) { console.error('removeListener error (task-editor-request-close):', err); } };
+    return () => { try { ipcRenderer.removeListener('task-editor-request-close', listener); } catch (error) { console.error('removeListener error (task-editor-request-close):', error); } };
   },
   respondToClose: (payload) => {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {

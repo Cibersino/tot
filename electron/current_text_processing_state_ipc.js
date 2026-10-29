@@ -86,8 +86,8 @@ function createController({ onStateChanged } = {}) {
     }
     try {
       onStateChanged(getState());
-    } catch (err) {
-      log.warn('Current-text processing state change callback failed (ignored):', err);
+    } catch (error) {
+      log.warn('Current-text processing state change callback failed (ignored):', error);
     }
   }
 
@@ -166,8 +166,8 @@ function isAuthorizedSender(event, mainWin) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn('Current-text processing sender validation failed:', err);
+  } catch (error) {
+    log.warn('Current-text processing sender validation failed:', error);
     return false;
   }
 }
@@ -199,9 +199,9 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
       return { ok: true, state: controller.getState() };
-    } catch (err) {
-      log.error('current-text-processing-get-state failed:', err);
-      return { ok: false, code: 'STATE_READ_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('current-text-processing-get-state failed:', error);
+      return { ok: false, code: 'STATE_READ_FAILED', error: String(error) };
     }
   });
 
@@ -212,9 +212,9 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
       return controller.resolve(payload);
-    } catch (err) {
-      log.error('current-text-processing-resolve failed:', err);
-      return { ok: false, code: 'RESOLVE_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('current-text-processing-resolve failed:', error);
+      return { ok: false, code: 'RESOLVE_FAILED', error: String(error) };
     }
   });
 }

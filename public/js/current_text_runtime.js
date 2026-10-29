@@ -600,8 +600,8 @@
       }
       applyLocalResolvedProcessingState(requestId);
       return true;
-    } catch (err) {
-      log.error('Current-text processing resolve failed:', err);
+    } catch (error) {
+      log.error('Current-text processing resolve failed:', error);
       return false;
     }
   }
@@ -630,11 +630,11 @@
           }
           await resolveCurrentTextProcessing(requestId, true);
           return;
-        } catch (err) {
+        } catch (error) {
           if (!isActivePendingRequest(requestId)) {
             return;
           }
-          log.error('Current-text pending settle failed:', err);
+          log.error('Current-text pending settle failed:', error);
           degradedRequestId = requestId;
           renderDegradedDerivedValues();
           await resolveCurrentTextProcessing(requestId, false);

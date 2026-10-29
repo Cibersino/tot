@@ -95,11 +95,11 @@ async function readPdfFileToOwnedBytes(filePath, operation) {
     if (fileHandle) {
       try {
         await fileHandle.close();
-      } catch (err) {
+      } catch (error) {
         log.warn('PDF.js input file handle close failed (ignored):', {
           operation,
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorCode: String(err && err.code ? err.code : ''),
+          errorName: String(error && error.name ? error.name : 'Error'),
+          errorCode: String(error && error.code ? error.code : ''),
         });
       }
     }
@@ -136,12 +136,12 @@ async function runWithPdfjsDocument({ filePath, operation, runDocument } = {}) {
           if (page) {
             try {
               page.cleanup();
-            } catch (err) {
+            } catch (error) {
               log.warn('PDF.js page cleanup failed (ignored):', {
                 operation,
                 pageNumber,
-                errorName: String(err && err.name ? err.name : 'Error'),
-                errorCode: String(err && err.code ? err.code : ''),
+                errorName: String(error && error.name ? error.name : 'Error'),
+                errorCode: String(error && error.code ? error.code : ''),
               });
             }
           }
@@ -152,11 +152,11 @@ async function runWithPdfjsDocument({ filePath, operation, runDocument } = {}) {
     if (loadingTask) {
       try {
         await loadingTask.destroy();
-      } catch (err) {
+      } catch (error) {
         log.warn('PDF.js loading task destroy failed (ignored):', {
           operation,
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorCode: String(err && err.code ? err.code : ''),
+          errorName: String(error && error.name ? error.name : 'Error'),
+          errorCode: String(error && error.code ? error.code : ''),
         });
       }
     }

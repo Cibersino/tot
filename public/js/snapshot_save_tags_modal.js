@@ -284,8 +284,8 @@
         return snapshotTagCatalog.normalizeSnapshotTagPreferences(result.snapshotTags);
       }
       log.warn('Snapshot-tag preferences load returned non-ok result; using empty preferences:', result);
-    } catch (err) {
-      log.warn('Snapshot-tag preferences load failed; using empty preferences:', err);
+    } catch (error) {
+      log.warn('Snapshot-tag preferences load failed; using empty preferences:', error);
     }
 
     return snapshotTagCatalog.createEmptySnapshotTagPreferences();
@@ -306,8 +306,8 @@
         return snapshotTagCatalog.normalizeSnapshotTagPreferences(result.snapshotTags);
       }
       log.warn('Snapshot-tag preferences save returned non-ok result:', result);
-    } catch (err) {
-      log.error('Snapshot-tag preferences save failed:', err);
+    } catch (error) {
+      log.error('Snapshot-tag preferences save failed:', error);
     }
 
     window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
@@ -458,9 +458,9 @@
         updateFieldPicker(getFieldDef(fieldKey), { value: '' });
         if (keepPickerOpen) fieldState.combobox.open();
         scheduleOpenPickerVisibility(fieldKey);
-      } catch (err) {
+      } catch (error) {
         recordDeferredConfirmSaveFailure(promptState);
-        log.error('Snapshot tag inline create failed:', err);
+        log.error('Snapshot tag inline create failed:', error);
       } finally {
         fieldState.pendingCreateValues.delete(value);
         settlePendingCatalogSave(promptState);
@@ -586,10 +586,10 @@
 
     try {
       element.focus({ preventScroll: true });
-    } catch (err) {
+    } catch (error) {
       log.warn(
         'focus({ preventScroll: true }) failed; falling back to focus().',
-        err
+        error
       );
       element.focus();
     }

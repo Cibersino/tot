@@ -57,8 +57,8 @@
         if (action) {
             try {
                 action(payload);
-            } catch (err) {
-                log.error(`Error executing menu action '${payload}':`, err);
+            } catch (error) {
+                log.error(`Error executing menu action '${payload}':`, error);
             }
         } else {
             log.warn(`menuActions: payload without registered action -> ${payload}`);
@@ -90,8 +90,8 @@
                 log.warn('menuActions: onMenuClick did not return unsubscribe; listener cannot be removed');
             }
             return true;
-        } catch (err) {
-            log.error('menuActions: error registering listener in electronAPI.onMenuClick:', err);
+        } catch (error) {
+            log.error('menuActions: error registering listener in electronAPI.onMenuClick:', error);
             return false;
         }
     }
@@ -123,8 +123,8 @@
                 try {
                     _unsubscribeMenuClick();
                     log.debug('menuActions: listener unsubscribed correctly');
-                } catch (err) {
-                    log.error('menuActions: error unsubscribing listener:', err);
+                } catch (error) {
+                    log.error('menuActions: error unsubscribing listener:', error);
                 }
                 _unsubscribeMenuClick = null;
             } else {

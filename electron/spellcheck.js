@@ -648,9 +648,9 @@ function createController({
       }
 
       return result;
-    } catch (err) {
-      log.error('Failed to apply spellcheck configuration:', err);
-      return { ok: false, reason: 'apply-failed', error: String(err) };
+    } catch (error) {
+      log.error('Failed to apply spellcheck configuration:', error);
+      return { ok: false, reason: 'apply-failed', error: String(error) };
     }
   }
 

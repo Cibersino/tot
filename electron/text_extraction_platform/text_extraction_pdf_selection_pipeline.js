@@ -169,7 +169,7 @@ async function inspectPdfFile({ fileInfo } = {}) {
         ),
       };
     }
-  } catch (err) {
+  } catch (error) {
     return {
       ok: true,
       isPdf: true,
@@ -180,8 +180,8 @@ async function inspectPdfFile({ fileInfo } = {}) {
         {
           stage: 'inspect_preflight',
           reason: 'stat_failed',
-          errorName: String(err && err.name ? err.name : 'Error'),
-          errorCode: String(err && err.code ? err.code : ''),
+          errorName: String(error && error.name ? error.name : 'Error'),
+          errorCode: String(error && error.code ? error.code : ''),
         }
       ),
     };
@@ -206,12 +206,12 @@ async function inspectPdfFile({ fileInfo } = {}) {
       totalPages,
       error: null,
     };
-  } catch (err) {
+  } catch (error) {
     return {
       ok: true,
       isPdf: true,
       totalPages: null,
-      error: classifyPdfLoadError(err, 'inspect'),
+      error: classifyPdfLoadError(error, 'inspect'),
     };
   }
 }
@@ -490,9 +490,9 @@ async function materializePdfPageSelectionInput({
         };
       },
     };
-  } catch (err) {
+  } catch (error) {
     const cleanupFailure = cleanupMaterializationFailure(runDir);
-    const classifiedError = classifyPdfLoadError(err, 'materialize_subset');
+    const classifiedError = classifyPdfLoadError(error, 'materialize_subset');
     return {
       ok: false,
       error: {

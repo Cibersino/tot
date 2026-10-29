@@ -507,7 +507,7 @@ async function extractEpubText(absPath) {
   let zip = null;
   try {
     zip = new AdmZip(absPath);
-  } catch (_err) {
+  } catch {
     throw createEpubError('EPUB_ARCHIVE_OPEN_FAILED', 'EPUB archive could not be opened.');
   }
 

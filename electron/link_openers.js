@@ -340,7 +340,7 @@ function registerLinkIpc({ ipcMain, app, shell }) {
       let parsed;
       try {
         parsed = new URL(raw);
-      } catch (err) {
+      } catch {
         log.warn('open-external-url blocked: invalid URL:', raw);
         return { ok: false, reason: 'blocked' };
       }
@@ -360,8 +360,8 @@ function registerLinkIpc({ ipcMain, app, shell }) {
 
       await shell.openExternal(parsed.toString());
       return { ok: true };
-    } catch (err) {
-      log.error('Error processing open-external-url:', err);
+    } catch (error) {
+      log.error('Error processing open-external-url:', error);
       return { ok: false, reason: 'error' };
     }
   });
@@ -468,8 +468,8 @@ function registerLinkIpc({ ipcMain, app, shell }) {
 
       const tempPath = await copyToTemp(fallbackPath, `tot_${fileName}`);
       return openPathWithLog(shell, rawKey, tempPath);
-    } catch (err) {
-      log.error('Error processing open-app-doc:', err);
+    } catch (error) {
+      log.error('Error processing open-app-doc:', error);
       return { ok: false, reason: 'error' };
     }
   });
@@ -477,8 +477,8 @@ function registerLinkIpc({ ipcMain, app, shell }) {
   ipcMain.handle('get-app-doc-availability', async (_e, docKey) => {
     try {
       return await getAppDocAvailability(app, docKey);
-    } catch (err) {
-      log.error('Error processing get-app-doc-availability:', err);
+    } catch (error) {
+      log.error('Error processing get-app-doc-availability:', error);
       return { ok: false, available: false, reason: 'error' };
     }
   });

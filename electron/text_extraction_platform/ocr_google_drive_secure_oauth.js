@@ -133,11 +133,11 @@ function writeResponse(res, statusCode, message) {
       'Cache-Control': 'no-store',
     });
     res.end(message);
-  } catch (err) {
+  } catch (error) {
     log.warn('OAuth callback response write failed (ignored):', {
       statusCode,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorMessage: String(err && err.message ? err.message : err || ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorMessage: String(error && error.message ? error.message : error || ''),
     });
   }
 }
@@ -150,10 +150,10 @@ function closeServer(server) {
   }
   try {
     server.close();
-  } catch (err) {
+  } catch (error) {
     log.warn('OAuth callback server cleanup failed (ignored):', {
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorMessage: String(err && err.message ? err.message : err || ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorMessage: String(error && error.message ? error.message : error || ''),
     });
   }
 }
@@ -280,9 +280,9 @@ async function authenticateGoogleLoopback({
         oauthClient.credentials = tokenResult && tokenResult.tokens ? tokenResult.tokens : {};
         writeResponse(res, 200, SUCCESS_RESPONSE);
         settle(null, oauthClient);
-      } catch (err) {
+      } catch (error) {
         writeResponse(res, 500, FAILURE_RESPONSE);
-        settle(err);
+        settle(error);
       }
     });
 
@@ -334,8 +334,8 @@ async function authenticateGoogleLoopback({
         });
 
         await Promise.resolve(openExternal(authorizeUrl));
-      } catch (err) {
-        settle(err);
+      } catch (error) {
+        settle(error);
       }
     });
   });

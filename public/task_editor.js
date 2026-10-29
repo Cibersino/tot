@@ -28,8 +28,8 @@ function reportNoDraftTaskBootstrapFailure(kind) {
       dirty: null,
     });
     return true;
-  } catch (err) {
-    console.error('Task Editor startup terminal report failed:', err);
+  } catch (error) {
+    console.error('Task Editor startup terminal report failed:', error);
     return false;
   }
 }
@@ -44,9 +44,9 @@ if (typeof window.getLogger !== 'function') {
 let log;
 try {
   log = window.getLogger('task-editor');
-} catch (err) {
+} catch (error) {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
-  throw err;
+  throw error;
 }
 log.debug('Task Editor starting...');
 const rendererIcons = window.RendererIcons || null;
@@ -267,9 +267,9 @@ try {
       acciones: thAcciones,
     },
   });
-} catch (err) {
+} catch (error) {
   closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout-controller' });
-  throw err;
+  throw error;
 }
 if (!columnLayoutController
   || typeof columnLayoutController.initialize !== 'function'
@@ -314,8 +314,8 @@ function syncDirtyState() {
       dirty,
       initId: taskEditorCurrentInitId,
     });
-  } catch (err) {
-    log.warn('taskEditorAPI.setDirtyState failed (ignored):', err);
+  } catch (error) {
+    log.warn('taskEditorAPI.setDirtyState failed (ignored):', error);
   }
 }
 
@@ -653,8 +653,8 @@ async function resolveSnapshotSourceReminder(shouldSelectFile) {
 
   try {
     await selectTaskFileForRow(selection.row, selection.fields);
-  } catch (err) {
-    log.error('selectTaskFileForRow failed after snapshot source reminder:', err);
+  } catch (error) {
+    log.error('selectTaskFileForRow failed after snapshot source reminder:', error);
   }
 }
 
@@ -812,8 +812,8 @@ async function getSnapshotSourceReminderComment(row) {
   let result = null;
   try {
     result = await api.inspectTaskRowSnapshot(snapshotRelPath);
-  } catch (err) {
-    log.warn('Snapshot source reminder inspection failed (ignored):', err);
+  } catch (error) {
+    log.warn('Snapshot source reminder inspection failed (ignored):', error);
     return '';
   }
 
@@ -887,8 +887,8 @@ async function applyCommentChangesAndDismiss() {
   let result = null;
   try {
     result = await api.inspectTaskRowSnapshot(nextSnapshotRelPath);
-  } catch (err) {
-    log.warn('inspectTaskRowSnapshot failed:', err);
+  } catch (error) {
+    log.warn('inspectTaskRowSnapshot failed:', error);
     window.Notify.notifyEditor('renderer.tasks.alerts.snapshot_read_error');
     return;
   } finally {
@@ -1754,8 +1754,8 @@ function renderLibraryItems(items) {
           return;
         }
         await refreshLibraryList();
-      } catch (err) {
-        log.error('Task library delete action failed:', err);
+      } catch (error) {
+        log.error('Task library delete action failed:', error);
       }
     });
 
@@ -1803,8 +1803,8 @@ async function refreshLibraryList() {
   let nextLibraryItems = null;
   try {
     nextLibraryItems = res.items.map((entry) => copyLibraryEntryData(entry));
-  } catch (err) {
-    log.warn('listLibrary returned invalid library entries:', err);
+  } catch (error) {
+    log.warn('listLibrary returned invalid library entries:', error);
     window.Notify.notifyEditor('renderer.tasks.alerts.library_load_error');
     return;
   }
@@ -2052,8 +2052,8 @@ function closeTaskEditorAfterI18nFailure({ startup = false, kind } = {}) {
         kind || (startup ? 'startup' : 'transition-restoration')
       ));
       return;
-    } catch (err) {
-      log.warn('taskEditorAPI.reportTerminalState failed (ignored); Task Editor remains unavailable:', err);
+    } catch (error) {
+      log.warn('taskEditorAPI.reportTerminalState failed (ignored); Task Editor remains unavailable:', error);
     }
   } else {
     log.warn('taskEditorAPI.reportTerminalState unavailable (ignored); Task Editor remains unavailable.');
@@ -2236,10 +2236,10 @@ function getTaskEditorTerminalClosePayload() {
 function sendTaskEditorCloseResponse(payload) {
   try {
     window.taskEditorAPI.respondToClose(payload);
-  } catch (err) {
+  } catch (error) {
     // Deliberate current tradeoff: response-send failure stays fail-closed, even if close remains pending.
     // Safe retry requires correlated IPC; revisit only if stronger close-recovery guarantees are warranted.
-    log.warn('taskEditorAPI.respondToClose failed (ignored):', err);
+    log.warn('taskEditorAPI.respondToClose failed (ignored):', error);
   }
 }
 
@@ -2268,23 +2268,23 @@ async function bootstrapTaskEditor() {
         if (settings && settings.language) {
           bootstrapLanguage = settings.language || DEFAULT_LANG;
         }
-      } catch (err) {
-        log.warn('BOOTSTRAP: Task Editor settings acquisition failed; using default language:', err);
+      } catch (error) {
+        log.warn('BOOTSTRAP: Task Editor settings acquisition failed; using default language:', error);
       }
     } else {
       log.warn('BOOTSTRAP: taskEditorAPI.getSettings unavailable; using default language.');
     }
     try {
       await transitionTaskEditorTranslations(bootstrapLanguage);
-    } catch (err) {
-      reportTaskEditorI18nFailure(err, { startup: true });
+    } catch (error) {
+      reportTaskEditorI18nFailure(error, { startup: true });
       return;
     }
 
     try {
       await columnLayoutController.initialize();
-    } catch (err) {
-      log.error('Task Editor column layout initialization failed:', err);
+    } catch (error) {
+      log.error('Task Editor column layout initialization failed:', error);
       closeTaskEditorAfterI18nFailure({ startup: true, kind: 'column-layout' });
       return;
     }
@@ -2306,8 +2306,8 @@ function enqueueTaskEditorSettingsApplication(settings) {
       const nextLang = settings && settings.language ? settings.language : '';
       if (!nextLang || nextLang === idiomaActual) return;
       await transitionTaskEditorTranslations(nextLang);
-    } catch (err) {
-      reportTaskEditorI18nFailure(err);
+    } catch (error) {
+      reportTaskEditorI18nFailure(error);
     }
   };
   return enqueueTaskEditorSemanticWork(run);
@@ -2328,8 +2328,8 @@ async function applyIncomingTaskPayload(payload) {
   try {
     applyTaskPayload(payload);
     return true;
-  } catch (err) {
-    log.error('Task Editor init payload application failed:', err);
+  } catch (error) {
+    log.error('Task Editor init payload application failed:', error);
     closeTaskEditorAfterI18nFailure({
       startup: !taskEditorHasInitializedDraft,
       kind: 'task-payload-application',
@@ -2350,8 +2350,8 @@ try {
     log.error('Task Editor required initialization failed:', err);
     closeTaskEditorAfterI18nFailure({ startup: true, kind: 'bootstrap' });
   });
-} catch (err) {
-  log.error('Task Editor required bootstrap contract failed:', err);
+} catch (error) {
+  log.error('Task Editor required bootstrap contract failed:', error);
   closeTaskEditorAfterI18nFailure({ startup: true, kind: 'bootstrap-contract' });
 }
 

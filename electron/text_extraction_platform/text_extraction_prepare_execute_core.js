@@ -116,8 +116,8 @@ function isAuthorizedSender(event, mainWin, log, channelName) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn(`${channelName} sender validation failed:`, err);
+  } catch (error) {
+    log.warn(`${channelName} sender validation failed:`, error);
     return false;
   }
 }
@@ -140,7 +140,7 @@ function getFileInfo(filePath) {
   try {
     const stats = fs.statSync(resolvedPath);
     sourceFileSizeBytes = Number.isFinite(stats.size) ? Math.floor(stats.size) : 0;
-  } catch (_err) {
+  } catch {
     sourceFileSizeBytes = 0;
   }
 
@@ -535,9 +535,9 @@ async function validateOcrSetup(resolvePaths) {
       bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
       probeApiPath: true,
     });
-  } catch (err) {
-    log.error('Google OCR setup validation failed unexpectedly:', err);
-    return buildOcrSetupValidationRuntimeFailure(err);
+  } catch (error) {
+    log.error('Google OCR setup validation failed unexpectedly:', error);
+    return buildOcrSetupValidationRuntimeFailure(error);
   }
 }
 
@@ -1368,8 +1368,8 @@ function updateControllerProcessingContext(controller, nextContext) {
   if (!controller || typeof controller.update !== 'function') return;
   try {
     controller.update(nextContext);
-  } catch (err) {
-    log.warn('Processing-mode metadata update failed (ignored):', err);
+  } catch (error) {
+    log.warn('Processing-mode metadata update failed (ignored):', error);
   }
 }
 
@@ -2063,14 +2063,14 @@ async function executePreparedImport({
         };
       }
     }
-  } catch (err) {
-    log.error('text extraction execution failed unexpectedly:', err);
+  } catch (error) {
+    log.error('text extraction execution failed unexpectedly:', error);
     executionResult = buildUnexpectedRuntimeResult(
       preparedRecord,
       productRoute,
       executionKind,
       preparedRecord.routeMetadata,
-      err,
+      error,
       processingInputContext
     );
   } finally {

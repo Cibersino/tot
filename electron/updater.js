@@ -130,8 +130,8 @@ function fetchLatestReleaseTag(url) {
               return resolve(null);
             }
             resolve(tag);
-          } catch (err) {
-            log.warn('Failed to parse latest release JSON:', err);
+          } catch (error) {
+            log.warn('Failed to parse latest release JSON:', error);
             resolve(null);
           }
         });
@@ -139,8 +139,8 @@ function fetchLatestReleaseTag(url) {
         log.warn('Latest release fetch error:', err);
         resolve(null);
       });
-    } catch (err) {
-      log.warn('Latest release fetch failed:', err);
+    } catch (error) {
+      log.warn('Latest release fetch failed:', error);
       resolve(null);
     }
   });
@@ -177,8 +177,8 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     let localVer = null;
     try {
       localVer = String(app.getVersion() || '').trim();
-    } catch (err) {
-      log.warn('Could not read local app version:', err);
+    } catch (error) {
+      log.warn('Could not read local app version:', error);
       localVer = '';
     }
 
@@ -256,8 +256,8 @@ async function checkForUpdates({ lang, manual = false } = {}) {
     if (res.response === 0) {
       shell.openExternal(DOWNLOAD_URL);
     }
-  } catch (err) {
-    log.warn('checkForUpdates failed:', err);
+  } catch (error) {
+    log.warn('checkForUpdates failed:', error);
   }
 }
 
@@ -297,8 +297,8 @@ function registerIpc(ipcMain, { mainWinRef: mainRef, currentLanguageRef: langRef
         manual,
       });
       return { ok: true };
-    } catch (err) {
-      return { ok: false, error: String(err) };
+    } catch (error) {
+      return { ok: false, error: String(error) };
     }
   });
 }

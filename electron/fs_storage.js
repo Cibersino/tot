@@ -185,8 +185,8 @@ function ensureConfigDir() {
   try {
     const dir = getConfigDir();
     ensureDirExists(dir);
-  } catch (err) {
-    log.error('ensureConfigDir failed:', CONFIG_DIR || '(uninitialized)', err);
+  } catch (error) {
+    log.error('ensureConfigDir failed:', CONFIG_DIR || '(uninitialized)', error);
   }
 }
 
@@ -195,8 +195,8 @@ function ensureConfigPresetsDir() {
   try {
     presetsDir = getConfigPresetsDir();
     ensureDirExists(presetsDir);
-  } catch (err) {
-    log.error('ensureConfigPresetsDir failed:', presetsDir || '(uninitialized)', err);
+  } catch (error) {
+    log.error('ensureConfigPresetsDir failed:', presetsDir || '(uninitialized)', error);
   }
 }
 
@@ -205,8 +205,8 @@ function ensureCurrentTextSnapshotsDir() {
   try {
     snapshotsDir = getCurrentTextSnapshotsDir();
     ensureDirExists(snapshotsDir);
-  } catch (err) {
-    log.error('ensureCurrentTextSnapshotsDir failed:', snapshotsDir || '(uninitialized)', err);
+  } catch (error) {
+    log.error('ensureCurrentTextSnapshotsDir failed:', snapshotsDir || '(uninitialized)', error);
   }
 }
 
@@ -218,8 +218,8 @@ function ensureTasksDirs() {
     listsDir = getTasksListsDir();
     ensureDirExists(tasksDir);
     ensureDirExists(listsDir);
-  } catch (err) {
-    log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', err);
+  } catch (error) {
+    log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', error);
   }
 }
 
@@ -228,8 +228,8 @@ function ensureOcrGoogleDriveDir() {
   try {
     ocrDir = getOcrGoogleDriveDir();
     ensureDirExists(ocrDir);
-  } catch (err) {
-    log.error('ensureOcrGoogleDriveDir failed:', ocrDir || '(uninitialized)', err);
+  } catch (error) {
+    log.error('ensureOcrGoogleDriveDir failed:', ocrDir || '(uninitialized)', error);
   }
 }
 
@@ -299,11 +299,11 @@ function loadJsonWithStatus(filePath, fallback = {}) {
     }
 
     return { status: 'loaded', value: JSON.parse(raw) };
-  } catch (err) {
+  } catch (error) {
     log.warn(
       'loadJson failed (using fallback):',
       filePath,
-      err
+      error
     );
     return { status: 'failed', value: fallback };
   }
@@ -324,8 +324,8 @@ function saveJson(filePath, obj) {
     ensureDirExists(parentDir);
 
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
-  } catch (err) {
-    log.warn('saveJson failed (ignored):', filePath, err);
+  } catch (error) {
+    log.warn('saveJson failed (ignored):', filePath, error);
   }
 }
 

@@ -337,8 +337,8 @@ async function runWithRateLimitRetry({ operationName, isAborted, fn }) {
 
     try {
       return await fn();
-    } catch (err) {
-      const parsedFailure = parseProviderFailure(err);
+    } catch (error) {
+      const parsedFailure = parseProviderFailure(error);
       const retryable = isRetryableRateLimit(parsedFailure);
       if (retryable && attempt < MAX_RATE_LIMIT_ATTEMPTS) {
         const waitMs = Math.min(MAX_RETRY_DELAY_MS, BASE_RETRY_DELAY_MS * (2 ** (attempt - 1)));
@@ -352,7 +352,7 @@ async function runWithRateLimitRetry({ operationName, isAborted, fn }) {
         await sleep(waitMs);
         continue;
       }
-      throw err;
+      throw error;
     }
   }
 
@@ -512,8 +512,8 @@ async function runGoogleDriveOcrRoute({
 
   try {
     tokenJson = readEncryptedTokenFile(tokenPath);
-  } catch (err) {
-    const tokenReadCode = String(err && err.code ? err.code : '');
+  } catch (error) {
+    const tokenReadCode = String(error && error.code ? error.code : '');
     const tokenFailure = classifyPersistedTokenReadFailure(tokenReadCode);
     return buildPreflightResultWithError({
       summary: tokenFailure.summary,
@@ -523,7 +523,7 @@ async function runGoogleDriveOcrRoute({
       detailsSafeForLogs: {
         reason: 'token_read_failed',
         tokenReadCode,
-        errorName: toSafeErrorName(err),
+        errorName: toSafeErrorName(error),
       },
     });
   }
@@ -544,7 +544,7 @@ async function runGoogleDriveOcrRoute({
   let oauthClient = null;
   try {
     oauthClient = buildGoogleOAuthClient(credentialsJson, tokenJson);
-  } catch (err) {
+  } catch (error) {
     return buildPreflightResultWithError({
       summary: 'OCR route failed before upload: OAuth client initialization failed.',
       provenance,
@@ -552,7 +552,7 @@ async function runGoogleDriveOcrRoute({
       message: 'OCR authentication is invalid. Reconnect your account.',
       detailsSafeForLogs: {
         reason: 'oauth_client_init_failed',
-        errorName: toSafeErrorName(err),
+        errorName: toSafeErrorName(error),
       },
     });
   }
@@ -560,7 +560,7 @@ async function runGoogleDriveOcrRoute({
   let drive = null;
   try {
     drive = google.drive({ version: 'v3', auth: oauthClient });
-  } catch (err) {
+  } catch (error) {
     return buildPreflightResultWithError({
       summary: 'OCR route failed before upload: Drive client initialization failed.',
       provenance,
@@ -568,7 +568,7 @@ async function runGoogleDriveOcrRoute({
       message: 'Google Drive OCR runtime could not initialize the Drive client.',
       detailsSafeForLogs: {
         reason: 'drive_client_init_failed',
-        errorName: toSafeErrorName(err),
+        errorName: toSafeErrorName(error),
       },
     });
   }
@@ -677,8 +677,8 @@ async function runGoogleDriveOcrRoute({
         error: null,
       });
     }
-  } catch (err) {
-    const errorCode = getErrorCode(err);
+  } catch (error) {
+    const errorCode = getErrorCode(error);
 
     if (errorCode === 'aborted_by_user') {
       result = buildResultWithError({
@@ -700,14 +700,14 @@ async function runGoogleDriveOcrRoute({
         message: 'OCR preprocessing runtime is unavailable in this app build.',
         detailsSafeForLogs: {
           reason: 'image_normalizer_unavailable',
-          errorName: toSafeErrorName(err),
-          errorMessage: toSafeErrorMessage(err),
-          ...getErrorDetailsSafeForLogs(err),
+          errorName: toSafeErrorName(error),
+          errorMessage: toSafeErrorMessage(error),
+          ...getErrorDetailsSafeForLogs(error),
         },
       });
     } else if (errorCode === 'source_to_png_conversion_failed') {
       const sourceFileExtUpper = String(
-        getErrorDetailsSafeForLogs(err).sourceFileExt || fileInfo.sourceFileExt || 'image'
+        getErrorDetailsSafeForLogs(error).sourceFileExt || fileInfo.sourceFileExt || 'image'
       ).toUpperCase();
       result = buildPreflightResultWithError({
         summary: `OCR route failed before upload: ${sourceFileExtUpper}-to-PNG normalization failed.`,
@@ -716,19 +716,19 @@ async function runGoogleDriveOcrRoute({
         message: `Selected ${sourceFileExtUpper} file could not be converted for OCR upload.`,
         detailsSafeForLogs: {
           reason: 'source_to_png_conversion_failed',
-          errorName: toSafeErrorName(err),
-          errorMessage: toSafeErrorMessage(err),
-          ...getErrorDetailsSafeForLogs(err),
+          errorName: toSafeErrorName(error),
+          errorMessage: toSafeErrorMessage(error),
+          ...getErrorDetailsSafeForLogs(error),
         },
       });
     } else {
       const stage = tempDocumentId ? 'export' : 'upload_convert';
-      const parsedFailure = parseProviderFailure(err);
+      const parsedFailure = parseProviderFailure(error);
       result = buildFailureResult({
         stage,
         provenance,
         parsedFailure,
-        error: err,
+        error: error,
       });
     }
   } finally {
@@ -739,8 +739,8 @@ async function runGoogleDriveOcrRoute({
           isAborted: () => false,
           fn: async () => drive.files.delete({ fileId: tempDocumentId }),
         });
-      } catch (cleanupErr) {
-        const parsedCleanupFailure = parseProviderFailure(cleanupErr);
+      } catch (error) {
+        const parsedCleanupFailure = parseProviderFailure(error);
         const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
         cleanupWarnings.push(`cleanup:${cleanupCode}`);
         log.warn('OCR cleanup delete temp document failed (ignored):', {

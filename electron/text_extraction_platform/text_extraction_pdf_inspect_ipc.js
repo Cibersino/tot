@@ -77,12 +77,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       return inspection;
-    } catch (err) {
-      log.error('text-extraction-inspect-selected-file failed unexpectedly:', err);
+    } catch (error) {
+      log.error('text-extraction-inspect-selected-file failed unexpectedly:', error);
       return {
         ok: false,
         code: 'INSPECT_IPC_FAILED',
-        error: String(err),
+        error: String(error),
       };
     }
   });

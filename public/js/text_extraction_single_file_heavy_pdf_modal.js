@@ -306,8 +306,8 @@
         btnReveal.disabled = true;
         try {
           await onRevealGeneratedPdf();
-        } catch (err) {
-          log.error('Single-file heavy modal reveal failed:', err);
+        } catch (error) {
+          log.error('Single-file heavy modal reveal failed:', error);
           window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         } finally {
           revealPending = false;

@@ -26,8 +26,8 @@ const closeFirstRunChooserAfterBootstrapFailure = () => {
   if (!isFirstRunLanguageChooser) return;
   try {
     window.close();
-  } catch (closeError) {
-    console.error('[language] failed to close first-run chooser after bootstrap failure:', closeError);
+  } catch (error) {
+    console.error('[language] failed to close first-run chooser after bootstrap failure:', error);
   }
 };
 
@@ -188,8 +188,8 @@ const selectLanguage = async (lang) => {
   try {
     await window.languageAPI.setLanguage(lang);
     window.close();
-  } catch (e) {
-    log.error('Language selection request or window close failed:', e);
+  } catch (error) {
+    log.error('Language selection request or window close failed:', error);
     setBusy(false);
     setStatus(STATUS_IDS.SELECTION_ERROR, true);
   }
@@ -274,9 +274,9 @@ const loadLanguages = async () => {
     } else {
       throw new Error('[language] getAvailableLanguages unavailable');
     }
-  } catch (e) {
+  } catch (error) {
     fallbackLogged = true;
-    log.warn('BOOTSTRAP: getAvailableLanguages failed; falling back to local list:', e);
+    log.warn('BOOTSTRAP: getAvailableLanguages failed; falling back to local list:', error);
   }
 
   if (Array.isArray(available) && available.length) {
@@ -309,8 +309,8 @@ const loadCurrentLanguage = async () => {
 
   try {
     return normalizeLanguageTag(await window.languageAPI.getCurrentLanguage());
-  } catch (e) {
-    log.warn('BOOTSTRAP: getCurrentLanguage failed; current selection will not be identified:', e);
+  } catch (error) {
+    log.warn('BOOTSTRAP: getCurrentLanguage failed; current selection will not be identified:', error);
     return '';
   }
 };
@@ -320,8 +320,8 @@ const loadCurrentLanguage = async () => {
     selectedLanguageTag = await loadCurrentLanguage();
     await loadLanguages();
     langFilter.focus();
-  } catch (e) {
-    log.error('BOOTSTRAP: language window initialization failed; attempting local-list recovery:', e);
+  } catch (error) {
+    log.error('BOOTSTRAP: language window initialization failed; attempting local-list recovery:', error);
     languages = FALLBACK_LANGUAGES.slice();
     selectedLanguageTag = '';
     filteredLanguages = languages.slice();

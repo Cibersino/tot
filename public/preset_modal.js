@@ -23,9 +23,9 @@
   let log;
   try {
     log = window.getLogger('preset-modal');
-  } catch (err) {
+  } catch (error) {
     if (typeof window.close === 'function') window.close();
-    throw err;
+    throw error;
   }
 
   log.debug('Preset modal starting...');
@@ -188,8 +188,8 @@
       try {
         const settings = await presetApi.getSettings();
         return settings && settings.language ? settings.language : DEFAULT_LANG;
-      } catch (err) {
-        log.warn('presetAPI.getSettings failed; using default language:', err);
+      } catch (error) {
+        log.warn('presetAPI.getSettings failed; using default language:', error);
         return DEFAULT_LANG;
       }
     }
@@ -202,13 +202,13 @@
       try {
         await transitionPresetTranslations(language);
         return true;
-      } catch (err) {
-        if (err && err.rendererI18nTransition) {
-          reportPresetI18nFailure(err, {
+      } catch (error) {
+        if (error && error.rendererI18nTransition) {
+          reportPresetI18nFailure(error, {
             startup: !presetTranslationsEstablished,
           });
         } else {
-          log.error('Preset modal semantic update failed:', err);
+          log.error('Preset modal semantic update failed:', error);
         }
         return false;
       }
@@ -238,8 +238,8 @@
       }
       try {
         presetApi.reportRendererI18nFailure({ kind });
-      } catch (reportErr) {
-        log.warn('presetAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+      } catch (error) {
+        log.warn('presetAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
         if (typeof window.close === 'function') window.close();
       }
     }
@@ -320,8 +320,8 @@
           });
         });
         return true;
-      } catch (err) {
-        log.error('BOOTSTRAP: presetAPI.onSettingsChanged registration failed; closing modal before normal interaction:', err);
+      } catch (error) {
+        log.error('BOOTSTRAP: presetAPI.onSettingsChanged registration failed; closing modal before normal interaction:', error);
         reportTerminalPresetI18nFailure('settings-listener');
         return false;
       }
@@ -349,8 +349,8 @@
                 await applyPresetLanguagePresentation();
                 if (presetI18nTerminal || presetInitializationAborted) return;
                 establishInitialPresetPayloadPresentation();
-              } catch (err) {
-                log.error('Preset modal required language presentation failed:', err);
+              } catch (error) {
+                log.error('Preset modal required language presentation failed:', error);
                 reportTerminalPresetI18nFailure('semantic-application');
                 return;
               }
@@ -368,8 +368,8 @@
           });
         });
         return true;
-      } catch (err) {
-        log.error('BOOTSTRAP: presetAPI.onInit listener setup failed; closing modal before normal interaction:', err);
+      } catch (error) {
+        log.error('BOOTSTRAP: presetAPI.onInit listener setup failed; closing modal before normal interaction:', error);
         if (typeof window.close === 'function') window.close();
         return false;
       }
@@ -428,9 +428,9 @@
 
       try {
         await savePreset(preset);
-      } catch (err) {
+      } catch (error) {
         window.Notify.notifyMain('renderer.presets.alerts.process_error');
-        log.error('Preset modal save action failed:', err);
+        log.error('Preset modal save action failed:', error);
       }
     });
 

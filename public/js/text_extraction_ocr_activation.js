@@ -90,8 +90,8 @@
     let activationFlow = null;
     try {
       activationFlow = getActivationFlow();
-    } catch (err) {
-      log.error('OCR activation flow unavailable for Preferences menu:', err);
+    } catch (error) {
+      log.error('OCR activation flow unavailable for Preferences menu:', error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
       return {
         ok: false,
@@ -105,8 +105,8 @@
       activationResult = await activationFlow.startActivationFlow({
         source: 'preferences_menu',
       });
-    } catch (err) {
-      log.error('OCR activation flow failed for Preferences menu:', err);
+    } catch (error) {
+      log.error('OCR activation flow failed for Preferences menu:', error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
       return {
         ok: false,

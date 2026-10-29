@@ -103,9 +103,9 @@ function createController({ settingsState } = {}) {
     ipcMain.handle('set-editor-font-size-px', async (_event, fontSizePx) => {
       try {
         return set(fontSizePx);
-      } catch (err) {
-        log.error('IPC set-editor-font-size-px failed:', err);
-        throw err;
+      } catch (error) {
+        log.error('IPC set-editor-font-size-px failed:', error);
+        throw error;
       }
     });
   }

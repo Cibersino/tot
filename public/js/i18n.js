@@ -230,18 +230,18 @@
             continue;
           }
           return parsed;
-        } catch (err) {
+        } catch (error) {
           log.warn(
             'Failed to parse renderer.json (trying fallback):',
             { requested, langCode, path: p },
-            err
+            error
           );
         }
-      } catch (err) {
+      } catch (error) {
         log.warn(
           'Failed to fetch renderer.json (trying fallback):',
           { requested, langCode, path: p },
-          err
+          error
         );
       }
     }
@@ -365,8 +365,8 @@
       let candidate;
       try {
         candidate = await prepareRendererTranslations(lang);
-      } catch (err) {
-        throw markRendererTransitionError(err, {
+      } catch (error) {
+        throw markRendererTransitionError(error, {
           hadEstablishedState: !!rendererTranslations,
         });
       }
@@ -374,9 +374,9 @@
       let previousState;
       try {
         previousState = captureRendererTranslationState();
-      } catch (err) {
+      } catch (error) {
         // State capture is read-only. The existing state remains authoritative when it was already established, so no restoration callback runs.
-        throw markRendererTransitionError(err, {
+        throw markRendererTransitionError(error, {
           hadEstablishedState: !!rendererTranslations,
         });
       }
@@ -385,44 +385,44 @@
       try {
         candidateLanguage = commitRendererTranslations(candidate);
         applyWindowLanguageAttributes(candidateLanguage);
-      } catch (err) {
+      } catch (error) {
         try {
           await restoreRendererTranslationState(previousState, applyTranslations, {
             restoreConsumerSemantics: false,
           });
-        } catch (restoreErr) {
+        } catch (error) {
           log.error(
             'Renderer translation transition restoration failed:',
             { requestedLanguage: candidateLanguage, previousLanguage: previousState.language },
-            restoreErr
+            error
           );
-          throw markRendererTransitionError(restoreErr, {
+          throw markRendererTransitionError(error, {
             hadEstablishedState: !!previousState.translations,
             restorationFailed: true,
           });
         }
-        throw markRendererTransitionError(err, {
+        throw markRendererTransitionError(error, {
           hadEstablishedState: !!previousState.translations,
         });
       }
 
       try {
         await applyTranslations({ language: candidateLanguage, restoring: false });
-      } catch (err) {
+      } catch (error) {
         try {
           await restoreRendererTranslationState(previousState, applyTranslations);
-        } catch (restoreErr) {
+        } catch (error) {
           log.error(
             'Renderer translation transition restoration failed:',
             { requestedLanguage: candidate.language, previousLanguage: previousState.language },
-            restoreErr
+            error
           );
-          throw markRendererTransitionError(restoreErr, {
+          throw markRendererTransitionError(error, {
             hadEstablishedState: !!previousState.translations,
             restorationFailed: true,
           });
         }
-        throw markRendererTransitionError(err, {
+        throw markRendererTransitionError(error, {
           hadEstablishedState: !!previousState.translations,
         });
       }
@@ -490,11 +490,11 @@
           html,
           language: candidate.language,
         };
-      } catch (err) {
+      } catch (error) {
         log.warn(
           'Localized document fetch failed (trying fallback):',
           { documentId, language: candidate.language, path: candidate.path },
-          err
+          error
         );
       }
     }

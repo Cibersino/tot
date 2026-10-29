@@ -138,10 +138,10 @@
       const saveResult = await window.electronAPI.saveCurrentTextSnapshot(savePayload);
       handleSaveResult(saveResult);
       return saveResult;
-    } catch (err) {
-      log.error('snapshot save failed:', err);
+    } catch (error) {
+      log.error('snapshot save failed:', error);
       window.Notify.toastMain(TOAST_KEYS.saveError, { type: 'error' });
-      return { ok: false, code: 'WRITE_FAILED', error: String(err) };
+      return { ok: false, code: 'WRITE_FAILED', error: String(error) };
     }
   }
 
@@ -155,10 +155,10 @@
       const loadResult = await window.electronAPI.loadCurrentTextSnapshot();
       handleLoadResult(loadResult);
       return loadResult;
-    } catch (err) {
-      log.error('snapshot load failed:', err);
+    } catch (error) {
+      log.error('snapshot load failed:', error);
       window.Notify.toastMain(TOAST_KEYS.loadError, { type: 'error' });
-      return { ok: false, code: 'READ_FAILED', error: String(err) };
+      return { ok: false, code: 'READ_FAILED', error: String(error) };
     }
   }
 

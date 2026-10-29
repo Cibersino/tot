@@ -134,11 +134,11 @@ function materializeBundledCredentials({
       reason: repairedRuntimeMirror ? 'runtime_repaired_from_bundle' : 'runtime_created_from_bundle',
       errorCode: '',
     };
-  } catch (err) {
+  } catch (error) {
     const detailsSafeForLogs = {
       runtimeValidationCode: runtimeValidation.code,
-      errorName: safeErrorName(err),
-      errorMessage: safeErrorMessage(err),
+      errorName: safeErrorName(error),
+      errorMessage: safeErrorMessage(error),
     };
 
     log.error('Google OCR bundled credentials materialization failed:', detailsSafeForLogs);

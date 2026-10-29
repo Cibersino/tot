@@ -32,8 +32,8 @@ if (typeof window.getLogger !== 'function') {
 
 try {
   log = window.getLogger('editor-find');
-} catch (err) {
-  failClosedFindBootstrap(err);
+} catch (error) {
+  failClosedFindBootstrap(error);
 }
 log.debug('Editor find window starting...');
 
@@ -50,8 +50,8 @@ function reportEarlyTerminalFindI18nFailure(kind) {
   }
   try {
     api.reportRendererI18nFailure({ kind });
-  } catch (err) {
-    log.warn('BOOTSTRAP: editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', err);
+  } catch (error) {
+    log.warn('BOOTSTRAP: editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', error);
     if (typeof window.close === 'function') window.close();
   }
 }
@@ -299,8 +299,8 @@ function reportTerminalFindI18nFailure(kind) {
   }
   try {
     window.editorFindAPI.reportRendererI18nFailure({ kind });
-  } catch (reportErr) {
-    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', reportErr);
+  } catch (error) {
+    log.warn('editorFindAPI.reportRendererI18nFailure failed (ignored): closing failed renderer locally.', error);
     if (typeof window.close === 'function') window.close();
   }
 }
@@ -317,8 +317,8 @@ function focusRequestedTarget(target, selectAll = false) {
     if (selectAll && typeof targetEl.select === 'function') {
       targetEl.select();
     }
-  } catch (err) {
-    log.warn('Unable to focus requested editor-find target (ignored):', err);
+  } catch (error) {
+    log.warn('Unable to focus requested editor-find target (ignored):', error);
   }
 }
 
@@ -349,8 +349,8 @@ function notifyReplaceTimeout() {
       type: 'error',
       duration: 5000,
     });
-  } catch (err) {
-    log.warn('editor-find: replace-timeout toast failed (ignored):', err);
+  } catch (error) {
+    log.warn('editor-find: replace-timeout toast failed (ignored):', error);
   }
 }
 
@@ -365,8 +365,8 @@ function handleReplaceResult(result) {
 async function pushQuery() {
   try {
     await findApi.setQuery(inputEl.value || '');
-  } catch (err) {
-    log.error('Error sending find query to main process:', err);
+  } catch (error) {
+    log.error('Error sending find query to main process:', error);
   }
 }
 
@@ -374,8 +374,8 @@ async function runReplaceCurrent() {
   try {
     const result = await findApi.replaceCurrent(replaceInputEl.value || '');
     handleReplaceResult(result);
-  } catch (err) {
-    log.error('Error sending replace-current request to main process:', err);
+  } catch (error) {
+    log.error('Error sending replace-current request to main process:', error);
   }
 }
 
@@ -383,8 +383,8 @@ async function runReplaceAll() {
   try {
     const result = await findApi.replaceAll(replaceInputEl.value || '');
     handleReplaceResult(result);
-  } catch (err) {
-    log.error('Error sending replace-all request to main process:', err);
+  } catch (error) {
+    log.error('Error sending replace-all request to main process:', error);
   }
 }
 
@@ -405,10 +405,10 @@ async function getInitialFindLanguage() {
     if (settings && settings.language) {
       language = settings.language || language;
     }
-  } catch (err) {
+  } catch (error) {
     log.warn(
       'BOOTSTRAP: [editor-find] editorFindAPI.getSettings failed; using default language.',
-      err
+      error
     );
   }
   return language;
@@ -489,8 +489,8 @@ async function applyFindLanguage(language, { startup = false } = {}) {
   try {
     await transitionFindTranslations(language);
     return true;
-  } catch (err) {
-    reportFindI18nFailure(err, { startup });
+  } catch (error) {
+    reportFindI18nFailure(error, { startup });
     return false;
   }
 }
@@ -515,8 +515,8 @@ try {
   });
 
   findApi.onState(applyIncomingState);
-} catch (err) {
-  failClosedFindBootstrap(err);
+} catch (error) {
+  failClosedFindBootstrap(error);
 }
 
 if (typeof findApi.onFocusTarget === 'function') {
@@ -529,12 +529,12 @@ if (typeof findApi.onFocusTarget === 'function') {
       pendingFocusIntent = { target, selectAll };
       applyPendingFocusIntent();
     });
-  } catch (err) {
+  } catch (error) {
     focusSyncEnabled = false;
     pendingFocusIntent = null;
     log.warn(
       'BOOTSTRAP: [editor-find] editorFindAPI.onFocusTarget registration failed; focus-sync capability disabled.',
-      err
+      error
     );
   }
 } else {
@@ -549,8 +549,8 @@ if (typeof findApi.onSettingsChanged !== 'function') {
 } else {
   try {
     findApi.onSettingsChanged((settings) => enqueueFindSettingsApplication(settings));
-  } catch (err) {
-    log.error('BOOTSTRAP: editorFindAPI.onSettingsChanged registration failed; closing window before normal interaction:', err);
+  } catch (error) {
+    log.error('BOOTSTRAP: editorFindAPI.onSettingsChanged registration failed; closing window before normal interaction:', error);
     reportTerminalFindI18nFailure('settings-listener');
   }
 }

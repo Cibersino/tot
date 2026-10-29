@@ -35,8 +35,8 @@
   try {
     log = window.getLogger('reading-test-result');
     log.debug('Reading-test result window starting...');
-  } catch (err) {
-    failClosedResultBootstrap(err);
+  } catch (error) {
+    failClosedResultBootstrap(error);
   }
 
   const resultApi = window.readingTestResultAPI || null;
@@ -103,8 +103,8 @@
     }
     try {
       resultApi.reportRendererI18nFailure({ kind });
-    } catch (reportErr) {
-      log.warn('readingTestResultAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    } catch (error) {
+      log.warn('readingTestResultAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
       if (typeof window.close === 'function') window.close();
     }
   }
@@ -321,8 +321,8 @@
         } else {
           try {
             nextSettings = await resultApi.getSettings() || {};
-          } catch (err) {
-            log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', err);
+          } catch (error) {
+            log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', error);
             nextSettings = {};
           }
         }
@@ -362,17 +362,17 @@
 
     try {
       resultApi.onInitData(handleInitData);
-    } catch (err) {
+    } catch (error) {
       resultBootstrapTerminal = true;
-      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onInitData:', err);
+      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onInitData:', error);
       if (typeof window.close === 'function') window.close();
       return;
     }
 
     try {
       resultApi.onSettingsChanged(handleSettingsChanged);
-    } catch (err) {
-      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onSettingsChanged:', err);
+    } catch (error) {
+      log.error('Reading-test result bootstrap failed while registering readingTestResultAPI.onSettingsChanged:', error);
       reportTerminalResultI18nFailure('settings-listener');
       return;
     }

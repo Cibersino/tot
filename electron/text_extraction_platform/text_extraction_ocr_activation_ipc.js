@@ -378,8 +378,8 @@ function isAuthorizedSender(event, mainWin, {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn(senderValidationMessage, err);
+  } catch (error) {
+    log.warn(senderValidationMessage, error);
     return false;
   }
 }
@@ -508,13 +508,13 @@ function registerIpc(
         bundledCredentialsReady: true,
       });
       return result;
-    } catch (err) {
+    } catch (error) {
       const failure = buildPrepareFailure({
         code: 'platform_runtime_failed',
         detailsSafeForLogs: {
           stage: 'ipc_prepare_handler_failure',
-          errorName: safeErrorName(err),
-          errorMessage: safeErrorMessage(err),
+          errorName: safeErrorName(error),
+          errorMessage: safeErrorMessage(error),
         },
       });
       log.error(`${PREPARE_CHANNEL} failed unexpectedly:`, failure.detailsSafeForLogs);
@@ -589,10 +589,10 @@ function registerIpc(
       }
 
       return result;
-    } catch (err) {
+    } catch (error) {
       log.error(`${CHECK_AVAILABILITY_CHANNEL} failed unexpectedly:`, {
-        errorName: safeErrorName(err),
-        errorMessage: safeErrorMessage(err),
+        errorName: safeErrorName(error),
+        errorMessage: safeErrorMessage(error),
       });
       return {
         ok: false,
@@ -601,8 +601,8 @@ function registerIpc(
         code: 'platform_runtime_failed',
         detailsSafeForLogs: {
           stage: 'ipc_check_availability_handler_failure',
-          errorName: safeErrorName(err),
-          errorMessage: safeErrorMessage(err),
+          errorName: safeErrorName(error),
+          errorMessage: safeErrorMessage(error),
         },
       };
     }
@@ -695,8 +695,8 @@ function registerIpc(
           scopes: OCR_SCOPES,
           openExternal: (url) => shell.openExternal(url),
         });
-      } catch (authErr) {
-        const authFailure = mapAuthenticateError(authErr);
+      } catch (error) {
+        const authFailure = mapAuthenticateError(error);
         if (authFailure.code === 'ocr_activation_cancelled') {
           log.info('text extraction OCR activation cancelled during authentication:', {
             state: authFailure.state,
@@ -754,14 +754,14 @@ function registerIpc(
       }
 
       return mapped;
-    } catch (err) {
+    } catch (error) {
       const failure = buildFailure({
         state: 'failure',
         code: 'platform_runtime_failed',
         detailsSafeForLogs: {
           stage: 'ipc_launch_handler_failure',
-          errorName: safeErrorName(err),
-          errorMessage: safeErrorMessage(err),
+          errorName: safeErrorName(error),
+          errorMessage: safeErrorMessage(error),
         },
       });
       log.error(`${LAUNCH_CHANNEL} failed unexpectedly:`, failure.detailsSafeForLogs);

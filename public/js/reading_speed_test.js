@@ -169,8 +169,8 @@
   function syncLockState() {
     try {
       onInteractionStateChanged();
-    } catch (err) {
-      log.error('Reading-test interaction lock sync failed:', err);
+    } catch (error) {
+      log.error('Reading-test interaction lock sync failed:', error);
     }
   }
 
@@ -446,8 +446,8 @@
 
     try {
       return await getEntryData();
-    } catch (err) {
-      log.error('Reading-test entry data request failed:', err);
+    } catch (error) {
+      log.error('Reading-test entry data request failed:', error);
       window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
       return null;
     }
@@ -472,8 +472,8 @@
       if (stateSubscriptionFailed && !nextState.active && stateChangeObservedActive) return;
       sessionActive = nextState.active;
       syncLockState();
-    } catch (err) {
-      log.warn('Reading-test initial session-state fetch failed (ignored):', err);
+    } catch (error) {
+      log.warn('Reading-test initial session-state fetch failed (ignored):', error);
     }
   }
 
@@ -540,8 +540,8 @@
         closeModal();
         return;
       }
-    } catch (err) {
-      log.error('Reading-test pool reset failed:', err);
+    } catch (error) {
+      log.error('Reading-test pool reset failed:', error);
       window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
     }
 
@@ -615,9 +615,9 @@
       if (result.partialSuccess === true && typeof result.warningGuidanceKey === 'string') {
         window.Notify.notifyMain(result.warningGuidanceKey);
       }
-    } catch (err) {
+    } catch (error) {
       setStabilizing(false);
-      log.error('Reading-test pool import failed unexpectedly:', err);
+      log.error('Reading-test pool import failed unexpectedly:', error);
       window.Notify.notifyMain('renderer.reading_test.alerts.pool_import_failed');
     }
   }
@@ -648,9 +648,9 @@
         render();
         return;
       }
-    } catch (err) {
+    } catch (error) {
       showBundledEntries = previousShowBundledEntries;
-      log.error('Reading-test bundled visibility update failed:', err);
+      log.error('Reading-test bundled visibility update failed:', error);
       window.Notify.notifyMain('renderer.reading_test.alerts.pool_error');
     }
 
@@ -694,8 +694,8 @@
           log.error('Reading-test pool external link request failed:', err);
           window.Notify.notifyMain('renderer.info.external.error');
         });
-    } catch (err) {
-      log.error('Reading-test pool external link request failed:', err);
+    } catch (error) {
+      log.error('Reading-test pool external link request failed:', error);
       window.Notify.notifyMain('renderer.info.external.error');
     }
   }
@@ -722,9 +722,9 @@
       }
 
       closeModal();
-    } catch (err) {
+    } catch (error) {
       setStabilizing(false);
-      log.error('Reading-test start failed unexpectedly:', err);
+      log.error('Reading-test start failed unexpectedly:', error);
       window.Notify.notifyMain('renderer.reading_test.alerts.start_failed');
     }
   }
@@ -840,10 +840,10 @@
           syncLockState();
         });
         stateSubscriptionEstablished = true;
-      } catch (err) {
+      } catch (error) {
         log.warn(
           'onReadingTestStateChanged registration failed; reading speed test disabled.',
-          err
+          error
         );
       }
     } else {
@@ -860,15 +860,15 @@
         onNotice((notice) => {
           try {
             handleReadingTestNotice(notice);
-          } catch (err) {
-            log.error('Reading-test notice handler failed:', err);
+          } catch (error) {
+            log.error('Reading-test notice handler failed:', error);
           }
         });
         noticeSubscriptionEstablished = true;
-      } catch (err) {
+      } catch (error) {
         log.warn(
           'onReadingTestNotice registration failed; reading speed test disabled.',
-          err
+          error
         );
       }
     } else {

@@ -113,15 +113,15 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
   let sharpLib = null;
   try {
     sharpLib = require('sharp');
-  } catch (err) {
+  } catch (error) {
     throw buildNormalizationError(
       'image_normalizer_unavailable',
       'Sharp dependency is unavailable for required image normalization.',
       {
         reason: 'sharp_require_failed',
         sourceFileExt: fileInfo.sourceFileExt,
-        errorName: toSafeErrorName(err),
-        errorMessage: toSafeErrorMessage(err),
+        errorName: toSafeErrorName(error),
+        errorMessage: toSafeErrorMessage(error),
       }
     );
   }
@@ -140,7 +140,7 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
     if (!stat.isFile() || stat.size <= 0) {
       throw new Error('Converted PNG output is missing or empty.');
     }
-  } catch (err) {
+  } catch (error) {
     const cleanupWarning = cleanupTempDir(tempDirPath);
     throw buildNormalizationError(
       'source_to_png_conversion_failed',
@@ -148,8 +148,8 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
       {
         reason: 'sharp_source_to_png_failed',
         sourceFileExt: fileInfo.sourceFileExt,
-        errorName: toSafeErrorName(err),
-        errorMessage: toSafeErrorMessage(err),
+        errorName: toSafeErrorName(error),
+        errorMessage: toSafeErrorMessage(error),
         ...(cleanupWarning
           ? {
             cleanupWarningCode: cleanupWarning.warningCode,

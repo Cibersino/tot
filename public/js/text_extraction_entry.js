@@ -166,8 +166,8 @@
         if (filePath) {
           filePaths.push(filePath);
         }
-      } catch (err) {
-        log.warn('Dropped file path resolution failed; file ignored:', err);
+      } catch (error) {
+        log.warn('Dropped file path resolution failed; file ignored:', error);
       }
     }
     return filePaths;
@@ -462,8 +462,8 @@
         } else {
           try {
             pdfOptions = await window.Notify.promptTextExtractionPdfOptions({ inspection });
-          } catch (err) {
-            log.error('text extraction PDF options modal failed:', err);
+          } catch (error) {
+            log.error('text extraction PDF options modal failed:', error);
             window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
             return;
           }
@@ -540,9 +540,9 @@
         } else {
           try {
             routePreference = await window.Notify.promptTextExtractionRouteChoice({ preparation });
-          } catch (err) {
+          } catch (error) {
             textExtractionStatusUi.clearPendingExecutionContext();
-            log.error('text extraction route-choice modal failed:', err);
+            log.error('text extraction route-choice modal failed:', error);
             window.Notify.notifyMain('renderer.text_extraction.alerts.route_choice_error');
             return;
           }
@@ -740,8 +740,8 @@
               }
               : null,
           });
-        } catch (err) {
-          log.error('text extraction heavy-PDF recovery modal failed:', err);
+        } catch (error) {
+          log.error('text extraction heavy-PDF recovery modal failed:', error);
           window.Notify.notifyMain('renderer.text_extraction.alerts.heavy_pdf_recovery_error');
           return;
         }
@@ -824,8 +824,8 @@
               }
               : null,
           });
-        } catch (err) {
-          log.error('text extraction apply modal failed:', err);
+        } catch (error) {
+          log.error('text extraction apply modal failed:', error);
           window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
           return;
         }
@@ -885,10 +885,10 @@
         return;
       }
       window.Notify.notifyMain(primaryAlertKey);
-    } catch (err) {
+    } catch (error) {
       completeAbortFinalization({ textExtractionStatusUi });
       textExtractionStatusUi.clearPendingExecutionContext();
-      log.error(`Error handling text extraction ${source} entrypoint:`, err);
+      log.error(`Error handling text extraction ${source} entrypoint:`, error);
       window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }
@@ -969,8 +969,8 @@
           skipGuard: true,
           operation,
         });
-      } catch (err) {
-        log.error('Error handling text extraction picker entrypoint:', err);
+      } catch (error) {
+        log.error('Error handling text extraction picker entrypoint:', error);
         window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       }
     });

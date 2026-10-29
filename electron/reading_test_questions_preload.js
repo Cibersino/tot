@@ -11,8 +11,8 @@ ipcRenderer.on('reading-test-questions-init', (_event, payload) => {
   for (const listener of initDataListeners) {
     try {
       listener(payload);
-    } catch (err) {
-      console.error('reading-test-questions-init callback error:', err);
+    } catch (error) {
+      console.error('reading-test-questions-init callback error:', error);
     }
   }
 });
@@ -28,16 +28,16 @@ contextBridge.exposeInMainWorld('readingTestQuestionsAPI', {
     const listener = (_event, settings) => {
       try {
         cb(settings);
-      } catch (err) {
-        console.error('reading-test-questions settings callback error:', err);
+      } catch (error) {
+        console.error('reading-test-questions settings callback error:', error);
       }
     };
     ipcRenderer.on('settings-updated', listener);
     return () => {
       try {
         ipcRenderer.removeListener('settings-updated', listener);
-      } catch (err) {
-        console.error('removeListener error (reading-test-questions settings-updated):', err);
+      } catch (error) {
+        console.error('removeListener error (reading-test-questions settings-updated):', error);
       }
     };
   },
@@ -52,16 +52,16 @@ contextBridge.exposeInMainWorld('readingTestQuestionsAPI', {
     if (latestInitData !== null) {
       try {
         cb(latestInitData);
-      } catch (err) {
-        console.error('reading-test-questions-init callback error:', err);
+      } catch (error) {
+        console.error('reading-test-questions-init callback error:', error);
       }
     }
 
     return () => {
       try {
         initDataListeners.delete(cb);
-      } catch (err) {
-        console.error('removeListener error (reading-test-questions-init):', err);
+      } catch (error) {
+        console.error('removeListener error (reading-test-questions-init):', error);
       }
     };
   },

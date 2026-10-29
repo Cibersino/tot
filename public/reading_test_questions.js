@@ -35,8 +35,8 @@
   try {
     log = window.getLogger('reading-test-questions');
     log.debug('Reading-test questions window starting...');
-  } catch (err) {
-    failClosedQuestionsBootstrap(err);
+  } catch (error) {
+    failClosedQuestionsBootstrap(error);
   }
 
   const questionsApi = window.readingTestQuestionsAPI || null;
@@ -109,8 +109,8 @@
     }
     try {
       questionsApi.reportRendererI18nFailure({ kind });
-    } catch (reportErr) {
-      log.warn('readingTestQuestionsAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', reportErr);
+    } catch (error) {
+      log.warn('readingTestQuestionsAPI.reportRendererI18nFailure failed (ignored); closing failed renderer locally:', error);
       if (typeof window.close === 'function') window.close();
     }
   }
@@ -635,8 +635,8 @@
         const focusTarget = (acceptedPayload && firstAnswer) || btnContinue;
         try {
           focusTarget.focus({ preventScroll: true });
-        } catch (err) {
-          log.warn('Reading-test questions initial focus failed (ignored):', err);
+        } catch (error) {
+          log.warn('Reading-test questions initial focus failed (ignored):', error);
         }
       }).catch((err) => {
         handleInitFailure(err);
@@ -653,8 +653,8 @@
         } else {
           try {
             nextSettings = await questionsApi.getSettings() || {};
-          } catch (err) {
-            log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', err);
+          } catch (error) {
+            log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', error);
             nextSettings = {};
           }
         }
@@ -711,18 +711,18 @@
 
     try {
       questionsApi.onInitData(handleInitData);
-    } catch (err) {
+    } catch (error) {
       questionsBootstrapTerminal = true;
       setQuestionsTerminalUnavailable();
-      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onInitData:', err);
+      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onInitData:', error);
       if (typeof window.close === 'function') window.close();
       return;
     }
 
     try {
       questionsApi.onSettingsChanged(handleSettingsChanged);
-    } catch (err) {
-      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onSettingsChanged:', err);
+    } catch (error) {
+      log.error('Reading-test questions bootstrap failed while registering readingTestQuestionsAPI.onSettingsChanged:', error);
       reportTerminalQuestionsI18nFailure('settings-listener');
       return;
     }

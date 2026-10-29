@@ -47,7 +47,7 @@ function isPathInsideRoot(targetPath, rootPath) {
 function resolveRealPathOrFallback(candidatePath) {
   try {
     return fs.realpathSync(candidatePath);
-  } catch (_err) {
+  } catch {
     return path.resolve(candidatePath);
   }
 }
@@ -110,10 +110,10 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, shellApi } = {}) {
       let artifactStats = null;
       try {
         artifactStats = fs.statSync(resolvedArtifactPath);
-      } catch (err) {
+      } catch (error) {
         log.warn('Generated PDF reveal rejected because artifact is missing:', {
           artifactPath: resolvedArtifactPath,
-          errorCode: err && err.code ? err.code : '',
+          errorCode: error && error.code ? error.code : '',
         });
         return { ok: false, code: 'ARTIFACT_MISSING' };
       }
@@ -126,8 +126,8 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, shellApi } = {}) {
 
       shellApi.showItemInFolder(resolvedArtifactPath);
       return { ok: true };
-    } catch (err) {
-      log.error('text-extraction-reveal-generated-pdf failed unexpectedly:', err);
+    } catch (error) {
+      log.error('text-extraction-reveal-generated-pdf failed unexpectedly:', error);
       return { ok: false, code: 'REVEAL_GENERATED_PDF_FAILED' };
     }
   });

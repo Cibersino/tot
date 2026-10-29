@@ -286,7 +286,7 @@ function validateSourceForNativeRoute(source, provenance) {
         },
       });
     }
-  } catch (err) {
+  } catch (error) {
     return buildPreflightFailureResult({
       summary: 'Native route failed before parse: file metadata check failed.',
       provenance,
@@ -295,8 +295,8 @@ function validateSourceForNativeRoute(source, provenance) {
       detailsSafeForLogs: {
         stage: 'preflight',
         reason: 'stat_failed',
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
+        errorName: String(error && error.name ? error.name : 'Error'),
+        errorCode: String(error && error.code ? error.code : ''),
       },
     });
   }
@@ -403,8 +403,8 @@ async function runNativeExtractionRoute({
       provenance,
       error: null,
     });
-  } catch (err) {
-    if (String(err && err.code || '') === 'aborted_by_user') {
+  } catch (error) {
+    if (String(error && error.code || '') === 'aborted_by_user') {
       return buildResult({
         state: 'cancelled',
         summary: 'Native extraction route cancelled by user.',
@@ -420,14 +420,14 @@ async function runNativeExtractionRoute({
     log.warn('Native extraction route failed:', {
       sourceFileExt: source.fileExt,
       parserType: source.parserType,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorCode: String(err && err.code ? err.code : ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorCode: String(error && error.code ? error.code : ''),
     });
 
     const failure = buildFailureResultForError({
       source,
       parserType: source.parserType,
-      err,
+      err: error,
     });
 
     return buildResult({

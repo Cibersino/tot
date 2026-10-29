@@ -103,8 +103,8 @@ function inspectPathEntry(targetPath) {
 function ensureSnapshotsRoot() {
   try {
     ensureCurrentTextSnapshotsDir();
-  } catch (err) {
-    log.warn('ensureSnapshotsRoot failed (continuing):', err);
+  } catch (error) {
+    log.warn('ensureSnapshotsRoot failed (continuing):', error);
   }
   const root = getCurrentTextSnapshotsDir();
   return fs.existsSync(root) ? root : null;
@@ -173,8 +173,8 @@ function getDefaultSnapshotName(rootDir) {
         if (Number.isFinite(n) && n > maxNum) maxNum = n;
       }
     });
-  } catch (err) {
-    log.warnOnce('current_text_snapshots.defaultName', 'Failed to scan snapshots dir:', err);
+  } catch (error) {
+    log.warnOnce('current_text_snapshots.defaultName', 'Failed to scan snapshots dir:', error);
   }
   return `current_text_${maxNum + 1}.json`;
 }
@@ -372,8 +372,8 @@ function resolveSnapshotCountContext() {
   let settings = null;
   try {
     settings = settingsState.getSettings();
-  } catch (err) {
-    log.warn('Snapshot count settings read failed; using defaults.', err);
+  } catch (error) {
+    log.warn('Snapshot count settings read failed; using defaults.', error);
   }
 
   const mode = settings && settings.modeConteo === 'simple' ? 'simple' : 'preciso';
@@ -404,15 +404,15 @@ function countSnapshotText(text, countContext) {
 
   try {
     return { stats: countUtils.contarTexto(text, countOptions), countContext };
-  } catch (err) {
-    if (!countUtils.isPreciseCountFailure(err)) throw err;
+  } catch (error) {
+    if (!countUtils.isPreciseCountFailure(error)) throw error;
 
     const fallbackInfo = settingsState.fallbackPreciseCountingToSimple({
       source: 'current-text-snapshot',
-      code: err.code,
-      stage: err.stage,
+      code: error.code,
+      stage: error.stage,
     });
-    if (!fallbackInfo || fallbackInfo.ok !== true) throw err;
+    if (!fallbackInfo || fallbackInfo.ok !== true) throw error;
 
     const simpleCountContext = resolveSnapshotCountContext();
     if (simpleCountContext.mode !== 'simple') {
@@ -467,9 +467,9 @@ function parseSnapshotFile(selectedReal) {
   let parsed = null;
   try {
     parsed = JSON.parse(raw);
-  } catch (err) {
-    log.warn('snapshot JSON parse failed:', { selectedReal, err: String(err) });
-    return { ok: false, code: 'INVALID_JSON', message: String(err) };
+  } catch (error) {
+    log.warn('snapshot JSON parse failed:', { selectedReal, err: String(error) });
+    return { ok: false, code: 'INVALID_JSON', message: String(error) };
   }
 
   const snapshotInfo = currentTextSnapshotSchema.validateSnapshotDocument(parsed);
@@ -540,8 +540,8 @@ function getDialogTexts() {
     const settings = settingsState.getSettings();
     const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
     return menuBuilder.getDialogTexts(lang);
-  } catch (err) {
-    log.warnOnce('current_text_snapshots.dialogTexts', 'Using fallback dialog texts:', err);
+  } catch (error) {
+    log.warnOnce('current_text_snapshots.dialogTexts', 'Using fallback dialog texts:', error);
     return {};
   }
 }
@@ -590,11 +590,11 @@ function resolveMainWin(getWindows) {
   let wins = null;
   try {
     wins = getWindows();
-  } catch (err) {
+  } catch (error) {
     log.warnOnce(
       'current_text_snapshots.owner_window.get_windows_failed',
       'Dialog owner fallback: getWindows failed; using unowned dialog.',
-      err
+      error
     );
     return null;
   }
@@ -627,11 +627,11 @@ function resolveOwnerWin(event, getWindows) {
         'current_text_snapshots.owner_window.sender_window_missing',
         'Dialog owner fallback: BrowserWindow.fromWebContents returned no window; using mainWin or unowned dialog.'
       );
-    } catch (err) {
+    } catch (error) {
       log.warnOnce(
         'current_text_snapshots.owner_window.sender_resolve_failed',
         'Dialog owner fallback: failed to resolve sender BrowserWindow; using mainWin or unowned dialog.',
-        err
+        error
       );
     }
   } else {
@@ -834,9 +834,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         length: text.length,
         tags: payloadInfo.tags,
       };
-    } catch (err) {
-      log.error('snapshot save failed:', err);
-      return { ok: false, code: 'WRITE_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('snapshot save failed:', error);
+      return { ok: false, code: 'WRITE_FAILED', message: String(error) };
     }
   });
 
@@ -851,9 +851,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'READ_FAILED', message: openResult };
       }
       return { ok: true, path: root };
-    } catch (err) {
-      log.error('snapshot open folder failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('snapshot open folder failed:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 
@@ -874,9 +874,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         ok: true,
         snapshotRelPath: selectedInfo.snapshotRelPath,
       };
-    } catch (err) {
-      log.error('snapshot select failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('snapshot select failed:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 
@@ -885,9 +885,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const request = getRequestedSnapshotRelPath(payload);
       if (!request.ok) return request;
       return inspectSnapshotAtRelPath(request.snapshotRelPath);
-    } catch (err) {
-      log.error('snapshot inspection failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('snapshot inspection failed:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 
@@ -949,9 +949,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         length: applyResult && typeof applyResult.length === 'number' ? applyResult.length : parsed.text.length,
         truncated: !!(applyResult && applyResult.truncated),
       };
-    } catch (err) {
-      log.error('snapshot load failed:', err);
-      return { ok: false, code: 'READ_FAILED', message: String(err) };
+    } catch (error) {
+      log.error('snapshot load failed:', error);
+      return { ok: false, code: 'READ_FAILED', message: String(error) };
     }
   });
 }

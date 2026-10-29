@@ -237,11 +237,11 @@
 
           try {
             targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
-          } catch (err) {
+          } catch (error) {
             log.warnOnce(
               'renderer.info.scrollIntoView.failed',
               'scrollIntoView failed; using manual scroll fallback:',
-              err
+              error
             );
             if (!panel) return;
             const panelRect = panel.getBoundingClientRect();
@@ -303,8 +303,8 @@
             notifyFailure('renderer.info.external.error');
             log.warn('External URL request failed:', resolvedHref, err);
           });
-      } catch (err) {
-        log.error('Error handling info modal link click:', err);
+      } catch (error) {
+        log.error('Error handling info modal link click:', error);
       }
     });
 

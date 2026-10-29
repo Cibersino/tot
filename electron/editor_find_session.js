@@ -79,8 +79,8 @@ function createSession({
     if (clearSelection && editorWin) {
       try {
         editorWin.webContents.stopFindInPage('clearSelection');
-      } catch (err) {
-        log.warn("stopFindInPage('clearSelection') failed (ignored):", err);
+      } catch (error) {
+        log.warn("stopFindInPage('clearSelection') failed (ignored):", error);
       }
     }
 
@@ -99,9 +99,9 @@ function createSession({
       const requestId = editorWin.webContents.findInPage(state.query, options);
       state.requestId = requestId;
       return { ok: true, requestId };
-    } catch (err) {
-      log.error('Error calling webContents.findInPage:', err);
-      return { ok: false, error: String(err) };
+    } catch (error) {
+      log.error('Error calling webContents.findInPage:', error);
+      return { ok: false, error: String(error) };
     }
   }
 
@@ -217,14 +217,14 @@ function createSession({
 
     try {
       clearTimeout(timeoutId);
-    } catch (err) {
-      log.warn('findInPage completion timeout cleanup failed (ignored):', err);
+    } catch (error) {
+      log.warn('findInPage completion timeout cleanup failed (ignored):', error);
     }
 
     try {
       resolve({ ok: false, status });
-    } catch (err) {
-      log.error('findInPage completion cancellation settlement failed:', err);
+    } catch (error) {
+      log.error('findInPage completion cancellation settlement failed:', error);
     }
   }
 
@@ -314,8 +314,8 @@ function createSession({
 
     try {
       clearTimeout(timeoutId);
-    } catch (err) {
-      log.warn('editor replace timeout cleanup failed (ignored):', err);
+    } catch (error) {
+      log.warn('editor replace timeout cleanup failed (ignored):', error);
     }
 
     try {
@@ -326,8 +326,8 @@ function createSession({
         replacements: 0,
         error: '',
       });
-    } catch (err) {
-      log.error('Editor replace cancellation settlement failed:', err);
+    } catch (error) {
+      log.error('Editor replace cancellation settlement failed:', error);
     }
   }
 
@@ -377,16 +377,16 @@ function createSession({
           activeMatchOrdinal: coercePreferredOrdinal(payload && payload.activeMatchOrdinal, 1),
           matchCase: !!(payload && payload.matchCase),
         });
-      } catch (err) {
+      } catch (error) {
         pendingEditorReplace = null;
         clearTimeout(timeoutId);
-        log.warn('editor-replace-request send failed (ignored):', operation, err);
+        log.warn('editor-replace-request send failed (ignored):', operation, error);
         resolve({
           ok: false,
           status: 'send-failed',
           operation,
           replacements: 0,
-          error: String(err),
+          error: String(error),
         });
       }
     });

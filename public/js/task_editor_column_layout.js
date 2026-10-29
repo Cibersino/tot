@@ -199,8 +199,8 @@
         return isStrictSaveSuccess(result)
           ? { ok: true }
           : { ok: false, code: 'INVALID_OR_FAILED_RESULT', result };
-      } catch (err) {
-        return { ok: false, code: 'INVOKE_REJECTED', error: err };
+      } catch (error) {
+        return { ok: false, code: 'INVOKE_REJECTED', error: error };
       }
     }
 
@@ -273,8 +273,8 @@
       ) return;
       try {
         resize.handle.releasePointerCapture(resize.pointerId);
-      } catch (err) {
-        log.warn('Task column divider releasePointerCapture failed (ignored):', err);
+      } catch (error) {
+        log.warn('Task column divider releasePointerCapture failed (ignored):', error);
       }
     }
 
@@ -300,8 +300,8 @@
       if (handle.getAttribute('aria-disabled') === 'true') return;
       try {
         handle.setPointerCapture(event.pointerId);
-      } catch (err) {
-        log.error('Task column divider setPointerCapture failed:', err);
+      } catch (error) {
+        log.error('Task column divider setPointerCapture failed:', error);
         return;
       }
       event.preventDefault();
@@ -391,8 +391,8 @@
       let result = null;
       try {
         result = await api.getColumnLayout();
-      } catch (err) {
-        log.warn('BOOTSTRAP: Task column layout load rejected; using session defaults:', err);
+      } catch (error) {
+        log.warn('BOOTSTRAP: Task column layout load rejected; using session defaults:', error);
         return false;
       }
 

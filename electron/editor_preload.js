@@ -7,8 +7,8 @@ function subscribeWithUnsub(channel, cb, callbackErrorMessage, removeErrorMessag
   const listener = (_event, payload) => {
     try {
       cb(payload);
-    } catch (err) {
-      console.error(callbackErrorMessage, err);
+    } catch (error) {
+      console.error(callbackErrorMessage, error);
     }
   };
 
@@ -17,8 +17,8 @@ function subscribeWithUnsub(channel, cb, callbackErrorMessage, removeErrorMessag
   return () => {
     try {
       ipcRenderer.removeListener(channel, listener);
-    } catch (err) {
-      console.error(removeErrorMessage, err);
+    } catch (error) {
+      console.error(removeErrorMessage, error);
     }
   };
 }

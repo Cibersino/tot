@@ -112,9 +112,9 @@
       }
       try {
         baseText = String(await getCurrentText() || '');
-      } catch (err) {
-        log.error('getCurrentText failed while applying text:', err);
-        return { ok: false, code: 'GET_CURRENT_TEXT_FAILED', error: String(err) };
+      } catch (error) {
+        log.error('getCurrentText failed while applying text:', error);
+        return { ok: false, code: 'GET_CURRENT_TEXT_FAILED', error: String(error) };
       }
     }
 
@@ -156,9 +156,9 @@
         truncated: !!resp.truncated,
         response: resp,
       };
-    } catch (err) {
-      log.error('setCurrentText failed while applying text:', err);
-      return { ok: false, code: 'SET_CURRENT_TEXT_FAILED', error: String(err) };
+    } catch (error) {
+      log.error('setCurrentText failed while applying text:', error);
+      return { ok: false, code: 'SET_CURRENT_TEXT_FAILED', error: String(error) };
     }
   }
 

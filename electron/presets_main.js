@@ -65,8 +65,8 @@ function isAuthorizedSender(event, expectedWin, channelName) {
       return false;
     }
     return true;
-  } catch (err) {
-    log.warn('Preset sender validation failed:', err);
+  } catch (error) {
+    log.warn('Preset sender validation failed:', error);
     return false;
   }
 }
@@ -157,11 +157,11 @@ function readConfiguredPresetArray(filePath) {
       return [];
     }
     return sanitizePresetArray(arr, filePath);
-  } catch (err) {
+  } catch (error) {
     log.warn(
       '[presets_main] Preset JSON load failed; no usable presets from configured file:',
       filePath,
-      err
+      error
     );
     return [];
   }
@@ -186,10 +186,10 @@ function loadConfiguredDefaultPresetCatalog(lang) {
     ensureConfigPresetsDir();
     presetsDir = getConfigPresetsDir();
     entries = fs.readdirSync(presetsDir);
-  } catch (err) {
+  } catch (error) {
     log.error(
       '[presets_main] Configured default-preset catalog is unavailable:',
-      err
+      error
     );
     return unavailableCatalog;
   }
@@ -283,17 +283,17 @@ function copyDefaultPresetsIfMissing() {
               '[presets_main] Default preset copied to user config:',
               { src, dest }
             );
-          } catch (err) {
+          } catch (error) {
             log.warn(
               '[presets_main] Copy default preset failed (ignored):',
               { src, dest },
-              err
+              error
             );
           }
         }
       });
-  } catch (err) {
-    log.warn('[presets_main] copyDefaultPresetsIfMissing failed (ignored):', err);
+  } catch (error) {
+    log.warn('[presets_main] copyDefaultPresetsIfMissing failed (ignored):', error);
   }
 }
 
@@ -326,10 +326,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   function broadcast(settings) {
     try {
       settingsState.publishSettingsUpdated(settings);
-    } catch (err) {
+    } catch (error) {
       log.warn(
         '[presets_main] settings-updated notify failed (ignored):',
-        err
+        error
       );
     }
   }
@@ -349,10 +349,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           '[presets_main] preset-created notify failed (ignored): main window unavailable.'
         );
       }
-    } catch (err) {
+    } catch (error) {
       log.warn(
         '[presets_main] preset-created notify failed (ignored):',
-        err
+        error
       );
     }
   }
@@ -440,10 +440,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     try {
       const { general, languagePresets } = loadConfiguredDefaultPresetCatalog();
       return { general, languagePresets };
-    } catch (err) {
+    } catch (error) {
       log.error(
         '[presets_main] Error providing default presets (get-default-presets):',
-        err
+        error
       );
       return { general: [], languagePresets: {} };
     }
@@ -464,12 +464,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, error: String(result) };
       }
       return { ok: true };
-    } catch (err) {
+    } catch (error) {
       log.error(
         '[presets_main] Error opening presets_defaults folder:',
-        err
+        error
       );
-      return { ok: false, error: String(err) };
+      return { ok: false, error: String(error) };
     }
   });
 
@@ -512,9 +512,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       notifyMainPresetCreated(sanitizedPreset, settings, lang);
 
       return { ok: true };
-    } catch (err) {
-      log.error('[presets_main] Error creating preset:', err);
-      return { ok: false, error: String(err) };
+    } catch (error) {
+      log.error('[presets_main] Error creating preset:', error);
+      return { ok: false, error: String(error) };
     }
   });
 
@@ -619,9 +619,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       return { ok: false, code: 'NOT_FOUND' };
-    } catch (err) {
-      log.error('[presets_main] Error in request-delete-preset:', err);
-      return { ok: false, error: String(err) };
+    } catch (error) {
+      log.error('[presets_main] Error in request-delete-preset:', error);
+      return { ok: false, error: String(error) };
     }
   });
 
@@ -708,12 +708,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       broadcast(settings);
 
       return { ok: true, action: 'restored', removedCustom, unignored, settingsSnapshot: settings, language: lang };
-    } catch (err) {
+    } catch (error) {
       log.error(
         '[presets_main] Error restoring default presets:',
-        err
+        error
       );
-      return { ok: false, error: String(err) };
+      return { ok: false, error: String(error) };
     }
   });
 
@@ -821,9 +821,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       notifyMainPresetCreated(sanitizedPreset, settings, lang);
 
       return { ok: true, action: 'edited', deletedAction };
-    } catch (err) {
-      log.error('[presets_main] Error editing preset:', err);
-      return { ok: false, error: String(err) };
+    } catch (error) {
+      log.error('[presets_main] Error editing preset:', error);
+      return { ok: false, error: String(error) };
     }
   });
 }

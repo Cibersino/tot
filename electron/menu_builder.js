@@ -223,12 +223,12 @@ function loadBundle(langCode, requested, required) {
             }
 
             return parsed;
-        } catch (err) {
+        } catch (error) {
             log.warnOnce(
                 `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`,
                 'Failed to load/parse main.json (trying fallback):',
                 { requested, langCode, file },
-                err
+                error
             );
         }
     }
@@ -324,11 +324,11 @@ function buildAppMenu(lang, opts = {}) {
             }
             try {
                 mainWindow.webContents.send(MENU_CLICK_CHANNEL, MENU_PROCESSING_LOCK_NOTICE_ACTION);
-            } catch (err) {
+            } catch (error) {
                 log.warnOnce(
                     'menu_builder.processing_lock_notice.sendFailed',
                     "webContents.send('menu-click') failed for processing lock notice (ignored):",
-                    err
+                    error
                 );
             }
         }
@@ -370,11 +370,11 @@ function buildAppMenu(lang, opts = {}) {
 
         try {
             mainWindow.webContents.send(MENU_CLICK_CHANNEL, payload);
-        } catch (err) {
+        } catch (error) {
             log.warn(
                 "webContents.send('menu-click') failed (ignored):",
                 payload,
-                err
+                error
             );
         }
     };
@@ -433,10 +433,10 @@ function buildAppMenu(lang, opts = {}) {
                         if (onOpenLanguage) {
                             try {
                                 onOpenLanguage();
-                            } catch (err) {
+                            } catch (error) {
                                 log.error(
                                     'onOpenLanguage callback failed:',
-                                    err
+                                    error
                                 );
                             }
                         } else {
@@ -496,10 +496,10 @@ function buildAppMenu(lang, opts = {}) {
                         }
                         try {
                             target.webContents.reload();
-                        } catch (err) {
+                        } catch (error) {
                             log.warn(
                                 'dev reload failed (ignored):',
-                                err
+                                error
                             );
                         }
                     },
@@ -516,10 +516,10 @@ function buildAppMenu(lang, opts = {}) {
                         }
                         try {
                             target.webContents.reloadIgnoringCache();
-                        } catch (err) {
+                        } catch (error) {
                             log.warn(
                                 'dev force reload failed (ignored):',
-                                err
+                                error
                             );
                         }
                     },
@@ -536,10 +536,10 @@ function buildAppMenu(lang, opts = {}) {
                         }
                         try {
                             target.webContents.toggleDevTools();
-                        } catch (err) {
+                        } catch (error) {
                             log.warn(
                                 'toggleDevTools failed (ignored):',
-                                err
+                                error
                             );
                         }
                     },
