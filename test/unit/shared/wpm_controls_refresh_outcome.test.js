@@ -360,7 +360,6 @@ test('loadPresets reports the selection cleared by a catalog reload failure', as
     nextSelectedPresetName: null,
     selectedPresetChanged: true,
   });
-  assert.equal(harness.controller.getSelectedPresetName(), null);
 });
 
 test('handlePresetCreated reports the selection cleared by a catalog reload failure', async () => {
@@ -395,7 +394,6 @@ test('handlePresetCreated reports the selection cleared by a catalog reload fail
     nextSelectedPresetName: null,
     selectedPresetChanged: true,
   });
-  assert.equal(harness.controller.getSelectedPresetName(), null);
 });
 
 test('handlePresetCreated reports effective post-resolution selection and WPM outcome', async () => {
@@ -436,7 +434,6 @@ test('handlePresetCreated reports effective post-resolution selection and WPM ou
   });
   assert.equal(harness.dom.presetsCombobox.getValue(), 'custom');
   assert.equal(harness.controller.getWpm(), 333);
-  assert.equal(harness.controller.getSelectedPresetName(), 'custom');
   assert.deepEqual(harness.selectionPersists, ['custom']);
 });
 

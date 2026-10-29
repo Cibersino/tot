@@ -549,7 +549,6 @@
       handlePresetSelectionChange,
       handlePresetCreated,
       getWpm: () => wpm,
-      getSelectedPresetName: () => currentPresetName,
       getAllPresets: () => allPresetsCache.slice(),
     };
   }
