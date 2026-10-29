@@ -82,10 +82,19 @@ function toPlainObject(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function createDeferred() {
+  let resolve;
+  const promise = new Promise((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
+}
+
 function createHarness({
   getDefaultPresets,
   languageDirection = 'rtl',
   onWpmChanged = null,
+  setSelectedPreset,
 } = {}) {
   const warningCalls = [];
   const document = {
@@ -168,6 +177,9 @@ function createHarness({
     },
     async setSelectedPreset(name) {
       selectionPersists.push(String(name));
+      if (typeof setSelectedPreset === 'function') {
+        return setSelectedPreset(name);
+      }
     },
   };
 
@@ -317,6 +329,75 @@ test('loadPresets reports effective fallback outcome after the selected preset d
   });
 });
 
+test('loadPresets reports the selection cleared by a catalog reload failure', async () => {
+  const harness = createHarness();
+  const latinSettings = {
+    language: 'en',
+    selected_preset_by_language: { en: 'latin' },
+    presets_by_language: {},
+  };
+
+  await harness.controller.loadPresets({
+    settingsSnapshot: latinSettings,
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+  harness.rendererPresets.loadPresetsIntoCombobox = async () => {
+    throw new Error('catalog unavailable');
+  };
+
+  const result = await harness.controller.loadPresets({
+    settingsSnapshot: latinSettings,
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.deepEqual(toPlainObject(result.selectionOutcome), {
+    previousWpm: 250,
+    nextWpm: 250,
+    wpmChanged: false,
+    previousSelectedPresetName: 'latin',
+    nextSelectedPresetName: null,
+    selectedPresetChanged: true,
+  });
+  assert.equal(harness.controller.getSelectedPresetName(), null);
+});
+
+test('handlePresetCreated reports the selection cleared by a catalog reload failure', async () => {
+  const harness = createHarness();
+  const latinSettings = {
+    language: 'en',
+    selected_preset_by_language: { en: 'latin' },
+    presets_by_language: {},
+  };
+
+  await harness.controller.loadPresets({
+    settingsSnapshot: latinSettings,
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+  harness.rendererPresets.loadPresetsIntoCombobox = async () => {
+    throw new Error('catalog unavailable');
+  };
+
+  const result = await harness.controller.handlePresetCreated({
+    preset: { name: 'custom' },
+    settingsSnapshot: latinSettings,
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.deepEqual(toPlainObject(result.selectionOutcome), {
+    previousWpm: 250,
+    nextWpm: 250,
+    wpmChanged: false,
+    previousSelectedPresetName: 'latin',
+    nextSelectedPresetName: null,
+    selectedPresetChanged: true,
+  });
+  assert.equal(harness.controller.getSelectedPresetName(), null);
+});
+
 test('handlePresetCreated reports effective post-resolution selection and WPM outcome', async () => {
   const harness = createHarness();
 
@@ -357,6 +438,116 @@ test('handlePresetCreated reports effective post-resolution selection and WPM ou
   assert.equal(harness.controller.getWpm(), 333);
   assert.equal(harness.controller.getSelectedPresetName(), 'custom');
   assert.deepEqual(harness.selectionPersists, ['custom']);
+});
+
+test('handlePresetCreated reports the WPM transition applied after a deferred reload', async () => {
+  const deferredCatalog = createDeferred();
+  let catalogLoads = 0;
+  const harness = createHarness({
+    getDefaultPresets() {
+      catalogLoads += 1;
+      return catalogLoads === 1
+        ? {
+          general: [{ name: 'default', wpm: 200, description: 'default desc' }],
+          languagePresets: {},
+        }
+        : deferredCatalog.promise;
+    },
+  });
+
+  await harness.controller.loadPresets({
+    settingsSnapshot: {
+      language: 'en',
+      selected_preset_by_language: { en: 'default' },
+      presets_by_language: {},
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  const pending = harness.controller.handlePresetCreated({
+    preset: { name: 'custom' },
+    settingsSnapshot: {
+      language: 'en',
+      selected_preset_by_language: {},
+      presets_by_language: {
+        en: [{ name: 'custom', wpm: 200, description: 'custom desc' }],
+      },
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  harness.dom.wpmSlider.value = '300';
+  harness.dom.wpmSlider.dispatch('input');
+  deferredCatalog.resolve({
+    general: [{ name: 'default', wpm: 200, description: 'default desc' }],
+    languagePresets: {},
+  });
+
+  const result = await pending;
+
+  assert.deepEqual(toPlainObject(result.selectionOutcome), {
+    previousWpm: 300,
+    nextWpm: 200,
+    wpmChanged: true,
+    previousSelectedPresetName: null,
+    nextSelectedPresetName: 'custom',
+    selectedPresetChanged: true,
+  });
+  assert.equal(harness.controller.getWpm(), 200);
+});
+
+test('loadPresets reports the WPM transition applied after a deferred reload', async () => {
+  const deferredCatalog = createDeferred();
+  let catalogLoads = 0;
+  const harness = createHarness({
+    getDefaultPresets() {
+      catalogLoads += 1;
+      return catalogLoads === 1
+        ? {
+          general: [{ name: 'default', wpm: 200, description: 'default desc' }],
+          languagePresets: {},
+        }
+        : deferredCatalog.promise;
+    },
+  });
+
+  const settingsSnapshot = {
+    language: 'en',
+    selected_preset_by_language: { en: 'default' },
+    presets_by_language: {},
+  };
+  await harness.controller.loadPresets({
+    settingsSnapshot,
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  const pending = harness.controller.loadPresets({
+    settingsSnapshot,
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  harness.dom.wpmSlider.value = '300';
+  harness.dom.wpmSlider.dispatch('input');
+  deferredCatalog.resolve({
+    general: [{ name: 'default', wpm: 200, description: 'default desc' }],
+    languagePresets: {},
+  });
+
+  const result = await pending;
+
+  assert.deepEqual(toPlainObject(result.selectionOutcome), {
+    previousWpm: 300,
+    nextWpm: 200,
+    wpmChanged: true,
+    previousSelectedPresetName: null,
+    nextSelectedPresetName: 'default',
+    selectedPresetChanged: true,
+  });
+  assert.equal(harness.controller.getWpm(), 200);
 });
 
 test('preset selection preserves the existing onWpmChanged time-only callback path', async () => {
@@ -401,6 +592,62 @@ test('preset selection preserves the existing onWpmChanged time-only callback pa
   assert.deepEqual(callbackCalls, [
     { nextWpm: 250, presetName: 'latin' },
   ]);
+});
+
+test('preset selection notifies a WPM change applied after selection persistence', async () => {
+  const selectionPersistence = createDeferred();
+  const callbackCalls = [];
+  const harness = createHarness({
+    getDefaultPresets() {
+      return {
+        general: [
+          { name: 'default', wpm: 200, description: 'default desc' },
+          { name: 'same-wpm', wpm: 200, description: 'same WPM desc' },
+        ],
+        languagePresets: {},
+      };
+    },
+    setSelectedPreset() {
+      return selectionPersistence.promise;
+    },
+  });
+
+  await harness.controller.loadPresets({
+    settingsSnapshot: {
+      language: 'en',
+      selected_preset_by_language: { en: 'default' },
+      presets_by_language: {},
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  harness.dom.presetsCombobox.update({ value: 'same-wpm' });
+  const pending = harness.controller.handlePresetSelectionChange({
+    settingsSnapshot: {
+      language: 'en',
+      selected_preset_by_language: {},
+      presets_by_language: {},
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+    onWpmChanged(nextWpm, preset) {
+      callbackCalls.push({
+        nextWpm,
+        presetName: preset && preset.name ? preset.name : null,
+      });
+    },
+  });
+
+  harness.dom.wpmSlider.value = '300';
+  harness.dom.wpmSlider.dispatch('input');
+  selectionPersistence.resolve({ ok: true });
+
+  const selected = await pending;
+
+  assert.equal(selected.name, 'same-wpm');
+  assert.deepEqual(callbackCalls, [{ nextWpm: 200, presetName: 'same-wpm' }]);
+  assert.equal(harness.controller.getWpm(), 200);
 });
 
 test('manual WPM input shows invalid chrome until blur normalizes it', () => {
