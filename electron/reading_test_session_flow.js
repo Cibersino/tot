@@ -349,7 +349,6 @@ function buildPrefilledPresetPayload(wpm, options = {}) {
 
 function beginPresetStep(wpm, options = {}) {
   const {
-    applyMainWindowWpm,
     setStage,
     openPresetWindow,
     buildPrefilledPresetPayload,
@@ -358,7 +357,6 @@ function beginPresetStep(wpm, options = {}) {
     log,
   } = options;
 
-  applyMainWindowWpm(wpm);
   setStage('preset');
 
   let presetWin = null;

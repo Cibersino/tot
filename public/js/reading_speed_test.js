@@ -6,9 +6,9 @@
 // =============================================================================
 // Responsibilities:
 // - Host the reading-speed-test intro/config modal in the main renderer.
-// - Keep renderer-side reading-test session state in sync with main-owned state.
-// - Render real-combination checkbox filters from current pool metadata.
-// - Trigger pool reset/start IPC without bloating renderer.js.
+// - Track main-owned session state and coordinate interaction locks.
+// - Render selection filters from reading-test pool metadata.
+// - Manage pool actions and request either reading-test mode.
 
 (() => {
   // =============================================================================
@@ -119,12 +119,15 @@
   }
 
   // =============================================================================
-  // Shared state
+  // Shared state and configuration
   // =============================================================================
   let onInteractionStateChanged = () => { };
-  let onApplyWpm = () => { };
   let getSettingsCache = () => ({});
-  let sessionState = { active: false, stage: 'idle', blocked: false };
+  let sessionActive = false;
+  let stateSubscriptionEstablished = false;
+  let noticeSubscriptionEstablished = false;
+  let stateSubscriptionFailed = false;
+  let stateChangeObservedActive = false;
   let poolEntries = [];
   let selection = filtersCore.normalizeSelection({});
   let filterState = filtersCore.computeFilterState(poolEntries, selection);
@@ -151,20 +154,12 @@
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
-  function normalizeSessionState(rawState) {
-    return {
-      active: !!(rawState && rawState.active),
-      stage: rawState && typeof rawState.stage === 'string' ? rawState.stage : 'idle',
-      blocked: !!(rawState && rawState.blocked),
-    };
-  }
-
   function isModalOpen() {
     return modal.getAttribute('aria-hidden') === 'false';
   }
 
   function isSessionActive() {
-    return !!(sessionState && sessionState.active);
+    return sessionActive;
   }
 
   function isUiInteractionLocked() {
@@ -263,6 +258,9 @@
     return nextSelection;
   }
 
+  // =============================================================================
+  // Filter and modal rendering
+  // =============================================================================
   function createCheckboxOption(category, optionState) {
     const row = document.createElement('label');
     row.className = 'reading-test-entry-modal-option native-checkbox-option';
@@ -376,17 +374,20 @@
     renderCategorySection('type', typeSection, typeHeading, typeOptions);
     renderCategorySection('difficulty', difficultySection, difficultyHeading, difficultyOptions);
 
-    const managementDisabled = stabilizing || isSessionActive();
-    showBundledCheckbox.disabled = managementDisabled;
-    getMoreFilesLink.setAttribute('aria-disabled', managementDisabled ? 'true' : 'false');
-    importButton.disabled = managementDisabled;
-    resetButton.disabled = stabilizing || isSessionActive();
-    btnStart.disabled = stabilizing || isSessionActive() || filterState.eligibleCount < 1;
-    btnStartCurrentText.disabled = stabilizing || isSessionActive() || !currentTextAvailable;
+    const entryActionsDisabled = stabilizing || isSessionActive();
+    showBundledCheckbox.disabled = entryActionsDisabled;
+    getMoreFilesLink.setAttribute('aria-disabled', entryActionsDisabled ? 'true' : 'false');
+    importButton.disabled = entryActionsDisabled;
+    resetButton.disabled = entryActionsDisabled;
+    btnStart.disabled = entryActionsDisabled || filterState.eligibleCount < 1;
+    btnStartCurrentText.disabled = entryActionsDisabled || !currentTextAvailable;
 
     modal.dataset.stabilizing = stabilizing ? 'true' : 'false';
   }
 
+  // =============================================================================
+  // Entry data and initial session state
+  // =============================================================================
   function refreshPoolEntriesFromResult(result) {
     if (!isPayloadObject(result) || typeof result.ok !== 'boolean') {
       log.error('Reading-test entry-flow result invalid:', result);
@@ -436,8 +437,7 @@
   async function requestEntryData() {
     const getEntryData = readElectronMethod('getReadingTestEntryData');
     if (!getEntryData) {
-      log.warnOnce(
-        'reading-speed-test.getEntryData.missing',
+      log.warn(
         'getReadingTestEntryData unavailable; reading speed test entry flow skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -456,26 +456,24 @@
   async function syncInitialSessionState() {
     const getState = readElectronMethod('getReadingTestState');
     if (!getState) {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.getState.missing',
-        'getReadingTestState unavailable; reading-test session sync disabled.'
+      log.warn(
+        'getReadingTestState unavailable; initial reading-test state query skipped.'
       );
       return;
     }
 
     try {
       const nextState = await getState();
-      if (!isPayloadObject(nextState)) {
-        log.warnOnce(
-          'BOOTSTRAP:reading-speed-test.getState.invalid',
-          'Reading-test initial session-state payload invalid; using defaults.',
-          nextState
-        );
+      if (!isPayloadObject(nextState) || typeof nextState.active !== 'boolean') {
+        log.warn('Reading-test initial session state invalid; session state unchanged.', nextState);
+        return;
       }
-      sessionState = normalizeSessionState(nextState);
+      // A failed subscription cannot reliably order an active event against the initial snapshot.
+      if (stateSubscriptionFailed && !nextState.active && stateChangeObservedActive) return;
+      sessionActive = nextState.active;
       syncLockState();
     } catch (err) {
-      log.warn('BOOTSTRAP: reading-test initial session-state fetch failed (ignored):', err);
+      log.warn('Reading-test initial session-state fetch failed (ignored):', err);
     }
   }
 
@@ -491,6 +489,10 @@
 
   async function openEntryFlow() {
     if (stabilizing || isSessionActive()) return;
+    if (!stateSubscriptionEstablished || !noticeSubscriptionEstablished) {
+      window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
+      return;
+    }
 
     const result = await requestEntryData();
     if (!result) return;
@@ -509,6 +511,9 @@
     });
   }
 
+  // =============================================================================
+  // Pool management and session start actions
+  // =============================================================================
   async function handleResetPool() {
     if (stabilizing || isSessionActive()) return;
 
@@ -519,8 +524,7 @@
 
     const resetPool = readElectronMethod('resetReadingTestPool');
     if (!resetPool) {
-      log.warnOnce(
-        'reading-speed-test.resetPool.missing',
+      log.warn(
         'resetReadingTestPool unavailable; pool reset skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -571,8 +575,7 @@
 
     const importReadingTestPoolFiles = readElectronMethod('importReadingTestPoolFiles');
     if (!importReadingTestPoolFiles) {
-      log.warnOnce(
-        'reading-speed-test.import.missing',
+      log.warn(
         'importReadingTestPoolFiles unavailable; reading-test pool import skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -605,6 +608,7 @@
         return;
       }
 
+      // UI refresh may still be pending after unlocking; main rechecks start preconditions and pool eligibility on every start request.
       setStabilizing(false);
       await refreshEntryDataAfterPoolMutation();
       notifyImportSummary(result);
@@ -623,8 +627,7 @@
 
     const setShowBundledEntries = readElectronMethod('setReadingTestShowBundledEntries');
     if (!setShowBundledEntries) {
-      log.warnOnce(
-        'reading-speed-test.setShowBundledEntries.missing',
+      log.warn(
         'setReadingTestShowBundledEntries unavailable; reading-test bundled visibility toggle skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -667,8 +670,7 @@
 
     const openExternalUrl = readElectronMethod('openExternalUrl');
     if (!openExternalUrl) {
-      log.warnOnce(
-        'reading-speed-test.external-link.missing',
+      log.warn(
         'openExternalUrl unavailable; reading-test external link open failed (ignored).'
       );
       window.Notify.notifyMain('renderer.info.external.blocked');
@@ -728,6 +730,7 @@
   }
 
   async function handleStart() {
+    if (!stateSubscriptionEstablished || !noticeSubscriptionEstablished) return;
     if (stabilizing || isSessionActive() || filterState.eligibleCount < 1) return;
 
     if (currentTextAvailable) {
@@ -739,8 +742,7 @@
 
     const startReadingTest = readElectronMethod('startReadingTest');
     if (!startReadingTest) {
-      log.warnOnce(
-        'reading-speed-test.start.missing',
+      log.warn(
         'startReadingTest unavailable; reading speed test start skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -751,12 +753,12 @@
   }
 
   async function handleStartCurrentText() {
+    if (!stateSubscriptionEstablished || !noticeSubscriptionEstablished) return;
     if (stabilizing || isSessionActive() || !currentTextAvailable) return;
 
     const startReadingTest = readElectronMethod('startReadingTest');
     if (!startReadingTest) {
-      log.warnOnce(
-        'reading-speed-test.start-current-text.missing',
+      log.warn(
         'startReadingTest unavailable; current-text reading speed test start skipped.'
       );
       window.Notify.notifyMain('renderer.reading_test.alerts.unavailable');
@@ -766,6 +768,9 @@
     await runStartReadingTest(startReadingTest, { sourceMode: 'current_text' });
   }
 
+  // =============================================================================
+  // UI listeners and bridge subscriptions
+  // =============================================================================
   function bindStaticListeners() {
     btnClose.addEventListener('click', closeModal);
     backdrop.addEventListener('click', closeModal);
@@ -798,8 +803,7 @@
 
   function handleReadingTestNotice(notice) {
     if (!isPayloadObject(notice) || typeof notice.key !== 'string' || notice.key.length < 1) {
-      log.warnOnce(
-        'reading-speed-test.notice.invalid',
+      log.warn(
         'Reading-test notice payload invalid (ignored):',
         notice
       );
@@ -819,15 +823,14 @@
     if (onStateChanged) {
       try {
         onStateChanged((nextState) => {
-          if (!isPayloadObject(nextState)) {
-            log.warnOnce(
-              'reading-speed-test.onStateChanged.invalid',
-              'Reading-test state-changed payload invalid; using defaults.',
-              nextState
-            );
+          if (!isPayloadObject(nextState) || typeof nextState.active !== 'boolean') {
+            log.warn('Reading-test state-changed payload invalid; session state unchanged.', nextState);
+            return;
           }
-          sessionState = normalizeSessionState(nextState);
-          if (sessionState.active && isModalOpen()) {
+          if (nextState.active) stateChangeObservedActive = true;
+          if (stateSubscriptionFailed && !nextState.active) return;
+          sessionActive = nextState.active;
+          if (sessionActive && isModalOpen()) {
             closeModal();
             return;
           }
@@ -836,18 +839,20 @@
           }
           syncLockState();
         });
+        stateSubscriptionEstablished = true;
       } catch (err) {
         log.warn(
-          'BOOTSTRAP: onReadingTestStateChanged registration failed; renderer lock state will not live-sync.',
+          'onReadingTestStateChanged registration failed; reading speed test disabled.',
           err
         );
       }
     } else {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.onStateChanged.missing',
-        'onReadingTestStateChanged unavailable; renderer lock state will not live-sync.'
+      log.warn(
+        'onReadingTestStateChanged unavailable; reading speed test disabled.'
       );
     }
+
+    stateSubscriptionFailed = !stateSubscriptionEstablished;
 
     const onNotice = readElectronMethod('onReadingTestNotice');
     if (onNotice) {
@@ -859,50 +864,16 @@
             log.error('Reading-test notice handler failed:', err);
           }
         });
+        noticeSubscriptionEstablished = true;
       } catch (err) {
         log.warn(
-          'BOOTSTRAP: onReadingTestNotice registration failed; reading-test notices will not surface in renderer.',
+          'onReadingTestNotice registration failed; reading speed test disabled.',
           err
         );
       }
     } else {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.onNotice.missing',
-        'onReadingTestNotice unavailable; reading-test notices will not surface in renderer.'
-      );
-    }
-
-    const onApplyWpmEvent = readElectronMethod('onReadingTestApplyWpm');
-    if (onApplyWpmEvent) {
-      try {
-        onApplyWpmEvent((payload) => {
-          const nextWpm = payload && typeof payload.wpm === 'number'
-            ? payload.wpm
-            : NaN;
-          if (!Number.isFinite(nextWpm)) {
-            log.warnOnce(
-              'reading-speed-test.applyWpm.invalid',
-              'Reading-test apply-WPM payload invalid (ignored):',
-              payload
-            );
-            return;
-          }
-          try {
-            onApplyWpm(nextWpm);
-          } catch (err) {
-            log.error('Reading-test WPM apply callback failed:', err);
-          }
-        });
-      } catch (err) {
-        log.warn(
-          'BOOTSTRAP: onReadingTestApplyWpm registration failed; computed WPM will not sync into main renderer.',
-          err
-        );
-      }
-    } else {
-      log.warnOnce(
-        'BOOTSTRAP:reading-speed-test.onApplyWpm.missing',
-        'onReadingTestApplyWpm unavailable; computed WPM will not sync into main renderer.'
+      log.warn(
+        'onReadingTestNotice unavailable; reading speed test disabled.'
       );
     }
   }
@@ -910,9 +881,8 @@
   // =============================================================================
   // Public API
   // =============================================================================
-  function configure({ onLockChange, applyWpm, getSettingsCache: nextGetSettingsCache } = {}) {
+  function configure({ onLockChange, getSettingsCache: nextGetSettingsCache } = {}) {
     onInteractionStateChanged = typeof onLockChange === 'function' ? onLockChange : () => { };
-    onApplyWpm = typeof applyWpm === 'function' ? applyWpm : () => { };
     getSettingsCache = typeof nextGetSettingsCache === 'function' ? nextGetSettingsCache : () => ({});
 
     if (!initialized) {
@@ -922,9 +892,7 @@
       void syncInitialSessionState();
     }
 
-    // Main owns first translated presentation through its initial renderer-i18n
-    // transition. Configure may run before that state exists, so it only wires
-    // callbacks and accepts nonlocalized session state.
+    // Main owns first translated presentation through its initial renderer-i18n transition. Configure may run before that state exists, so it only wires callbacks and accepts nonlocalized session state.
     syncLockState();
   }
 

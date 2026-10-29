@@ -48,6 +48,8 @@ Reglas:
 
 ### Resumen de cambios
 
+- Presets predeterminados configurables: los JSON de `config/presets_defaults/` pasan a ser la fuente efectiva de lectura; los archivos empaquetados solo inicializan archivos ausentes. Se validan las entradas individuales y se unifica la precedencia por nombre, mientras las operaciones de edición, eliminación y restauración evitan persistir cambios si el directorio configurable resulta inaccesible.
+- Las operaciones de presets refuerzan la autorización de sus IPC, preservan el éxito del guardado ante fallos posteriores de notificación y evitan que una confirmación pendiente sobrescriba cambios de configuración realizados desde otras ventanas.
 - Google OCR coordina las solicitudes de activación desde Preferencias y recuperación de extracción con la desconexión: una operación concurrente se rechaza con un aviso localizado para que el usuario vuelva a intentarla cuando termine la operación en curso.
 - Extracción nativa de PDF (Issue #338 — migración del motor): la integración con `pdf-parse@1.1.1` y su PDF.js antiguo se reemplaza por el uso directo de `pdfjs-dist@6.4.299` en Electron Main. Un adaptador dedicado atiende tanto el sondeo de texto seleccionable como la extracción efectiva, sin introducir un parser alternativo ni modificar la selección de páginas mediante `pdf-lib` o los contratos externos de extracción.
 - Snapshots de texto / etiquetas múltiples por categoría (Issue #339): `language`, `type` y `difficulty` admiten cero, una o varias etiquetas independientes por categoría, con representación canónica exclusivamente mediante arrays. El guardado manual, las unidades batch, los snapshots generados y los filtros del pool de Reading Test conservan las asignaciones completas; el modal incorpora chips removibles y un selector de adición consecutiva, con mejoras de distribución, scroll y foco.
@@ -132,6 +134,10 @@ Reglas:
 
 ### Cambiado
 
+- Presets / autoridad y resolución del catálogo configurable:
+  - los archivos empaquetados `electron/presets/defaults_presets*.json` se utilizan para copiar archivos de configuración ausentes durante la inicialización, sin reemplazar en las lecturas runtime los JSON configurables faltantes, vacíos, ilegibles o inválidos; `[]` conserva su significado de catálogo deliberadamente vacío;
+  - los arreglos JSON configurables se validan entrada por entrada con las mismas reglas de forma, nombre, descripción y WPM utilizadas para los presets recibidos por IPC: se conservan las entradas válidas, se descartan las inválidas con advertencia y los archivos ilegibles, mal formados o cuyo JSON no sea un arreglo se interpretan como listas vacías, sin recurrir a los presets empaquetados;
+  - las operaciones internas resuelven los predeterminados generales y los del idioma activo con la misma precedencia por nombre que el renderer: el predeterminado específico del idioma reemplaza al general homónimo, y los presets personalizados mantienen su prioridad sobre los predeterminados al construir la lista efectiva.
 - Coordinación de conexión Google OCR:
   - el flujo renderer compartido pasa a `public/js/text_extraction_ocr_connection_flow.js` y admite una sola activación o desconexión a la vez, desde antes de la preparación y el disclosure hasta la finalización del flujo correspondiente; las solicitudes rechazadas no se encolan;
   - `electron/text_extraction_platform/ocr_google_drive_operation.js` coordina los handlers main de lanzamiento y desconexión durante OAuth, escritura y validación del token o confirmación, revocación y borrado, respectivamente. La admisión main permanece activa si se recarga el renderer mientras una operación IPC sigue pendiente y se libera al finalizar o fallar;
@@ -225,6 +231,12 @@ Reglas:
 
 ### Arreglado
 
+- Presets / persistencia, autorización y notificaciones:
+  - crear, editar, eliminar y restaurar presets usan copias independientes de los ajustes y guardado estricto (`saveSettingsStrict`) antes de publicar las modificaciones, evitando que una escritura fallida deje la caché de ajustes actualizada como si la operación hubiera tenido éxito;
+  - editar, eliminar y restaurar distinguen un catálogo accesible pero vacío de la imposibilidad de enumerar el directorio configurable: ante esta última devuelven `DEFAULT_CATALOG_UNAVAILABLE` sin modificar ni guardar los ajustes, en lugar de clasificar incorrectamente los presets existentes;
+  - los cuatro IPC de mutación rechazan también solicitudes si la ventana propietaria esperada o la ventana emisora no pueden resolverse, cerrando los casos en que una identidad ausente podía superar la autorización;
+  - la notificación `preset-created` posterior al guardado de un preset se ejecuta como efecto secundario best-effort para creación y edición: un fallo al resolver o notificar a Main no transforma una persistencia exitosa en un resultado fallido;
+  - eliminar, restaurar y editar presets releen los ajustes después de confirmar y verificar la disponibilidad del catálogo, antes de modificarlos y guardarlos; así preservan las actualizaciones persistidas mientras el diálogo estaba abierto, incluido un cambio de idioma, sin alterar el idioma al que se refería la operación confirmada. Las pruebas con confirmación diferida cubren cambios intermedios de spellcheck y de idioma.
 - Modal de tags de snapshots / disposición y desplazamiento (Issue #339):
   - las listas de chips sin selecciones dejan de ocupar una fila invisible dentro del grid; la alineación de labels y comboboxes y la separación respecto de metadatos y checkboxes se ajustan sin alterar los controles compartidos;
   - al cerrar y reabrir el modal en la misma sesión, el panel vuelve al inicio en ambas modalidades (`promptSnapshotSave` y `promptSnapshotTags`), sin restablecer el scroll durante una interacción activa ni al volver del gestor de etiquetas;
@@ -309,6 +321,12 @@ Reglas:
 
 ### Contratos tocados
 
+- Presets predeterminados / configuración e IPC:
+  - `config/presets_defaults/defaults_presets.json` y `defaults_presets_<lang>.json` son la fuente efectiva en runtime; los archivos empaquetados solo sirven para la inicialización de archivos ausentes. Los JSON configurables siguen usando arreglos de presets y no se introduce un nuevo schema persistido ni una migración automática;
+  - `get-default-presets` conserva su respuesta pública `{ general, languagePresets }` y la carga de todos los idiomas, pero devuelve solamente entradas validadas; un archivo configurable vacío, ausente, mal formado o ilegible no activa sustitución desde recursos empaquetados. Si el directorio es inaccesible, mantiene el resultado público vacío de solo lectura;
+  - `request-delete-preset`, `request-restore-defaults` y `edit-preset` agregan el error estructurado `{ ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' }` cuando el directorio del catálogo no puede enumerarse. Las mutaciones de presets usan `saveSettingsStrict` y no publican un éxito antes de una escritura válida;
+  - `create-preset`, `request-delete-preset`, `request-restore-defaults` y `edit-preset` requieren que el emisor corresponda a la ventana propietaria esperada; si cualquiera de esas ventanas no puede resolverse, mantienen la respuesta de rechazo `{ ok: false, code: 'UNAUTHORIZED' }`;
+  - `create-preset` y `edit-preset` conservan el evento `preset-created` y su payload como notificación posterior al guardado, sin supeditar el resultado del IPC a su entrega; las mutaciones confirmadas de `request-delete-preset`, `request-restore-defaults` y `edit-preset` conservan sus respuestas y su idioma de destino, pero basan la escritura en settings releídos tras la confirmación, sin añadir IPC ni modificar el schema de `user_settings.json`.
 - Google OCR / activación y desconexión:
   - los canales existentes `text-extraction-launch-ocr-activation` y `text-extraction-disconnect-ocr` conservan sus payloads y agregan el resultado de conflicto `ok: false`, `code: 'ocr_operation_in_progress'` y `alertKey: 'renderer.text_extraction.alerts.ocr.operation_in_progress'`; el resultado de lanzamiento mantiene además `state: 'failure'` y ambos mantienen `detailsSafeForLogs`;
   - el flujo renderer expone `window.TextExtractionOcrConnectionFlow` en lugar de `window.TextExtractionOcrActivationFlow` y comparte la admisión entre `startActivationFlow(...)` y `runDisconnectFlow(...)`. Si el flujo de conexión no está disponible, la desconexión renderer se bloquea con su alerta de fallo;
@@ -383,6 +401,11 @@ Reglas:
   - `window.taskEditorAPI.getColumnWidths()` / `saveColumnWidths(widths)` se sustituyen por `getColumnLayout()` / `saveColumnLayout(record)` sobre los canales existentes `task-columns-load` y `task-columns-save`;
   - `getColumnLayout()` devuelve `{ ok: true, record: null | <record-v1> }` o `{ ok: false, code: 'UNAUTHORIZED' | 'READ_FAILED' }`; `saveColumnLayout(record)` devuelve exactamente `{ ok: true }` o `{ ok: false, code: 'UNAUTHORIZED' | 'INVALID_SCHEMA' | 'WRITE_FAILED' }`;
   - `config/tasks/column_widths.json` pasa a contener exclusivamente `{ version: 1, widths: { comentario, tiempo, percent, falta, enlace, acciones } }`, con seis enteros seguros dentro de sus mínimos y del máximo de `100000`; `texto` y el ancho del wrapper son estado derivado de runtime y no se persisten.
+
+### Notas
+
+- Presets / publicación entre ventanas tras creación o edición: se examinó la separación entre el guardado estricto del preset, la publicación best-effort de `settings-updated` y la notificación `preset-created`, que permite actualizar el catálogo de Main y solicitar la selección automática mediante una persistencia posterior e independiente. Se decidió conservar ese contrato no transaccional: no se identificó un recorrido ordinario de pérdida de la notificación con Main todavía operativa; si se perdiera excepcionalmente, el preset permanecería guardado y sería recuperable en el catálogo, aunque la selección automática no se reproduzca al recargar. Establecer garantías adicionales de entrega o reconciliación no se consideró proporcionado a ese riesgo.
+- Presets / catálogo inaccesible y selección persistida: se examinó que `get-default-presets` entrega listas vacías tanto para un catálogo legítimamente vacío como cuando falla la enumeración del directorio configurable. En condiciones excepcionales, el renderer podría interpretar como ausente un preset predeterminado previamente seleccionado y persistir una selección sustitutiva. Se decidió conservar el contrato público y la reconciliación existentes: la consecuencia conocida afecta a una preferencia recuperable, no elimina archivos de presets y depende de condiciones específicas sin incidencia establecida; propagar disponibilidad o impedir la sustitución automática añadiría contratos y complejidad cuyo beneficio no se justificó suficientemente.
 
 ---
 

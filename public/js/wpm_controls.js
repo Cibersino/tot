@@ -60,8 +60,7 @@
     presetDescription,
     onPresetSelectionChanged,
   } = {}) {
-    // Optional curve support should never block the control surface. If the
-    // mapper is missing or breaks, the controller falls back to linear mapping.
+    // Optional curve support should never block the control surface. If the mapper is missing or breaks, the controller falls back to linear mapping.
     const { WpmCurve } = window;
     const hasWpmCurveFactory = !!(
       WpmCurve && typeof WpmCurve.createMapperFromConstants === 'function'
@@ -93,8 +92,7 @@
       }
     }
 
-    // Controller state is kept local so the main renderer owns only one source
-    // of truth for the active WPM and selected preset name.
+    // Controller state is kept local so the main renderer owns only one source of truth for the active WPM and selected preset name.
     let wpm = WPM_MIN;
     let currentPresetName = null;
     let allPresetsCache = [];
@@ -187,8 +185,7 @@
       return clampWpm(rawWpm);
     }
 
-    // Keep the text input and slider synchronized through one normalization path
-    // so presets, manual edits, and external updates apply the same bounds.
+    // Keep the text input and slider synchronized through one normalization path so presets and manual edits apply the same bounds.
     function syncWpmControls(rawWpm) {
       const normalizedWpm = clampWpm(rawWpm);
       if (wpmInput) {
@@ -226,7 +223,7 @@
       }
     }
 
-    function applySelectedPreset(preset) {
+    function applyPresetSelection(preset) {
       if (!preset) {
         currentPresetName = null;
         applyPresetUiSelection(null);
@@ -262,38 +259,35 @@
         : null;
     }
 
-    function buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName) {
+    // Preset outcomes describe the synchronous state transition applied after asynchronous resolution.
+    function capturePresetState() {
+      return {
+        wpm,
+        selectedPresetName: currentPresetName,
+      };
+    }
+
+    function buildPresetResolutionOutcome(previousState) {
+      const previousWpm = previousState.wpm;
+      const normalizedPreviousSelectedPresetName = normalizePresetName(
+        previousState.selectedPresetName
+      );
       const nextSelectedPresetName = normalizePresetName(currentPresetName);
       return {
         previousWpm,
         nextWpm: wpm,
         wpmChanged: wpm !== previousWpm,
-        previousSelectedPresetName: normalizePresetName(previousSelectedPresetName),
+        previousSelectedPresetName: normalizedPreviousSelectedPresetName,
         nextSelectedPresetName,
-        selectedPresetChanged: normalizePresetName(previousSelectedPresetName) !== nextSelectedPresetName,
+        selectedPresetChanged: normalizedPreviousSelectedPresetName !== nextSelectedPresetName,
       };
     }
 
-    function buildPresetFlowResult(previousWpm, previousSelectedPresetName, presets) {
+    function buildPresetFlowResult(previousState, presets) {
       return {
         presets,
-        selectionOutcome: buildPresetResolutionOutcome(previousWpm, previousSelectedPresetName),
+        selectionOutcome: buildPresetResolutionOutcome(previousState),
       };
-    }
-
-    function clearSelectedPreset() {
-      currentPresetName = null;
-      applyPresetUiSelection(null);
-      notifyPresetSelectionChanged(null);
-    }
-
-    function applyResolvedPresetSelection(selected) {
-      if (selected) {
-        applySelectedPreset(selected);
-        return selected;
-      }
-      clearSelectedPreset();
-      return null;
     }
 
     function createPresetSelectionSettings(settingsSnapshot) {
@@ -310,7 +304,11 @@
         log.warn(
           'Preset list reload skipped because RendererPresets.loadPresetsIntoCombobox is unavailable.'
         );
-        return resetPresetsState();
+        const stateBeforeReset = capturePresetState();
+        return {
+          presets: resetPresetsState(),
+          stateBeforeReset,
+        };
       }
       try {
         const { loadPresetsIntoCombobox } = getRendererPresetsBridge();
@@ -321,10 +319,17 @@
           combobox: presetsCombobox
         });
         allPresetsCache = loadResult && loadResult.list ? loadResult.list.slice() : [];
-        return allPresetsCache;
+        return {
+          presets: allPresetsCache,
+          stateBeforeReset: null,
+        };
       } catch (err) {
         log.error('RendererPresets.loadPresetsIntoCombobox failed:', err);
-        return resetPresetsState();
+        const stateBeforeReset = capturePresetState();
+        return {
+          presets: resetPresetsState(),
+          stateBeforeReset,
+        };
       }
     }
 
@@ -333,44 +338,38 @@
       language,
       electronAPI,
     } = {}) {
-      const previousWpm = wpm;
-      const previousSelectedPresetName = currentPresetName;
+      const previousPresetName = currentPresetName;
+      let stateBeforeReloadReset = null;
       if (!hasRendererPresetsSelectionBridge()) {
         log.warn(
           'Preset selection skipped because RendererPresets.resolvePresetSelection is unavailable.'
         );
-        return buildPresetFlowResult(
-          previousWpm,
-          previousSelectedPresetName,
-          resetPresetsState()
-        );
+        const previousState = capturePresetState();
+        const presets = resetPresetsState();
+        return buildPresetFlowResult(previousState, presets);
       }
       try {
         const { resolvePresetSelection } = getRendererPresetsBridge();
-        await reloadPresetsList({ settingsSnapshot, language, electronAPI });
+        const reloadResult = await reloadPresetsList({ settingsSnapshot, language, electronAPI });
+        stateBeforeReloadReset = reloadResult.stateBeforeReset;
         const selected = await resolvePresetSelection({
           list: allPresetsCache,
           settings: settingsSnapshot,
           language,
           currentPresetName,
-          previousPresetName: previousSelectedPresetName,
+          previousPresetName,
           combobox: presetsCombobox,
           presetDescription,
           electronAPI
         });
-        applyResolvedPresetSelection(selected);
-        return buildPresetFlowResult(
-          previousWpm,
-          previousSelectedPresetName,
-          allPresetsCache
-        );
+        const previousState = stateBeforeReloadReset || capturePresetState();
+        applyPresetSelection(selected);
+        return buildPresetFlowResult(previousState, allPresetsCache);
       } catch (err) {
-        log.error('RendererPresets.resolvePresetSelection failed during loadPresets:', err);
-        return buildPresetFlowResult(
-          previousWpm,
-          previousSelectedPresetName,
-          resetPresetsState()
-        );
+        log.error('Preset loading failed:', err);
+        const previousState = stateBeforeReloadReset || capturePresetState();
+        const presets = resetPresetsState();
+        return buildPresetFlowResult(previousState, presets);
       }
     }
 
@@ -380,23 +379,25 @@
       language,
       electronAPI,
     } = {}) {
-      const previousWpm = wpm;
-      const previousSelectedPresetName = currentPresetName;
+      const previousPresetName = currentPresetName;
+      let stateBeforeReloadReset = null;
       try {
-        const updated = await reloadPresetsList({ settingsSnapshot, language, electronAPI });
+        const reloadResult = await reloadPresetsList({ settingsSnapshot, language, electronAPI });
+        const { presets: updated } = reloadResult;
+        stateBeforeReloadReset = reloadResult.stateBeforeReset;
         if (!hasRendererPresetsSelectionBridge()) {
           log.warn(
             'Preset-created selection sync skipped because RendererPresets.resolvePresetSelection is unavailable.'
           );
-          return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
+          return buildPresetFlowResult(stateBeforeReloadReset || capturePresetState(), updated);
         }
         const { resolvePresetSelection } = getRendererPresetsBridge();
         if (!preset || !preset.name) {
-          return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
+          return buildPresetFlowResult(stateBeforeReloadReset || capturePresetState(), updated);
         }
         const found = updated.find(item => item.name === preset.name);
         if (!found) {
-          return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
+          return buildPresetFlowResult(stateBeforeReloadReset || capturePresetState(), updated);
         }
         const neutralSettings = createPresetSelectionSettings(settingsSnapshot);
         const selected = await resolvePresetSelection({
@@ -404,16 +405,20 @@
           settings: neutralSettings,
           language,
           currentPresetName: preset.name,
-          previousPresetName: previousSelectedPresetName,
+          previousPresetName,
           combobox: presetsCombobox,
           presetDescription,
           electronAPI
         });
-        applyResolvedPresetSelection(selected);
-        return buildPresetFlowResult(previousWpm, previousSelectedPresetName, updated);
+        const previousState = stateBeforeReloadReset || capturePresetState();
+        applyPresetSelection(selected);
+        return buildPresetFlowResult(previousState, updated);
       } catch (err) {
-        log.error('RendererPresets.resolvePresetSelection failed during handlePresetCreated:', err);
-        return buildPresetFlowResult(previousWpm, previousSelectedPresetName, allPresetsCache);
+        log.error('Preset-created reconciliation failed:', err);
+        return buildPresetFlowResult(
+          stateBeforeReloadReset || capturePresetState(),
+          allPresetsCache
+        );
       }
     }
 
@@ -437,40 +442,33 @@
 
       try {
         const { resolvePresetSelection } = getRendererPresetsBridge();
-        const previousWpm = wpm;
+        const previousPresetName = currentPresetName;
         const settingsOverride = createPresetSelectionSettings(settingsSnapshot);
         const selected = await resolvePresetSelection({
           list: allPresetsCache,
           settings: settingsOverride,
           language,
           currentPresetName: preset.name,
-          previousPresetName: currentPresetName,
+          previousPresetName,
           combobox: presetsCombobox,
           presetDescription,
           electronAPI
         });
         if (selected) {
-          applySelectedPreset(selected);
+          const previousWpm = wpm;
+          applyPresetSelection(selected);
           notifyWpmChanged(previousWpm, onWpmChanged, selected);
         }
         return selected;
       } catch (err) {
-        log.error('RendererPresets.resolvePresetSelection failed during handlePresetSelectionChange:', err);
+        log.error('Preset selection change failed:', err);
         return null;
       }
     }
 
     // =============================================================================
-    // External updates and UI wiring
+    // UI wiring
     // =============================================================================
-    function applyExternalWpm(rawWpm, { onWpmChanged } = {}) {
-      const previousWpm = wpm;
-      wpm = syncWpmControls(rawWpm);
-      resetPresetSelection();
-      notifyWpmChanged(previousWpm, onWpmChanged);
-      return wpm;
-    }
-
     function bind({ guardUserAction, onWpmChanged } = {}) {
       if (listenersBound) return;
       listenersBound = true;
@@ -514,8 +512,7 @@
       }
     }
 
-    // Apply DOM limits before the initial sync so the controls start from a
-    // valid visible state even before any preset load runs.
+    // Apply DOM limits before the initial sync so the controls start from a valid visible state even before any preset load runs.
     if (wpmSlider) {
       wpmSlider.min = String(WPM_MIN);
       wpmSlider.max = String(WPM_MAX);
@@ -551,9 +548,7 @@
       loadPresets,
       handlePresetSelectionChange,
       handlePresetCreated,
-      applyExternalWpm,
       getWpm: () => wpm,
-      getSelectedPresetName: () => currentPresetName,
       getAllPresets: () => allPresetsCache.slice(),
     };
   }

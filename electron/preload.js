@@ -124,8 +124,8 @@ const api = {
     requestDeletePreset: (name) => ipcRenderer.invoke('request-delete-preset', name),
     requestRestoreDefaults: () => ipcRenderer.invoke('request-restore-defaults'),
     onPresetCreated: (cb) => {
-        const listener = (_e, preset) => {
-            try { cb(preset); } catch (err) { console.error('preset-created callback error:', err); }
+        const listener = (_e, payload) => {
+            try { cb(payload); } catch (err) { console.error('preset-created callback error:', err); }
         };
         return subscribeWithUnsub('preset-created', listener, 'removeListener error (preset-created):');
     },
@@ -192,16 +192,6 @@ const api = {
             'reading-test-notice',
             listener,
             'removeListener error (reading-test-notice):'
-        );
-    },
-    onReadingTestApplyWpm: (cb) => {
-        const listener = (_e, payload) => {
-            try { cb(payload); } catch (err) { console.error('reading-test-apply-wpm callback error:', err); }
-        };
-        return subscribeWithUnsub(
-            'reading-test-apply-wpm',
-            listener,
-            'removeListener error (reading-test-apply-wpm):'
         );
     },
 

@@ -5,8 +5,9 @@
 // Overview
 // =============================================================================
 // Responsibilities:
-// - Load bundled and user-configured preset defaults (general + per-language).
-// - Validate and sanitize preset payloads from IPC.
+// - Seed missing user-configured default-preset files from bundled JSON.
+// - Resolve configured default catalogs without runtime bundled substitution.
+// - Validate configured entries and preset payloads from IPC.
 // - Persist preset changes into settings and broadcast updates.
 // - Show native confirmation dialogs for preset delete, restore, and edit actions.
 // - Register preset-related IPC handlers and emit preset-created notifications.
@@ -36,19 +37,31 @@ const menuBuilder = require('./menu_builder');
 // =============================================================================
 // Constants / config
 // =============================================================================
-// Default presets source folder (bundled JSON seeds).
-const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets'); // original folder: electron/presets
+// Bundled source used only to seed missing user configuration files.
+const PRESETS_SOURCE_DIR = path.join(__dirname, 'presets');
 
 // =============================================================================
-// Helpers
+// Validation, dialog, and configured-catalog helpers
 // =============================================================================
-function isAuthorizedSender(event, expectedWin, logMessage) {
+function isAuthorizedSender(event, expectedWin, channelName) {
   try {
     const senderWin = event && event.sender
       ? require('electron').BrowserWindow.fromWebContents(event.sender)
       : null;
-    if (expectedWin && senderWin && senderWin !== expectedWin) {
-      log.warn(logMessage);
+    if (!expectedWin) {
+      log.warn(
+        `${channelName} rejected (ignored): expected owner window unavailable.`
+      );
+      return false;
+    }
+    if (!senderWin) {
+      log.warn(
+        `${channelName} rejected (ignored): sender window could not be resolved.`
+      );
+      return false;
+    }
+    if (senderWin !== expectedWin) {
+      log.warn(`${channelName} unauthorized (ignored).`);
       return false;
     }
     return true;
@@ -108,22 +121,45 @@ function sanitizePresetInput(raw) {
   };
 }
 
-function loadPresetArrayFromJson(filePath) {
+function sanitizePresetArray(entries, filePath) {
+  const presets = [];
+  let invalidCount = 0;
+
+  entries.forEach((entry) => {
+    const result = sanitizePresetInput(entry);
+    if (result.ok) {
+      presets.push(result.preset);
+    } else {
+      invalidCount += 1;
+    }
+  });
+
+  if (invalidCount) {
+    log.warn(
+      '[presets_main] Preset JSON contains invalid entries; ignoring:',
+      filePath,
+      { invalidCount }
+    );
+  }
+
+  return presets;
+}
+
+function readConfiguredPresetArray(filePath) {
   try {
-    if (!fs.existsSync(filePath)) return [];
     const raw = fs.readFileSync(filePath, 'utf8');
-    const arr = JSON.parse(raw || '[]');
+    const arr = JSON.parse(raw);
     if (!Array.isArray(arr)) {
       log.warn(
-        '[presets_main] Preset JSON is not an array; using empty list (ignored):',
+        '[presets_main] Preset JSON is not an array; no usable presets from configured file:',
         filePath
       );
       return [];
     }
-    return arr;
+    return sanitizePresetArray(arr, filePath);
   } catch (err) {
     log.warn(
-      '[presets_main] Preset JSON load failed; using empty list (ignored):',
+      '[presets_main] Preset JSON load failed; no usable presets from configured file:',
       filePath,
       err
     );
@@ -132,58 +168,88 @@ function loadPresetArrayFromJson(filePath) {
 }
 
 /**
- * Loads combined default presets (general + per language).
- * Source: userData config presets_defaults JSON (fallback to bundled JSON on missing/empty/parse failure).
+ * Loads the configured default-preset catalog. When a language is supplied,
+ * only that language's configured defaults are read. Bundled files seed
+ * missing configuration files at startup, but do not substitute for runtime
+ * reads.
  */
-function loadDefaultPresetsCombined(lang) {
-  ensureConfigPresetsDir();
-  const presetsDir = getConfigPresetsDir();
+function loadConfiguredDefaultPresetCatalog(lang) {
+  const unavailableCatalog = {
+    available: false,
+    general: [],
+    languagePresets: {},
+  };
+  let entries;
+  let presetsDir;
 
-  const combined =
-    loadPresetArrayFromJson(path.join(presetsDir, 'defaults_presets.json')).slice();
-  if (!combined.length) {
-    log.warn(
-      '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored).'
+  try {
+    ensureConfigPresetsDir();
+    presetsDir = getConfigPresetsDir();
+    entries = fs.readdirSync(presetsDir);
+  } catch (err) {
+    log.error(
+      '[presets_main] Configured default-preset catalog is unavailable:',
+      err
     );
-    combined.push(
-      ...loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json'))
-    );
-    if (!combined.length) {
-      log.error(
-        '[presets_main] Bundled default presets missing/empty; presets list will be empty.'
+    return unavailableCatalog;
+  }
+
+  const generalFile = entries.find(
+    (name) => name.toLowerCase() === 'defaults_presets.json'
+  );
+  const general = generalFile
+    ? readConfiguredPresetArray(path.join(presetsDir, generalFile))
+    : [];
+  const languagePresets = {};
+  const langCode = typeof lang === 'undefined'
+    ? null
+    : normalizeLangBase(lang);
+
+  entries
+    .filter((name) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(name))
+    .forEach((name) => {
+      const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(name);
+      if (!match || !match[1]) return;
+      const fileLang = match[1].toLowerCase();
+      if (langCode && fileLang !== langCode) return;
+      languagePresets[fileLang] = readConfiguredPresetArray(
+        path.join(presetsDir, name)
       );
-    }
-  }
+    });
 
-  const langCode = normalizeLangBase(lang);
-  if (langCode) {
-    const bundledLangPath = path.join(
-      PRESETS_SOURCE_DIR,
-      `defaults_presets_${langCode}.json`
-    );
-    const langPresets =
-      loadPresetArrayFromJson(
-        path.join(presetsDir, `defaults_presets_${langCode}.json`)
-      ).slice();
-    if (!langPresets.length) {
-      if (fs.existsSync(bundledLangPath)) {
-        log.warn(
-          '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored):',
-          langCode
-        );
-        langPresets.push(
-          ...loadPresetArrayFromJson(bundledLangPath)
-        );
-      }
-    }
-    if (langPresets.length) combined.push(...langPresets);
-  }
-  return combined;
+  return { available: true, general, languagePresets };
 }
 
 /**
- * Initial copy of default presets from electron/presets/*.json
- * to userData config presets_defaults JSON (only if they do not exist).
+ * Resolves the effective configured defaults for one language using the same
+ * general-then-language precedence as the renderer.
+ */
+function loadDefaultPresetsCombined(lang) {
+  const langCode = normalizeLangBase(lang);
+  const catalog = loadConfiguredDefaultPresetCatalog(langCode);
+  if (!catalog.available) {
+    return { available: false, presets: [] };
+  }
+
+  const { general, languagePresets } = catalog;
+  const combinedByName = new Map();
+
+  general.forEach((preset) => combinedByName.set(preset.name, preset));
+
+  const languageDefaults = langCode ? languagePresets[langCode] : [];
+  if (Array.isArray(languageDefaults)) {
+    languageDefaults.forEach((preset) => combinedByName.set(preset.name, preset));
+  }
+
+  return { available: true, presets: Array.from(combinedByName.values()) };
+}
+
+// =============================================================================
+// Startup default-preset seeding
+// =============================================================================
+/**
+ * Seeds missing user default-preset files from bundled JSON.
+ * Existing configured files remain authoritative for runtime reads.
  */
 function copyDefaultPresetsIfMissing() {
   try {
@@ -254,7 +320,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   const resolveMainWin = () => resolveWindows().mainWin || null;
   const resolvePresetWin = () => resolveWindows().presetWin || null;
 
-  // Best-effort: seed user config defaults on startup.
+  // Best-effort seeding runs before handlers read the configured catalog.
   copyDefaultPresetsIfMissing();
 
   function broadcast(settings) {
@@ -268,6 +334,29 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   }
 
+  // Best-effort after persistence: this refreshes Main's preset list and attempts auto-selection. If it is lost, the preset remains saved, but Main may stay stale; a later reload does not replay auto-selection.
+  function notifyMainPresetCreated(preset, settingsSnapshot, language) {
+    try {
+      const { mainWin } = resolveWindows();
+      if (mainWin && !mainWin.isDestroyed()) {
+        mainWin.webContents.send('preset-created', {
+          preset,
+          settingsSnapshot,
+          language,
+        });
+      } else {
+        log.warn(
+          '[presets_main] preset-created notify failed (ignored): main window unavailable.'
+        );
+      }
+    } catch (err) {
+      log.warn(
+        '[presets_main] preset-created notify failed (ignored):',
+        err
+      );
+    }
+  }
+
   // Normalize settings language to a base tag with a safe fallback.
   function getEffectiveLang(settings) {
     const s = settings || settingsState.getSettings();
@@ -276,6 +365,28 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         ? s.language.trim()
         : DEFAULT_LANG;
     return normalizeLangBase(lang) || DEFAULT_LANG;
+  }
+
+  function clonePresetSettings(settings, lang) {
+    const presetsByLanguage = { ...settings.presets_by_language };
+    const disabledDefaults = { ...settings.disabled_default_presets };
+    if (Array.isArray(presetsByLanguage[lang])) {
+      presetsByLanguage[lang] = presetsByLanguage[lang].slice();
+    }
+    if (Array.isArray(disabledDefaults[lang])) {
+      disabledDefaults[lang] = disabledDefaults[lang].slice();
+    }
+    return {
+      ...settings,
+      presets_by_language: presetsByLanguage,
+      disabled_default_presets: disabledDefaults,
+    };
+  }
+
+  function cloneCurrentSettingsForPresetMutation(lang) {
+    // Confirmation awaits user input, so use the latest settings at the
+    // persistence boundary instead of overwriting changes made while waiting.
+    return clonePresetSettings(settingsState.getSettings(), lang);
   }
 
   function getUserPresets(settings, lang) {
@@ -323,107 +434,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     };
   }
 
-  // IPC: return default presets (config-first, then bundled).
+  // IPC contract: an unavailable configured-default catalog and a valid empty catalog both produce empty lists.
+  // The renderer combines these lists with user presets and may persist a replacement for a missing saved selection.
   ipcMain.handle('get-default-presets', () => {
     try {
-      ensureConfigPresetsDir();
-      const presetsDir = getConfigPresetsDir();
-
-      let general = [];
-      const languagePresets = {};
-
-      const entries = fs.existsSync(presetsDir)
-        ? fs.readdirSync(presetsDir)
-        : [];
-
-      // Prefer config defaults; parse failures fall back to bundled.
-      let generalParseFailed = false;
-      const generalJson = entries.find(
-        (n) => n.toLowerCase() === 'defaults_presets.json'
-      );
-      if (generalJson) {
-        try {
-          general = JSON.parse(
-            fs.readFileSync(path.join(presetsDir, generalJson), 'utf8')
-          );
-        } catch (err) {
-          generalParseFailed = true;
-          log.warn(
-            '[presets_main] Default presets parse failed; using bundled defaults (ignored):',
-            generalJson,
-            err
-          );
-          general = [];
-        }
-      }
-      if (!Array.isArray(general) || general.length === 0) {
-        if (!generalParseFailed) {
-          log.warn(
-            '[presets_main] Default presets missing/empty in config; using bundled defaults (ignored).'
-          );
-        }
-        general = loadPresetArrayFromJson(
-          path.join(PRESETS_SOURCE_DIR, 'defaults_presets.json')
-        );
-        if (!general.length) {
-          log.error(
-            '[presets_main] Bundled default presets missing/empty; returning empty list.'
-          );
-        }
-      }
-
-      // Load defaults by language from JSON: defaults_presets_<lang>.json
-      const invalidLangs = new Set();
-      entries
-        .filter((n) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
-        .forEach((n) => {
-          const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(n);
-          if (!match || !match[1]) return;
-          const lang = match[1].toLowerCase();
-          try {
-            const arr = JSON.parse(
-              fs.readFileSync(path.join(presetsDir, n), 'utf8')
-            );
-            if (Array.isArray(arr)) languagePresets[lang] = arr;
-          } catch (err) {
-            invalidLangs.add(lang);
-            log.warn(
-              '[presets_main] Default presets parse failed; using bundled defaults (ignored):',
-              n,
-              err
-            );
-          }
-        });
-
-      // If any language is missing in JSON, try to load from the bundled JSON seeds
-      const srcEntries = fs.existsSync(PRESETS_SOURCE_DIR)
-        ? fs.readdirSync(PRESETS_SOURCE_DIR)
-        : [];
-      srcEntries
-        .filter((n) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(n))
-        .forEach((n) => {
-          const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(n);
-          if (!match || !match[1]) return;
-          const lang = match[1].toLowerCase();
-          if (languagePresets[lang]) return; // already loaded from config JSON
-          if (!invalidLangs.has(lang)) {
-            log.warn(
-              '[presets_main] Default presets missing in config; using bundled defaults (ignored):',
-              lang
-            );
-          }
-          try {
-            const arr = loadPresetArrayFromJson(path.join(PRESETS_SOURCE_DIR, n));
-            if (Array.isArray(arr)) languagePresets[lang] = arr;
-          } catch (err) {
-            log.error('[presets_main] Error loading bundled preset', n, err);
-          }
-        });
-
-      return {
-        general: Array.isArray(general) ? general : [],
-        languagePresets,
-      };
+      const { general, languagePresets } = loadConfiguredDefaultPresetCatalog();
+      return { general, languagePresets };
     } catch (err) {
       log.error(
         '[presets_main] Error providing default presets (get-default-presets):',
@@ -465,7 +481,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           presetWin,
-          'create-preset unauthorized (ignored).'
+          'create-preset'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
@@ -480,6 +496,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const sanitizedPreset = sanitized.preset;
       let settings = settingsState.getSettings();
       const lang = getEffectiveLang(settings);
+      settings = clonePresetSettings(settings, lang);
       const userPresets = getUserPresets(settings, lang);
 
       // Preset names are treated as unique keys; overwrite on match.
@@ -490,25 +507,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         userPresets.push(sanitizedPreset);
       }
 
-      settings = settingsState.saveSettings(settings);
+      settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
-
-      // Best-effort notify the main window; window races are ignored.
-      const { mainWin } = resolveWindows();
-      try {
-        if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', sanitizedPreset);
-        } else {
-          log.warn(
-            '[presets_main] preset-created notify failed (ignored): main window unavailable.'
-          );
-        }
-      } catch (err) {
-        log.warn(
-          '[presets_main] preset-created notify failed (ignored):',
-          err
-        );
-      }
+      notifyMainPresetCreated(sanitizedPreset, settings, lang);
 
       return { ok: true };
     } catch (err) {
@@ -525,7 +526,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           mainWin,
-          'request-delete-preset unauthorized (ignored).'
+          'request-delete-preset'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
@@ -546,7 +547,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         name = trimmed;
       }
 
-      // Load settings and dialog texts before any message
+      // Bind the operation language and native text before awaiting confirmation.
       let settings = settingsState.getSettings();
       const { lang, dialogTexts } = getDialogContext(settings);
       const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
@@ -556,7 +557,6 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, error: 'invalid name', code: 'INVALID_NAME' };
       }
 
-      // Ask confirmation (native dialog)
       const conf = await dialog.showMessageBox(mainWin || null, {
         type: 'none',
         buttons: [continueLabel, cancelLabel],
@@ -570,8 +570,13 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      // Load default presets with the same fallback rules as get-default-presets.
-      const defaultsCombined = loadDefaultPresetsCombined(lang);
+      // Resolve defaults from the same configured catalog returned to the renderer.
+      const defaultCatalog = loadDefaultPresetsCombined(lang);
+      if (!defaultCatalog.available) {
+        return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
+      }
+      const defaultsCombined = defaultCatalog.presets;
+      settings = cloneCurrentSettingsForPresetMutation(lang);
 
       // Ensure per-language preset buckets exist before edits.
       const userPresets = getUserPresets(settings, lang);
@@ -588,17 +593,17 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           if (!disabledDefaults.includes(name)) {
             disabledDefaults.push(name);
           }
-          settings = settingsState.saveSettings(settings);
+          settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'deleted_and_ignored' };
+          return { ok: true, action: 'deleted_and_ignored', settingsSnapshot: settings, language: lang };
         } else {
           // Custom-only entry; remove it and keep defaults intact.
           userPresets.splice(idxUser, 1);
-          settings = settingsState.saveSettings(settings);
+          settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'deleted_custom' };
+          return { ok: true, action: 'deleted_custom', settingsSnapshot: settings, language: lang };
         }
       } else {
         // No custom preset; if a default exists, disable it for this language.
@@ -606,10 +611,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           if (!disabledDefaults.includes(name)) {
             disabledDefaults.push(name);
           }
-          settings = settingsState.saveSettings(settings);
+          settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'ignored_default' };
+          return { ok: true, action: 'ignored_default', settingsSnapshot: settings, language: lang };
         }
       }
 
@@ -628,10 +633,11 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           mainWin,
-          'request-restore-defaults unauthorized (ignored).'
+          'request-restore-defaults'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
+      // Bind the operation language and native text before awaiting confirmation.
       let settings = settingsState.getSettings();
       const { lang, dialogLang, dialogTexts } = getDialogContext(settings);
       const { continueLabel, cancelLabel } = getConfirmButtonLabels(dialogTexts);
@@ -649,7 +655,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      const defaultsCombined = loadDefaultPresetsCombined(lang);
+      const defaultCatalog = loadDefaultPresetsCombined(lang);
+      if (!defaultCatalog.available) {
+        return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
+      }
+      const defaultsCombined = defaultCatalog.presets;
+      settings = cloneCurrentSettingsForPresetMutation(lang);
       const userPresets = getUserPresets(settings, lang);
 
       const defaultNames = new Set(
@@ -693,10 +704,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         delete settings.disabled_default_presets;
       }
 
-      settings = settingsState.saveSettings(settings);
+      settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
 
-      return { ok: true, action: 'restored', removedCustom, unignored };
+      return { ok: true, action: 'restored', removedCustom, unignored, settingsSnapshot: settings, language: lang };
     } catch (err) {
       log.error(
         '[presets_main] Error restoring default presets:',
@@ -715,7 +726,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         !isAuthorizedSender(
           event,
           presetWin,
-          'edit-preset unauthorized (ignored).'
+          'edit-preset'
         )
       ) return { ok: false, code: 'UNAUTHORIZED' };
 
@@ -739,6 +750,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       }
 
       const sanitizedPreset = sanitized.preset;
+      // Bind the operation language and native text before awaiting confirmation.
       let settings = settingsState.getSettings();
       const { lang, dialogTexts } = getDialogContext(settings);
 
@@ -756,7 +768,12 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return { ok: false, code: 'CANCELLED' };
       }
 
-      const defaultsCombined = loadDefaultPresetsCombined(lang);
+      const defaultCatalog = loadDefaultPresetsCombined(lang);
+      if (!defaultCatalog.available) {
+        return { ok: false, code: 'DEFAULT_CATALOG_UNAVAILABLE' };
+      }
+      const defaultsCombined = defaultCatalog.presets;
+      settings = cloneCurrentSettingsForPresetMutation(lang);
       const userPresets = getUserPresets(settings, lang);
 
       const idxUser = userPresets.findIndex(
@@ -799,25 +816,9 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         userPresets.push(sanitizedPreset);
       }
 
-      settings = settingsState.saveSettings(settings);
+      settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
-
-      try {
-        const windows = resolveWindows();
-        const { mainWin } = windows;
-        if (mainWin && !mainWin.isDestroyed()) {
-          mainWin.webContents.send('preset-created', sanitizedPreset);
-        } else {
-          log.warn(
-            '[presets_main] preset-created notify failed (ignored): main window unavailable.'
-          );
-        }
-      } catch (err) {
-        log.warn(
-          '[presets_main] preset-created notify failed (ignored):',
-          err
-        );
-      }
+      notifyMainPresetCreated(sanitizedPreset, settings, lang);
 
       return { ok: true, action: 'edited', deletedAction };
     } catch (err) {

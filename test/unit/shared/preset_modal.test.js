@@ -72,10 +72,13 @@ function createHarness({
   loggerMode = 'available',
   missingAppConstants = false,
   captureBootstrapError = false,
+  createPresetImpl = null,
+  editPresetImpl = null,
 } = {}) {
   const subscriptions = {};
   const transitionLanguages = [];
   const logs = [];
+  const notifications = [];
   let establishedLanguage = null;
   let reportRendererI18nFailureCalls = 0;
   let closeCalls = 0;
@@ -211,12 +214,14 @@ function createHarness({
           },
         }),
         ...(missingRequiredBridgeMethod === 'createPreset' ? {} : {
-          async createPreset() {
+          async createPreset(preset) {
+            if (createPresetImpl) return createPresetImpl(preset);
             return { ok: true };
           },
         }),
         ...(missingRequiredBridgeMethod === 'editPreset' ? {} : {
-          async editPreset() {
+          async editPreset(originalName, preset) {
+            if (editPresetImpl) return editPresetImpl(originalName, preset);
             return { ok: true };
           },
         }),
@@ -237,7 +242,7 @@ function createHarness({
         },
       },
       Notify: {
-        notifyMain() {},
+        notifyMain(key) { notifications.push(key); },
       },
       close() {
         closeCalls += 1;
@@ -277,6 +282,7 @@ function createHarness({
     elements,
     subscriptions,
     transitionLanguages,
+    notifications,
     getReportRendererI18nFailureCalls() {
       return reportRendererI18nFailureCalls;
     },
@@ -310,6 +316,64 @@ function createHarness({
     },
   };
 }
+
+test('a proposed WPM is editable and the edited value is submitted when creating a preset', async () => {
+  const created = [];
+  const harness = createHarness({
+    createPresetImpl(preset) {
+      created.push(JSON.parse(JSON.stringify(preset)));
+      return { ok: true };
+    },
+  });
+  harness.subscriptions.onInit({ wpm: 700 });
+  await harness.settleSemanticWork();
+  assert.equal(harness.elements.presetWpm.value, 700);
+  harness.elements.presetName.value = 'Measured';
+  harness.elements.presetWpm.value = '325';
+  harness.elements.btnSave.dispatch('click');
+  await harness.settleSemanticWork();
+
+  assert.deepEqual(created, [{ name: 'Measured', wpm: 325, description: '' }]);
+  assert.equal(harness.getCloseCalls(), 1);
+});
+
+test('canceling a preset proposal closes without creating a preset', async () => {
+  let createCalls = 0;
+  const harness = createHarness({ createPresetImpl() { createCalls += 1; return { ok: true }; } });
+  harness.subscriptions.onInit({ wpm: 300 });
+  await harness.settleSemanticWork();
+  harness.elements.btnCancel.dispatch('click');
+
+  assert.equal(createCalls, 0);
+  assert.equal(harness.getCloseCalls(), 1);
+});
+
+test('a rejected preset creation leaves the proposal open', async () => {
+  const harness = createHarness({ createPresetImpl: () => ({ ok: false, code: 'SAVE_FAILED' }) });
+  harness.subscriptions.onInit({ wpm: 300 });
+  await harness.settleSemanticWork();
+  harness.elements.btnSave.dispatch('click');
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.create_error']);
+  assert.ok(harness.getLogs().some((entry) => entry.args[0] === 'Preset modal createPreset response failed:'));
+});
+
+test('a failed preset edit keeps the entered values and displays the error', async () => {
+  const harness = createHarness({ editPresetImpl: () => ({ ok: false, error: 'disk full' }) });
+  harness.subscriptions.onInit({ mode: 'edit', preset: { name: 'Original', wpm: 250, description: 'Before' } });
+  await harness.settleSemanticWork();
+  harness.elements.presetName.value = 'Changed';
+  harness.elements.presetDesc.value = 'After';
+  harness.elements.btnSave.dispatch('click');
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getCloseCalls(), 0);
+  assert.equal(harness.elements.presetName.value, 'Changed');
+  assert.equal(harness.elements.presetDesc.value, 'After');
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.edit_error']);
+});
 
 test('preset modal closes before normal interaction when live settings registration is unavailable or throws', () => {
   for (const settingsListenerMode of ['missing', 'throw']) {

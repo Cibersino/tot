@@ -166,28 +166,33 @@
       findPresetByName(list, previousPresetName)
       || persistedSelection;
     const selectedName = persisted || (typeof currentPresetName === 'string' ? currentPresetName.trim() : '');
-    if (!selectedName) {
-      log.warn(
-        'No persisted preset selection for langKey; selecting safe default and persisting (NOTE: may be normal; no preset has been selected for this language).',
-        { lang: langBase }
-      );
-    }
     const namedSelection = findPresetByName(list, selectedName);
-    if (selectedName && !namedSelection) {
-      log.warn(
-        'Selected preset not found; falling back to safe preset:',
-        { requested: selectedName, lang: langBase }
-      );
-    }
     const selected = namedSelection || list.find(p => p.name === 'default') || list[0] || null;
 
     if (!selected) {
       if (combobox) combobox.update({ value: '' });
       applyPresetDescriptionText(presetDescription, '');
+      if (selectedName && !namedSelection) {
+        log.warn(
+          'Selected preset was not found and no replacement is available; visible preset selection cleared (NOTE: may be normal; configured presets can change independently of a saved selection).',
+          { requested: selectedName, lang: langBase }
+        );
+      }
       return selected;
     }
 
     applyPresetSelection(selected, { combobox, presetDescription });
+    if (!selectedName) {
+      log.warn(
+        'No persisted preset selection for langKey; selected an available preset (NOTE: may be normal; no preset has been selected for this language).',
+        { lang: langBase, selected: selected.name }
+      );
+    } else if (!namedSelection) {
+      log.warn(
+        'Selected preset was not found; selected an available replacement (NOTE: may be normal; configured presets can change independently of a saved selection).',
+        { requested: selectedName, selected: selected.name, lang: langBase }
+      );
+    }
     if (!selected.name || selected.name === persisted) {
       return selected;
     }
