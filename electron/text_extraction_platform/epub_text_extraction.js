@@ -97,10 +97,10 @@ const HTML_CONTENT_MIME_TYPES = new Set([
 // =============================================================================
 
 function createEpubError(code, message) {
-  const err = new Error(message);
-  err.name = 'EpubExtractionError';
-  err.code = code;
-  return err;
+  const error = new Error(message);
+  error.name = 'EpubExtractionError';
+  error.code = code;
+  return error;
 }
 
 // =============================================================================

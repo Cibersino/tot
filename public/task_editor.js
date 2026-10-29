@@ -1350,7 +1350,7 @@ function renderRow(row) {
   });
   enlaceSelectBtn.setAttribute('data-tot-tooltip', linkBrowseName);
   enlaceSelectBtn.addEventListener('click', () => {
-    selectFileForRow(row, { textoInput, enlaceInput }).catch((err) => log.error('selectFileForRow failed:', err));
+    selectFileForRow(row, { textoInput, enlaceInput }).catch((error) => log.error('selectFileForRow failed:', error));
   });
   const linkName = tr('renderer.tasks.columns.names.link_open');
   const enlaceBtn = rendererIcons.createIconButton({
@@ -1382,7 +1382,7 @@ function renderRow(row) {
         window.Notify.notifyEditor('renderer.tasks.alerts.link_error');
         return;
       }
-    })().catch((err) => log.error('openTaskLink failed:', err));
+    })().catch((error) => log.error('openTaskLink failed:', error));
   });
   enlaceWrap.appendChild(enlaceInput);
   enlaceWrap.appendChild(enlaceSelectBtn);
@@ -1419,7 +1419,7 @@ function renderRow(row) {
       })
     );
     snapshotBtn.addEventListener('click', () => {
-      loadSnapshotForRow(row).catch((err) => log.error('loadSnapshotForRow failed:', err));
+      loadSnapshotForRow(row).catch((error) => log.error('loadSnapshotForRow failed:', error));
     });
     commentActions.appendChild(snapshotBtn);
     commentActions.appendChild(snapshotDescription);
@@ -2008,16 +2008,16 @@ async function transitionTaskEditorTranslations(language) {
   });
 }
 
-function reportTaskEditorI18nFailure(err, { startup = false } = {}) {
-  const transition = err && err.rendererI18nTransition;
+function reportTaskEditorI18nFailure(error, { startup = false } = {}) {
+  const transition = error && error.rendererI18nTransition;
   if (!transition) {
     return;
   }
   if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-    log.error('Task Editor language transition failed; previous translation state remains authoritative:', err);
+    log.error('Task Editor language transition failed; previous translation state remains authoritative:', error);
     return;
   }
-  log.error('Task Editor i18n failure requires terminal unavailability:', err);
+  log.error('Task Editor i18n failure requires terminal unavailability:', error);
   closeTaskEditorAfterI18nFailure({ startup });
 }
 
@@ -2070,7 +2070,7 @@ function wirePrimaryTaskEditorEvents() {
 
   if (btnTaskAddFiles) {
     btnTaskAddFiles.addEventListener('click', () => {
-      addRowsFromSelectedFiles().catch((err) => log.error('addRowsFromSelectedFiles failed:', err));
+      addRowsFromSelectedFiles().catch((error) => log.error('addRowsFromSelectedFiles failed:', error));
     });
   }
 
@@ -2090,20 +2090,20 @@ function wirePrimaryTaskEditorEvents() {
 
   if (btnTaskSave) {
     btnTaskSave.addEventListener('click', () => {
-      saveTask().catch((err) => log.error('saveTask failed:', err));
+      saveTask().catch((error) => log.error('saveTask failed:', error));
     });
   }
 
   if (btnTaskDelete) {
     btnTaskDelete.addEventListener('click', () => {
-      deleteTask().catch((err) => log.error('deleteTask failed:', err));
+      deleteTask().catch((error) => log.error('deleteTask failed:', error));
     });
   }
 
   if (btnTaskLoadLibrary) {
     btnTaskLoadLibrary.addEventListener('click', () => {
       if (librarySearchInput) librarySearchInput.value = '';
-      refreshLibraryList().catch((err) => log.error('refreshLibraryList failed:', err));
+      refreshLibraryList().catch((error) => log.error('refreshLibraryList failed:', error));
       openModal(libraryModal, librarySearchInput);
     });
   }
@@ -2116,7 +2116,7 @@ function wireCommentModalEvents() {
   if (commentCancel) commentCancel.addEventListener('click', () => dismissCommentModal());
   if (commentSnapshotSelect) {
     commentSnapshotSelect.addEventListener('click', () => {
-      selectSnapshotForPendingCommentRow().catch((err) => log.error('selectSnapshotForPendingCommentRow failed:', err));
+      selectSnapshotForPendingCommentRow().catch((error) => log.error('selectSnapshotForPendingCommentRow failed:', error));
     });
   }
   if (commentSnapshotClear) {
@@ -2126,7 +2126,7 @@ function wireCommentModalEvents() {
   }
   if (commentSave) {
     commentSave.addEventListener('click', () => {
-      applyCommentChangesAndDismiss().catch((err) => log.error('applyCommentChangesAndDismiss failed:', err));
+      applyCommentChangesAndDismiss().catch((error) => log.error('applyCommentChangesAndDismiss failed:', error));
     });
   }
 }
@@ -2176,12 +2176,12 @@ function wireLibraryModalEvents() {
   wireModalClose(includeCommentModal, includeCommentClose, includeCommentBackdrop, includeCommentCancel);
   if (includeCommentYes) {
     includeCommentYes.addEventListener('click', () => {
-      saveRowToLibrary(true).catch((err) => log.error('saveRowToLibrary failed:', err));
+      saveRowToLibrary(true).catch((error) => log.error('saveRowToLibrary failed:', error));
     });
   }
   if (includeCommentNo) {
     includeCommentNo.addEventListener('click', () => {
-      saveRowToLibrary(false).catch((err) => log.error('saveRowToLibrary failed:', err));
+      saveRowToLibrary(false).catch((error) => log.error('saveRowToLibrary failed:', error));
     });
   }
 }
@@ -2346,8 +2346,8 @@ try {
   registerTaskEditorInit();
   registerTaskEditorCloseGuard();
   registerTaskEditorSettingsChanged();
-  bootstrapTaskEditor().catch((err) => {
-    log.error('Task Editor required initialization failed:', err);
+  bootstrapTaskEditor().catch((error) => {
+    log.error('Task Editor required initialization failed:', error);
     closeTaskEditorAfterI18nFailure({ startup: true, kind: 'bootstrap' });
   });
 } catch (error) {

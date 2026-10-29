@@ -43,12 +43,12 @@ const CHECK_AVAILABILITY_CHANNEL = 'text-extraction-check-ocr-availability';
 // Helpers
 // =============================================================================
 
-function safeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function safeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
-function safeErrorMessage(err) {
-  return String(err && err.message ? err.message : err || '');
+function safeErrorMessage(error) {
+  return String(error && error.message ? error.message : error || '');
 }
 
 function ensureParentDir(filePath) {
@@ -208,12 +208,12 @@ function mapValidationToAvailabilityResult(validationResult) {
   });
 }
 
-function mapAuthenticateError(err) {
-  const name = safeErrorName(err);
-  const message = safeErrorMessage(err);
+function mapAuthenticateError(error) {
+  const name = safeErrorName(error);
+  const message = safeErrorMessage(error);
   const lowered = `${name} ${message}`.toLowerCase();
 
-  if (String(err && err.code ? err.code : '') === 'oauth_state_invalid') {
+  if (String(error && error.code ? error.code : '') === 'oauth_state_invalid') {
     return buildFailure({
       state: 'failure',
       code: 'auth_failed',
@@ -226,7 +226,7 @@ function mapAuthenticateError(err) {
     });
   }
 
-  if (String(err && err.code ? err.code : '') === 'oauth_timeout') {
+  if (String(error && error.code ? error.code : '') === 'oauth_timeout') {
     return buildFailure({
       state: 'failure',
       code: 'platform_runtime_failed',

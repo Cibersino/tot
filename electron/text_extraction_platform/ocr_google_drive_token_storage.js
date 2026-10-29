@@ -26,15 +26,15 @@ const log = Log.get('ocr-google-drive-token-storage');
 // Helpers
 // =============================================================================
 
-function safeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function safeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
 function buildStorageError(code, message, detailsSafeForLogs = {}) {
-  const err = new Error(message);
-  err.code = code;
-  err.detailsSafeForLogs = detailsSafeForLogs;
-  return err;
+  const error = new Error(message);
+  error.code = code;
+  error.detailsSafeForLogs = detailsSafeForLogs;
+  return error;
 }
 
 function warnWeakLinuxBackendIfNeeded() {

@@ -35,11 +35,11 @@ function toTrimmedString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function getErrorDetails(err) {
+function getErrorDetails(error) {
   return {
-    errorName: String(err && err.name ? err.name : 'Error'),
-    errorCode: String(err && err.code ? err.code : ''),
-    errorMessage: String(err && err.message ? err.message : err || ''),
+    errorName: String(error && error.name ? error.name : 'Error'),
+    errorCode: String(error && error.code ? error.code : ''),
+    errorMessage: String(error && error.message ? error.message : error || ''),
   };
 }
 

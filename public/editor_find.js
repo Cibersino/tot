@@ -267,16 +267,16 @@ async function transitionFindTranslations(language) {
   translationsLoadedFor = idiomaActual;
 }
 
-function reportFindI18nFailure(err, { startup = false } = {}) {
-  const transition = err && err.rendererI18nTransition;
+function reportFindI18nFailure(error, { startup = false } = {}) {
+  const transition = error && error.rendererI18nTransition;
   if (!transition) {
     return;
   }
   if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-    log.error('Editor Find language transition failed; previous translation state remains authoritative:', err);
+    log.error('Editor Find language transition failed; previous translation state remains authoritative:', error);
     return;
   }
-  log.error('Editor Find i18n failure requires window closure:', err);
+  log.error('Editor Find i18n failure requires window closure:', error);
   reportTerminalFindI18nFailure(startup ? 'startup' : 'transition-restoration');
 }
 
@@ -430,25 +430,25 @@ inputEl.addEventListener('keydown', (event) => {
   if (event.key !== 'Enter') return;
   event.preventDefault();
   if (event.shiftKey) {
-    findApi.prev().catch((err) => log.error('Error on Shift+Enter prev:', err));
+    findApi.prev().catch((error) => log.error('Error on Shift+Enter prev:', error));
   } else {
-    findApi.next().catch((err) => log.error('Error on Enter next:', err));
+    findApi.next().catch((error) => log.error('Error on Enter next:', error));
   }
 });
 
 toggleEl.addEventListener('click', () => {
   if (!findSemanticReady || findI18nTerminal) return;
-  findApi.toggleExpanded().catch((err) => log.error('Error toggling find window mode:', err));
+  findApi.toggleExpanded().catch((error) => log.error('Error toggling find window mode:', error));
 });
 
 prevEl.addEventListener('click', () => {
   if (!findSemanticReady || findI18nTerminal) return;
-  findApi.prev().catch((err) => log.error('Error navigating to previous match:', err));
+  findApi.prev().catch((error) => log.error('Error navigating to previous match:', error));
 });
 
 nextEl.addEventListener('click', () => {
   if (!findSemanticReady || findI18nTerminal) return;
-  findApi.next().catch((err) => log.error('Error navigating to next match:', err));
+  findApi.next().catch((error) => log.error('Error navigating to next match:', error));
 });
 
 replaceOneEl.addEventListener('click', () => {
@@ -462,13 +462,13 @@ replaceAllEl.addEventListener('click', () => {
 });
 
 closeEl.addEventListener('click', () => {
-  findApi.close().catch((err) => log.error('Error closing find window:', err));
+  findApi.close().catch((error) => log.error('Error closing find window:', error));
 });
 
 window.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
   event.preventDefault();
-  findApi.close().catch((err) => log.error('Error closing find window:', err));
+  findApi.close().catch((error) => log.error('Error closing find window:', error));
 });
 
 // =============================================================================
@@ -567,9 +567,9 @@ if (typeof findApi.onSettingsChanged !== 'function') {
     projectMainStateIntoUi();
     applyPendingFocusIntent();
   });
-})().catch((err) => {
-  log.error('editor-find bootstrap failed:', err);
-  reportFindI18nFailure(err, { startup: true });
+})().catch((error) => {
+  log.error('editor-find bootstrap failed:', error);
+  reportFindI18nFailure(error, { startup: true });
 });
 
 // =============================================================================

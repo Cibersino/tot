@@ -506,7 +506,7 @@ function buildPdfPrepareFailure({
   });
 }
 
-function buildOcrSetupValidationRuntimeFailure(err) {
+function buildOcrSetupValidationRuntimeFailure(error) {
   return {
     ok: false,
     state: 'failure',
@@ -515,7 +515,7 @@ function buildOcrSetupValidationRuntimeFailure(err) {
       code: 'platform_runtime_failed',
       message: 'Google OCR setup validation failed due to a platform/runtime error.',
       detailsSafeForLogs: {
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       },
     },
   };
@@ -1285,7 +1285,7 @@ function buildUnexpectedRuntimeResult(
   productRoute,
   executionKind,
   routeMetadata,
-  err,
+  error,
   processingInputContext
 ) {
   return buildPreparedExecutionFailureResult({
@@ -1299,7 +1299,7 @@ function buildUnexpectedRuntimeResult(
       code: 'platform_runtime_failed',
       message: 'Text extraction route failed due to a platform/runtime error.',
       detailsSafeForLogs: {
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       },
     },
   });

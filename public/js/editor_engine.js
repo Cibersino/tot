@@ -433,14 +433,14 @@
     // Main Text Sync And Transfer Handling
     // =============================================================================
 
-    function handleSetCurrentTextFailure(err, onError) {
+    function handleSetCurrentTextFailure(error, onError) {
       if (typeof onError === 'function') {
-        onError(err);
+        onError(error);
         return;
       }
       log.warn(
         'editorAPI.setCurrentText failed (ignored):',
-        err
+        error
       );
     }
 
@@ -489,8 +489,8 @@
                 log.error('handleTruncationResponse result handling error:', error);
               }
             },
-            (err) => {
-              handleSetCurrentTextFailure(err, onError);
+            (error) => {
+              handleSetCurrentTextFailure(error, onError);
             }
           );
           return;

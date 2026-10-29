@@ -467,8 +467,8 @@
     if (window.InfoModalLinks && typeof window.InfoModalLinks.applyTranslations === 'function') {
       window.InfoModalLinks.applyTranslations();
     }
-    void refreshOpenModal().catch((err) => {
-      log.warn('Open Info modal language refresh failed (ignored):', err);
+    void refreshOpenModal().catch((error) => {
+      log.warn('Open Info modal language refresh failed (ignored):', error);
     });
   }
 

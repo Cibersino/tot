@@ -448,16 +448,16 @@ async function transitionEditorTranslations(language) {
   ctx.state.translationsLoadedFor = ctx.state.idiomaActual;
 }
 
-function reportEditorI18nFailure(err, { startup = false } = {}) {
-  const transition = err && err.rendererI18nTransition;
+function reportEditorI18nFailure(error, { startup = false } = {}) {
+  const transition = error && error.rendererI18nTransition;
   if (!transition) {
     return;
   }
   if (!startup && transition.hadEstablishedState && !transition.restorationFailed) {
-    log.error('Text Editor language transition failed; previous translation state remains authoritative:', err);
+    log.error('Text Editor language transition failed; previous translation state remains authoritative:', error);
     return;
   }
-  log.error('Text Editor i18n failure requires window closure:', err);
+  log.error('Text Editor i18n failure requires window closure:', error);
   reportTerminalEditorI18nFailure(startup ? 'startup' : 'transition-restoration');
 }
 
@@ -566,8 +566,8 @@ function registerEditorMarginGutter(gutter, side) {
     ctx.ui.handleEditorMarginPointerDown(event, side);
   });
   gutter.addEventListener('dblclick', () => {
-    ctx.ui.resetEditorMaximizedTextWidth().catch((err) => {
-      log.error('Error resetting Text Editor maximized text width:', err);
+    ctx.ui.resetEditorMaximizedTextWidth().catch((error) => {
+      log.error('Error resetting Text Editor maximized text width:', error);
     });
   });
 }
@@ -670,14 +670,14 @@ function registerEditorBridgeListeners() {
 
       Promise.resolve()
         .then(() => ctx.engine.handleReplaceRequest(payload || {}))
-        .catch((err) => {
-          log.error('Text Editor replace request handling failed:', err);
+        .catch((error) => {
+          log.error('Text Editor replace request handling failed:', error);
           return {
             requestId,
             operation: payload && payload.operation === 'replace-all' ? 'replace-all' : 'replace-current',
             ok: false,
             status: 'internal-error',
-            error: String(err),
+            error: String(error),
             replacements: 0,
             finalTextLength: editor.value.length,
           };
@@ -773,9 +773,9 @@ Promise.resolve()
     ctx.ui.focusEditorAtTop();
     reportBasePresentationState({ status: 'ready' });
   })
-  .catch((err) => {
+  .catch((error) => {
     if (log) {
-      log.error('BOOTSTRAP: Text Editor startup failed:', err);
+      log.error('BOOTSTRAP: Text Editor startup failed:', error);
     }
     editorI18nTerminal = true;
     if (ctx && ctx.ui && typeof ctx.ui.setNormalInteractionAvailable === 'function') {
@@ -812,9 +812,9 @@ if (!bootstrapSetupError && editor) {
       action: 'drop',
       limitAlertKey: 'renderer.editor.alerts.drop_limit',
       truncatedAlertKey: 'renderer.editor.alerts.drop_truncated',
-      onError: (err) => log.warn(
+      onError: (error) => log.warn(
         'editorAPI.setCurrentText failed (ignored):',
-        err
+        error
       )
     }
   };
@@ -867,9 +867,9 @@ if (!bootstrapSetupError && editor) {
     if (calcWhileTyping && calcWhileTyping.checked) {
       ctx.state.debounceTimer = setTimeout(() => {
         ctx.engine.sendCurrentTextToMain('typing', {
-          onError: (err) => log.warn(
+          onError: (error) => log.warn(
             'setCurrentText typing sync failed (ignored):',
-            err
+            error
           )
         });
       }, ctx.DEBOUNCE_MS);
@@ -900,7 +900,7 @@ if (!bootstrapSetupError && btnTrash) btnTrash.addEventListener('click', () => {
   if (calcWhileTyping && calcWhileTyping.checked) {
     const didSend = ctx.engine.sendCurrentTextToMain('clear', {
       text: '',
-      onError: (err) => log.error('Text Editor clear sync failed:', err),
+      onError: (error) => log.error('Text Editor clear sync failed:', error),
     });
     if (!didSend) {
       window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -912,7 +912,7 @@ if (!bootstrapSetupError && btnTrash) btnTrash.addEventListener('click', () => {
 if (!bootstrapSetupError && btnCalc) btnCalc.addEventListener('click', () => {
   const didSend = ctx.engine.sendCurrentTextToMain('overwrite', {
     text: editor.value || '',
-    onError: (err) => log.error('Text Editor apply sync failed:', err),
+    onError: (error) => log.error('Text Editor apply sync failed:', error),
   });
   if (!didSend) {
     window.Notify.notifyEditor('renderer.editor.alerts.calc_error', { type: 'error', duration: 5000 });
@@ -925,9 +925,9 @@ if (!bootstrapSetupError && calcWhileTyping) calcWhileTyping.addEventListener('c
     btnCalc.disabled = true;
     ctx.engine.sendCurrentTextToMain('typing_toggle_on', {
       text: editor.value || '',
-      onError: (err) => log.warn(
+      onError: (error) => log.warn(
         'editorAPI.setCurrentText failed (typing toggle on ignored):',
-        err
+        error
       )
     });
   } else btnCalc.disabled = false;
@@ -980,24 +980,24 @@ if (!bootstrapSetupError && spellcheckToggle) {
 
 if (!bootstrapSetupError && btnTextSizeDecrease) {
   btnTextSizeDecrease.addEventListener('click', () => {
-    ctx.ui.decreaseEditorFontSize().catch((err) => {
-      log.error('Text Editor font size decrease failed:', err);
+    ctx.ui.decreaseEditorFontSize().catch((error) => {
+      log.error('Text Editor font size decrease failed:', error);
     });
   });
 }
 
 if (!bootstrapSetupError && btnTextSizeIncrease) {
   btnTextSizeIncrease.addEventListener('click', () => {
-    ctx.ui.increaseEditorFontSize().catch((err) => {
-      log.error('Text Editor font size increase failed:', err);
+    ctx.ui.increaseEditorFontSize().catch((error) => {
+      log.error('Text Editor font size increase failed:', error);
     });
   });
 }
 
 if (!bootstrapSetupError && btnTextSizeReset) {
   btnTextSizeReset.addEventListener('click', () => {
-    ctx.ui.resetEditorFontSize().catch((err) => {
-      log.error('Text Editor font size reset failed:', err);
+    ctx.ui.resetEditorFontSize().catch((error) => {
+      log.error('Text Editor font size reset failed:', error);
     });
   });
 }

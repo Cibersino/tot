@@ -434,8 +434,8 @@
       const beforeTop = actions.getBoundingClientRect().top;
       Promise.resolve()
         .then(() => updateFn())
-        .catch((err) => {
-          log.error('Reading-test questions check update failed:', err);
+        .catch((error) => {
+          log.error('Reading-test questions check update failed:', error);
         })
         .finally(() => {
           requestAnimationFrame(() => {
@@ -552,16 +552,16 @@
       state.translationsLoadedFor = state.currentLanguage;
     }
 
-    function reportQuestionsI18nFailure(err, { startup = false } = {}) {
-      const transition = err && err.rendererI18nTransition;
+    function reportQuestionsI18nFailure(error, { startup = false } = {}) {
+      const transition = error && error.rendererI18nTransition;
       if (!transition) {
         return;
       }
       if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-        log.error('Reading-test questions language transition failed; previous translation state remains authoritative:', err);
+        log.error('Reading-test questions language transition failed; previous translation state remains authoritative:', error);
         return;
       }
-      log.error('Reading-test questions i18n failure requires window closure:', err);
+      log.error('Reading-test questions i18n failure requires window closure:', error);
       reportTerminalQuestionsI18nFailure(startup ? 'startup' : 'transition-restoration');
     }
 
@@ -604,19 +604,19 @@
       return true;
     }
 
-    function handleInitFailure(err) {
-      log.error('Reading-test questions init failed:', err);
-      if (err && err.rendererI18nTransition) {
-        reportQuestionsI18nFailure(err, { startup: !state.translationsLoadedFor });
+    function handleInitFailure(error) {
+      log.error('Reading-test questions init failed:', error);
+      if (error && error.rendererI18nTransition) {
+        reportQuestionsI18nFailure(error, { startup: !state.translationsLoadedFor });
         return;
       }
       setInvalidPayloadState();
       enqueueUiSync(async () => ({
         language: state.currentLanguage,
         settings: state.settingsCache,
-      })).catch((renderErr) => {
-        log.error('Reading-test questions recovery render failed:', renderErr);
-        reportQuestionsI18nFailure(renderErr, { startup: !state.translationsLoadedFor });
+      })).catch((renderError) => {
+        log.error('Reading-test questions recovery render failed:', renderError);
+        reportQuestionsI18nFailure(renderError, { startup: !state.translationsLoadedFor });
       });
     }
 
@@ -638,8 +638,8 @@
         } catch (error) {
           log.warn('Reading-test questions initial focus failed (ignored):', error);
         }
-      }).catch((err) => {
-        handleInitFailure(err);
+      }).catch((error) => {
+        handleInitFailure(error);
       });
     }
 
@@ -662,9 +662,9 @@
           language: normalizeLanguage(readSettingsLanguage(nextSettings)),
           settings: nextSettings,
         };
-      }).catch((err) => {
-        log.error('BOOTSTRAP: Reading-test questions initial render failed:', err);
-        reportQuestionsI18nFailure(err, { startup: !state.translationsLoadedFor });
+      }).catch((error) => {
+        log.error('BOOTSTRAP: Reading-test questions initial render failed:', error);
+        reportQuestionsI18nFailure(error, { startup: !state.translationsLoadedFor });
       });
     }
 
@@ -680,8 +680,8 @@
           return false;
         }
         return { language: nextLanguage, settings: nextSettings };
-      }).catch((err) => {
-        reportQuestionsI18nFailure(err);
+      }).catch((error) => {
+        reportQuestionsI18nFailure(error);
       });
     }
 

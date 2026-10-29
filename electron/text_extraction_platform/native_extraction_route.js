@@ -105,10 +105,10 @@ function mapMammothWarnings(messages) {
   return warnings;
 }
 
-function isCorruptOrUnreadableParserError(parserType, err) {
-  if (!err) return false;
-  const code = typeof err.code === 'string' ? err.code.trim() : '';
-  const message = String(err && err.message ? err.message : '').toLowerCase();
+function isCorruptOrUnreadableParserError(parserType, error) {
+  if (!error) return false;
+  const code = typeof error.code === 'string' ? error.code.trim() : '';
+  const message = String(error && error.message ? error.message : '').toLowerCase();
 
   if (code === 'ENOENT' || code === 'EISDIR' || code === 'EACCES' || code === 'EPERM') {
     return true;
@@ -125,7 +125,7 @@ function isCorruptOrUnreadableParserError(parserType, err) {
   }
 
   if (parserType === 'pdf_text_layer') {
-    if (isUnreadableOrCorruptPdfError(err)) {
+    if (isUnreadableOrCorruptPdfError(error)) {
       return true;
     }
   }
@@ -137,8 +137,8 @@ function isCorruptOrUnreadableParserError(parserType, err) {
   return false;
 }
 
-function isPdfPasswordProtectedParserError(err) {
-  return isPdfPasswordProtectedError(err);
+function isPdfPasswordProtectedParserError(error) {
+  return isPdfPasswordProtectedError(error);
 }
 
 // =============================================================================

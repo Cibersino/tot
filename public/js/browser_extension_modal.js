@@ -144,8 +144,8 @@
           window.Notify.notifyMain(mapExternalFailureReasonToKey(result.reason));
           log.warn('Browser extension external link blocked or failed:', CHROME_WEB_STORE_URL, result);
         })
-        .catch((err) => {
-          log.error('Browser extension external link request failed:', err);
+        .catch((error) => {
+          log.error('Browser extension external link request failed:', error);
           window.Notify.notifyMain('renderer.info.external.error');
         });
     } catch (error) {

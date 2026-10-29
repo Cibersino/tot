@@ -214,16 +214,16 @@ async function applyFlotanteTranslations(lang) {
   });
 }
 
-function reportFlotanteI18nFailure(err, { startup = false } = {}) {
-  const transition = err && err.rendererI18nTransition;
+function reportFlotanteI18nFailure(error, { startup = false } = {}) {
+  const transition = error && error.rendererI18nTransition;
   if (!transition) {
     return;
   }
   if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-    log.error('Floating Stopwatch language transition failed; previous translation state remains authoritative:', err);
+    log.error('Floating Stopwatch language transition failed; previous translation state remains authoritative:', error);
     return;
   }
-  log.error('Floating Stopwatch i18n failure requires window closure:', err);
+  log.error('Floating Stopwatch i18n failure requires window closure:', error);
   reportTerminalFlotanteI18nFailure(startup ? 'startup' : 'transition-restoration');
 }
 
@@ -250,8 +250,8 @@ function enterFlotanteTerminalState() {
   return true;
 }
 
-function terminateFlotanteAfterUnexpectedFailure(message, err) {
-  log.error(message, err);
+function terminateFlotanteAfterUnexpectedFailure(message, error) {
+  log.error(message, error);
   enterFlotanteTerminalState();
   closeFlotanteAfterTerminalFailure();
 }

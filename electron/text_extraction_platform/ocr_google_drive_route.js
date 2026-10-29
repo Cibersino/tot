@@ -66,12 +66,12 @@ const log = Log.get('text-extraction-ocr-google-drive-route');
 // Helpers
 // =============================================================================
 
-function toSafeErrorMessage(err) {
-  return String(err && err.message ? err.message : err || '');
+function toSafeErrorMessage(error) {
+  return String(error && error.message ? error.message : error || '');
 }
 
-function toSafeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function toSafeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
 function getFileInfo(filePath) {
@@ -176,8 +176,8 @@ function classifyPersistedTokenReadFailure(tokenReadCode) {
   };
 }
 
-function parseProviderFailure(err) {
-  return parseGoogleProviderFailure(err, toSafeErrorMessage(err));
+function parseProviderFailure(error) {
+  return parseGoogleProviderFailure(error, toSafeErrorMessage(error));
 }
 
 function classifyCommonFailure(parsedFailure) {
@@ -202,13 +202,13 @@ function ensureNotAborted(isAborted) {
   }
 }
 
-function getErrorCode(err) {
-  return String(err && err.code ? err.code : '');
+function getErrorCode(error) {
+  return String(error && error.code ? error.code : '');
 }
 
-function getErrorDetailsSafeForLogs(err) {
-  return err && err.detailsSafeForLogs && typeof err.detailsSafeForLogs === 'object'
-    ? err.detailsSafeForLogs
+function getErrorDetailsSafeForLogs(error) {
+  return error && error.detailsSafeForLogs && typeof error.detailsSafeForLogs === 'object'
+    ? error.detailsSafeForLogs
     : {};
 }
 

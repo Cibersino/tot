@@ -690,8 +690,8 @@
             log.warn('Reading-test pool external link blocked or failed:', DRIVE_FOLDER_URL, result);
           }
         })
-        .catch((err) => {
-          log.error('Reading-test pool external link request failed:', err);
+        .catch((error) => {
+          log.error('Reading-test pool external link request failed:', error);
           window.Notify.notifyMain('renderer.info.external.error');
         });
     } catch (error) {

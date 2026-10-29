@@ -430,9 +430,9 @@
     };
 
     const scheduled = rendererTransitionQueue.then(runTransition);
-    rendererTransitionQueue = scheduled.catch((err) => {
-      if (isTerminalRendererTransitionFailure(err)) {
-        throw err;
+    rendererTransitionQueue = scheduled.catch((error) => {
+      if (isTerminalRendererTransitionFailure(error)) {
+        throw error;
       }
     });
     // Observe a terminal queue rejection without converting it back into a resolved queue. Later transitions must not run after fail-closed state.

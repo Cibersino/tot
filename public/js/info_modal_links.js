@@ -274,9 +274,9 @@
                 log.warn('App doc blocked or failed:', docKey, result);
               }
             })
-            .catch((err) => {
+            .catch((error) => {
               notifyFailure('renderer.info.appdoc.error');
-              log.warn('App doc request failed:', docKey, err);
+              log.warn('App doc request failed:', docKey, error);
             });
           return;
         }
@@ -299,9 +299,9 @@
               log.warn('External URL blocked or failed:', resolvedHref, result);
             }
           })
-          .catch((err) => {
+          .catch((error) => {
             notifyFailure('renderer.info.external.error');
-            log.warn('External URL request failed:', resolvedHref, err);
+            log.warn('External URL request failed:', resolvedHref, error);
           });
       } catch (error) {
         log.error('Error handling info modal link click:', error);

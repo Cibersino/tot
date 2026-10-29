@@ -14,11 +14,11 @@
 // Shared PDF error heuristics
 // =============================================================================
 
-function isPdfPasswordProtectedError(err) {
-  if (!err) return false;
-  const name = String(err && err.name ? err.name : '').toLowerCase();
-  const message = String(err && err.message ? err.message : '').toLowerCase();
-  const code = String(err && err.code ? err.code : '').trim();
+function isPdfPasswordProtectedError(error) {
+  if (!error) return false;
+  const name = String(error && error.name ? error.name : '').toLowerCase();
+  const message = String(error && error.message ? error.message : '').toLowerCase();
+  const code = String(error && error.code ? error.code : '').trim();
 
   return (
     name.includes('passwordexception')
@@ -29,10 +29,10 @@ function isPdfPasswordProtectedError(err) {
   );
 }
 
-function isUnreadableOrCorruptPdfError(err) {
-  if (!err) return false;
-  const code = String(err && err.code ? err.code : '').trim();
-  const message = String(err && err.message ? err.message : '').toLowerCase();
+function isUnreadableOrCorruptPdfError(error) {
+  if (!error) return false;
+  const code = String(error && error.code ? error.code : '').trim();
+  const message = String(error && error.message ? error.message : '').toLowerCase();
 
   if (code === 'ENOENT'
     || code === 'EISDIR'

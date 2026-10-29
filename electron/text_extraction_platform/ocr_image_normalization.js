@@ -27,19 +27,19 @@ const { normalizeJp2ForOcrUpload } = require('./ocr_jp2_normalization');
 // Error and filesystem helpers
 // =============================================================================
 
-function toSafeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function toSafeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
-function toSafeErrorMessage(err) {
-  return String(err && err.message ? err.message : err || '');
+function toSafeErrorMessage(error) {
+  return String(error && error.message ? error.message : error || '');
 }
 
 function buildNormalizationError(code, message, detailsSafeForLogs = {}) {
-  const err = new Error(message);
-  err.code = code;
-  err.detailsSafeForLogs = detailsSafeForLogs;
-  return err;
+  const error = new Error(message);
+  error.code = code;
+  error.detailsSafeForLogs = detailsSafeForLogs;
+  return error;
 }
 
 function buildCleanupFailureWarning(cleanupWarning, tempDirPath) {

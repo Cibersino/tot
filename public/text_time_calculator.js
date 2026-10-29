@@ -348,16 +348,16 @@
     return enqueueCalculatorSemanticWork(run);
   }
 
-  function reportCalculatorI18nFailure(err, { startup = false } = {}) {
-    const transition = err && err.rendererI18nTransition;
+  function reportCalculatorI18nFailure(error, { startup = false } = {}) {
+    const transition = error && error.rendererI18nTransition;
     if (!transition) {
       return;
     }
     if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-      log.error('Text-time calculator language transition failed; previous translation state remains authoritative:', err);
+      log.error('Text-time calculator language transition failed; previous translation state remains authoritative:', error);
       return;
     }
-    log.error('Text-time calculator i18n failure requires window closure:', err);
+    log.error('Text-time calculator i18n failure requires window closure:', error);
     reportTerminalCalculatorI18nFailure(startup ? 'startup' : 'transition-restoration');
   }
 
@@ -386,8 +386,8 @@
     return true;
   }
 
-  function terminateCalculatorAfterUnexpectedFailure(message, err) {
-    log.error(message, err);
+  function terminateCalculatorAfterUnexpectedFailure(message, error) {
+    log.error(message, error);
     enterCalculatorTerminalState();
     closeCalculatorAfterTerminalFailure();
   }
@@ -467,10 +467,10 @@
     });
   }
 
-  bootstrap().catch((err) => {
+  bootstrap().catch((error) => {
     terminateCalculatorAfterUnexpectedFailure(
       'BOOTSTRAP: text-time calculator initialization failed; closing calculator:',
-      err
+      error
     );
   });
 })();

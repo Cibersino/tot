@@ -30,12 +30,12 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
-function safeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function safeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
-function safeErrorMessage(err) {
-  return String(err && err.message ? err.message : err || '');
+function safeErrorMessage(error) {
+  return String(error && error.message ? error.message : error || '');
 }
 
 function ensureParentDir(filePath) {

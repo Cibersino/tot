@@ -24,15 +24,15 @@ function hasNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
-function safeErrorName(err) {
-  if (!err || typeof err !== 'object') return 'Error';
-  const candidate = String(err.name || '').trim();
+function safeErrorName(error) {
+  if (!error || typeof error !== 'object') return 'Error';
+  const candidate = String(error.name || '').trim();
   return candidate || 'Error';
 }
 
-function safeErrorMessage(err) {
-  if (!err || typeof err !== 'object') return String(err || '');
-  const candidate = String(err.message || '').trim();
+function safeErrorMessage(error) {
+  if (!error || typeof error !== 'object') return String(error || '');
+  const candidate = String(error.message || '').trim();
   return candidate || '';
 }
 

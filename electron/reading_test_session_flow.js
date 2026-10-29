@@ -31,8 +31,8 @@ function isArmingEntry(state, entry) {
   return !!(state.active && state.stage === 'arming' && state.selectedEntry === entry);
 }
 
-function isLifecycleOwnedEditorStartupFailure(err) {
-  const lifecycle = err && err.editorStartupLifecycle;
+function isLifecycleOwnedEditorStartupFailure(error) {
+  const lifecycle = error && error.editorStartupLifecycle;
   return !!(lifecycle && (lifecycle.disclosure === 'main-native' || lifecycle.disclosure === 'silent'));
 }
 

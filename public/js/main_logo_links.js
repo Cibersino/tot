@@ -100,8 +100,8 @@
               log.warn('Main logo external URL blocked or failed:', config.url, result);
             }
           })
-          .catch((err) => {
-            log.error('Main logo external URL request failed:', config.url, err);
+          .catch((error) => {
+            log.error('Main logo external URL request failed:', config.url, error);
           });
       });
       attachedCount += 1;

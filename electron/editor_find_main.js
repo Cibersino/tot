@@ -390,8 +390,8 @@ function attachFindWindow(win) {
     tryDispatchPendingFocus();
     Promise.resolve()
       .then(() => session.refreshCurrentQueryKeepingActiveMatch())
-      .catch((err) => {
-        log.error('Error in find focus handler:', err);
+      .catch((error) => {
+        log.error('Error in find focus handler:', error);
       });
   };
 

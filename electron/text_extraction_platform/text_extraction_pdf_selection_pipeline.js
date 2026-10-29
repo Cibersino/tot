@@ -85,29 +85,29 @@ function toPositiveIntegerOrNull(rawValue) {
   return value;
 }
 
-function classifyPdfLoadError(err, stage) {
-  if (isPdfPasswordProtectedError(err)) {
+function classifyPdfLoadError(error, stage) {
+  if (isPdfPasswordProtectedError(error)) {
     return buildError(
       'native_encrypted_or_password_protected',
       'Selected PDF is encrypted or password-protected.',
       {
         stage,
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorName: String(error && error.name ? error.name : 'Error'),
+        errorCode: String(error && error.code ? error.code : ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       }
     );
   }
 
-  if (isUnreadableOrCorruptPdfError(err)) {
+  if (isUnreadableOrCorruptPdfError(error)) {
     return buildError(
       'unreadable_or_corrupt',
       'Selected PDF is unreadable or corrupt.',
       {
         stage,
-        errorName: String(err && err.name ? err.name : 'Error'),
-        errorCode: String(err && err.code ? err.code : ''),
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorName: String(error && error.name ? error.name : 'Error'),
+        errorCode: String(error && error.code ? error.code : ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       }
     );
   }
@@ -119,9 +119,9 @@ function classifyPdfLoadError(err, stage) {
       : 'Selected-page PDF subset could not be created.',
     {
       stage,
-      errorName: String(err && err.name ? err.name : 'Error'),
-      errorCode: String(err && err.code ? err.code : ''),
-      errorMessage: String(err && err.message ? err.message : err || ''),
+      errorName: String(error && error.name ? error.name : 'Error'),
+      errorCode: String(error && error.code ? error.code : ''),
+      errorMessage: String(error && error.message ? error.message : error || ''),
     }
   );
 }

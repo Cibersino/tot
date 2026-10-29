@@ -135,8 +135,8 @@ function fetchLatestReleaseTag(url) {
             resolve(null);
           }
         });
-      }).on('error', (err) => {
-        log.warn('Latest release fetch error:', err);
+      }).on('error', (error) => {
+        log.warn('Latest release fetch error:', error);
         resolve(null);
       });
     } catch (error) {
@@ -268,8 +268,8 @@ function scheduleInitialCheck() {
   if (updateCheckDone) return;
   updateCheckDone = true;
   // we do not check manual: if it fails, the user is not informed
-  checkForUpdates({ manual: false }).catch((err) => {
-    log.warn('initial checkForUpdates failed:', err);
+  checkForUpdates({ manual: false }).catch((error) => {
+    log.warn('initial checkForUpdates failed:', error);
   });
 }
 

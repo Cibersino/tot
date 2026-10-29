@@ -85,7 +85,7 @@ function resolveMainWindow(getWindows) {
   return windows.mainWin || null;
 }
 
-function buildPrepareFingerprintFailure(routeMetadata, err) {
+function buildPrepareFingerprintFailure(routeMetadata, error) {
   return {
     ok: true,
     prepareFailed: true,
@@ -98,7 +98,7 @@ function buildPrepareFingerprintFailure(routeMetadata, err) {
       message: 'Selected file is missing or unreadable before execute.',
       detailsSafeForLogs: {
         stage: 'prepare_fingerprint',
-        errorMessage: String(err && err.message ? err.message : err || ''),
+        errorMessage: String(error && error.message ? error.message : error || ''),
       },
     },
   };

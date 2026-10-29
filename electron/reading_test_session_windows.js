@@ -53,12 +53,12 @@ function waitForWindowVisible(win, label, log, timeoutMs) {
       }
     };
 
-    const settle = (err) => {
+    const settle = (error) => {
       if (settled) return;
       settled = true;
       cleanup();
-      if (err) {
-        reject(err);
+      if (error) {
+        reject(error);
         return;
       }
       resolve();
@@ -118,12 +118,12 @@ function waitForWindowRendererLoad(win, label, log, timeoutMs) {
       }
     };
 
-    const settle = (err) => {
+    const settle = (error) => {
       if (settled) return;
       settled = true;
       cleanup();
-      if (err) {
-        reject(err);
+      if (error) {
+        reject(error);
         return;
       }
       resolve();
@@ -291,8 +291,8 @@ function openQuestionsWindow(questions, options = {}) {
       settle({ ok: true });
     });
 
-    win.loadFile(questionsWindowHtml).catch((err) => {
-      log.warn('Reading-test questions window load failed (ignored):', err);
+    win.loadFile(questionsWindowHtml).catch((error) => {
+      log.warn('Reading-test questions window load failed (ignored):', error);
       if (settle({ ok: false, code: 'QUESTIONS_WINDOW_LOAD_FAILED' })) {
         tryCloseWindowIfAlive(win);
       }
@@ -394,8 +394,8 @@ function openResultWindow(resultInfo, options = {}) {
       settle({ ok: true });
     });
 
-    win.loadFile(resultWindowHtml).catch((err) => {
-      log.warn('Reading-test result window load failed (ignored):', err);
+    win.loadFile(resultWindowHtml).catch((error) => {
+      log.warn('Reading-test result window load failed (ignored):', error);
       if (settle({ ok: false, code: 'RESULT_WINDOW_LOAD_FAILED' })) {
         tryCloseWindowIfAlive(win);
       }

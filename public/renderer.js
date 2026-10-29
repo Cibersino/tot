@@ -389,7 +389,7 @@ function isReadingTestSessionActive() {
   return !!(readingSpeedTestUi && readingSpeedTestUi.isSessionActive());
 }
 
-function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
+function setMainLogoLinksCapabilityUnavailable(reason, error = null) {
   const wasAvailable = mainLogoLinksCapabilityAvailable;
   mainLogoLinksCapabilityAvailable = false;
   ['devLogoLink', 'kofiLogoLink'].forEach((id) => {
@@ -397,12 +397,12 @@ function setMainLogoLinksCapabilityUnavailable(reason, err = null) {
     if (element) setControlInteractionLocked(element, true);
   });
   if (wasAvailable) {
-    log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, err || '');
+    log.warn(`Main logo links disabled for this renderer lifetime: ${reason}`, error || '');
     return;
   }
   log.warn(
     `Main logo links unavailable for this renderer lifetime: ${reason}`,
-    err || ''
+    error || ''
   );
 }
 
@@ -853,17 +853,17 @@ async function transitionMainRendererLanguage(
   });
 }
 
-function reportRendererI18nFailure(err, { startup = false } = {}) {
-  const transition = err && err.rendererI18nTransition;
+function reportRendererI18nFailure(error, { startup = false } = {}) {
+  const transition = error && error.rendererI18nTransition;
   if (!transition) {
     return;
   }
   if (!startup && transition && !transition.restorationFailed && transition.hadEstablishedState) {
-    log.error('Renderer language transition failed; previous translation state remains authoritative:', err);
+    log.error('Renderer language transition failed; previous translation state remains authoritative:', error);
     return;
   }
 
-  log.error('Renderer i18n failure requires window closure:', err);
+  log.error('Renderer i18n failure requires window closure:', error);
   reportTerminalRendererI18nFailure(startup ? 'startup' : 'transition-restoration');
 }
 
@@ -915,8 +915,8 @@ function reportPreciseCountingFailure(error) {
     if (!result || result.ok !== true) {
       log.error('Precise-counting failure report was not committed:', result);
     }
-  }).catch((reportErr) => {
-    log.error('Precise-counting failure report failed:', reportErr);
+  }).catch((reportError) => {
+    log.error('Precise-counting failure report failed:', reportError);
   });
 }
 
@@ -1448,8 +1448,8 @@ function registerMenuActions() {
           return;
         }
 
-        const errMsg = res && res.error ? String(res.error) : 'Unknown';
-        log.error('default presets folder failed to open:', errMsg);
+        const errorMessage = res && res.error ? String(res.error) : 'Unknown';
+        log.error('default presets folder failed to open:', errorMessage);
         window.Notify.notifyMain('renderer.presets.alerts.open_default_folder_failed');
       } catch (error) {
         log.error('default presets folder failed to open', error);

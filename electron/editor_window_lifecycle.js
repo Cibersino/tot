@@ -42,13 +42,13 @@ function isPlainObject(value) {
 }
 
 function buildWaiterError(cause, disclosure) {
-  const err = new Error(cause);
-  err.code = cause;
-  err.editorStartupLifecycle = {
+  const error = new Error(cause);
+  error.code = cause;
+  error.editorStartupLifecycle = {
     cause,
     disclosure,
   };
-  return err;
+  return error;
 }
 
 function requireCreateEditorWindow(createEditorWindow, logContext) {
@@ -106,20 +106,20 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
         resolvePromise(value);
         startupCycleWaiters.delete(generation);
       },
-      reject(err) {
+      reject(error) {
         if (this.settled) return;
         this.settled = true;
-        rejectPromise(err);
+        rejectPromise(error);
         startupCycleWaiters.delete(generation);
       },
     };
 
     // Keep the original rejecting waiter for Reading Test while observing every
     // rejection from lifecycle ownership as soon as the waiter exists.
-    waiter.promise.catch((err) => {
-      const details = err && err.editorStartupLifecycle;
+    waiter.promise.catch((error) => {
+      const details = error && error.editorStartupLifecycle;
       if (!details) {
-        log.error('Text Editor startup waiter rejected without lifecycle details:', err);
+        log.error('Text Editor startup waiter rejected without lifecycle details:', error);
         return;
       }
       log.error('Text Editor startup waiter rejected:', details);

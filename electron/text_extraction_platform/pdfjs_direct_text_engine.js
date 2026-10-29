@@ -34,9 +34,9 @@ let pdfjsModulePromise = null;
 
 function loadPdfjs() {
   if (!pdfjsModulePromise) {
-    pdfjsModulePromise = import('pdfjs-dist/legacy/build/pdf.mjs').catch((err) => {
+    pdfjsModulePromise = import('pdfjs-dist/legacy/build/pdf.mjs').catch((error) => {
       pdfjsModulePromise = null;
-      throw err;
+      throw error;
     });
   }
 

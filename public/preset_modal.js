@@ -214,16 +214,16 @@
       }
     }
 
-    function reportPresetI18nFailure(err, { startup = false } = {}) {
-      const transition = err && err.rendererI18nTransition;
+    function reportPresetI18nFailure(error, { startup = false } = {}) {
+      const transition = error && error.rendererI18nTransition;
       if (!transition) {
         return;
       }
       if (!startup && transition && transition.hadEstablishedState && !transition.restorationFailed) {
-        log.error('Preset modal language transition failed; previous translation state remains authoritative:', err);
+        log.error('Preset modal language transition failed; previous translation state remains authoritative:', error);
         return;
       }
-      log.error('Preset modal i18n failure requires window closure:', err);
+      log.error('Preset modal i18n failure requires window closure:', error);
       reportTerminalPresetI18nFailure(startup ? 'startup' : 'transition-restoration');
     }
 

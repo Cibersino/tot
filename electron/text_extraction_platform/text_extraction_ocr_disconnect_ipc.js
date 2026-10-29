@@ -36,12 +36,12 @@ const log = Log.get('text-extraction-ocr-disconnect');
 // Helpers
 // =============================================================================
 
-function safeErrorName(err) {
-  return String(err && err.name ? err.name : 'Error');
+function safeErrorName(error) {
+  return String(error && error.name ? error.name : 'Error');
 }
 
-function safeErrorMessage(err) {
-  return String(err && err.message ? err.message : err || '');
+function safeErrorMessage(error) {
+  return String(error && error.message ? error.message : error || '');
 }
 
 function resolveDialogText(dialogTexts, key, fallback) {
@@ -143,9 +143,9 @@ async function confirmDisconnect(mainWin) {
 async function revokeStoredToken({ tokenJson }) {
   const selected = selectPreferredRevocationToken(tokenJson);
   if (!selected.token) {
-    const err = new Error('No revocable Google OCR token is available.');
-    err.code = 'missing_revocable_token';
-    throw err;
+    const error = new Error('No revocable Google OCR token is available.');
+    error.code = 'missing_revocable_token';
+    throw error;
   }
 
   const oauthClient = buildGoogleTokenRevocationClient(tokenJson);

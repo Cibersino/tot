@@ -642,9 +642,9 @@ function createMainWindow() {
           if (authorized && isAliveWindow(mainWin)) {
             mainWin.close();
           }
-        }).catch((err) => {
+        }).catch((error) => {
           pendingMainWindowCloseAfterTaskResolution = false;
-          log.error('Task Editor close resolution failed during main window close:', err);
+          log.error('Task Editor close resolution failed during main window close:', error);
         });
         return;
       }
@@ -789,7 +789,7 @@ function createEditorWindow(options = {}) {
     loadFileOptions
   );
   if (waitForBasePresentationReady && firstShowGeneration) {
-    editorDocumentLoad.catch((err) => {
+    editorDocumentLoad.catch((loadError) => {
       // A close can abort loadFile(). That close is already owned by the
       // established closed-window lifecycle path, not F07/F08.
       if (createdEditorWindowClosing || createdEditorWin.isDestroyed()) return;
@@ -799,13 +799,13 @@ function createEditorWindow(options = {}) {
           editorWin: createdEditorWin,
           mainWin,
           firstShowGeneration,
-          error: err,
+          error: loadError,
           logContext: 'createEditorWindow.initialDocumentLoad',
         });
       } catch (error) {
         log.error('Text Editor initial document load handling failed:', {
           firstShowGeneration,
-          loadError: err,
+          loadError,
         }, error);
       }
     });
@@ -969,8 +969,8 @@ function createTaskEditorWindow() {
   createdTaskEditorWin.on('close', (event) => {
     if (taskEditorWindowLifecycleController.isForceCloseAuthorized()) return;
     event.preventDefault();
-    void taskEditorWindowLifecycleController.requestNativeClose(createdTaskEditorWin).catch((err) => {
-      log.error('Task Editor native close resolution failed:', err);
+    void taskEditorWindowLifecycleController.requestNativeClose(createdTaskEditorWin).catch((error) => {
+      log.error('Task Editor native close resolution failed:', error);
     });
   });
 
