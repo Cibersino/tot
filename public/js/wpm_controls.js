@@ -366,7 +366,7 @@
         applyPresetSelection(selected);
         return buildPresetFlowResult(previousState, allPresetsCache);
       } catch (err) {
-        log.error('RendererPresets.resolvePresetSelection failed during loadPresets:', err);
+        log.error('Preset loading failed:', err);
         const previousState = stateBeforeReloadReset || capturePresetState();
         const presets = resetPresetsState();
         return buildPresetFlowResult(previousState, presets);
@@ -414,7 +414,7 @@
         applyPresetSelection(selected);
         return buildPresetFlowResult(previousState, updated);
       } catch (err) {
-        log.error('RendererPresets.resolvePresetSelection failed during handlePresetCreated:', err);
+        log.error('Preset-created reconciliation failed:', err);
         return buildPresetFlowResult(
           stateBeforeReloadReset || capturePresetState(),
           allPresetsCache
@@ -461,7 +461,7 @@
         }
         return selected;
       } catch (err) {
-        log.error('RendererPresets.resolvePresetSelection failed during handlePresetSelectionChange:', err);
+        log.error('Preset selection change failed:', err);
         return null;
       }
     }
