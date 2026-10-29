@@ -141,26 +141,27 @@
       }
       setToggleChecked(toggleVF, true);
 
-      if (typeof electronAPI.getCronoState === 'function') {
-        try {
-          const state = await electronAPI.getCronoState();
-          if (state) {
-            const elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
-            const running = !!state.running;
-            if (setElapsedRunning) setElapsedRunning(elapsed, running);
-            if (cronoDisplay && !cronoEditing) {
-              cronoDisplay.value = state.display || formatCrono(elapsed);
-            }
-            applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
-            return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
-          }
-        } catch (error) {
-          log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', error);
-        }
-      } else {
+      if (typeof electronAPI.getCronoState !== 'function') {
         log.warnOnce('crono.getCronoState.missing', '[crono] getCronoState unavailable; using local stopwatch state');
+        return null;
       }
-      return null;
+
+      try {
+        const state = await electronAPI.getCronoState();
+        if (!state) return null;
+
+        const elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
+        const running = !!state.running;
+        if (setElapsedRunning) setElapsedRunning(elapsed, running);
+        if (cronoDisplay && !cronoEditing) {
+          cronoDisplay.value = state.display || formatCrono(elapsed);
+        }
+        applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
+        return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
+      } catch (error) {
+        log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', error);
+        return null;
+      }
     } catch (error) {
       log.error('Error loading  flotante:', error);
       setToggleChecked(toggleVF, false);
