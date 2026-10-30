@@ -2,43 +2,8 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 
-const { createStopwatchTimeUtils } = require('../../../public/js/lib/stopwatch_time_core');
-
-function loadCrono(t) {
-  const logs = [];
-  const sandbox = {
-    window: {
-      getLogger() {
-        return {
-          debug(...args) { logs.push({ level: 'debug', args }); },
-          warn(...args) { logs.push({ level: 'warn', args }); },
-          warnOnce(...args) { logs.push({ level: 'warnOnce', args }); },
-          error(...args) { logs.push({ level: 'error', args }); },
-        };
-      },
-      RendererIcons: {
-        applyIconToElement() {},
-      },
-      StopwatchTimeCore: {
-        createStopwatchTimeUtils,
-      },
-    },
-    console,
-  };
-
-  vm.createContext(sandbox);
-  const source = fs.readFileSync(path.resolve(__dirname, '../../../public/js/crono.js'), 'utf8');
-  vm.runInContext(source, sandbox, { filename: 'public/js/crono.js' });
-  t.after(() => {
-    sandbox.window = null;
-  });
-
-  return { crono: sandbox.window.RendererCrono, logs };
-}
+const { loadRendererCrono } = require('../../helpers/renderer_crono_test_harness');
 
 function createManualTimeArgs(overrides = {}) {
   const cronoDisplay = { value: '00:00:30' };
@@ -72,7 +37,7 @@ function createManualTimeArgs(overrides = {}) {
 }
 
 test('manual elapsed edit stays at its canonical baseline when setCronoElapsed is unavailable', async (t) => {
-  const { crono, logs } = loadCrono(t);
+  const { crono, logs } = loadRendererCrono(t);
   const harness = createManualTimeArgs();
 
   const result = await crono.applyManualTime(harness.args);
@@ -88,7 +53,7 @@ test('manual elapsed edit stays at its canonical baseline when setCronoElapsed i
 });
 
 test('manual elapsed edit stays at its canonical baseline when setCronoElapsed throws', async (t) => {
-  const { crono, logs } = loadCrono(t);
+  const { crono, logs } = loadRendererCrono(t);
   const harness = createManualTimeArgs({
     electronAPI: {
       setCronoElapsed() {
@@ -110,7 +75,7 @@ test('manual elapsed edit stays at its canonical baseline when setCronoElapsed t
 });
 
 test('manual elapsed edit rejects unrepresentable stopwatch input before bridge dispatch', async (t) => {
-  const { crono } = loadCrono(t);
+  const { crono } = loadRendererCrono(t);
   const elapsedRequests = [];
   const harness = createManualTimeArgs({
     electronAPI: {
@@ -137,7 +102,7 @@ test('manual elapsed edit rejects unrepresentable stopwatch input before bridge 
 });
 
 test('manual elapsed UI synchronization failures do not re-enter bridge-failure handling', async (t) => {
-  const { crono, logs } = loadCrono(t);
+  const { crono, logs } = loadRendererCrono(t);
   const harness = createManualTimeArgs({
     electronAPI: {
       setCronoElapsed() {},

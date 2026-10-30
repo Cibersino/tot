@@ -585,13 +585,8 @@ test('applyCurrentText logs each distinct send exception on the same channel', (
   assert.equal(warnCalls[1][1].message, 'editor send failure 2');
 });
 
-test('set-current-text notifies empty transition only when authoritative text becomes empty', async (t) => {
-  const emptyTransitions = [];
-  const { textState, restore } = loadTextState({
-    onCurrentTextDidBecomeEmpty(payload) {
-      emptyTransitions.push(payload);
-    },
-  });
+test('set-current-text accepts an empty canonical-text replacement', async (t) => {
+  const { textState, restore } = loadTextState();
   t.after(restore);
 
   const ipcMain = createIpcMainDouble();
@@ -599,29 +594,19 @@ test('set-current-text notifies empty transition only when authoritative text be
   const editorWindowDouble = createWindowDouble('editor');
   mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
   editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
-
   textState.registerIpc(ipcMain, () => ({
     mainWin: mainWindowDouble.win,
     editorWin: editorWindowDouble.win,
   }));
 
-  await ipcMain.invoke(
-    'set-current-text',
-    { sender: mainWindowDouble.win.webContents },
-    {
-      text: 'texto',
-      meta: { source: 'main-window', action: 'overwrite' },
-    }
-  );
-  await ipcMain.invoke(
-    'set-current-text',
-    { sender: mainWindowDouble.win.webContents },
-    {
-      text: '',
-      meta: { source: 'main-window', action: 'clear' },
-    }
-  );
-  await ipcMain.invoke(
+  textState.applyCurrentText('texto', {
+    source: 'main-window',
+    action: 'overwrite',
+  });
+  mainWindowDouble.sends.length = 0;
+  editorWindowDouble.sends.length = 0;
+
+  const result = await ipcMain.invoke(
     'set-current-text',
     { sender: mainWindowDouble.win.webContents },
     {
@@ -630,14 +615,25 @@ test('set-current-text notifies empty transition only when authoritative text be
     }
   );
 
-  assert.deepEqual(emptyTransitions, [
+  assert.deepEqual(result, {
+    ok: true,
+    requestId: 1,
+    truncated: false,
+    length: 0,
+    text: '',
+  });
+  assert.equal(textState.getCurrentText(), '');
+  assert.deepEqual(mainWindowDouble.sends, [
     {
-      previousText: 'texto',
-      nextText: '',
-      requestId: 1,
-      meta: { source: 'main-window', action: 'clear' },
+      channel: 'current-text-updated',
+      payload: {
+        text: '',
+        requestId: 1,
+        meta: { source: 'main-window', action: 'clear' },
+      },
     },
   ]);
+  assert.equal(editorWindowDouble.sends.at(-1).payload.text, '');
 });
 
 test('loadInitialCurrentText recovers a noncanonical root string and reports it', (t) => {

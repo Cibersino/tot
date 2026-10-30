@@ -2,11 +2,8 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 
-const { createStopwatchTimeUtils } = require('../../../public/js/lib/stopwatch_time_core');
+const { loadRendererCrono } = require('../../helpers/renderer_crono_test_harness');
 
 function createElement() {
   const listeners = new Map();
@@ -44,37 +41,11 @@ function createElement() {
   };
 }
 
-function createHarness() {
+function createHarness(t) {
   const cronoDisplay = createElement();
   cronoDisplay.value = '00:00:00';
-  const sandbox = {
-    window: {
-      getLogger() {
-        return {
-          debug() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
-        };
-      },
-      RendererIcons: {
-        applyIconToElement() {},
-      },
-      StopwatchTimeCore: {
-        createStopwatchTimeUtils,
-      },
-    },
-    console,
-  };
-
-  vm.createContext(sandbox);
-  const source = fs.readFileSync(
-    path.resolve(__dirname, '../../../public/js/crono.js'),
-    'utf8'
-  );
-  vm.runInContext(source, sandbox, { filename: 'public/js/crono.js' });
-
-  const controller = sandbox.window.RendererCrono.createController({
+  const { crono } = loadRendererCrono(t);
+  const controller = crono.createController({
     elements: {
       cronoDisplay,
       realWpmDisplay: createElement(),
@@ -85,8 +56,8 @@ function createHarness() {
   return { cronoDisplay };
 }
 
-test('stopwatch display shows invalid chrome while a malformed time is being edited', () => {
-  const { cronoDisplay } = createHarness();
+test('stopwatch display shows invalid chrome while a malformed time is being edited', (t) => {
+  const { cronoDisplay } = createHarness(t);
 
   cronoDisplay.dispatch('focus');
   cronoDisplay.value = '1:2:03';

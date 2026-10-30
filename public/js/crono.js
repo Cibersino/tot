@@ -73,6 +73,10 @@
     return 0;
   }
 
+  function clearRealWpmDisplay(realWpmDisplay) {
+    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
+  }
+
   async function safeRecomputeRealWpm(payload) {
     try {
       return await actualizarVelocidadRealFromElapsed(payload);
@@ -100,7 +104,7 @@
 
   function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playIconName = 'play' }) {
     if (cronoDisplay) cronoDisplay.value = '00:00:00';
-    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
+    clearRealWpmDisplay(realWpmDisplay);
     applyToggleIcon(tToggle, playIconName);
   }
 
@@ -387,19 +391,6 @@
     let baselineDisplay = null;
     let bound = false;
 
-    const resetLocalState = () => {
-      elapsed = 0;
-      running = false;
-      prevRunning = false;
-      lastComputedElapsedForWpm = 0;
-      uiResetCrono({
-        cronoDisplay: elements.cronoDisplay,
-        realWpmDisplay: elements.realWpmDisplay,
-        tToggle: elements.tToggle,
-        playIconName
-      });
-    };
-
     const updateIcons = (icons = {}) => {
       if (typeof icons.playIconName === 'string') playIconName = icons.playIconName;
       if (typeof icons.pauseIconName === 'string') pauseIconName = icons.pauseIconName;
@@ -451,7 +442,9 @@
         if (previousText === nextText) return;
 
         if (!nextText) {
-          resetLocalState();
+          // Real WPM is text-derived; clearing its source leaves stopwatch state intact.
+          clearRealWpmDisplay(elements.realWpmDisplay);
+          lastComputedElapsedForWpm = null;
           return;
         }
 

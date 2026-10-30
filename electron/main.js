@@ -2342,9 +2342,6 @@ app.whenReady().then(() => {
     app,
     maxTextChars: MAX_TEXT_CHARS,
     currentTextProcessingController: currentTextProcessingStateController,
-    onCurrentTextDidBecomeEmpty: () => {
-      resetCrono();
-    },
   });
 
   // Load settings (normalized and persisted) via settingsState.
