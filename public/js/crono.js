@@ -162,7 +162,7 @@
         applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
         return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
       } catch (error) {
-        log.warn('getCronoState failed; direct stopwatch refresh skipped after Floating Stopwatch open:', error);
+        log.warn('Floating Stopwatch post-open state refresh failed (ignored):', error);
         return null;
       }
     } catch (error) {
