@@ -255,6 +255,8 @@
 
     if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
       try {
+        // This IPC send does not acknowledge whether main accepted the elapsed value.
+        // The following UI update is optimistic; main remains the stopwatch state owner.
         await electronAPI.setCronoElapsed(msRounded);
       } catch (error) {
         log.warn('setCronoElapsed failed; manual elapsed edit ignored:', error);
@@ -511,6 +513,9 @@
       }
 
       if (elements.toggleVF) {
+        // This switch is a best-effort control, not an authoritative view of the floating window's lifecycle.
+        // Rapid open/close reversals may leave the switch out of sync or a new open request unfulfilled.
+        // Main retains ownership of the window and stopwatch state; these cases are recoverable.
         elements.toggleVF.addEventListener('change', async () => {
           const wantOpen = !!elements.toggleVF.checked;
           setToggleChecked(elements.toggleVF, wantOpen);
