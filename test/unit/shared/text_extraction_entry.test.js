@@ -36,6 +36,7 @@ function createHarness({
   let pdfOptionsPromptCount = 0;
   let singleFileHeavyPromptCount = 0;
   let executePreparedTextExtractionCallCount = 0;
+  let inspectTextExtractionSelectedFileCallCount = 0;
   let checkTextExtractionPreconditionsCallCount = 0;
   let openTextExtractionPickerCallCount = 0;
   let revealTextExtractionGeneratedPdfLookupCount = 0;
@@ -190,14 +191,17 @@ function createHarness({
         };
       }
       if (methodName === 'inspectTextExtractionSelectedFile') {
-        return async () => (inspectResult || {
-          ok: true,
-          isPdf: true,
-          totalPages: 516,
-          fileInfo: {
-            fileName: 'book.pdf',
-          },
-        });
+        return async () => {
+          inspectTextExtractionSelectedFileCallCount += 1;
+          return inspectResult || {
+            ok: true,
+            isPdf: true,
+            totalPages: 516,
+            fileInfo: {
+              fileName: 'book.pdf',
+            },
+          };
+        };
       }
       if (methodName === 'prepareTextExtractionSelectedFile') {
         return async () => ({ ok: true });
@@ -317,6 +321,9 @@ function createHarness({
     getExecutePreparedTextExtractionCallCount() {
       return executePreparedTextExtractionCallCount;
     },
+    getInspectTextExtractionSelectedFileCallCount() {
+      return inspectTextExtractionSelectedFileCallCount;
+    },
     getCheckTextExtractionPreconditionsCallCount() {
       return checkTextExtractionPreconditionsCallCount;
     },
@@ -381,13 +388,16 @@ test('entry admits one independent file operation until preflight and terminal h
 
 test('picker cancellation releases admission after its native-picker promise settles', async () => {
   const picker = createDeferred();
+  const pickerOpened = createDeferred();
   const harness = createHarness({
     openTextExtractionPickerImpl() {
+      pickerOpened.resolve();
       return picker.promise;
     },
   });
 
   const first = harness.entry.startFromPicker();
+  await pickerOpened.promise;
   assert.equal(harness.getOpenTextExtractionPickerCallCount(), 1);
 
   await harness.entry.startFromPicker();
@@ -398,6 +408,56 @@ test('picker cancellation releases admission after its native-picker promise set
   await first;
   await harness.entry.startFromPicker();
   assert.equal(harness.getOpenTextExtractionPickerCallCount(), 2);
+});
+
+test('picker preflight stops before native file selection when preconditions reject', async () => {
+  const harness = createHarness({
+    checkTextExtractionPreconditionsImpl() {
+      return {
+        ok: true,
+        canStart: false,
+        guidanceKey: 'renderer.text_extraction.alerts.precondition_blocked',
+      };
+    },
+  });
+
+  await harness.entry.startFromPicker();
+
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 1);
+  assert.equal(harness.getOpenTextExtractionPickerCallCount(), 0);
+  assert.equal(harness.entry.isOperationActive(), false);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.precondition_blocked']);
+});
+
+test('picker rechecks preconditions after selection before inspecting the file', async () => {
+  const preconditions = [
+    { ok: true, canStart: true },
+    {
+      ok: true,
+      canStart: false,
+      guidanceKey: 'renderer.text_extraction.alerts.precondition_blocked',
+    },
+  ];
+  const harness = createHarness({
+    checkTextExtractionPreconditionsImpl() {
+      return preconditions.shift();
+    },
+    openTextExtractionPickerImpl() {
+      return {
+        ok: true,
+        canceled: false,
+        filePaths: ['C:\\docs\\book.pdf'],
+      };
+    },
+  });
+
+  await harness.entry.startFromPicker();
+
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
+  assert.equal(harness.getOpenTextExtractionPickerCallCount(), 1);
+  assert.equal(harness.getInspectTextExtractionSelectedFileCallCount(), 0);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.precondition_blocked']);
 });
 
 test('dropped-file admission begins before asynchronous path resolution', async () => {

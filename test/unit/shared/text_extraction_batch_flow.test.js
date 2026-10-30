@@ -21,6 +21,7 @@ function createHarness({
   getOcrLanguageImpl = undefined,
   guardUserActionImpl = undefined,
   hasBlockingModalOpenImpl = undefined,
+  checkTextExtractionPreconditionsImpl = undefined,
   hasCurrentTextSubscriptionImpl = undefined,
   saveCurrentTextSnapshotImpl = undefined,
   snapshotTagsPromptResult = { tags: { language: ['en'] } },
@@ -45,6 +46,7 @@ function createHarness({
   let syncMainInteractionLockUiCallCount = 0;
   let enterTextExtractionProcessingSessionCallCount = 0;
   let executePreparedTextExtractionCallCount = 0;
+  let checkTextExtractionPreconditionsCallCount = 0;
   const executionEvents = [];
   const processingSessionEvents = [];
   const errorLogs = [];
@@ -250,7 +252,13 @@ function createHarness({
         return null;
       }
       if (methodName === 'checkTextExtractionPreconditions') {
-        return async () => ({ ok: true, canStart: true });
+        return async () => {
+          checkTextExtractionPreconditionsCallCount += 1;
+          if (typeof checkTextExtractionPreconditionsImpl === 'function') {
+            return checkTextExtractionPreconditionsImpl();
+          }
+          return { ok: true, canStart: true };
+        };
       }
       if (methodName === 'prepareTextExtractionSelectedFile') {
         return async () => ({ ok: true });
@@ -378,6 +386,9 @@ function createHarness({
     getExecutePreparedTextExtractionCallCount() {
       return executePreparedTextExtractionCallCount;
     },
+    getCheckTextExtractionPreconditionsCallCount() {
+      return checkTextExtractionPreconditionsCallCount;
+    },
     getExecutionEvents() {
       return executionEvents.map((event) => JSON.parse(JSON.stringify(event)));
     },
@@ -480,6 +491,32 @@ test('batch rejects a missing operation context before starting its preflight', 
       ['Batch continuation ignored because its text extraction operation is not active:', 'test-null-operation-context'],
     ]
   );
+});
+
+test('batch stops before preparing selected files when preconditions reject', async () => {
+  const harness = createHarness({
+    preparationsByPath: {
+      'C:\\docs\\document.pdf': createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }),
+    },
+    checkTextExtractionPreconditionsImpl() {
+      return {
+        ok: true,
+        canStart: false,
+        guidanceKey: 'renderer.text_extraction.alerts.precondition_blocked',
+      };
+    },
+  });
+
+  await harness.batchFlow.startFromSelectedFiles({
+    filePaths: ['C:\\docs\\document.pdf'],
+    source: 'picker',
+    actionId: 'test-batch-precondition-blocked',
+  });
+
+  assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 1);
+  assert.deepEqual(harness.getPreparationRequests(), []);
+  assert.equal(harness.getCapturedViewModel(), null);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.precondition_blocked']);
 });
 
 test('batch planning prompt failure is reported instead of treated as cancellation', async () => {
