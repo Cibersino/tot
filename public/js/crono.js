@@ -396,6 +396,14 @@
       if (typeof next.getSettingsCache === 'function') deps.getSettingsCache = next.getSettingsCache;
     };
 
+    const getWpmDependencies = () => ({
+      contarTexto: deps.contarTexto,
+      obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
+      formatearNumero: deps.formatearNumero,
+      idiomaActual: deps.getIdiomaActual(),
+      settingsCache: deps.getSettingsCache()
+    });
+
     const handleState = (state) => {
       const nextState = handleCronoState({
         state,
@@ -404,11 +412,7 @@
         tToggle: elements.tToggle,
         realWpmDisplay: elements.realWpmDisplay,
         currentText: deps.getCurrentText(),
-        contarTexto: deps.contarTexto,
-        obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
-        formatearNumero: deps.formatearNumero,
-        idiomaActual: deps.getIdiomaActual(),
-        settingsCache: deps.getSettingsCache(),
+        ...getWpmDependencies(),
         prevRunning,
         lastComputedElapsedForWpm,
         playIconName,
@@ -440,11 +444,7 @@
         await safeRecomputeRealWpm({
           ms: elapsed,
           currentText: nextText,
-          contarTexto: deps.contarTexto,
-          obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
-          formatearNumero: deps.formatearNumero,
-          idiomaActual: deps.getIdiomaActual(),
-          settingsCache: deps.getSettingsCache(),
+          ...getWpmDependencies(),
           realWpmDisplay: elements.realWpmDisplay
         });
         lastComputedElapsedForWpm = elapsed;
@@ -557,11 +557,7 @@
             cronoModule: window.RendererCrono,
             electronAPI,
             currentText: deps.getCurrentText(),
-            contarTexto: deps.contarTexto,
-            obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
-            formatearNumero: deps.formatearNumero,
-            idiomaActual: deps.getIdiomaActual(),
-            settingsCache: deps.getSettingsCache(),
+            ...getWpmDependencies(),
             realWpmDisplay: elements.realWpmDisplay,
             setElapsed: (msVal) => {
               if (typeof msVal === 'number') {
