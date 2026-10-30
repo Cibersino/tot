@@ -64,6 +64,8 @@ Reglas:
 - Los 20 modales de aplicación convergen en una política de foco accesible y verificable: cada apertura usa un target inicial revisado, `Tab` / `Shift+Tab` permanecen dentro del modal activo, los hijos nested toman precedencia y cada cierre restaura el foco de esa apertura cuando el opener continúa disponible.
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
+- Cronómetro y texto vigente: vaciar el texto conserva el tiempo y el estado de marcha o pausa, y deja la WPM real en blanco. La edición manual evita estados locales alternativos y la validación de tiempos rechaza valores no representables exactamente.
+- La ventana flotante mejora el diagnóstico de apertura, cierre y refresco de estado; la extracción de texto comprueba las precondiciones antes de abrir el selector de archivos.
 - El `Task Editor` deja de depender exclusivamente de tipeo manual para poblar `Link or local path` cuando la fila apunta a archivos locales: la toolbar agrega una entrada batch `Add files` con picker multi-select y cada fila suma un picker local dedicado, sin romper el escape hatch de edición libre para `https:` y rutas pegadas.
 - La nueva acción local por fila del `Task Editor` se integra al mismo sistema compartido de iconos renderer y deja de verse como un control textual aislado: el botón browse converge en el asset canónico `folder.svg` y recupera el mismo lenguaje monocromo/outline ya usado por `open-target`, biblioteca y snapshot dentro de la tabla.
 - `language_window` y `preset_modal` dejan de ser excepciones estructurales dentro de las ventanas renderer top-level: sus estilos salen del HTML inline y convergen en archivos CSS dedicados; además, la ventana de idioma formaliza su rol fijo bilingüe de bootstrap/recuperación, independiente del idioma activo y sin alterar su layout visible.
@@ -177,7 +179,7 @@ Reglas:
   - `Snapshot Tag Manager` y la ventana especializada de idioma conservan su estructura propia; la migración elimina los sitios productivos restantes de `<select>` nativo sin convertir esas dos superficies en comboboxes.
 - Accesibilidad renderer y retiro de `title` (Issue #332):
   - todos los controles renderer inventariados dejan de depender de `title` o de una burbuja para recibir su nombre: los controles icon-only obtienen nombres explícitos, los controles con texto o `<label>` conservan esa fuente visible y se eliminan ARIA redundantes, mientras los `<title>` de documento y SVG continúan intactos y fuera de esta migración;
-  - ventana principal, Editor, Find, Floating Stopwatch, Task Editor, snapshots, Reading Test, text extraction y calculadora rápida aplican sus contratos semánticos desde sus owners reales y en sus rutas normales de cambio de idioma; los tooltips que solo repetían un label visible o un cierre conocido se eliminan en lugar de recrearse;
+  - ventana principal, Editor, Find, Floating Stopwatch, Task Editor, snapshots, Reading Test, text extraction y calculadora rápida aplican sus contratos semánticos desde sus owners reales y en sus rutas normales de cambio de idioma; los tooltips redundantes se eliminan, incluidos los de los botones de iniciar/pausar y reiniciar el cronómetro, sin retirar sus nombres accesibles;
   - Spoiler, modo preciso, las acciones materiales de Reading Test y Apply/Auto/Spellcheck exponen la ayuda estable en el control mediante `aria-describedby` y, donde el inventario conserva ayuda visual, comparten deliberadamente el mismo source con `data-tot-tooltip` sin sincronización genérica; Replace/Replace all mantienen sus descripciones accesibles, pero la ventana Find elimina los atributos, wiring y recursos del sistema de tooltips visuales;
   - `public/js/renderer_icons.js` deja de inferir `aria-label` desde un valor semejante a `title` o de fabricar tooltips desde ARIA: solo aplica el `ariaLabel` entregado explícitamente por el caller y mantiene el SVG clonado como decorativo;
   - `i18n/es/renderer.json` e `i18n/en/renderer.json` reorganizan los sources semánticos en familias `names`, `help` y `descriptions`, incorporan los nombres faltantes y conservan paridad de paths/placeholders; los demás roots y overlays quedan como deuda de traducción permitida vía fallback español, y `i18n/TRANSLATION_GUIDE.md` documenta consumers, categorías y valores técnicos.
@@ -192,6 +194,12 @@ Reglas:
 - Cronómetro / iconografía renderer:
   - la ventana principal deja de publicar los botones `play/pause` y `stop/reset` del cronómetro con el tamaño `xl` heredado del primer barrido de iconos y pasa a alinearlos con la escala compacta `md` que ya usaba el `Floating Stopwatch`;
   - `public/js/crono.js` deja de reinyectar el toggle del cronómetro con un tamaño hardcodeado ajeno al markup y pasa a respetar `data-tot-icon-size` del botón owner, evitando que futuras reasignaciones de icono vuelvan a romper la coherencia entre `play` y `pause`.
+- Cronómetro / estado, entrada manual y ventana flotante:
+  - la transición del texto vigente a vacío deja de ejecutar `resetCrono()` en Main y de reiniciar el estado local del renderer; conserva `elapsed` y `running`, limpia solo la WPM real y mantiene su recálculo acumulativo al volver a disponer de texto;
+  - la edición manual de tiempo deja de aplicar un fallback local si `setCronoElapsed` falta o falla; el campo recupera su valor anterior. `StopwatchTimeCore` usa `BigInt` para validar el tiempo antes de convertirlo a milisegundos representables;
+  - el control de la ventana flotante registra resultados de apertura/cierre y fallos de refresco de estado sin sustituir la autoridad de Main; los diagnósticos del cronómetro se precisan.
+- Extracción de texto / precondiciones de inicio:
+  - `canStartTextExtraction()` reutiliza la comprobación existente antes del selector de archivos y de la preparación; las precondiciones main-owned no cambian.
 - Task Editor / input asistido de rutas locales:
   - `public/task_editor.html` y `public/task_editor.js` agregan la acción de toolbar `Add files`, que abre un picker nativo multi-select y crea una fila por archivo elegido;
   - las filas nuevas creadas desde ese flujo siguen persistiendo el mismo campo plano `enlace`, pero ahora se inicializan con la ruta absoluta seleccionada y con `texto` derivado del nombre base del archivo, dejando la fila usable sin tipeo adicional;
@@ -279,8 +287,7 @@ Reglas:
 - Cronómetro principal:
   - `play/pause` deja de renderizarse más angosto que `stop/reset` por una mezcla accidental entre re-render runtime en tamaño `md` y markup estático en tamaño `xl`;
   - el glyph `stop` deja de verse subdimensionado una vez alineados ambos botones al tamaño pequeño, porque su SVG canónico amplía el cuadrado útil dentro del mismo `viewBox` y recupera masa visual comparable con `play`.
-- Current text / cronómetro:
-  - al vaciar el `current text`, el reset del cronómetro deja de dispararse como side-effect renderer que volvía a entrar a `main` mientras seguía activo el settle `current-text pending`; la transición autoritativa `non-empty -> empty` ahora se resuelve en el mismo pipeline main-owned del texto vigente y desaparece el warning `Main action ignored (current-text pending lock active): crono-reset`.
+- Current text / bootstrap:
   - el bootstrap de texto vigente deja de sustituir una lectura fallida por texto vacío o un estado de procesamiento inactivo: `getCurrentText()` y `getCurrentTextProcessingState()` son dependencias requeridas, los envelopes explícitos `{ ok: false, code }` preservan su código diagnóstico y los envelopes malformados siguen siendo distinguibles de una respuesta válida; las actualizaciones pre-READY y READY comparten la misma validación de `current-text-updated`, y el portapapeles exige un éxito explícito `{ ok: true, text }`.
 - Duración estimada / Task Editor:
   - el tiempo restante mostrado por cada fila y el resumen agregado dejan de depender de multiplicación flotante renderer; ambos paths usan el mismo dominio exacto de segundos enteros y centésimos que valida y persiste `tasks_main`, eliminando la discrepancia visible de un segundo que podía existir antes de guardar;
@@ -321,6 +328,7 @@ Reglas:
 
 ### Contratos tocados
 
+- Cronómetro / texto vigente: se elimina el callback interno `onCurrentTextDidBecomeEmpty` de `textState.init`; el IPC `current-text-updated`, las APIs públicas del cronómetro y los formatos persistidos mantienen sus contratos. La extracción conserva sus precondiciones main-owned.
 - Presets predeterminados / configuración e IPC:
   - `config/presets_defaults/defaults_presets.json` y `defaults_presets_<lang>.json` son la fuente efectiva en runtime; los archivos empaquetados solo sirven para la inicialización de archivos ausentes. Los JSON configurables siguen usando arreglos de presets y no se introduce un nuevo schema persistido ni una migración automática;
   - `get-default-presets` conserva su respuesta pública `{ general, languagePresets }` y la carga de todos los idiomas, pero devuelve solamente entradas validadas; un archivo configurable vacío, ausente, mal formado o ilegible no activa sustitución desde recursos empaquetados. Si el directorio es inaccesible, mantiene el resultado público vacío de solo lectura;
