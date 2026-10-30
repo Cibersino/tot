@@ -109,6 +109,33 @@ test('manual elapsed edit stays at its canonical baseline when setCronoElapsed t
   )), true);
 });
 
+test('manual elapsed edit rejects unrepresentable stopwatch input before bridge dispatch', async (t) => {
+  const { crono } = loadCrono(t);
+  const elapsedRequests = [];
+  const harness = createManualTimeArgs({
+    electronAPI: {
+      setCronoElapsed(milliseconds) {
+        elapsedRequests.push(milliseconds);
+      },
+    },
+  });
+
+  for (const value of [
+    '2501922841124:19:55',
+    `${'1'.repeat(309)}:00:00`,
+  ]) {
+    const result = await crono.applyManualTime({ ...harness.args, value });
+
+    assert.equal(result, null);
+    assert.equal(harness.cronoDisplay.value, '00:00:30');
+  }
+
+  assert.deepEqual(elapsedRequests, []);
+  assert.equal(harness.realWpmDisplay.innerHTML, 'existing WPM');
+  assert.deepEqual(harness.elapsedWrites, []);
+  assert.deepEqual(harness.lastComputedWrites, []);
+});
+
 test('manual elapsed UI synchronization failures do not re-enter bridge-failure handling', async (t) => {
   const { crono, logs } = loadCrono(t);
   const harness = createManualTimeArgs({
