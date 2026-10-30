@@ -253,26 +253,26 @@
       if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
     };
 
-    const fallbackLocal = async () => {
-      if (typeof setElapsed === 'function') setElapsed(msRounded);
-      await syncRoundedElapsedUi();
-    };
-
     if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
       try {
         await electronAPI.setCronoElapsed(msRounded);
-        await syncRoundedElapsedUi();
-        return msRounded;
       } catch (error) {
-        log.warn('setCronoElapsed failed; using local stopwatch state:', error);
-        await fallbackLocal();
-        return msRounded;
+        log.warn('setCronoElapsed failed; manual elapsed edit ignored:', error);
+        restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
+        return null;
       }
+
+      try {
+        await syncRoundedElapsedUi();
+      } catch (error) {
+        log.error('Manual elapsed UI synchronization failed after setCronoElapsed dispatch:', error);
+      }
+      return msRounded;
     }
 
-    log.warnOnce('crono.setCronoElapsed.missing', '[crono] setCronoElapsed unavailable; using local stopwatch state');
-    await fallbackLocal();
-    return msRounded;
+    log.warnOnce('crono.setCronoElapsed.missing', '[crono] setCronoElapsed unavailable; manual elapsed edit ignored');
+    restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
+    return null;
   }
 
   // =============================================================================
