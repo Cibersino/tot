@@ -6,15 +6,15 @@
 // =============================================================================
 // Renderer-side stopwatch helpers and controller.
 // Responsibilities:
-// - Format and parse stopwatch time values.
+// - Adapt shared stopwatch time utilities for renderer formatting and manual input.
 // - Compute real WPM from elapsed time and current text.
-// - Orchestrate DOM updates for the main stopwatch UI.
-// - Bridge optional Electron APIs for flotante window control and state sync.
-// - Expose a small controller API for renderer wiring.
+// - Apply received stopwatch state to the main renderer UI.
+// - Coordinate Floating Stopwatch bridge calls and post-open state refresh.
+// - Expose controller wiring and stopwatch helpers to renderer consumers.
 
 (() => {
   // =============================================================================
-  // Logger / scope
+  // Dependencies and logger
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[crono] window.getLogger unavailable; cannot continue');
@@ -36,7 +36,7 @@
   } = stopwatchTimeUtils;
 
   // =============================================================================
-  // Helpers (format/parse + WPM)
+  // Stopwatch formatting and WPM helpers
   // =============================================================================
   function formatCrono(ms) {
     return formatStopwatchMs(ms);
@@ -83,7 +83,7 @@
   }
 
   // =============================================================================
-  // UI helpers and Electron bridge (flotante)
+  // UI helpers
   // =============================================================================
   function applyToggleIcon(toggleButton, iconName = 'play') {
     if (!toggleButton) return;
@@ -115,6 +115,10 @@
     cronoDisplay.classList.toggle('is-invalid', isInvalid);
     cronoDisplay.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
   }
+
+  // =============================================================================
+  // Floating Stopwatch bridge
+  // =============================================================================
 
   async function openFlotante({
     electronAPI,
@@ -192,6 +196,10 @@
       setToggleChecked(toggleVF, false);
     }
   }
+
+  // =============================================================================
+  // Manual elapsed-time editing
+  // =============================================================================
 
   async function applyManualTime({
     value,
@@ -287,7 +295,7 @@
   }
 
   // =============================================================================
-  // State application (renderer view of crono)
+  // Stopwatch state application
   // =============================================================================
   function handleCronoState({
     state,
@@ -352,7 +360,7 @@
   }
 
   // =============================================================================
-  // Controller factory (wires DOM, state, and Electron API)
+  // Controller factory
   // =============================================================================
   function createController(options = {}) {
     const elements = options.elements || {};
@@ -617,7 +625,7 @@
   }
 
   // =============================================================================
-  // Exports / module surface
+  // Module surface
   // =============================================================================
   window.RendererCrono = {
     formatCrono,
