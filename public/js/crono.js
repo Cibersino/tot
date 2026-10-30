@@ -6,15 +6,15 @@
 // =============================================================================
 // Renderer-side stopwatch helpers and controller.
 // Responsibilities:
-// - Format and parse stopwatch time values.
+// - Adapt shared stopwatch time utilities for renderer formatting and manual input.
 // - Compute real WPM from elapsed time and current text.
-// - Orchestrate DOM updates for the main stopwatch UI.
-// - Bridge optional Electron APIs for flotante window control and state sync.
-// - Expose a small controller API for renderer wiring.
+// - Apply received stopwatch state to the main renderer UI.
+// - Coordinate Floating Stopwatch bridge calls and post-open state refresh.
+// - Expose controller wiring and stopwatch helpers to renderer consumers.
 
 (() => {
   // =============================================================================
-  // Logger / scope
+  // Dependencies and logger
   // =============================================================================
   if (typeof window.getLogger !== 'function') {
     throw new Error('[crono] window.getLogger unavailable; cannot continue');
@@ -36,7 +36,7 @@
   } = stopwatchTimeUtils;
 
   // =============================================================================
-  // Helpers (format/parse + WPM)
+  // Stopwatch formatting and WPM helpers
   // =============================================================================
   function formatCrono(ms) {
     return formatStopwatchMs(ms);
@@ -73,17 +73,21 @@
     return 0;
   }
 
+  function clearRealWpmDisplay(realWpmDisplay) {
+    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
+  }
+
   async function safeRecomputeRealWpm(payload) {
     try {
       return await actualizarVelocidadRealFromElapsed(payload);
     } catch (error) {
-      log.error('Error updating real WPM:', error);
+      log.error('Real WPM update failed (ignored):', error);
       return 0;
     }
   }
 
   // =============================================================================
-  // UI helpers and Electron bridge (flotante)
+  // UI helpers
   // =============================================================================
   function applyToggleIcon(toggleButton, iconName = 'play') {
     if (!toggleButton) return;
@@ -100,7 +104,7 @@
 
   function uiResetCrono({ cronoDisplay, realWpmDisplay, tToggle, playIconName = 'play' }) {
     if (cronoDisplay) cronoDisplay.value = '00:00:00';
-    if (realWpmDisplay) realWpmDisplay.innerHTML = '&nbsp;';
+    clearRealWpmDisplay(realWpmDisplay);
     applyToggleIcon(tToggle, playIconName);
   }
 
@@ -116,6 +120,10 @@
     cronoDisplay.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
   }
 
+  // =============================================================================
+  // Floating Stopwatch bridge
+  // =============================================================================
+
   async function openFlotante({
     electronAPI,
     toggleVF,
@@ -127,7 +135,7 @@
     pauseIconName = 'pause'
   }) {
     if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function') {
-      log.warn('openFlotanteWindow unavailable in electronAPI');
+      log.warn('openFlotanteWindow unavailable; Floating Stopwatch request ignored');
       setToggleChecked(toggleVF, false);
       return null;
     }
@@ -141,28 +149,32 @@
       }
       setToggleChecked(toggleVF, true);
 
-      if (typeof electronAPI.getCronoState === 'function') {
-        try {
-          const state = await electronAPI.getCronoState();
-          if (state) {
-            const elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
-            const running = !!state.running;
-            if (setElapsedRunning) setElapsedRunning(elapsed, running);
-            if (cronoDisplay && !cronoEditing) {
-              cronoDisplay.value = state.display || formatCrono(elapsed);
-            }
-            applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
-            return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
-          }
-        } catch (error) {
-          log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', error);
-        }
-      } else {
-        log.warnOnce('crono.getCronoState.missing', '[crono] getCronoState unavailable; using local stopwatch state');
+      if (typeof electronAPI.getCronoState !== 'function') {
+        log.warn('getCronoState unavailable; direct stopwatch refresh skipped after Floating Stopwatch open');
+        return null;
       }
-      return null;
+
+      try {
+        const state = await electronAPI.getCronoState();
+        if (!state) {
+          log.warn('getCronoState returned no state; direct stopwatch refresh skipped after Floating Stopwatch open');
+          return null;
+        }
+
+        const elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
+        const running = !!state.running;
+        if (setElapsedRunning) setElapsedRunning(elapsed, running);
+        if (cronoDisplay && !cronoEditing) {
+          cronoDisplay.value = state.display || formatCrono(elapsed);
+        }
+        applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
+        return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
+      } catch (error) {
+        log.warn('Floating Stopwatch post-open state refresh failed (ignored):', error);
+        return null;
+      }
     } catch (error) {
-      log.error('Error loading  flotante:', error);
+      log.error('Floating Stopwatch open failed:', error);
       setToggleChecked(toggleVF, false);
       return null;
     }
@@ -170,18 +182,28 @@
 
   async function closeFlotante({ electronAPI, toggleVF }) {
     if (!electronAPI || typeof electronAPI.closeFlotanteWindow !== 'function') {
-      log.warn('closeFlotanteWindow unavailable in electronAPI');
+      log.warn('closeFlotanteWindow unavailable; Floating Stopwatch close request ignored');
       setToggleChecked(toggleVF, false);
       return;
     }
     try {
-      await electronAPI.closeFlotanteWindow();
+      const closeResult = await electronAPI.closeFlotanteWindow();
+      if (!closeResult || closeResult.ok !== true) {
+        const failureCode = closeResult && typeof closeResult.error === 'string'
+          ? closeResult.error
+          : 'UNKNOWN_FAILURE';
+        log.warn('Floating Stopwatch close request was not accepted (ignored):', failureCode);
+      }
     } catch (error) {
-      log.error('Error closing flotante:', error);
+      log.error('Floating Stopwatch close request failed (ignored):', error);
     } finally {
       setToggleChecked(toggleVF, false);
     }
   }
+
+  // =============================================================================
+  // Manual elapsed-time editing
+  // =============================================================================
 
   async function applyManualTime({
     value,
@@ -252,30 +274,32 @@
       if (typeof setLastComputedElapsed === 'function') setLastComputedElapsed(msRounded);
     };
 
-    const fallbackLocal = async () => {
-      if (typeof setElapsed === 'function') setElapsed(msRounded);
-      await syncRoundedElapsedUi();
-    };
-
     if (electronAPI && typeof electronAPI.setCronoElapsed === 'function') {
       try {
+        // This IPC send does not acknowledge whether main accepted the elapsed value.
+        // The following UI update is optimistic; main remains the stopwatch state owner.
         await electronAPI.setCronoElapsed(msRounded);
-        await syncRoundedElapsedUi();
-        return msRounded;
       } catch (error) {
-        log.warn('setCronoElapsed failed; using local stopwatch state:', error);
-        await fallbackLocal();
-        return msRounded;
+        log.warn('setCronoElapsed failed; manual elapsed edit ignored:', error);
+        restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
+        return null;
       }
+
+      try {
+        await syncRoundedElapsedUi();
+      } catch (error) {
+        log.error('Manual elapsed UI synchronization failed after setCronoElapsed dispatch (ignored):', error);
+      }
+      return msRounded;
     }
 
-    log.warnOnce('crono.setCronoElapsed.missing', '[crono] setCronoElapsed unavailable; using local stopwatch state');
-    await fallbackLocal();
-    return msRounded;
+    log.warn('[crono] setCronoElapsed unavailable; manual elapsed edit ignored');
+    restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
+    return null;
   }
 
   // =============================================================================
-  // State application (renderer view of crono)
+  // Stopwatch state application
   // =============================================================================
   function handleCronoState({
     state,
@@ -340,7 +364,7 @@
   }
 
   // =============================================================================
-  // Controller factory (wires DOM, state, and Electron API)
+  // Controller factory
   // =============================================================================
   function createController(options = {}) {
     const elements = options.elements || {};
@@ -367,23 +391,6 @@
     let baselineDisplay = null;
     let bound = false;
 
-    const getIdiomaActual = () => deps.getIdiomaActual();
-    const getCurrentText = () => deps.getCurrentText();
-    const getSettingsCache = () => deps.getSettingsCache();
-
-    const resetLocalState = () => {
-      elapsed = 0;
-      running = false;
-      prevRunning = false;
-      lastComputedElapsedForWpm = 0;
-      uiResetCrono({
-        cronoDisplay: elements.cronoDisplay,
-        realWpmDisplay: elements.realWpmDisplay,
-        tToggle: elements.tToggle,
-        playIconName
-      });
-    };
-
     const updateIcons = (icons = {}) => {
       if (typeof icons.playIconName === 'string') playIconName = icons.playIconName;
       if (typeof icons.pauseIconName === 'string') pauseIconName = icons.pauseIconName;
@@ -399,6 +406,14 @@
       if (typeof next.getSettingsCache === 'function') deps.getSettingsCache = next.getSettingsCache;
     };
 
+    const getWpmDependencies = () => ({
+      contarTexto: deps.contarTexto,
+      obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
+      formatearNumero: deps.formatearNumero,
+      idiomaActual: deps.getIdiomaActual(),
+      settingsCache: deps.getSettingsCache()
+    });
+
     const handleState = (state) => {
       const nextState = handleCronoState({
         state,
@@ -406,12 +421,8 @@
         cronoEditing,
         tToggle: elements.tToggle,
         realWpmDisplay: elements.realWpmDisplay,
-        currentText: getCurrentText(),
-        contarTexto: deps.contarTexto,
-        obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
-        formatearNumero: deps.formatearNumero,
-        idiomaActual: getIdiomaActual(),
-        settingsCache: getSettingsCache(),
+        currentText: deps.getCurrentText(),
+        ...getWpmDependencies(),
         prevRunning,
         lastComputedElapsedForWpm,
         playIconName,
@@ -431,7 +442,9 @@
         if (previousText === nextText) return;
 
         if (!nextText) {
-          resetLocalState();
+          // Real WPM is text-derived; clearing its source leaves stopwatch state intact.
+          clearRealWpmDisplay(elements.realWpmDisplay);
+          lastComputedElapsedForWpm = null;
           return;
         }
 
@@ -443,16 +456,12 @@
         await safeRecomputeRealWpm({
           ms: elapsed,
           currentText: nextText,
-          contarTexto: deps.contarTexto,
-          obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
-          formatearNumero: deps.formatearNumero,
-          idiomaActual: getIdiomaActual(),
-          settingsCache: getSettingsCache(),
+          ...getWpmDependencies(),
           realWpmDisplay: elements.realWpmDisplay
         });
         lastComputedElapsedForWpm = elapsed;
       } catch (error) {
-        log.error('Error applying text-change stopwatch rules:', error);
+        log.error('Text-change stopwatch update failed (ignored):', error);
       }
     };
 
@@ -491,10 +500,10 @@
             try {
               electronAPI.sendCronoToggle();
             } catch (error) {
-              log.error('sendCronoToggle failed:', error);
+              log.error('Stopwatch toggle request failed (ignored):', error);
             }
           } else {
-            log.warnOnce('crono.sendCronoToggle.missing', '[crono] sendCronoToggle unavailable; toggle action ignored');
+            log.warn('[crono] sendCronoToggle unavailable; toggle action ignored');
           }
         });
       }
@@ -505,15 +514,18 @@
             try {
               electronAPI.sendCronoReset();
             } catch (error) {
-              log.error('sendCronoReset failed:', error);
+              log.error('Stopwatch reset request failed (ignored):', error);
             }
           } else {
-            log.warnOnce('crono.sendCronoReset.missing.button', '[crono] sendCronoReset unavailable; reset action ignored');
+            log.warn('[crono] sendCronoReset unavailable; reset action ignored');
           }
         });
       }
 
       if (elements.toggleVF) {
+        // This switch is a best-effort control, not an authoritative view of the floating window's lifecycle.
+        // Rapid open/close reversals may leave the switch out of sync or a new open request unfulfilled.
+        // Main retains ownership of the window and stopwatch state; these cases are recoverable.
         elements.toggleVF.addEventListener('change', async () => {
           const wantOpen = !!elements.toggleVF.checked;
           setToggleChecked(elements.toggleVF, wantOpen);
@@ -535,7 +547,7 @@
           log.warn('onFlotanteClosed registration failed; flotante toggle may desync:', error);
         }
       } else if (electronAPI) {
-        log.warnOnce('crono.onFlotanteClosed.missing', '[crono] onFlotanteClosed unavailable; flotante toggle may desync');
+        log.warn('[crono] onFlotanteClosed unavailable; flotante toggle may desync');
       }
 
       if (elements.cronoDisplay) {
@@ -559,12 +571,8 @@
             cronoDisplay: elements.cronoDisplay,
             cronoModule: window.RendererCrono,
             electronAPI,
-            currentText: getCurrentText(),
-            contarTexto: deps.contarTexto,
-            obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
-            formatearNumero: deps.formatearNumero,
-            idiomaActual: getIdiomaActual(),
-            settingsCache: getSettingsCache(),
+            currentText: deps.getCurrentText(),
+            ...getWpmDependencies(),
             realWpmDisplay: elements.realWpmDisplay,
             setElapsed: (msVal) => {
               if (typeof msVal === 'number') {
@@ -610,7 +618,7 @@
   }
 
   // =============================================================================
-  // Exports / module surface
+  // Module surface
   // =============================================================================
   window.RendererCrono = {
     formatCrono,

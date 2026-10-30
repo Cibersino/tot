@@ -345,6 +345,28 @@
     return true;
   }
 
+  async function canStartTextExtraction() {
+    const checkTextExtractionPreconditions = getOptionalElectronMethod('checkTextExtractionPreconditions', {
+      unavailableMessage: 'checkTextExtractionPreconditions unavailable; text extraction precondition check skipped.'
+    });
+    if (!checkTextExtractionPreconditions) {
+      window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
+      return false;
+    }
+
+    const preconditions = await checkTextExtractionPreconditions();
+    if (!preconditions || preconditions.ok === false) {
+      log.error('text extraction precondition check failed:', preconditions);
+      window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
+      return false;
+    }
+    if (!preconditions.canStart) {
+      window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.text_extraction.alerts.precondition_blocked');
+      return false;
+    }
+    return true;
+  }
+
   // =============================================================================
   // Shared entry flow
   // =============================================================================
@@ -405,24 +427,7 @@
     }
 
     try {
-      const checkTextExtractionPreconditions = getOptionalElectronMethod('checkTextExtractionPreconditions', {
-        unavailableMessage: 'checkTextExtractionPreconditions unavailable; text extraction precondition check skipped.'
-      });
-      if (!checkTextExtractionPreconditions) {
-        window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
-        return;
-      }
-
-      const preconditions = await checkTextExtractionPreconditions();
-      if (!preconditions || preconditions.ok === false) {
-        log.error('text extraction precondition check failed:', preconditions);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
-        return;
-      }
-      if (!preconditions.canStart) {
-        window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.text_extraction.alerts.precondition_blocked');
-        return;
-      }
+      if (!(await canStartTextExtraction())) return;
 
       const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
         unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; text extraction prepare cannot continue.'
@@ -944,6 +949,8 @@
       }
 
       try {
+        if (!(await canStartTextExtraction())) return;
+
         const openTextExtractionPicker = getOptionalElectronMethod('openTextExtractionPicker', {
           unavailableMessage: 'openTextExtractionPicker unavailable; text extraction entrypoint skipped.'
         });

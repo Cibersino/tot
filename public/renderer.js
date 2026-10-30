@@ -819,7 +819,6 @@ function applyTranslations() {
     if (!element) return;
     const name = tRenderer(key);
     element.setAttribute('aria-label', name);
-    element.setAttribute('data-tot-tooltip', name);
   });
   applyAriaLabel(toggleVF, 'renderer.main.names.floating_window');
   applyAriaLabel(vfSwitchWrapper, 'renderer.main.aria.floating_window_group');

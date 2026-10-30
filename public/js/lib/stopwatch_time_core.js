@@ -51,14 +51,18 @@
       const match = getClockInputMatch(input);
       if (match === null) return null;
 
-      const hours = Number.parseInt(match[1], 10);
-      const minutes = Number.parseInt(match[2], 10);
-      const seconds = Number.parseInt(match[3], 10);
-      if (!Number.isFinite(hours) || !Number.isFinite(minutes) || !Number.isFinite(seconds)) {
-        return null;
-      }
+      const hours = BigInt(match[1]);
+      const minutes = BigInt(match[2]);
+      const seconds = BigInt(match[3]);
+      const totalSeconds = (hours * 3600n) + (minutes * 60n) + seconds;
+      const milliseconds = Number(totalSeconds * 1000n);
+      if (!Number.isFinite(milliseconds)) return null;
 
-      return (hours * 3600 + minutes * 60 + seconds) * 1000;
+      const roundedMilliseconds = Math.floor(milliseconds / 1000) * 1000;
+      return Number.isFinite(roundedMilliseconds)
+        && BigInt(Math.floor(roundedMilliseconds / 1000)) === totalSeconds
+        ? milliseconds
+        : null;
     }
 
     function decomposeClockSeconds(totalSeconds) {

@@ -484,14 +484,14 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - With `N=2`, one click behaves like two consecutive appends using the same clipboard content.
 
 ### SM-05 Empty current text
-**Goal:** clearing text resets results.
-1. Click the **Clear current text** button (`trash` SVG icon) on the main window.
-2. Observe preview and results.
+**Goal:** clearing current text updates text-derived results.
+1. Set non-empty current text (SM-03).
+2. Click the **Clear current text** button (`trash` SVG icon) on the main window.
+3. Observe the preview, counts, and estimated reading time.
 
 **Expected:**
-- Preview shows empty-state label.
-- Words/chars/time go to zero.
-- Stopwatch is reset because current text becomes empty.
+- Preview shows the empty-state label.
+- Words, characters, and estimated reading time are zero.
 
 ### SM-06 Counting mode toggle (precise/simple)
 **Goal:** toggle works and results remain coherent.
@@ -647,7 +647,6 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - Tagged snapshot JSON persists the selected tags, including the custom tag created inline.
 - Current text is overwritten; preview/results update.
 - Tagged snapshot metadata is not transferred into current-text state.
-- Stopwatch behavior follows REG-CRONO-02 semantics (non-empty restore: no reset; empty restore: reset).
 
 ### SM-14 Reading speed test quick path
 **Goal:** the guided reading-test flow reaches the preset handoff cleanly, with or without the inserted questions step.
@@ -760,15 +759,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 **Expected:**
 - Overwrite does not keep previous text; append does.
 
-#### REG-MAIN-03 Empty text + stopwatch reset coupling
-**Goal:** clearing text resets stopwatch reliably.
-1. Click trash in Text Selector.
-
-**Expected:**
-- Text clears.
-- Stopwatch resets to `00:00:00`.
-
-#### REG-MAIN-04 Snapshots: overwrite + cancel semantics
+#### REG-MAIN-03 Snapshots: overwrite + cancel semantics
 **Goal:** load behaves like an overwrite flow; cancels are no-ops.
 1. Set a known text `T1` (SM-03).
 2. Click **Save text snapshot** (`text-snapshot-save` SVG icon) → `reg_T1.json` under `config/saved_current_texts/`.
@@ -780,7 +771,7 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - After cancel: current text remains `T2`.
 - After confirm: current text becomes `T1` and UI updates.
 
-#### REG-MAIN-05 Clipboard repeat input normalization/clamp
+#### REG-MAIN-04 Clipboard repeat input normalization/clamp
 **Goal:** invalid/overflow values in clipboard repeat input are normalized safely.
 1. Copy a short text to clipboard.
 2. Set repeat input to each value and click **Overwrite clipboard** (`clipboard-overwrite` SVG icon) once per case: `''`, `0`, `-3`, `3.7`, `abc`.
@@ -1720,17 +1711,19 @@ nonconforming persisted data without migration or repair.
 **Expected:**
 - Time increments while running; reset returns to 00:00:00.
 
-#### REG-CRONO-02 Text change semantics (non-empty vs empty)
-**Goal:** non-empty text changes do not reset, but empty text does reset.
-1. Start stopwatch.
-2. While running, overwrite/append with a **non-empty** text (clipboard or editor).
-3. Confirm stopwatch does **not** reset.
-4. Clear current text (trash in main window).
-5. Confirm stopwatch resets.
+#### REG-CRONO-02 Stopwatch independence from current text
+**Goal:** current-text changes preserve stopwatch state, while Real WPM follows the text and accumulated elapsed time.
+1. Set non-empty current text and start the stopwatch; allow time to accumulate.
+2. While running, replace the text with other non-empty text; confirm the stopwatch keeps advancing.
+3. Clear current text (trash in Main); confirm the stopwatch continues and Real WPM is blank.
+4. Load non-empty current text while still running, then pause the stopwatch.
+5. Confirm Real WPM uses the new text's word count and the full accumulated time.
+6. Clear the text while paused; confirm elapsed time and paused state are preserved and Real WPM is blank.
+7. Load non-empty text while still paused; confirm Real WPM recalculates without changing elapsed time.
 
 **Expected:**
-- Non-empty text changes keep elapsed state.
-- Clearing text resets to `00:00:00`.
+- Text replacement, append, and clearing do not start, pause, or reset the stopwatch.
+- Real WPM is blank with no words; when text is available, calculation uses current words and cumulative elapsed time according to the existing running/paused update rules.
 
 #### REG-CRONO-03 Floating window state sync + unfocused behavior
 **Goal:** floating window remains usable when main is unfocused.

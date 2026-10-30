@@ -2,42 +2,8 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 
-const { createStopwatchTimeUtils } = require('../../../public/js/lib/stopwatch_time_core');
-
-function loadCrono(t) {
-  const sandbox = {
-    window: {
-      getLogger() {
-        return {
-          debug() {},
-          warn() {},
-          warnOnce() {},
-          error() {},
-        };
-      },
-      RendererIcons: {
-        applyIconToElement() {},
-      },
-      StopwatchTimeCore: {
-        createStopwatchTimeUtils,
-      },
-    },
-    console,
-  };
-
-  vm.createContext(sandbox);
-  const source = fs.readFileSync(path.resolve(__dirname, '../../../public/js/crono.js'), 'utf8');
-  vm.runInContext(source, sandbox, { filename: 'public/js/crono.js' });
-  t.after(() => {
-    sandbox.window = null;
-  });
-
-  return sandbox.window.RendererCrono;
-}
+const { loadRendererCrono } = require('../../helpers/renderer_crono_test_harness');
 
 function createFloatingToggle() {
   const attributes = {};
@@ -53,7 +19,8 @@ function createFloatingToggle() {
 }
 
 test('Floating Stopwatch open leaves the main toggle clear after a failed Main open result', async (t) => {
-  const { openFlotante } = loadCrono(t);
+  const { crono } = loadRendererCrono(t);
+  const { openFlotante } = crono;
   const toggleVF = createFloatingToggle();
 
   await openFlotante({
@@ -70,7 +37,8 @@ test('Floating Stopwatch open leaves the main toggle clear after a failed Main o
 });
 
 test('Floating Stopwatch open retains the main toggle after Main accepts the window', async (t) => {
-  const { openFlotante } = loadCrono(t);
+  const { crono, logs } = loadRendererCrono(t);
+  const { openFlotante } = crono;
   const toggleVF = createFloatingToggle();
 
   await openFlotante({
@@ -84,4 +52,28 @@ test('Floating Stopwatch open retains the main toggle after Main accepts the win
 
   assert.equal(toggleVF.checked, true);
   assert.equal(toggleVF.getAttribute('aria-checked'), 'true');
+  assert.equal(logs.some(({ level, args }) => (
+    level === 'warn' && args[0].includes('direct stopwatch refresh skipped')
+  )), true);
+});
+
+test('Floating Stopwatch close reports a rejected Main result while clearing the toggle', async (t) => {
+  const { crono, logs } = loadRendererCrono(t);
+  const toggleVF = createFloatingToggle();
+  toggleVF.checked = true;
+
+  await crono.closeFlotante({
+    electronAPI: {
+      async closeFlotanteWindow() {
+        return { ok: false, error: 'not ready' };
+      },
+    },
+    toggleVF,
+  });
+
+  assert.equal(toggleVF.checked, false);
+  assert.equal(toggleVF.getAttribute('aria-checked'), 'false');
+  assert.equal(logs.some(({ level, args }) => (
+    level === 'warn' && args[0].includes('close request was not accepted (ignored)') && args[1] === 'not ready'
+  )), true);
 });

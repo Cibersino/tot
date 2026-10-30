@@ -613,6 +613,25 @@ test('Main startup has no programmatic initial DOM focus', async () => {
   assert.deepEqual(focusCalls, []);
 });
 
+test('main renderer keeps stopwatch controls named without visual tooltips across language changes', async () => {
+  const harness = await createRendererHarness();
+  const toggle = harness.getElement('cronoToggle');
+  const reset = harness.getElement('cronoReset');
+
+  assert.equal(toggle.getAttribute('aria-label'), 'Start or pause stopwatch');
+  assert.equal(toggle.getAttribute('data-tot-tooltip'), null);
+  assert.equal(reset.getAttribute('aria-label'), 'Stop and reset stopwatch');
+  assert.equal(reset.getAttribute('data-tot-tooltip'), null);
+
+  await harness.subscriptions.settingsChanged({ language: 'es', modeConteo: 'preciso' });
+
+  assert.equal(toggle.getAttribute('aria-label'), 'Iniciar o pausar cronómetro');
+  assert.equal(toggle.getAttribute('data-tot-tooltip'), null);
+  assert.equal(reset.getAttribute('aria-label'), 'Detener y restablecer cronómetro');
+  assert.equal(reset.getAttribute('data-tot-tooltip'), null);
+  assert.deepEqual(harness.errors, []);
+});
+
 test('main renderer delivers Help tips through Notify toastMain', async () => {
   const toastKeys = [];
   const notifyKeys = [];
