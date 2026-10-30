@@ -83,7 +83,7 @@ test('manual elapsed edit stays at its canonical baseline when setCronoElapsed i
   assert.deepEqual(harness.elapsedWrites, []);
   assert.deepEqual(harness.lastComputedWrites, []);
   assert.equal(logs.some(({ level, args }) => (
-    level === 'warnOnce' && args[1].includes('manual elapsed edit ignored')
+    level === 'warn' && args[0].includes('manual elapsed edit ignored')
   )), true);
 });
 

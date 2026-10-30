@@ -77,7 +77,7 @@
     try {
       return await actualizarVelocidadRealFromElapsed(payload);
     } catch (error) {
-      log.error('Error updating real WPM:', error);
+      log.error('Real WPM update failed (ignored):', error);
       return 0;
     }
   }
@@ -127,7 +127,7 @@
     pauseIconName = 'pause'
   }) {
     if (!electronAPI || typeof electronAPI.openFlotanteWindow !== 'function') {
-      log.warn('openFlotanteWindow unavailable in electronAPI');
+      log.warn('openFlotanteWindow unavailable; Floating Stopwatch request ignored');
       setToggleChecked(toggleVF, false);
       return null;
     }
@@ -142,13 +142,16 @@
       setToggleChecked(toggleVF, true);
 
       if (typeof electronAPI.getCronoState !== 'function') {
-        log.warnOnce('crono.getCronoState.missing', '[crono] getCronoState unavailable; using local stopwatch state');
+        log.warn('getCronoState unavailable; direct stopwatch refresh skipped after Floating Stopwatch open');
         return null;
       }
 
       try {
         const state = await electronAPI.getCronoState();
-        if (!state) return null;
+        if (!state) {
+          log.warn('getCronoState returned no state; direct stopwatch refresh skipped after Floating Stopwatch open');
+          return null;
+        }
 
         const elapsed = typeof state.elapsed === 'number' ? state.elapsed : 0;
         const running = !!state.running;
@@ -159,11 +162,11 @@
         applyToggleIcon(tToggle, running ? pauseIconName : playIconName);
         return { elapsed, running, display: cronoDisplay ? cronoDisplay.value : state.display };
       } catch (error) {
-        log.warnOnce('crono.getCronoState', '[crono] getCronoState failed:', error);
+        log.warn('getCronoState failed; direct stopwatch refresh skipped after Floating Stopwatch open:', error);
         return null;
       }
     } catch (error) {
-      log.error('Error loading  flotante:', error);
+      log.error('Floating Stopwatch open failed:', error);
       setToggleChecked(toggleVF, false);
       return null;
     }
@@ -171,14 +174,20 @@
 
   async function closeFlotante({ electronAPI, toggleVF }) {
     if (!electronAPI || typeof electronAPI.closeFlotanteWindow !== 'function') {
-      log.warn('closeFlotanteWindow unavailable in electronAPI');
+      log.warn('closeFlotanteWindow unavailable; Floating Stopwatch close request ignored');
       setToggleChecked(toggleVF, false);
       return;
     }
     try {
-      await electronAPI.closeFlotanteWindow();
+      const closeResult = await electronAPI.closeFlotanteWindow();
+      if (!closeResult || closeResult.ok !== true) {
+        const failureCode = closeResult && typeof closeResult.error === 'string'
+          ? closeResult.error
+          : 'UNKNOWN_FAILURE';
+        log.warn('Floating Stopwatch close request was not accepted (ignored):', failureCode);
+      }
     } catch (error) {
-      log.error('Error closing flotante:', error);
+      log.error('Floating Stopwatch close request failed (ignored):', error);
     } finally {
       setToggleChecked(toggleVF, false);
     }
@@ -267,12 +276,12 @@
       try {
         await syncRoundedElapsedUi();
       } catch (error) {
-        log.error('Manual elapsed UI synchronization failed after setCronoElapsed dispatch:', error);
+        log.error('Manual elapsed UI synchronization failed after setCronoElapsed dispatch (ignored):', error);
       }
       return msRounded;
     }
 
-    log.warnOnce('crono.setCronoElapsed.missing', '[crono] setCronoElapsed unavailable; manual elapsed edit ignored');
+    log.warn('[crono] setCronoElapsed unavailable; manual elapsed edit ignored');
     restoreDisplayValue(cronoDisplay, effectiveBaselineDisplay);
     return null;
   }
@@ -451,7 +460,7 @@
         });
         lastComputedElapsedForWpm = elapsed;
       } catch (error) {
-        log.error('Error applying text-change stopwatch rules:', error);
+        log.error('Text-change stopwatch update failed (ignored):', error);
       }
     };
 
@@ -490,10 +499,10 @@
             try {
               electronAPI.sendCronoToggle();
             } catch (error) {
-              log.error('sendCronoToggle failed:', error);
+              log.error('Stopwatch toggle request failed (ignored):', error);
             }
           } else {
-            log.warnOnce('crono.sendCronoToggle.missing', '[crono] sendCronoToggle unavailable; toggle action ignored');
+            log.warn('[crono] sendCronoToggle unavailable; toggle action ignored');
           }
         });
       }
@@ -504,10 +513,10 @@
             try {
               electronAPI.sendCronoReset();
             } catch (error) {
-              log.error('sendCronoReset failed:', error);
+              log.error('Stopwatch reset request failed (ignored):', error);
             }
           } else {
-            log.warnOnce('crono.sendCronoReset.missing.button', '[crono] sendCronoReset unavailable; reset action ignored');
+            log.warn('[crono] sendCronoReset unavailable; reset action ignored');
           }
         });
       }
@@ -537,7 +546,7 @@
           log.warn('onFlotanteClosed registration failed; flotante toggle may desync:', error);
         }
       } else if (electronAPI) {
-        log.warnOnce('crono.onFlotanteClosed.missing', '[crono] onFlotanteClosed unavailable; flotante toggle may desync');
+        log.warn('[crono] onFlotanteClosed unavailable; flotante toggle may desync');
       }
 
       if (elements.cronoDisplay) {
