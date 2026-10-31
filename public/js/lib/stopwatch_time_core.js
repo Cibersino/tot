@@ -59,6 +59,7 @@
       const milliseconds = Number(totalSeconds * 1000n);
       if (!Number.isFinite(milliseconds)) return null;
 
+      // Milliseconds need not be safe integers if the original whole seconds round-trip exactly.
       const roundedMilliseconds = Math.floor(milliseconds / 1000) * 1000;
       return Number.isFinite(roundedMilliseconds)
         && BigInt(Math.floor(roundedMilliseconds / 1000)) === totalSeconds
