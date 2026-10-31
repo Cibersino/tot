@@ -19,6 +19,7 @@ function createElement(id) {
 
   return {
     id,
+    hidden: false,
     value: '',
     textContent: '',
     classList: {
@@ -51,15 +52,24 @@ function createElement(id) {
 
 function createHarness({
   maxResultsTimeMultiplier = 9999,
+  missingElementIds = [],
   readingDurationUtils = createReadingDurationUtils(),
+  withMultiplierRow = true,
 } = {}) {
   const stopwatchTimeUtils = createStopwatchTimeUtils();
   const elements = {
+    resultsTimeMultiplierRow: createElement('resultsTimeMultiplierRow'),
     resultsTimeMultiplierLabel: createElement('resultsTimeMultiplierLabel'),
     resultsTimeMultiplierInput: createElement('resultsTimeMultiplierInput'),
     resultsTimeMultiplierOutput: createElement('resultsTimeMultiplierOutput'),
   };
-  elements.resultsTimeMultiplierInput.value = '1';
+  if (!withMultiplierRow) delete elements.resultsTimeMultiplierRow;
+  missingElementIds.forEach((id) => {
+    delete elements[id];
+  });
+  if (elements.resultsTimeMultiplierInput) {
+    elements.resultsTimeMultiplierInput.value = '1';
+  }
 
   const sandbox = {
     window: {
@@ -100,6 +110,58 @@ function createHarness({
     readingDurationUtils,
   };
 }
+
+test('results multiplier keeps its row visible when the required DOM is complete', () => {
+  const harness = createHarness();
+  const row = harness.elements.resultsTimeMultiplierRow;
+
+  assert.equal(row.hidden, false);
+});
+
+test('results multiplier hides its row for every missing required element', () => {
+  [
+    'resultsTimeMultiplierLabel',
+    'resultsTimeMultiplierInput',
+    'resultsTimeMultiplierOutput',
+  ].forEach((missingElementId) => {
+    const harness = createHarness({
+      missingElementIds: [missingElementId],
+    });
+    const row = harness.elements.resultsTimeMultiplierRow;
+
+    assert.equal(row.hidden, true, missingElementId);
+    assert.doesNotThrow(() => {
+      harness.multiplier.clearBaseReadingDuration();
+      harness.multiplier.setBaseReadingDuration(
+        harness.readingDurationUtils.createEstimatedReadingDuration(1, 60)
+      );
+    }, missingElementId);
+  });
+});
+
+test('results multiplier preserves its no-op API when its unavailable row is absent', () => {
+  const harness = createHarness({
+    missingElementIds: ['resultsTimeMultiplierLabel'],
+    withMultiplierRow: false,
+  });
+
+  assert.doesNotThrow(() => {
+    harness.multiplier.clearBaseReadingDuration();
+    harness.multiplier.setBaseReadingDuration(
+      harness.readingDurationUtils.createEstimatedReadingDuration(1, 60)
+    );
+  });
+});
+
+test('results multiplier remains operational when only its presentation row is absent', () => {
+  const harness = createHarness({ withMultiplierRow: false });
+
+  harness.multiplier.setBaseReadingDuration(
+    harness.readingDurationUtils.createEstimatedReadingDuration(1, 60)
+  );
+
+  assert.equal(harness.elements.resultsTimeMultiplierOutput.textContent, ': 0h 0m 1s');
+});
 
 test('results multiplier marks an over-cap value invalid before committing its configured cap', () => {
   const harness = createHarness();

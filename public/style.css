@@ -1047,6 +1047,10 @@ pre#textPreview .preview-fragment--empty {
   font-size: var(--font-size-5);
 }
 
+.results-multiplier-row[hidden] {
+  display: none;
+}
+
 .results-multiplier-row label {
   flex: 0 0 auto;
 }
