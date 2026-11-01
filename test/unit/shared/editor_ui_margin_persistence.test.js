@@ -243,3 +243,24 @@ test('persistEditorMaximizedTextWidthPx restores a drag preview when its persist
   assert.equal(harness.state.maximizedTextWidthPx, 960);
   assert.equal(harness.documentElement.style.values['--editor-maximized-text-width'], '960px');
 });
+
+test('persistEditorMaximizedTextWidthPx restores a drag preview after a non-ok persistence result', async () => {
+  const harness = createHarness({
+    editorAPI: {
+      async setMaximizedTextWidthPx() {
+        return { ok: false, error: 'write failed' };
+      },
+    },
+  });
+
+  harness.ui.setLocalEditorMaximizedTextWidthPx(880);
+
+  const ok = await harness.ui.persistEditorMaximizedTextWidthPx(880, {
+    previousTextWidthPx: 960,
+    skipLocalApply: true,
+  });
+
+  assert.equal(ok, false);
+  assert.equal(harness.state.maximizedTextWidthPx, 960);
+  assert.equal(harness.documentElement.style.values['--editor-maximized-text-width'], '960px');
+});

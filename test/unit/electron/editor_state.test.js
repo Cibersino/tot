@@ -215,3 +215,31 @@ test('registerIpc persists maximized text width in editor_state.json and notifie
     },
   ]);
 });
+
+test('registerIpc reports persistence failure without publishing a maximized text width update', async (t) => {
+  const { editorState, fsStorage } = createStorageHarness(t, {
+    maximized: true,
+    reduced: null,
+    maximizedTextWidthPx: 960,
+  });
+  const ipcMain = new MockIpcMain();
+  const editorWin = createEditorWindowDouble({ maximized: true });
+  const editorStateFile = fsStorage.getEditorStateFile();
+
+  fs.rmSync(editorStateFile);
+  fs.mkdirSync(editorStateFile);
+
+  editorState.registerIpc(ipcMain, {
+    getEditorWindow: () => editorWin,
+  });
+
+  const result = await ipcMain.invoke(
+    'set-editor-maximized-text-width-px',
+    { sender: editorWin.webContents },
+    880
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(typeof result.error, 'string');
+  assert.equal(editorWin.sentMessages.length, 0);
+});
