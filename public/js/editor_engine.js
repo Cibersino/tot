@@ -470,7 +470,15 @@
       }
     }
 
-    function handleResolvedSetCurrentTextResult(result) {
+    function handleResolvedSetCurrentTextResult(result, onError) {
+      if (result && result.ok === false) {
+        handleSetCurrentTextFailure(
+          result.error || 'editorAPI.setCurrentText returned a non-ok result.',
+          onError
+        );
+        return;
+      }
+
       if (result && result.truncated) {
         notifyTextTruncated();
       }
@@ -484,7 +492,7 @@
           setCurrentTextResult.then(
             (result) => {
               try {
-                handleResolvedSetCurrentTextResult(result);
+                handleResolvedSetCurrentTextResult(result, onError);
               } catch (error) {
                 log.error('handleTruncationResponse result handling error:', error);
               }
@@ -501,7 +509,7 @@
       }
 
       try {
-        handleResolvedSetCurrentTextResult(setCurrentTextResult);
+        handleResolvedSetCurrentTextResult(setCurrentTextResult, onError);
       } catch (error) {
         log.error('handleTruncationResponse result handling error:', error);
       }

@@ -435,6 +435,28 @@ test('set-current-text sync does not fallback to legacy string payloads after sy
   assert.equal(warnOnceLogs.length, 0);
 });
 
+test('set-current-text non-ok results use the caller-owned failure path', async () => {
+  const { engine, setCurrentTextCalls } = createHarness({
+    setCurrentTextImpl(payload, calls) {
+      calls.push(payload);
+      return Promise.resolve({ ok: false, error: 'main rejected the update' });
+    },
+  });
+  const failures = [];
+
+  const didSend = engine.sendCurrentTextToMain('overwrite', {
+    text: 'abc',
+    onError(error) {
+      failures.push(error);
+    },
+  });
+
+  assert.equal(didSend, true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(failures, ['main rejected the update']);
+  assert.equal(setCurrentTextCalls.length, 1);
+});
+
 test('replace-current setRangeText fallback dispatches input after text mutation', () => {
   const { engine, editor, dispatchedEvents } = createHarness({
     initialValue: 'alpha',
