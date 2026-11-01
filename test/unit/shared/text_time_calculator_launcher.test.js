@@ -32,11 +32,20 @@ function createElement(id) {
 
 function loadLauncherHarness(includeButton = true) {
   const button = createElement('btnTextTimeCalculator');
+  const logs = {
+    error: [],
+    warn: [],
+  };
   const sandbox = {
     window: {
       getLogger() {
         return {
-          warn() {},
+          error(...args) {
+            logs.error.push(args);
+          },
+          warn(...args) {
+            logs.warn.push(args);
+          },
         };
       },
       RendererI18n: {
@@ -66,14 +75,27 @@ function loadLauncherHarness(includeButton = true) {
   return {
     api: sandbox.window.TextTimeCalculatorLauncher,
     button,
+    logs,
   };
 }
 
-test('text_time_calculator_launcher fails fast when the launcher button is missing', () => {
-  assert.throws(
-    () => loadLauncherHarness(false),
-    /\[text_time_calculator_launcher\] btnTextTimeCalculator missing; cannot continue/
+test('text_time_calculator_launcher preserves its no-op surface when the launcher button is missing', () => {
+  const harness = loadLauncherHarness(false);
+
+  assert.equal(typeof harness.api.applyTranslations, 'function');
+  assert.equal(typeof harness.api.bindActions, 'function');
+  assert.equal(typeof harness.api.setInteractionLocked, 'function');
+  assert.equal(harness.logs.error.length, 1);
+  assert.equal(
+    harness.logs.error[0][0],
+    'Calculator launcher unavailable: btnTextTimeCalculator missing.'
   );
+
+  assert.doesNotThrow(() => {
+    harness.api.applyTranslations({ tRenderer: () => 'Open calculator' });
+    harness.api.bindActions({ onOpenCalculator() {} });
+    harness.api.setInteractionLocked(true);
+  });
 });
 
 test('text_time_calculator_launcher applies one translated name to ARIA and visual tooltip', () => {
