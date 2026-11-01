@@ -40,6 +40,7 @@ function createHarness({
   maxTextChars = 1_000_000,
   execCommandBehavior = 'success',
   disableSetRangeText = false,
+  setRangeTextThrows = false,
   autoEnabled = true,
   setCurrentTextImpl = null,
 } = {}) {
@@ -80,6 +81,9 @@ function createHarness({
   if (!disableSetRangeText) {
     editor.setRangeText = function setRangeText(text, start, end, mode) {
       setRangeTextCalls.push({ text, start, end, mode });
+      if (setRangeTextThrows) {
+        throw new Error('setRangeText failed');
+      }
       this.value = this.value.slice(0, start) + String(text) + this.value.slice(end);
       if (mode === 'end') {
         const nextPos = start + String(text).length;
@@ -402,6 +406,29 @@ test('drop transfer stays local when auto is off', () => {
 
   assert.equal(editor.value, 'abcZ');
   assert.equal(setCurrentTextCalls.length, 0);
+});
+
+test('failed transfer insertion does not synchronize unchanged text', () => {
+  const { engine, editor, setCurrentTextCalls } = createHarness({
+    initialValue: 'abc',
+    execCommandBehavior: 'fail',
+    setRangeTextThrows: true,
+    autoEnabled: true,
+  });
+
+  engine.handleTextTransferInsert(
+    {
+      preventDefault() {},
+      stopPropagation() {},
+    },
+    {
+      getText: () => 'Z',
+      insertOptions: { action: 'paste' },
+    }
+  );
+
+  assert.equal(editor.value, 'abc');
+  assert.deepEqual(setCurrentTextCalls, []);
 });
 
 test('set-current-text sync does not fallback to legacy string payloads after synchronous bridge failures', () => {

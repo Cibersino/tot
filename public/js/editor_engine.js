@@ -537,7 +537,12 @@
           truncated = true;
         }
 
-        tryNativeInsertAtSelection(toInsert);
+        const valueBeforeInsert = editor.value;
+        const didInsert = tryNativeInsertAtSelection(toInsert);
+        if (!didInsert && editor.value === valueBeforeInsert) {
+          ctx.ui.restoreFocusToEditor();
+          return { inserted: 0, truncated: false };
+        }
 
         if (truncated) {
           window.Notify.notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
