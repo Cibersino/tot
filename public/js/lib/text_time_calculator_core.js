@@ -139,19 +139,12 @@
       const normalizedTarget = VALID_TARGETS.has(target) ? target : 'wpm';
       const result = createNeutralState(normalizedTarget);
 
-      const parsedWords = normalizedTarget === 'words'
-        ? { state: 'skipped', value: null }
-        : parseNonNegativeIntegerText(wordsText);
-      const parsedTime = normalizedTarget === 'time'
-        ? { state: 'skipped', value: null }
-        : parseTimeText(timeText);
-      const parsedWpm = normalizedTarget === 'wpm'
-        ? { state: 'skipped', value: null }
-        : parsePositiveIntegerText(wpmText);
-
-      const readyWords = normalizedTarget === 'words' ? true : applyInputState(result, 'words', parsedWords);
-      const readyTime = normalizedTarget === 'time' ? true : applyInputState(result, 'time', parsedTime);
-      const readyWpm = normalizedTarget === 'wpm' ? true : applyInputState(result, 'wpm', parsedWpm);
+      const readyWords = normalizedTarget === 'words'
+        || applyInputState(result, 'words', parseNonNegativeIntegerText(wordsText));
+      const readyTime = normalizedTarget === 'time'
+        || applyInputState(result, 'time', parseTimeText(timeText));
+      const readyWpm = normalizedTarget === 'wpm'
+        || applyInputState(result, 'wpm', parsePositiveIntegerText(wpmText));
 
       if (result.invalid.words || result.invalid.time || result.invalid.wpm) {
         return result;
