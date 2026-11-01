@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Validate the two editable calculator inputs for the selected target.
 // - Derive the third reading variable using the canonical math rules.
-// - Keep calculation and formatting logic separate from window/DOM code.
+// - Receive reading math and formatting through injected functions, separate from window/DOM code.
 // - Support both browser-script and CommonJS consumers.
 
 // =============================================================================
@@ -29,7 +29,7 @@
   const VALID_TARGETS = new Set(['words', 'time', 'wpm']);
 
   // =============================================================================
-  // Helpers (pure calculator validation + derivation)
+  // Calculator factory and evaluation helpers
   // =============================================================================
   function createTextTimeCalculatorUtils({
     getEstimatedReadingSeconds,
@@ -112,6 +112,7 @@
       if (parsed.state === 'empty') {
         return false;
       }
+      // The internal field key is "time"; normalized results store seconds in "timeSeconds".
       if (field === 'time') {
         result.normalized.timeSeconds = parsed.value;
       } else {
@@ -136,6 +137,7 @@
       timeText = '',
       wpmText = '',
     } = {}) {
+      // Keep invalid targets aligned with the renderer's WPM default.
       const normalizedTarget = VALID_TARGETS.has(target) ? target : 'wpm';
       const result = createNeutralState(normalizedTarget);
 
