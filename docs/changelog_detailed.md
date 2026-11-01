@@ -304,7 +304,6 @@ Reglas:
 - Calculadora rápida de lectura:
   - la ventana deja de presentar un layout ambiguo donde input y output parecían duplicarse dentro de la misma fila; el resultado derivado ahora se lee como valor único y la composición final converge en la dirección issue-owned de dos inputs + un resultado;
   - el tamaño fijo de la ventana deja de requerir scroll para el flujo nominal, porque las validaciones inline ocultas ya no reservan altura cuando no hay error y la densidad visual de la superficie se ajusta al contenido real;
-  - `public/js/text_time_calculator_launcher.js` deja de degradar silenciosamente si falta `btnTextTimeCalculator` en la ventana principal y pasa a fail-fast como dependency bootstrap requerida;
   - renderer y core dejan de divergir cuando el target llega inválido: ambos normalizan el fallback efectivo a `wpm` en vez de mezclar defaults distintos según la capa.
 - Task Editor / columnas:
   - las columnas dejan de diferir entre el ancho configurado y el ancho realmente renderizado, eliminando el surplus que Chromium repartía y el scrollbar horizontal inesperado en el layout nominal;
@@ -405,6 +404,7 @@ Reglas:
   - nuevo bridge de la ventana principal `window.electronAPI.openTextTimeCalculator()`, que invoca `ipcMain.handle('text-time-calculator-open', ...)` y queda autorizado solo para senders de `mainWin`;
   - nuevo preload surface `window.textTimeCalculatorAPI` en la ventana dedicada, con `getSettings()` y `onSettingsChanged(cb) -> unsubscribe` como contrato requerido de bootstrap;
   - `getSecondaryWindowOpenStates()` agrega `{ id: 'text_time_calculator', label: 'text_time_calculator', isOpen }`, por lo que las precondiciones main-owned que ya bloqueaban con ventanas secundarias abiertas pasan a incluir también la calculadora rápida.
+  - el launcher, como funcionalidad auxiliar, conserva `window.TextTimeCalculatorLauncher` aunque falte `btnTextTimeCalculator`: registra ese fallo local y omite las operaciones dependientes del botón sin interrumpir la inicialización del renderer principal; si falta `onOpenCalculator`, advierte y permite reintentar la vinculación.
 - IPC / preload del Task Editor — layout de columnas:
   - `window.taskEditorAPI.getColumnWidths()` / `saveColumnWidths(widths)` se sustituyen por `getColumnLayout()` / `saveColumnLayout(record)` sobre los canales existentes `task-columns-load` y `task-columns-save`;
   - `getColumnLayout()` devuelve `{ ok: true, record: null | <record-v1> }` o `{ ok: false, code: 'UNAUTHORIZED' | 'READ_FAILED' }`; `saveColumnLayout(record)` devuelve exactamente `{ ok: true }` o `{ ok: false, code: 'UNAUTHORIZED' | 'INVALID_SCHEMA' | 'WRITE_FAILED' }`;
