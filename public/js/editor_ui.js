@@ -339,11 +339,11 @@
               ctx.engine.setCaretSafe(pos);
             }
           } catch (error) {
-            log.warnOnce('editor:restoreFocus:inner_catch', 'restoreFocusToEditor failed (ignored):', error);
+            log.warn('restoreFocusToEditor failed (ignored):', error);
           }
         }, 0);
       } catch (error) {
-        log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', error);
+        log.warn('restoreFocusToEditor wrapper failed (ignored):', error);
       }
     }
 
