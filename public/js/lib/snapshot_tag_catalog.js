@@ -6,9 +6,9 @@
 // =============================================================================
 // Responsibilities:
 // - Expose the shared snapshot tag catalog for renderer and main-process consumers.
-// - Define canonical default tag option sets and custom-tag value generation.
+// - Define canonical default tag option sets and encode/decode custom tag values.
 // - Normalize snapshot tags and editable snapshot-tag preferences.
-// - Resolve visible editable catalogs without duplicating merge logic.
+// - Resolve tag labels and visible editable catalogs without duplicating merge logic.
 // - Support both browser-script and CommonJS consumers.
 
 // =============================================================================
@@ -392,6 +392,7 @@
       if (!/^[0-9a-f]+$/.test(hex)) {
         return '';
       }
+      // Preserve the raw tag value through resolveTagLabel when an encoded scalar is invalid.
       const codePoint = parseInt(hex, 16);
       if (!Number.isSafeInteger(codePoint) || codePoint > 0x10ffff) {
         return '';
