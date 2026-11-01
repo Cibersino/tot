@@ -392,7 +392,11 @@
       if (!/^[0-9a-f]+$/.test(hex)) {
         return '';
       }
-      decoded += String.fromCodePoint(parseInt(hex, 16));
+      const codePoint = parseInt(hex, 16);
+      if (!Number.isSafeInteger(codePoint) || codePoint > 0x10ffff) {
+        return '';
+      }
+      decoded += String.fromCodePoint(codePoint);
       index = endIndex;
     }
     return collapseInternalWhitespace(decoded);
