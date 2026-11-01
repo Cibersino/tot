@@ -533,9 +533,7 @@
       .map((option) => option.value);
   }
 
-  function resolveCategoryCatalog(category, rawPreferences, { getDefaultLabel } = {}) {
-    const normalizedCategory = normalizeTagCategory(category);
-    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+  function resolveNormalizedCategoryCatalog(normalizedCategory, preferences, getDefaultLabel) {
     const categoryPreferences = preferences[normalizedCategory];
     const hiddenDefaults = new Set(categoryPreferences.hiddenDefaults);
     const defaultOptions = getDefaultOptionsForCategory(normalizedCategory).map((option) => ({
@@ -609,11 +607,17 @@
     };
   }
 
+  function resolveCategoryCatalog(category, rawPreferences, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+    return resolveNormalizedCategoryCatalog(normalizedCategory, preferences, getDefaultLabel);
+  }
+
   function resolveEditableCatalog(rawPreferences, { getDefaultLabel } = {}) {
     const preferences = normalizeSnapshotTagPreferences(rawPreferences);
     const catalog = {};
     TAG_KEYS.forEach((category) => {
-      catalog[category] = resolveCategoryCatalog(category, preferences, { getDefaultLabel });
+      catalog[category] = resolveNormalizedCategoryCatalog(category, preferences, getDefaultLabel);
     });
     return catalog;
   }
