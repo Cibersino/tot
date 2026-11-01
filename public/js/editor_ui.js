@@ -475,6 +475,9 @@
         log.warn(
           'editorAPI.setMaximizedTextWidthPx missing; maximized Text Editor width update ignored.'
         );
+        if (skipLocalApply) {
+          setLocalEditorMaximizedTextWidthPx(previousTextWidthPx);
+        }
         return false;
       }
 

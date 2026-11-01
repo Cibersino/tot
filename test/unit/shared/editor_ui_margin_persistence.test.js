@@ -56,7 +56,7 @@ function createElementDouble() {
   };
 }
 
-function createHarness() {
+function createHarness({ editorAPI } = {}) {
   const editorApiCalls = [];
   const documentElement = { style: createStyleRecorder(), lang: 'es' };
   const body = { classList: createClassList() };
@@ -122,7 +122,7 @@ function createHarness() {
   };
 
   const ui = sandbox.window.EditorUI.createEditorUI({
-    editorAPI: {
+    editorAPI: editorAPI || {
       async setMaximizedTextWidthPx(value) {
         editorApiCalls.push(value);
         return { ok: true, maximizedTextWidthPx: value };
@@ -227,4 +227,19 @@ test('persistEditorMaximizedTextWidthPx persists drag-updated width when local s
   assert.deepEqual(harness.editorApiCalls, [880]);
   assert.equal(harness.documentElement.style.values['--editor-maximized-text-width'], '880px');
   assert.equal(harness.editorWrap.attributes['data-maximized-layout'], 'true');
+});
+
+test('persistEditorMaximizedTextWidthPx restores a drag preview when its persistence method is unavailable', async () => {
+  const harness = createHarness({ editorAPI: {} });
+
+  harness.ui.setLocalEditorMaximizedTextWidthPx(880);
+
+  const ok = await harness.ui.persistEditorMaximizedTextWidthPx(880, {
+    previousTextWidthPx: 960,
+    skipLocalApply: true,
+  });
+
+  assert.equal(ok, false);
+  assert.equal(harness.state.maximizedTextWidthPx, 960);
+  assert.equal(harness.documentElement.style.values['--editor-maximized-text-width'], '960px');
 });
