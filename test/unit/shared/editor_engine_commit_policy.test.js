@@ -42,6 +42,7 @@ function createHarness({
   disableSetRangeText = false,
   setRangeTextThrows = false,
   autoEnabled = true,
+  latestNonEditorRevisionSeen = 1,
   setCurrentTextImpl = null,
 } = {}) {
   const execCalls = [];
@@ -171,6 +172,7 @@ function createHarness({
     state: {
       maxTextChars,
       suppressLocalUpdate: false,
+      latestNonEditorRevisionSeen,
     },
     SMALL_UPDATE_THRESHOLD: smallUpdateThreshold,
     PASTE_ALLOW_LIMIT: 10_000,
@@ -457,6 +459,7 @@ test('set-current-text sync does not fallback to legacy string payloads after sy
   assert.equal(setCurrentTextCalls[0].text, 'abc');
   assert.equal(setCurrentTextCalls[0].meta.source, 'editor');
   assert.equal(setCurrentTextCalls[0].meta.action, 'overwrite');
+  assert.equal(setCurrentTextCalls[0].baseNonEditorRevision, 1);
   assert.equal(setCurrentTextCalls[1].text, 'def');
   assert.equal(warnLogs.length, 2);
   assert.equal(warnOnceLogs.length, 0);
@@ -482,6 +485,43 @@ test('set-current-text non-ok results use the caller-owned failure path', async 
   await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(failures, ['main rejected the update']);
   assert.equal(setCurrentTextCalls.length, 1);
+});
+
+test('set-current-text stale Editor results are intentionally discarded without caller failure handling', async () => {
+  const { engine, editor, setCurrentTextCalls } = createHarness({
+    initialValue: 'editor text',
+    setCurrentTextImpl(payload, calls) {
+      calls.push(payload);
+      return Promise.resolve({ ok: false, code: 'STALE_EDITOR_WRITE' });
+    },
+  });
+  const failures = [];
+
+  const didSend = engine.sendCurrentTextToMain('overwrite', {
+    text: editor.value,
+    onError(error) {
+      failures.push(error);
+    },
+  });
+
+  assert.equal(didSend, true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(failures, []);
+  assert.equal(editor.value, 'editor text');
+  assert.equal(setCurrentTextCalls.length, 1);
+  assert.equal(setCurrentTextCalls[0].baseNonEditorRevision, 1);
+});
+
+test('set-current-text uses the current non-Editor revision state in its payload', () => {
+  const { engine, setCurrentTextCalls } = createHarness({
+    latestNonEditorRevisionSeen: 7,
+  });
+
+  const didSend = engine.sendCurrentTextToMain('typing', { text: 'editor text' });
+
+  assert.equal(didSend, true);
+  assert.equal(setCurrentTextCalls.length, 1);
+  assert.equal(setCurrentTextCalls[0].baseNonEditorRevision, 7);
 });
 
 test('replace-current setRangeText fallback dispatches input after text mutation', () => {

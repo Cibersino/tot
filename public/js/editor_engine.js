@@ -464,7 +464,11 @@
       const onError = typeof options.onError === 'function' ? options.onError : null;
 
       try {
-        const payload = { text, meta: { source: 'editor', action } };
+        const payload = {
+          text,
+          baseNonEditorRevision: state.latestNonEditorRevisionSeen,
+          meta: { source: 'editor', action },
+        };
         const setCurrentTextResult = editorAPI.setCurrentText(payload);
         handleTruncationResponse(setCurrentTextResult, { onError });
         return true;
@@ -486,6 +490,7 @@
 
     function handleResolvedSetCurrentTextResult(result, onError) {
       if (result && result.ok === false) {
+        if (result.code === 'STALE_EDITOR_WRITE') return;
         handleSetCurrentTextFailure(
           result.error || 'editorAPI.setCurrentText returned a non-ok result.',
           onError

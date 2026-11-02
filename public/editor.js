@@ -261,6 +261,7 @@ function createEditorContext() {
       maxTextChars: appConstants.MAX_TEXT_CHARS,
       debounceTimer: null,
       suppressLocalUpdate: false,
+      latestNonEditorRevisionSeen: 0,
       spellcheckEnabled: true,
       spellcheckAvailable: true,
       editorFontSizePx: editorFontSizeDefaultPx,
@@ -544,6 +545,11 @@ async function bootstrapInitialEditorText() {
     throw new Error('[editor] editorAPI.getInitialCurrentTextSnapshot returned an invalid snapshot');
   }
 
+  ctx.state.latestNonEditorRevisionSeen = Math.max(
+    ctx.state.latestNonEditorRevisionSeen,
+    snapshot.revision
+  );
+
   if (snapshot.revision > latestCurrentTextRevision) {
     latestCurrentTextRevision = snapshot.revision;
     const applied = await ctx.engine.applyInitialText({
@@ -661,6 +667,10 @@ function registerEditorBridgeListeners() {
       }
       if (revision <= latestCurrentTextRevision) return;
       latestCurrentTextRevision = revision;
+      const incomingMeta = payload && payload.meta;
+      if (!incomingMeta || incomingMeta.source !== 'editor') {
+        ctx.state.latestNonEditorRevisionSeen = revision;
+      }
       await ctx.engine.applyExternalUpdate(payload);
       ctx.ui.updateEditorTextDirection();
     });

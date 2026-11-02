@@ -91,6 +91,8 @@ let appRef = null;
 let currentTextProcessingController = null;
 // Starts after bootstrap and advances on every canonical write for the Editor snapshot/live stream.
 let currentTextRevision = 0;
+// Tracks the newest canonical write that did not originate in the Text Editor.
+let lastNonEditorRevision = 0;
 
 // main.js owns window lifecycle; this module resolves windows only to authorize and notify.
 let getWindows = () => ({ mainWin: null, editorWin: null });
@@ -217,6 +219,9 @@ function applyCurrentText(rawText, rawMeta) {
 
   currentText = text;
   currentTextRevision += 1;
+  if (!incomingMeta || incomingMeta.source !== 'editor') {
+    lastNonEditorRevision = currentTextRevision;
+  }
 
   const { mainWin, editorWin } = getWindows() || {};
   const broadcastMeta = incomingMeta || { source: 'main', action: 'set' };
@@ -322,6 +327,7 @@ function init(options) {
 
   loadInitialCurrentText();
   currentTextRevision = 1;
+  lastNonEditorRevision = currentTextRevision;
 
   beginCurrentTextProcessing({
     source: 'main',
@@ -431,6 +437,24 @@ function registerIpc(ipcMain, windowsResolver) {
           `set-current-text payload too large (${text.length} > ${maxIpcChars}); rejecting.`
         );
         throw new Error('set-current-text payload too large');
+      }
+      if (editorAllowed) {
+        const baseNonEditorRevision = payload.baseNonEditorRevision;
+        if (
+          !Number.isSafeInteger(baseNonEditorRevision)
+          || baseNonEditorRevision < 1
+          || baseNonEditorRevision > currentTextRevision
+        ) {
+          log.warn('set-current-text editor baseNonEditorRevision is invalid; rejecting.');
+          return { ok: false, error: 'invalid editor base revision' };
+        }
+        if (baseNonEditorRevision < lastNonEditorRevision) {
+          log.info('set-current-text stale Editor write ignored:', {
+            baseNonEditorRevision,
+            lastNonEditorRevision,
+          });
+          return { ok: false, code: 'STALE_EDITOR_WRITE' };
+        }
       }
       const incomingMeta = sanitizeMeta(payload.meta);
       const normalizedAction = getNormalizedSetCurrentTextAction(incomingMeta);

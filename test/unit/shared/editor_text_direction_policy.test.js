@@ -283,6 +283,7 @@ function createEditorScriptHarness({
   let getInitialCurrentTextSnapshotCallCount = 0;
   let releaseHeldTransition = null;
   let resolveHeldTransitionReached = null;
+  let editorEngineContext = null;
   const heldTransition = holdTransitionLanguage
     ? new Promise((resolve) => { releaseHeldTransition = resolve; })
     : null;
@@ -462,6 +463,7 @@ function createEditorScriptHarness({
       },
       EditorEngine: {
         createEditorEngine(engineCtx) {
+          editorEngineContext = engineCtx;
           return {
             getSelectionRange() { return { start: 0, end: 0 }; },
             getInsertionCapacity() { return 100000; },
@@ -494,7 +496,11 @@ function createEditorScriptHarness({
               }
             },
             sendCurrentTextToMain(action, options) {
-              sendCurrentTextCalls.push({ action, options });
+              sendCurrentTextCalls.push({
+                action,
+                options,
+                baseNonEditorRevision: engineCtx.state.latestNonEditorRevisionSeen,
+              });
               return true;
             },
             handleTextTransferInsert(event, transferConfig) {
@@ -642,6 +648,9 @@ function createEditorScriptHarness({
     normalInteractionCalls,
     startupEvents,
     getInitialCurrentTextSnapshotCallCount: () => getInitialCurrentTextSnapshotCallCount,
+    getEditorState() {
+      return editorEngineContext ? editorEngineContext.state : null;
+    },
     releaseHeldTransition() {
       if (releaseHeldTransition) releaseHeldTransition();
     },
@@ -896,6 +905,46 @@ test('editor applies a newer bootstrap snapshot after an older live update arriv
   });
   assert.equal(harness.elements.editorArea.value, 'newer snapshot text');
   assert.equal(harness.bootstrapApplyCalls.length, 2);
+});
+
+test('editor tracks the non-Editor revision base for subsequent Editor writes', async () => {
+  const harness = await bootstrapEditorScriptHarness({
+    getInitialCurrentTextSnapshotImpl: async () => ({
+      ok: true,
+      text: 'bootstrap text',
+      revision: 4,
+    }),
+  });
+
+  assert.equal(harness.getEditorState().latestNonEditorRevisionSeen, 4);
+
+  harness.elements.calcWhileTyping.checked = false;
+  harness.elements.calcWhileTyping.dispatch('change');
+  harness.elements.editorArea.value = 'first Editor write';
+  harness.elements.btnCalc.dispatch('click');
+  assert.equal(harness.sendCurrentTextCalls[0].baseNonEditorRevision, 4);
+
+  await harness.subscriptions.externalUpdate({
+    text: 'newer Main text',
+    revision: 5,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(harness.getEditorState().latestNonEditorRevisionSeen, 5);
+  harness.elements.editorArea.value = 'second Editor write';
+  harness.elements.btnCalc.dispatch('click');
+  assert.equal(harness.sendCurrentTextCalls[1].baseNonEditorRevision, 5);
+
+  await harness.subscriptions.externalUpdate({
+    text: 'Editor echo',
+    revision: 6,
+    meta: { source: 'editor', action: 'typing' },
+  });
+
+  assert.equal(harness.getEditorState().latestNonEditorRevisionSeen, 5);
+  harness.elements.editorArea.value = 'third Editor write';
+  harness.elements.btnCalc.dispatch('click');
+  assert.equal(harness.sendCurrentTextCalls[2].baseNonEditorRevision, 5);
 });
 
 test('editor reports a bootstrap failure when the initial current-text snapshot is missing', async () => {
