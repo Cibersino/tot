@@ -323,8 +323,9 @@
         });
       }
 
+      const currentValue = editor.value;
       const explicitRange = editorFindReplaceCore.resolveLiteralMatchByOrdinal({
-        value: editor.value,
+        value: currentValue,
         query,
         ordinal: activeMatchOrdinal,
         matchCase,
@@ -334,6 +335,19 @@
         return buildReplaceResponse('replace-current', requestId, {
           status: 'selection-mismatch',
           replacements: 0,
+        });
+      }
+
+      const projectedLength = currentValue.length
+        - (explicitRange.end - explicitRange.start)
+        + replacement.length;
+      if (projectedLength > state.maxTextChars) {
+        return buildReplaceResponse('replace-current', requestId, {
+          ok: false,
+          status: 'max-text-exceeded',
+          replacements: 0,
+          finalTextLength: currentValue.length,
+          error: 'replace-current projected text exceeds max text chars',
         });
       }
 

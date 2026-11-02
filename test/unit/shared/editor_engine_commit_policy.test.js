@@ -504,6 +504,31 @@ test('replace-current setRangeText fallback dispatches input after text mutation
   assert.deepEqual(dispatchedEvents, ['input']);
 });
 
+test('replace-current rejects an over-cap projection before mutating editor text', () => {
+  const { engine, editor } = createHarness({
+    initialValue: 'abcd',
+    maxTextChars: 4,
+  });
+
+  const result = engine.handleReplaceRequest({
+    operation: 'replace-current',
+    requestId: 4,
+    query: 'a',
+    replacement: 'xy',
+    activeMatchOrdinal: 1,
+    matchCase: false,
+  });
+
+  assert.equal(result.requestId, 4);
+  assert.equal(result.operation, 'replace-current');
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 'max-text-exceeded');
+  assert.equal(result.replacements, 0);
+  assert.equal(result.finalTextLength, 4);
+  assert.equal(result.error, 'replace-current projected text exceeds max text chars');
+  assert.equal(editor.value, 'abcd');
+});
+
 test('replace-current can target a later literal match without relying on the live selection', () => {
   const { engine, editor, dispatchedEvents } = createHarness({
     initialValue: 'uno alpha dos alpha tres',
