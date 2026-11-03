@@ -17,7 +17,7 @@
 // =============================================================================
 
 const { screen } = require('electron');
-const { getEditorStateFile, loadJson, saveJson } = require('./fs_storage');
+const { getEditorStateFile, loadJson, saveJson, saveJsonStrict } = require('./fs_storage');
 const {
   EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
   EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
@@ -409,7 +409,7 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
       }
 
       state.maximizedTextWidthPx = nextMaximizedTextWidthPx;
-      saveJson(editorStateFile, state);
+      saveJsonStrict(editorStateFile, state);
       notifyWindowState(editorWin, 'editorState.setMaximizedTextWidthPx');
 
       return { ok: true, maximizedTextWidthPx: state.maximizedTextWidthPx };

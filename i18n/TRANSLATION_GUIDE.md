@@ -2432,6 +2432,12 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Alerta de resguardo para un estado anómalo; parece duplicar una alerta normal, pero cubre un camino excepcional distinto.
           // [CONCEPTO_APP] Editor de Texto; texto actual
         },
+        "sync_isolated": {
+          "es": "La sincronización de texto se suspendió para proteger el texto actual. Puedes seguir editando y copiar texto, pero los cambios locales no se sincronizan y pueden perderse al cerrar el Editor de Texto. Copia o guarda el texto que quieras conservar antes de cerrar o volver a abrir el Editor de Texto.",
+          "en": "Text synchronization was suspended to protect the current text. You can keep editing and copy text, but local changes are not synchronized and may be lost when the Text Editor closes. Copy or save any text you want to keep before closing or reopening the Text Editor."
+          // [PROPÓSITO] Alerta bloqueante única después de aislar la sincronización del Editor de Texto por una actualización canónica que no produjo el contenido esperado.
+          // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
         "calc_error": {
           "es": "Ocurrió un error al guardar el texto como texto actual.",
           "en": "An error occurred while saving the text as the current text."

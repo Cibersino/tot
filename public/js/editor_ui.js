@@ -150,8 +150,23 @@
       if (bottomBar) {
         bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
       }
+      syncCanonicalTextSyncControls();
       updateEditorTextSizeUi();
       updateReadProgressUi();
+    }
+
+    function syncCanonicalTextSyncControls() {
+      if (state.canonicalTextSyncIsolated === true) {
+        if (calcWhileTyping) {
+          calcWhileTyping.checked = false;
+          calcWhileTyping.disabled = true;
+        }
+        if (btnCalc) btnCalc.disabled = true;
+        return;
+      }
+
+      if (calcWhileTyping) calcWhileTyping.disabled = false;
+      if (btnCalc) btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
     }
 
     function setNormalInteractionAvailable(available) {
@@ -339,11 +354,11 @@
               ctx.engine.setCaretSafe(pos);
             }
           } catch (error) {
-            log.warnOnce('editor:restoreFocus:inner_catch', 'restoreFocusToEditor failed (ignored):', error);
+            log.warn('restoreFocusToEditor failed (ignored):', error);
           }
         }, 0);
       } catch (error) {
-        log.warnOnce('editor:restoreFocus:outer_catch', 'restoreFocusToEditor wrapper failed (ignored):', error);
+        log.warn('restoreFocusToEditor wrapper failed (ignored):', error);
       }
     }
 
@@ -475,6 +490,9 @@
         log.warn(
           'editorAPI.setMaximizedTextWidthPx missing; maximized Text Editor width update ignored.'
         );
+        if (skipLocalApply) {
+          setLocalEditorMaximizedTextWidthPx(previousTextWidthPx);
+        }
         return false;
       }
 
@@ -644,6 +662,7 @@
       setLocalEditorMaximizedTextWidthPx,
       setNormalInteractionAvailable,
       applyEditorTranslations,
+      syncCanonicalTextSyncControls,
       restoreFocusToEditor,
       focusEditorAtTop,
       applyReadingTestPrestartState,

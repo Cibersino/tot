@@ -37,27 +37,29 @@
       return match || null;
     }
 
-    function parseClockSeconds(input) {
+    function getClockInputTotalSeconds(input) {
       const match = getClockInputMatch(input);
       if (match === null) return null;
+
       const hours = BigInt(match[1]);
       const minutes = BigInt(match[2]);
       const seconds = BigInt(match[3]);
-      const totalSeconds = (hours * 3600n) + (minutes * 60n) + seconds;
+      return (hours * 3600n) + (minutes * 60n) + seconds;
+    }
+
+    function parseClockSeconds(input) {
+      const totalSeconds = getClockInputTotalSeconds(input);
+      if (totalSeconds === null) return null;
       return totalSeconds <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(totalSeconds) : null;
     }
 
     function parseStopwatchInput(input) {
-      const match = getClockInputMatch(input);
-      if (match === null) return null;
-
-      const hours = BigInt(match[1]);
-      const minutes = BigInt(match[2]);
-      const seconds = BigInt(match[3]);
-      const totalSeconds = (hours * 3600n) + (minutes * 60n) + seconds;
+      const totalSeconds = getClockInputTotalSeconds(input);
+      if (totalSeconds === null) return null;
       const milliseconds = Number(totalSeconds * 1000n);
       if (!Number.isFinite(milliseconds)) return null;
 
+      // Milliseconds need not be safe integers if the original whole seconds round-trip exactly.
       const roundedMilliseconds = Math.floor(milliseconds / 1000) * 1000;
       return Number.isFinite(roundedMilliseconds)
         && BigInt(Math.floor(roundedMilliseconds / 1000)) === totalSeconds

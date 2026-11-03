@@ -63,6 +63,18 @@ test('buildCustomTagValue uses a category namespace and normalized slug', () => 
   );
 });
 
+test('custom tag label resolution avoids throws from malformed encoded scalars', () => {
+  const generatedValue = snapshotTagCatalog.buildCustomTagValue('type', 'Cafe 😀');
+  const malformedValue = 'custom:type:_110000_';
+
+  assert.equal(snapshotTagCatalog.decodeCustomTagValueToLabel(generatedValue), 'cafe 😀');
+  assert.deepEqual(snapshotTagCatalog.normalizeTags({ type: [malformedValue] }), {
+    type: [malformedValue],
+  });
+  assert.equal(snapshotTagCatalog.decodeCustomTagValueToLabel(malformedValue), '');
+  assert.equal(snapshotTagCatalog.resolveTagLabel('type', malformedValue, {}), malformedValue);
+});
+
 test('custom tag labels use the shared 36-character cap', () => {
   assert.equal(snapshotTagCatalog.MAX_CUSTOM_LABEL_LENGTH, 36);
   assert.equal(snapshotTagCatalog.validateCustomLabel('a'.repeat(36)).ok, true);

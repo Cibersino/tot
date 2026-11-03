@@ -136,6 +136,7 @@ test('set-current-text accepts canonical payloads from authorized windows and re
     { sender: editorWindowDouble.win.webContents },
     {
       text: 'hello',
+      baseNonEditorRevision: 1,
       meta: { source: 'spoofed-source', action: 'typing' },
     }
   );
@@ -169,6 +170,161 @@ test('set-current-text accepts canonical payloads from authorized windows and re
       },
     },
   ]);
+});
+
+test('set-current-text rejects stale Editor writes after a newer non-Editor canonical write', async (t) => {
+  const { textState, restore } = loadTextState();
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  const mainResult = await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    {
+      text: 'newer main text',
+      meta: { source: 'main-window', action: 'overwrite' },
+    }
+  );
+  const staleEditorResult = await ipcMain.invoke(
+    'set-current-text',
+    { sender: editorWindowDouble.win.webContents },
+    {
+      text: 'stale editor text',
+      baseNonEditorRevision: 1,
+      meta: { source: 'editor', action: 'overwrite' },
+    }
+  );
+
+  assert.equal(mainResult.ok, true);
+  assert.deepEqual(staleEditorResult, { ok: false, code: 'STALE_EDITOR_WRITE' });
+  assert.equal(textState.getCurrentText(), 'newer main text');
+  assert.equal(editorWindowDouble.sends.length, 1);
+  assert.equal(editorWindowDouble.sends[0].payload.text, 'newer main text');
+});
+
+test('set-current-text rejects an Editor write without a valid non-Editor revision base', async (t) => {
+  const { textState, restore } = loadTextState();
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  const result = await ipcMain.invoke(
+    'set-current-text',
+    { sender: editorWindowDouble.win.webContents },
+    {
+      text: 'editor text',
+      meta: { source: 'editor', action: 'typing' },
+    }
+  );
+
+  assert.deepEqual(result, { ok: false, error: 'invalid editor base revision' });
+  assert.equal(textState.getCurrentText(), '');
+  assert.deepEqual(mainWindowDouble.sends, []);
+  assert.deepEqual(editorWindowDouble.sends, []);
+
+  const futureBaseResult = await ipcMain.invoke(
+    'set-current-text',
+    { sender: editorWindowDouble.win.webContents },
+    {
+      text: 'editor text',
+      baseNonEditorRevision: 2,
+      meta: { source: 'editor', action: 'typing' },
+    }
+  );
+
+  assert.deepEqual(futureBaseResult, { ok: false, error: 'invalid editor base revision' });
+  assert.equal(textState.getCurrentText(), '');
+});
+
+test('set-current-text accepts successive Editor writes based on the same non-Editor revision', async (t) => {
+  const { textState, restore } = loadTextState();
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  const firstResult = await ipcMain.invoke(
+    'set-current-text',
+    { sender: editorWindowDouble.win.webContents },
+    {
+      text: 'first editor text',
+      baseNonEditorRevision: 1,
+      meta: { source: 'editor', action: 'typing' },
+    }
+  );
+  const secondResult = await ipcMain.invoke(
+    'set-current-text',
+    { sender: editorWindowDouble.win.webContents },
+    {
+      text: 'second editor text',
+      baseNonEditorRevision: 1,
+      meta: { source: 'editor', action: 'typing' },
+    }
+  );
+
+  assert.equal(firstResult.ok, true);
+  assert.equal(secondResult.ok, true);
+  assert.equal(textState.getCurrentText(), 'second editor text');
+});
+
+test('set-current-text accepts an Editor write based on the newest non-Editor revision', async (t) => {
+  const { textState, restore } = loadTextState();
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  const mainWindowDouble = createWindowDouble('main');
+  const editorWindowDouble = createWindowDouble('editor');
+  mainWindowDouble.win.webContents.__ownerWindow = mainWindowDouble.win;
+  editorWindowDouble.win.webContents.__ownerWindow = editorWindowDouble.win;
+  textState.registerIpc(ipcMain, () => ({
+    mainWin: mainWindowDouble.win,
+    editorWin: editorWindowDouble.win,
+  }));
+
+  await ipcMain.invoke(
+    'set-current-text',
+    { sender: mainWindowDouble.win.webContents },
+    {
+      text: 'main text',
+      meta: { source: 'main-window', action: 'overwrite' },
+    }
+  );
+  const editorResult = await ipcMain.invoke(
+    'set-current-text',
+    { sender: editorWindowDouble.win.webContents },
+    {
+      text: 'editor text after main update',
+      baseNonEditorRevision: 2,
+      meta: { source: 'editor', action: 'typing' },
+    }
+  );
+
+  assert.equal(editorResult.ok, true);
+  assert.equal(textState.getCurrentText(), 'editor text after main update');
 });
 
 test('Editor receives an authorized versioned current-text bootstrap snapshot', async (t) => {

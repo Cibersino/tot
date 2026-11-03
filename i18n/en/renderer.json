@@ -351,6 +351,7 @@
         "paste_truncated": "Pasted text was truncated to avoid exceeding the maximum.",
         "drop_truncated": "Dragged text exceeded the available space and was truncated.",
         "text_truncated": "Text was truncated to fit the app limit.",
+        "sync_isolated": "Text synchronization was suspended to protect the current text. You can keep editing and copy text, but local changes are not synchronized and may be lost when the Text Editor closes. Copy or save any text you want to keep before closing or reopening the Text Editor.",
         "calc_error": "An error occurred while saving the text as the current text."
       }
     },

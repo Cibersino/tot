@@ -37,6 +37,7 @@
   }
   const { MAX_RESULTS_TIME_MULTIPLIER } = AppConstants;
 
+  const rowEl = document.getElementById('resultsTimeMultiplierRow');
   const labelEl = document.getElementById('resultsTimeMultiplierLabel');
   const inputEl = document.getElementById('resultsTimeMultiplierInput');
   const outputEl = document.getElementById('resultsTimeMultiplierOutput');
@@ -51,6 +52,11 @@
   // =============================================================================
   function hasRequiredElements() {
     return !!(labelEl && inputEl && outputEl);
+  }
+
+  function hideUnavailableRow() {
+    if (!rowEl) return;
+    rowEl.hidden = true;
   }
 
   function ensureElements(action) {
@@ -145,7 +151,10 @@
   }
 
   function bindEvents() {
-    if (!ensureElements('bindEvents')) return;
+    if (!ensureElements('bindEvents')) {
+      hideUnavailableRow();
+      return;
+    }
     inputEl.min = '1';
     inputEl.max = String(MAX_RESULTS_TIME_MULTIPLIER);
     inputEl.step = '1';

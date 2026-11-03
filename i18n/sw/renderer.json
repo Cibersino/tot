@@ -351,6 +351,7 @@
         "paste_truncated": "Maandishi yaliyobandikwa yalikatwa ili yasizidi kiwango cha juu.",
         "drop_truncated": "Maandishi yaliyoburutwa yalizidi nafasi iliyopo na yalikatwa.",
         "text_truncated": "Maandishi yalikatwa ili yatoshee kikomo cha programu.",
+        "sync_isolated": "Usawazishaji wa maandishi umesitishwa ili kulinda maandishi ya sasa. Unaweza kuendelea kuhariri na kunakili maandishi, lakini mabadiliko ya ndani hayasawazishwi na yanaweza kupotea unapofunga Kihariri cha Maandishi. Nakili au hifadhi maandishi unayotaka kubaki nayo kabla ya kufunga au kufungua tena Kihariri cha Maandishi.",
         "calc_error": "Hitilafu ilitokea wakati wa kuhifadhi maandishi kama maandishi ya sasa."
       }
     },

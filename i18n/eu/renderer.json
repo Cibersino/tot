@@ -351,6 +351,7 @@
         "paste_truncated": "Itsatsitako testua moztu da gehienekoa ez gainditzeko.",
         "drop_truncated": "Arrastatutako testuak erabilgarri zegoen espazioa gainditzen zuen eta moztu egin da.",
         "text_truncated": "Testua moztu da aplikazioaren mugara egokitzeko.",
+        "sync_isolated": "Testuaren sinkronizazioa eten da uneko testua babesteko. Editatzen eta testua kopiatzen jarrai dezakezu, baina tokiko aldaketak ez dira sinkronizatzen eta gal daitezke Testu Editorea ixtean. Kopiatu edo gorde mantendu nahi duzun testua Testu Editorea itxi edo berriro ireki aurretik.",
         "calc_error": "Errorea gertatu da kalkulatzean. Begiratu kontsola."
       }
     },

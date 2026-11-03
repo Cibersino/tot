@@ -6,9 +6,9 @@
 // =============================================================================
 // Responsibilities:
 // - Expose the shared snapshot tag catalog for renderer and main-process consumers.
-// - Define canonical default tag option sets and custom-tag value generation.
+// - Define canonical default tag option sets and encode/decode custom tag values.
 // - Normalize snapshot tags and editable snapshot-tag preferences.
-// - Resolve visible editable catalogs without duplicating merge logic.
+// - Resolve tag labels and visible editable catalogs without duplicating merge logic.
 // - Support both browser-script and CommonJS consumers.
 
 // =============================================================================
@@ -392,7 +392,12 @@
       if (!/^[0-9a-f]+$/.test(hex)) {
         return '';
       }
-      decoded += String.fromCodePoint(parseInt(hex, 16));
+      // Preserve the raw tag value through resolveTagLabel when an encoded scalar is invalid.
+      const codePoint = parseInt(hex, 16);
+      if (!Number.isSafeInteger(codePoint) || codePoint > 0x10ffff) {
+        return '';
+      }
+      decoded += String.fromCodePoint(codePoint);
       index = endIndex;
     }
     return collapseInternalWhitespace(decoded);
@@ -533,9 +538,7 @@
       .map((option) => option.value);
   }
 
-  function resolveCategoryCatalog(category, rawPreferences, { getDefaultLabel } = {}) {
-    const normalizedCategory = normalizeTagCategory(category);
-    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+  function resolveNormalizedCategoryCatalog(normalizedCategory, preferences, getDefaultLabel) {
     const categoryPreferences = preferences[normalizedCategory];
     const hiddenDefaults = new Set(categoryPreferences.hiddenDefaults);
     const defaultOptions = getDefaultOptionsForCategory(normalizedCategory).map((option) => ({
@@ -609,11 +612,17 @@
     };
   }
 
+  function resolveCategoryCatalog(category, rawPreferences, { getDefaultLabel } = {}) {
+    const normalizedCategory = normalizeTagCategory(category);
+    const preferences = normalizeSnapshotTagPreferences(rawPreferences);
+    return resolveNormalizedCategoryCatalog(normalizedCategory, preferences, getDefaultLabel);
+  }
+
   function resolveEditableCatalog(rawPreferences, { getDefaultLabel } = {}) {
     const preferences = normalizeSnapshotTagPreferences(rawPreferences);
     const catalog = {};
     TAG_KEYS.forEach((category) => {
-      catalog[category] = resolveCategoryCatalog(category, preferences, { getDefaultLabel });
+      catalog[category] = resolveNormalizedCategoryCatalog(category, preferences, getDefaultLabel);
     });
     return catalog;
   }

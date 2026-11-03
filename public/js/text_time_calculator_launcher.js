@@ -20,8 +20,9 @@
   }
   const log = window.getLogger('text-time-calculator-launcher');
   const button = document.getElementById('btnTextTimeCalculator');
+  // The calculator is auxiliary; a missing launcher button must not abort initialization of the main renderer.
   if (!button) {
-    throw new Error('[text_time_calculator_launcher] btnTextTimeCalculator missing; cannot continue');
+    log.error('Calculator launcher unavailable: btnTextTimeCalculator missing.');
   }
 
   // =============================================================================
@@ -36,6 +37,7 @@
     if (typeof tRenderer !== 'function') {
       throw new Error('[text_time_calculator_launcher] tRenderer unavailable; cannot apply launcher semantics');
     }
+    if (!button) return;
 
     const name = tRenderer('renderer.main.names.text_time_calculator');
     button.setAttribute('aria-label', name);
@@ -44,6 +46,7 @@
 
   function bindActions({ onOpenCalculator } = {}) {
     if (actionsBound) return;
+    if (!button) return;
     if (typeof onOpenCalculator !== 'function') {
       log.warn('Calculator launcher bind skipped: onOpenCalculator missing.');
       return;
@@ -56,6 +59,7 @@
   }
 
   function setInteractionLocked(locked) {
+    if (!button) return;
     const nextLocked = !!locked;
     button.disabled = nextLocked;
     button.setAttribute('aria-disabled', nextLocked ? 'true' : 'false');

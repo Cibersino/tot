@@ -351,6 +351,7 @@
         "paste_truncated": "Se cortó el texto pa' que cupiera.",
         "drop_truncated": "Lo que tiraste estaba muy largo y lo mochamos.",
         "text_truncated": "Mochamos el texto pa' que entre en la aplicación.",
+        "sync_isolated": "Se suspendió la sincronización del texto pa' proteger el texto actual. Puedes seguir editando y copiando texto, pero los cambios locales no se sincronizan y se pueden perder al cerrar el Editor de Texto. Copia o guarda lo que quieras conservar antes de cerrar o volver a abrir el Editor de Texto.",
         "calc_error": "Cagaron las matemáticas. Lorea la consola."
       }
     },

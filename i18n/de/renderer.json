@@ -351,6 +351,7 @@
         "paste_truncated": "Eingefügter Text wurde gekürzt, um das Maximum zu vermeiden.",
         "drop_truncated": "Abgelegter Text hat den verfügbaren Speicherplatz überschritten und wurde gekürzt.",
         "text_truncated": "Text wurde gekürzt, um die Anwendungsgrenze zu passen.",
+        "sync_isolated": "Die Textsynchronisierung wurde ausgesetzt, um den aktuellen Text zu schützen. Sie können weiter bearbeiten und Text kopieren, aber lokale Änderungen werden nicht synchronisiert und können beim Schließen des Texteditors verloren gehen. Kopieren oder speichern Sie den Text, den Sie behalten möchten, bevor Sie den Texteditor schließen oder erneut öffnen.",
         "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
       }
     },

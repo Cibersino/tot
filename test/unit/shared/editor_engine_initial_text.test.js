@@ -107,3 +107,68 @@ test('initial Text Editor seed uses the suppressed whole-value application path 
   assert.equal(localSyncAttempts, 0);
   assert.equal(state.suppressLocalUpdate, false);
 });
+
+test('initial Text Editor seed fails closed when the textarea does not match the effective text', async () => {
+  const editor = createEditorDouble();
+  const state = {
+    maxTextChars: 100,
+    suppressLocalUpdate: false,
+  };
+
+  const sandbox = {
+    window: {
+      getLogger() {
+        return {
+          warn() {},
+          warnOnce() {},
+          error() {},
+          errorOnce() {},
+        };
+      },
+      Notify: {
+        notifyEditor() {},
+      },
+    },
+    document: {
+      activeElement: null,
+      execCommand() {
+        return true;
+      },
+    },
+    Event: class Event {
+      constructor(type) {
+        this.type = type;
+      }
+    },
+  };
+
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/editor_engine.js'),
+    'utf8'
+  );
+  vm.runInContext(source, sandbox, { filename: 'public/js/editor_engine.js' });
+
+  const engine = sandbox.window.EditorEngine.createEditorEngine({
+    SMALL_UPDATE_THRESHOLD: 100,
+    editorAPI: {
+      setCurrentText() {},
+    },
+    editorFindReplaceCore: {},
+    dom: {
+      editor,
+      calcWhileTyping: { checked: true },
+    },
+    state,
+    ui: {
+      restoreFocusToEditor() {},
+      syncCanonicalTextSyncControls() {},
+    },
+  });
+
+  const applied = await engine.applyInitialText({ text: 'expected text' });
+
+  assert.equal(applied, false);
+  assert.equal(editor.value, '');
+  assert.equal(state.suppressLocalUpdate, false);
+});

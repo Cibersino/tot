@@ -65,6 +65,7 @@ Reglas:
 - `public/js/snapshot_save_tags_modal.js` deja de imponer un guard bootstrap local de `window.Notify` que no existía en ningún otro archivo del repo; el modal vuelve a alinearse con el patrón renderer vigente, donde `notify.js` sigue siendo el owner del contrato y los consumers no duplican checks de disponibilidad.
 - El cronómetro de la ventana principal deja de mezclar tamaños de icono entre `play/pause` y `stop/reset`: los dos botones vuelven a compartir la escala compacta del `Floating Stopwatch`, y el glyph `stop` recupera peso visual suficiente dentro de ese mismo tamaño reducido.
 - Cronómetro y texto vigente: vaciar el texto conserva el tiempo y el estado de marcha o pausa, y deja la WPM real en blanco. La edición manual evita estados locales alternativos y la validación de tiempos rechaza valores no representables exactamente.
+- Sincronización de escritura del Text Editor: una escritura ya despachada por el Editor no puede reemplazar una actualización canónica más nueva de un origen no-Editor; las escrituras consecutivas del Editor y sus ecos conservan su flujo normal.
 - La ventana flotante mejora el diagnóstico de apertura, cierre y refresco de estado; la extracción de texto comprueba las precondiciones antes de abrir el selector de archivos.
 - El `Task Editor` deja de depender exclusivamente de tipeo manual para poblar `Link or local path` cuando la fila apunta a archivos locales: la toolbar agrega una entrada batch `Add files` con picker multi-select y cada fila suma un picker local dedicado, sin romper el escape hatch de edición libre para `https:` y rutas pegadas.
 - La nueva acción local por fila del `Task Editor` se integra al mismo sistema compartido de iconos renderer y deja de verse como un control textual aislado: el botón browse converge en el asset canónico `folder.svg` y recupera el mismo lenguaje monocromo/outline ya usado por `open-target`, biblioteca y snapshot dentro de la tabla.
@@ -289,6 +290,9 @@ Reglas:
   - el glyph `stop` deja de verse subdimensionado una vez alineados ambos botones al tamaño pequeño, porque su SVG canónico amplía el cuadrado útil dentro del mismo `viewBox` y recupera masa visual comparable con `play`.
 - Current text / bootstrap:
   - el bootstrap de texto vigente deja de sustituir una lectura fallida por texto vacío o un estado de procesamiento inactivo: `getCurrentText()` y `getCurrentTextProcessingState()` son dependencias requeridas, los envelopes explícitos `{ ok: false, code }` preservan su código diagnóstico y los envelopes malformados siguen siendo distinguibles de una respuesta válida; las actualizaciones pre-READY y READY comparten la misma validación de `current-text-updated`, y el portapapeles exige un éxito explícito `{ ok: true, text }`.
+- Text Editor / escritura canónica:
+  - una escritura del Editor cuyo IPC fue despachado antes de una actualización canónica posterior de Main u otro origen no-Editor ya no puede reemplazar ese texto más nuevo cuando Main procesa ambas: el Editor adjunta la revisión no-Editor que conoce y Main la compara con la última aceptada;
+  - las escrituras consecutivas del Editor sobre la misma revisión no-Editor siguen siendo válidas; los ecos con `meta.source: 'editor'` no adelantan esa base, y una respuesta `STALE_EDITOR_WRITE` se descarta intencionalmente sin convertirla en un fallo de Auto, Apply o Clear.
 - Duración estimada / Task Editor:
   - el tiempo restante mostrado por cada fila y el resumen agregado dejan de depender de multiplicación flotante renderer; ambos paths usan el mismo dominio exacto de segundos enteros y centésimos que valida y persiste `tasks_main`, eliminando la discrepancia visible de un segundo que podía existir antes de guardar;
   - una edición, adición, carga de biblioteca o inicialización que no produce un resumen representable se rechaza antes de materializar o mutar la sesión del `Task Editor`; los datos canónicos provenientes de main/bridge ya no se reparan por coerción a strings vacíos, cero o `null`.
@@ -304,7 +308,6 @@ Reglas:
 - Calculadora rápida de lectura:
   - la ventana deja de presentar un layout ambiguo donde input y output parecían duplicarse dentro de la misma fila; el resultado derivado ahora se lee como valor único y la composición final converge en la dirección issue-owned de dos inputs + un resultado;
   - el tamaño fijo de la ventana deja de requerir scroll para el flujo nominal, porque las validaciones inline ocultas ya no reservan altura cuando no hay error y la densidad visual de la superficie se ajusta al contenido real;
-  - `public/js/text_time_calculator_launcher.js` deja de degradar silenciosamente si falta `btnTextTimeCalculator` en la ventana principal y pasa a fail-fast como dependency bootstrap requerida;
   - renderer y core dejan de divergir cuando el target llega inválido: ambos normalizan el fallback efectivo a `wpm` en vez de mezclar defaults distintos según la capa.
 - Task Editor / columnas:
   - las columnas dejan de diferir entre el ancho configurado y el ancho realmente renderizado, eliminando el surplus que Chromium repartía y el scrollbar horizontal inesperado en el layout nominal;
@@ -329,6 +332,9 @@ Reglas:
 ### Contratos tocados
 
 - Cronómetro / texto vigente: se elimina el callback interno `onCurrentTextDidBecomeEmpty` de `textState.init`; el IPC `current-text-updated`, las APIs públicas del cronómetro y los formatos persistidos mantienen sus contratos. La extracción conserva sus precondiciones main-owned.
+- `set-current-text` / Text Editor:
+  - para un sender autorizado del Editor, el payload canónico requiere `{ text, baseNonEditorRevision, meta }`; `baseNonEditorRevision` debe ser un entero seguro dentro de la revisión canónica actual. Un valor ausente, inválido o futuro devuelve `{ ok: false, error: 'invalid editor base revision' }`;
+  - si la base es anterior a la última actualización canónica no-Editor, Main devuelve `{ ok: false, code: 'STALE_EDITOR_WRITE' }` y no modifica el texto canónico. Los writes de los otros senders autorizados conservan su contrato actual.
 - Presets predeterminados / configuración e IPC:
   - `config/presets_defaults/defaults_presets.json` y `defaults_presets_<lang>.json` son la fuente efectiva en runtime; los archivos empaquetados solo sirven para la inicialización de archivos ausentes. Los JSON configurables siguen usando arreglos de presets y no se introduce un nuevo schema persistido ni una migración automática;
   - `get-default-presets` conserva su respuesta pública `{ general, languagePresets }` y la carga de todos los idiomas, pero devuelve solamente entradas validadas; un archivo configurable vacío, ausente, mal formado o ilegible no activa sustitución desde recursos empaquetados. Si el directorio es inaccesible, mantiene el resultado público vacío de solo lectura;
@@ -405,6 +411,7 @@ Reglas:
   - nuevo bridge de la ventana principal `window.electronAPI.openTextTimeCalculator()`, que invoca `ipcMain.handle('text-time-calculator-open', ...)` y queda autorizado solo para senders de `mainWin`;
   - nuevo preload surface `window.textTimeCalculatorAPI` en la ventana dedicada, con `getSettings()` y `onSettingsChanged(cb) -> unsubscribe` como contrato requerido de bootstrap;
   - `getSecondaryWindowOpenStates()` agrega `{ id: 'text_time_calculator', label: 'text_time_calculator', isOpen }`, por lo que las precondiciones main-owned que ya bloqueaban con ventanas secundarias abiertas pasan a incluir también la calculadora rápida.
+  - el launcher, como funcionalidad auxiliar, conserva `window.TextTimeCalculatorLauncher` aunque falte `btnTextTimeCalculator`: registra ese fallo local y omite las operaciones dependientes del botón sin interrumpir la inicialización del renderer principal; si falta `onOpenCalculator`, advierte y permite reintentar la vinculación.
 - IPC / preload del Task Editor — layout de columnas:
   - `window.taskEditorAPI.getColumnWidths()` / `saveColumnWidths(widths)` se sustituyen por `getColumnLayout()` / `saveColumnLayout(record)` sobre los canales existentes `task-columns-load` y `task-columns-save`;
   - `getColumnLayout()` devuelve `{ ok: true, record: null | <record-v1> }` o `{ ok: false, code: 'UNAUTHORIZED' | 'READ_FAILED' }`; `saveColumnLayout(record)` devuelve exactamente `{ ok: true }` o `{ ok: false, code: 'UNAUTHORIZED' | 'INVALID_SCHEMA' | 'WRITE_FAILED' }`;

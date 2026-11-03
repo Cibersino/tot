@@ -254,6 +254,10 @@ function createEditorScriptHarness({
   omitStartupPresentation = false,
   initialTextApplyResult = true,
   initialTextApplyThrows = false,
+  externalUpdateResult = null,
+  notifyMainError = null,
+  updateDirectionError = null,
+  throwUpdateDirectionAfterExternalUpdate = false,
   rejectTransitionLanguage = '',
   transitionFailure = null,
   holdTransitionLanguage = '',
@@ -267,6 +271,7 @@ function createEditorScriptHarness({
 } = {}) {
   const subscriptions = {};
   const updateDirectionCalls = [];
+  let shouldThrowDirectionOnNextUpdate = false;
   const transitionLanguages = [];
   const replaceResponses = [];
   const basePresentationReports = [];
@@ -279,10 +284,13 @@ function createEditorScriptHarness({
   const spellcheckStateCalls = [];
   const fontSizeCalls = [];
   const normalInteractionCalls = [];
+  const syncCanonicalTextSyncControlCalls = [];
+  const notifyMainCalls = [];
   const startupEvents = [];
   let getInitialCurrentTextSnapshotCallCount = 0;
   let releaseHeldTransition = null;
   let resolveHeldTransitionReached = null;
+  let editorEngineContext = null;
   const heldTransition = holdTransitionLanguage
     ? new Promise((resolve) => { releaseHeldTransition = resolve; })
     : null;
@@ -437,6 +445,9 @@ function createEditorScriptHarness({
               normalInteractionCalls.push(available === true);
               startupEvents.push(`normal:${available === true}`);
             },
+            syncCanonicalTextSyncControls() {
+              syncCanonicalTextSyncControlCalls.push(editorCtx.state.canonicalTextSyncIsolated === true);
+            },
             async applyEditorTranslations() {},
             applyTextareaDefaults() {},
             applyEditorLanguage() {},
@@ -448,6 +459,10 @@ function createEditorScriptHarness({
             },
             updateEditorTextDirection() {
               updateDirectionCalls.push(elements.editorArea.value);
+              if (shouldThrowDirectionOnNextUpdate && updateDirectionError) {
+                shouldThrowDirectionOnNextUpdate = false;
+                throw updateDirectionError;
+              }
             },
             applyReadingTestPrestartState() {},
             updateEditorTextSizeUi() {},
@@ -462,6 +477,7 @@ function createEditorScriptHarness({
       },
       EditorEngine: {
         createEditorEngine(engineCtx) {
+          editorEngineContext = engineCtx;
           return {
             getSelectionRange() { return { start: 0, end: 0 }; },
             getInsertionCapacity() { return 100000; },
@@ -492,9 +508,24 @@ function createEditorScriptHarness({
               } else {
                 elements.editorArea.value = String(payload || '');
               }
+              const result = typeof externalUpdateResult === 'function'
+                ? externalUpdateResult(payload, engineCtx)
+                : externalUpdateResult;
+              if (result && result.canonicalTextSyncIsolationLatched === true) {
+                engineCtx.state.canonicalTextSyncIsolated = true;
+                engineCtx.ui.syncCanonicalTextSyncControls();
+              }
+              if (throwUpdateDirectionAfterExternalUpdate) {
+                shouldThrowDirectionOnNextUpdate = true;
+              }
+              return result;
             },
             sendCurrentTextToMain(action, options) {
-              sendCurrentTextCalls.push({ action, options });
+              sendCurrentTextCalls.push({
+                action,
+                options,
+                baseNonEditorRevision: engineCtx.state.latestNonEditorRevisionSeen,
+              });
               return true;
             },
             handleTextTransferInsert(event, transferConfig) {
@@ -523,6 +554,10 @@ function createEditorScriptHarness({
       },
       Notify: {
         notifyEditor() {},
+        notifyMain(key) {
+          notifyMainCalls.push(key);
+          if (notifyMainError) throw notifyMainError;
+        },
       },
       addEventListener() {},
       removeEventListener() {},
@@ -640,8 +675,13 @@ function createEditorScriptHarness({
     spellcheckStateCalls,
     fontSizeCalls,
     normalInteractionCalls,
+    syncCanonicalTextSyncControlCalls,
+    notifyMainCalls,
     startupEvents,
     getInitialCurrentTextSnapshotCallCount: () => getInitialCurrentTextSnapshotCallCount,
+    getEditorState() {
+      return editorEngineContext ? editorEngineContext.state : null;
+    },
     releaseHeldTransition() {
       if (releaseHeldTransition) releaseHeldTransition();
     },
@@ -848,6 +888,153 @@ test('editor keeps a newer live current-text update over an older bootstrap snap
   );
 });
 
+test('a pre-ready live mismatch reports bootstrap failure and prevents a pending snapshot from reporting ready', async () => {
+  let resolveSnapshot;
+  let markSnapshotRequested;
+  const snapshotPending = new Promise((resolve) => { resolveSnapshot = resolve; });
+  const snapshotRequested = new Promise((resolve) => { markSnapshotRequested = resolve; });
+  const harness = createEditorScriptHarness({
+    getInitialCurrentTextSnapshotImpl: async () => {
+      markSnapshotRequested();
+      return snapshotPending;
+    },
+    externalUpdateResult: {
+      canonicalTextSyncIsolationLatched: true,
+    },
+  });
+
+  await snapshotRequested;
+  await harness.subscriptions.externalUpdate({
+    text: 'live mismatch text',
+    revision: 2,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+  resolveSnapshot({ ok: true, text: 'later snapshot text', revision: 3 });
+  await tick();
+  await tick();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+  ]);
+  assert.equal(harness.normalInteractionCalls.includes(true), false);
+  assert.deepEqual(harness.notifyMainCalls, []);
+  assert.equal(harness.getEditorState().canonicalTextSyncIsolated, true);
+  assert.deepEqual(harness.syncCanonicalTextSyncControlCalls, [true]);
+});
+
+test('a post-ready live mismatch keeps base readiness and directly notifies the isolated Editor session', async () => {
+  const harness = await bootstrapEditorScriptHarness({
+    externalUpdateResult: {
+      canonicalTextSyncIsolationLatched: true,
+    },
+  });
+
+  await harness.subscriptions.externalUpdate({
+    text: 'live mismatch text',
+    revision: 2,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'ready' },
+  ]);
+  assert.deepEqual(harness.notifyMainCalls, ['renderer.editor.alerts.sync_isolated']);
+  assert.equal(harness.getEditorState().canonicalTextSyncIsolated, true);
+  assert.deepEqual(harness.syncCanonicalTextSyncControlCalls, [false, true]);
+
+  harness.elements.calcWhileTyping.checked = true;
+  harness.elements.calcWhileTyping.dispatch('change');
+  harness.elements.editorArea.value = 'local isolated edit';
+  harness.elements.editorArea.dispatch('input');
+  assert.deepEqual(harness.sendCurrentTextCalls, []);
+  assert.equal(harness.getEditorState().debounceTimer, null);
+});
+
+test('a post-ready alert failure leaves synchronization isolation active', async () => {
+  const alertError = new Error('alert failed');
+  const harness = await bootstrapEditorScriptHarness({
+    externalUpdateResult: {
+      canonicalTextSyncIsolationLatched: true,
+    },
+    notifyMainError: alertError,
+  });
+
+  await harness.subscriptions.externalUpdate({
+    text: 'live mismatch text',
+    revision: 2,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(harness.getEditorState().canonicalTextSyncIsolated, true);
+  assert.deepEqual(harness.notifyMainCalls, ['renderer.editor.alerts.sync_isolated']);
+  assert.equal(harness.errorLogs.at(-1)[0], 'Text Editor synchronization isolation alert failed:');
+  assert.equal(harness.errorLogs.at(-1)[1], alertError);
+});
+
+test('a pre-ready direction failure cannot prevent the isolated update bootstrap failure report', async () => {
+  let resolveSnapshot;
+  let markSnapshotRequested;
+  const snapshotPending = new Promise((resolve) => { resolveSnapshot = resolve; });
+  const snapshotRequested = new Promise((resolve) => { markSnapshotRequested = resolve; });
+  const directionError = new Error('direction update failed');
+  const harness = createEditorScriptHarness({
+    getInitialCurrentTextSnapshotImpl: async () => {
+      markSnapshotRequested();
+      return snapshotPending;
+    },
+    externalUpdateResult: {
+      canonicalTextSyncIsolationLatched: true,
+    },
+    updateDirectionError: directionError,
+    throwUpdateDirectionAfterExternalUpdate: true,
+  });
+
+  await snapshotRequested;
+  await assert.rejects(
+    harness.subscriptions.externalUpdate({
+      text: 'live mismatch text',
+      revision: 2,
+      meta: { source: 'main-window', action: 'overwrite' },
+    }),
+    directionError
+  );
+  resolveSnapshot({ ok: true, text: 'later snapshot text', revision: 3 });
+  await tick();
+  await tick();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'failed', reason: 'bootstrap-failed' },
+  ]);
+  assert.equal(harness.normalInteractionCalls.includes(true), false);
+  assert.deepEqual(harness.notifyMainCalls, []);
+});
+
+test('a post-ready direction failure cannot prevent the isolated session alert', async () => {
+  const directionError = new Error('direction update failed');
+  const harness = await bootstrapEditorScriptHarness({
+    externalUpdateResult: {
+      canonicalTextSyncIsolationLatched: true,
+    },
+    updateDirectionError: directionError,
+    throwUpdateDirectionAfterExternalUpdate: true,
+  });
+
+  await assert.rejects(
+    harness.subscriptions.externalUpdate({
+      text: 'live mismatch text',
+      revision: 2,
+      meta: { source: 'main-window', action: 'overwrite' },
+    }),
+    directionError
+  );
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
+    { generation: 1, status: 'ready' },
+  ]);
+  assert.deepEqual(harness.notifyMainCalls, ['renderer.editor.alerts.sync_isolated']);
+  assert.equal(harness.getEditorState().canonicalTextSyncIsolated, true);
+});
+
 test('editor accepts a revisioned live update when the processing requestId is absent', async () => {
   const harness = await bootstrapEditorScriptHarness();
 
@@ -896,6 +1083,46 @@ test('editor applies a newer bootstrap snapshot after an older live update arriv
   });
   assert.equal(harness.elements.editorArea.value, 'newer snapshot text');
   assert.equal(harness.bootstrapApplyCalls.length, 2);
+});
+
+test('editor tracks the non-Editor revision base for subsequent Editor writes', async () => {
+  const harness = await bootstrapEditorScriptHarness({
+    getInitialCurrentTextSnapshotImpl: async () => ({
+      ok: true,
+      text: 'bootstrap text',
+      revision: 4,
+    }),
+  });
+
+  assert.equal(harness.getEditorState().latestNonEditorRevisionSeen, 4);
+
+  harness.elements.calcWhileTyping.checked = false;
+  harness.elements.calcWhileTyping.dispatch('change');
+  harness.elements.editorArea.value = 'first Editor write';
+  harness.elements.btnCalc.dispatch('click');
+  assert.equal(harness.sendCurrentTextCalls[0].baseNonEditorRevision, 4);
+
+  await harness.subscriptions.externalUpdate({
+    text: 'newer Main text',
+    revision: 5,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(harness.getEditorState().latestNonEditorRevisionSeen, 5);
+  harness.elements.editorArea.value = 'second Editor write';
+  harness.elements.btnCalc.dispatch('click');
+  assert.equal(harness.sendCurrentTextCalls[1].baseNonEditorRevision, 5);
+
+  await harness.subscriptions.externalUpdate({
+    text: 'Editor echo',
+    revision: 6,
+    meta: { source: 'editor', action: 'typing' },
+  });
+
+  assert.equal(harness.getEditorState().latestNonEditorRevisionSeen, 5);
+  harness.elements.editorArea.value = 'third Editor write';
+  harness.elements.btnCalc.dispatch('click');
+  assert.equal(harness.sendCurrentTextCalls[2].baseNonEditorRevision, 5);
 });
 
 test('editor reports a bootstrap failure when the initial current-text snapshot is missing', async () => {

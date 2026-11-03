@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Validate the two editable calculator inputs for the selected target.
 // - Derive the third reading variable using the canonical math rules.
-// - Keep calculation and formatting logic separate from window/DOM code.
+// - Receive reading math and formatting through injected functions, separate from window/DOM code.
 // - Support both browser-script and CommonJS consumers.
 
 // =============================================================================
@@ -29,7 +29,7 @@
   const VALID_TARGETS = new Set(['words', 'time', 'wpm']);
 
   // =============================================================================
-  // Helpers (pure calculator validation + derivation)
+  // Calculator factory and evaluation helpers
   // =============================================================================
   function createTextTimeCalculatorUtils({
     getEstimatedReadingSeconds,
@@ -112,6 +112,7 @@
       if (parsed.state === 'empty') {
         return false;
       }
+      // The internal field key is "time"; normalized results store seconds in "timeSeconds".
       if (field === 'time') {
         result.normalized.timeSeconds = parsed.value;
       } else {
@@ -136,22 +137,16 @@
       timeText = '',
       wpmText = '',
     } = {}) {
+      // Keep invalid targets aligned with the renderer's WPM default.
       const normalizedTarget = VALID_TARGETS.has(target) ? target : 'wpm';
       const result = createNeutralState(normalizedTarget);
 
-      const parsedWords = normalizedTarget === 'words'
-        ? { state: 'skipped', value: null }
-        : parseNonNegativeIntegerText(wordsText);
-      const parsedTime = normalizedTarget === 'time'
-        ? { state: 'skipped', value: null }
-        : parseTimeText(timeText);
-      const parsedWpm = normalizedTarget === 'wpm'
-        ? { state: 'skipped', value: null }
-        : parsePositiveIntegerText(wpmText);
-
-      const readyWords = normalizedTarget === 'words' ? true : applyInputState(result, 'words', parsedWords);
-      const readyTime = normalizedTarget === 'time' ? true : applyInputState(result, 'time', parsedTime);
-      const readyWpm = normalizedTarget === 'wpm' ? true : applyInputState(result, 'wpm', parsedWpm);
+      const readyWords = normalizedTarget === 'words'
+        || applyInputState(result, 'words', parseNonNegativeIntegerText(wordsText));
+      const readyTime = normalizedTarget === 'time'
+        || applyInputState(result, 'time', parseTimeText(timeText));
+      const readyWpm = normalizedTarget === 'wpm'
+        || applyInputState(result, 'wpm', parsePositiveIntegerText(wpmText));
 
       if (result.invalid.words || result.invalid.time || result.invalid.wpm) {
         return result;

@@ -351,6 +351,7 @@
         "paste_truncated": "Teks yang ditempel dipotong agar tidak melebihi batas maksimum.",
         "drop_truncated": "Teks yang diseret melebihi ruang yang tersedia dan dipotong.",
         "text_truncated": "Teks dipotong agar sesuai dengan batas aplikasi.",
+        "sync_isolated": "Sinkronisasi teks ditangguhkan untuk melindungi teks saat ini. Anda masih dapat mengedit dan menyalin teks, tetapi perubahan lokal tidak disinkronkan dan dapat hilang saat Editor Teks ditutup. Salin atau simpan teks yang ingin dipertahankan sebelum menutup atau membuka kembali Editor Teks.",
         "calc_error": "Terjadi kesalahan saat menghitung. Periksa konsol."
       }
     },

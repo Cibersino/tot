@@ -351,6 +351,7 @@
         "paste_truncated": "K’askachata qillqata máximo ukar jan jilantañapatak khuchhuratawa.",
         "drop_truncated": "Aysuta qillqatax utjki uka espacio sipans jilänwa ukat khuchhuratawa.",
         "text_truncated": "Qillqatax app límite ukar mantañapatak khuchhuratawa.",
+        "sync_isolated": "Qillqata sincronización ukax saytayatawa, jichha qillqata jark’aqañataki. Qillqaña mayjt’ayaskakismawa ukat copiañamawa, ukampis local mayjt’awinakax janiw sincronizaskiti, ukat Editor de Texto jist’antasax chhaqhaspawa. Janïr Editor de Texto jist’antkasa jan ukax wasitat jist’arkasaxa, imaña munkta uka qillqata copiañamawa jan ukax imañamawa.",
         "calc_error": "Jakhuñan pantjasiw utji. Consola uñakipam."
       }
     },

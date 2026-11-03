@@ -351,6 +351,7 @@
         "paste_truncated": "Tèks kole a te tronke pou evite depase maksimòm lan.",
         "drop_truncated": "Tèks trennen an te depase espas disponib la epi li te tronke.",
         "text_truncated": "Tèks la te tronke pou antre nan limit app la.",
+        "sync_isolated": "Yo sispann senkronizasyon tèks la pou pwoteje tèks aktyèl la. Ou ka kontinye modifye epi kopye tèks, men chanjman lokal yo pa senkronize epi yo ka pèdi lè ou fèmen Editè Tèks la. Kopye oswa sove nenpòt tèks ou vle konsève anvan ou fèmen oswa relouvri Editè Tèks la.",
         "calc_error": "Gen yon erè ki fèt pandan kalkil. Tcheke konsole a."
       }
     },

@@ -7,10 +7,11 @@
 // Text Editor engine module for the renderer editor page.
 // Responsibilities:
 // - Read and update selection state used by typing, paste, drop, and replace flows.
-// - Apply native-first insert and replace operations with local fallbacks.
+// - Apply insert and replace operations through ordered native and direct mutation strategies.
 // - Build replace responses for main-driven requests.
 // - Synchronize Text Editor text back to main and surface truncation feedback.
-// - Reconcile external text updates without echoing editor-originated changes back to main.
+// - Reconcile external canonical-text updates without echoing editor-originated changes back to main.
+// - Verify external updates and isolate canonical-text synchronization after a textarea mismatch.
 
 (() => {
   if (typeof window.getLogger !== 'function') {
@@ -66,7 +67,7 @@
     function selectAllEditor() {
       if (typeof editor.select === 'function') {
         try { editor.select(); }
-        catch (error) { log.warnOnce('editor.select', 'editor.select() failed; whole-value selection may be incomplete:', error); }
+        catch (error) { log.warn('editor.select() failed; whole-value selection may be incomplete:', error); }
         return;
       }
       setSelectionSafe(0, editor.value.length);
@@ -81,11 +82,11 @@
       }
     }
 
-    function restorePreviousActiveElement(prevActive, warnKey) {
+    function restorePreviousActiveElement(prevActive) {
       try {
         if (prevActive && prevActive !== editor) prevActive.focus();
       } catch (error) {
-        log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', error);
+        log.warn('prevActive.focus() failed (ignored):', error);
       }
     }
 
@@ -95,9 +96,8 @@
         editor.value = nextValue;
         dispatchNativeInputEvent();
       } catch (error) {
-        log.warnOnce(
-          'editor.replaceHidden.visibility',
-          'replaceEditorValueHidden visibility update failed; using direct update fallback:',
+        log.warn(
+          'Hidden whole-value update failed; attempting direct value assignment:',
           error
         );
         editor.value = nextValue;
@@ -130,8 +130,7 @@
         return true;
       }
 
-      log.warnOnce(
-        'editor.execCommand.replaceWholeValue',
+      log.warn(
         "document.execCommand('insertText') unavailable or failed; using whole-value replace fallback."
       );
 
@@ -141,8 +140,7 @@
         return true;
       }
 
-      log.warnOnce(
-        'editor.setRangeText.replaceWholeValue',
+      log.warn(
         'editor.setRangeText unavailable; using direct value replace fallback.'
       );
 
@@ -157,11 +155,10 @@
           const ok = document.execCommand && document.execCommand('insertText', false, text);
           if (ok) return true;
         } catch {
-          // follow fallback
+          // The common diagnostic below covers this failure before the next strategy runs.
         }
 
-        log.warnOnce(
-          'editor.execCommand.insert',
+        log.warn(
           "document.execCommand('insertText') unavailable or failed; using Text Editor insert fallback."
         );
 
@@ -173,8 +170,7 @@
           return true;
         }
 
-        log.warnOnce(
-          'editor.setRangeText.insert',
+        log.warn(
           'editor.setRangeText unavailable; using value splice insert fallback.'
         );
 
@@ -202,11 +198,10 @@
           const ok = document.execCommand && document.execCommand('insertText', false, replacementText);
           if (ok) return true;
         } catch {
-          // follow fallback
+          // The common diagnostic below covers this failure before the next strategy runs.
         }
 
-        log.warnOnce(
-          'editor.execCommand.replaceCurrent',
+        log.warn(
           "document.execCommand('insertText') unavailable or failed; using replace-current fallback."
         );
 
@@ -216,8 +211,7 @@
           return true;
         }
 
-        log.warnOnce(
-          'editor.setRangeText.replaceCurrent',
+        log.warn(
           'editor.setRangeText unavailable; using manual replace-current fallback.'
         );
 
@@ -232,11 +226,11 @@
         log.error('tryNativeReplaceSelectionWithoutSync error:', error);
         return false;
       } finally {
-        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.replaceCurrent.selection');
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
-    function commitWholeValueNativeFirstWithoutSync(nextValue, { focusWarnKey = 'focus.prevActive.wholeValue.native' } = {}) {
+    function commitWholeValueNativeFirstWithoutSync(nextValue) {
       const safeNextValue = String(nextValue || '');
       const previousActiveElement = document.activeElement;
 
@@ -262,23 +256,15 @@
           return false;
         }
       } finally {
-        restorePreviousActiveElement(previousActiveElement, focusWarnKey);
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
-    function commitWholeValueWithThresholdPolicy(
-      nextValue,
-      {
-        nativeFocusWarnKey = 'focus.prevActive.wholeValue.native',
-        directFocusWarnKey = 'focus.prevActive.wholeValue.full',
-      } = {}
-    ) {
+    function commitWholeValueWithThresholdPolicy(nextValue) {
       const safeNextValue = String(nextValue || '');
 
       if (safeNextValue.length <= ctx.SMALL_UPDATE_THRESHOLD) {
-        return commitWholeValueNativeFirstWithoutSync(safeNextValue, {
-          focusWarnKey: nativeFocusWarnKey,
-        });
+        return commitWholeValueNativeFirstWithoutSync(safeNextValue);
       }
 
       const previousActiveElement = document.activeElement;
@@ -289,7 +275,7 @@
         log.error('commitWholeValueWithThresholdPolicy error:', error);
         return false;
       } finally {
-        restorePreviousActiveElement(previousActiveElement, directFocusWarnKey);
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
@@ -323,8 +309,9 @@
         });
       }
 
+      const currentValue = editor.value;
       const explicitRange = editorFindReplaceCore.resolveLiteralMatchByOrdinal({
-        value: editor.value,
+        value: currentValue,
         query,
         ordinal: activeMatchOrdinal,
         matchCase,
@@ -334,6 +321,19 @@
         return buildReplaceResponse('replace-current', requestId, {
           status: 'selection-mismatch',
           replacements: 0,
+        });
+      }
+
+      const projectedLength = currentValue.length
+        - (explicitRange.end - explicitRange.start)
+        + replacement.length;
+      if (projectedLength > state.maxTextChars) {
+        return buildReplaceResponse('replace-current', requestId, {
+          ok: false,
+          status: 'max-text-exceeded',
+          replacements: 0,
+          finalTextLength: currentValue.length,
+          error: 'replace-current projected text exceeds max text chars',
         });
       }
 
@@ -396,10 +396,7 @@
         });
       }
 
-      const replaced = commitWholeValueWithThresholdPolicy(computed.nextValue, {
-        nativeFocusWarnKey: 'focus.prevActive.replaceAll.native',
-        directFocusWarnKey: 'focus.prevActive.replaceAll.full',
-      });
+      const replaced = commitWholeValueWithThresholdPolicy(computed.nextValue);
       if (!replaced) {
         return buildReplaceResponse('replace-all', requestId, {
           ok: false,
@@ -445,12 +442,20 @@
     }
 
     function sendCurrentTextToMain(action, options = {}) {
+      if (state.canonicalTextSyncIsolated === true) {
+        return false;
+      }
+
       const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
       const text = hasText ? options.text : editor.value;
       const onError = typeof options.onError === 'function' ? options.onError : null;
 
       try {
-        const payload = { text, meta: { source: 'editor', action } };
+        const payload = {
+          text,
+          baseNonEditorRevision: state.latestNonEditorRevisionSeen,
+          meta: { source: 'editor', action },
+        };
         const setCurrentTextResult = editorAPI.setCurrentText(payload);
         handleTruncationResponse(setCurrentTextResult, { onError });
         return true;
@@ -470,7 +475,16 @@
       }
     }
 
-    function handleResolvedSetCurrentTextResult(result) {
+    function handleResolvedSetCurrentTextResult(result, onError) {
+      if (result && result.ok === false) {
+        if (result.code === 'STALE_EDITOR_WRITE') return;
+        handleSetCurrentTextFailure(
+          result.error || 'editorAPI.setCurrentText returned a non-ok result.',
+          onError
+        );
+        return;
+      }
+
       if (result && result.truncated) {
         notifyTextTruncated();
       }
@@ -484,7 +498,7 @@
           setCurrentTextResult.then(
             (result) => {
               try {
-                handleResolvedSetCurrentTextResult(result);
+                handleResolvedSetCurrentTextResult(result, onError);
               } catch (error) {
                 log.error('handleTruncationResponse result handling error:', error);
               }
@@ -501,7 +515,7 @@
       }
 
       try {
-        handleResolvedSetCurrentTextResult(setCurrentTextResult);
+        handleResolvedSetCurrentTextResult(setCurrentTextResult, onError);
       } catch (error) {
         log.error('handleTruncationResponse result handling error:', error);
       }
@@ -529,7 +543,12 @@
           truncated = true;
         }
 
-        tryNativeInsertAtSelection(toInsert);
+        const valueBeforeInsert = editor.value;
+        const didInsert = tryNativeInsertAtSelection(toInsert);
+        if (!didInsert && editor.value === valueBeforeInsert) {
+          ctx.ui.restoreFocusToEditor();
+          return { inserted: 0, truncated: false };
+        }
 
         if (truncated) {
           window.Notify.notifyEditor(truncatedAlertKey, { type: 'warn', duration: 5000 });
@@ -624,6 +643,49 @@
       };
     }
 
+    function verifyEditorText(expectedText) {
+      try {
+        const actualText = editor.value;
+        return {
+          matches: typeof actualText === 'string' && actualText === expectedText,
+          actualLength: typeof actualText === 'string' ? actualText.length : null,
+        };
+      } catch (error) {
+        return {
+          matches: false,
+          actualLength: null,
+          readError: error,
+        };
+      }
+    }
+
+    function latchCanonicalTextSyncIsolation({ expectedText, verification, applicationError = null }) {
+      if (state.canonicalTextSyncIsolated === true) {
+        return false;
+      }
+
+      state.canonicalTextSyncIsolated = true;
+
+      if (state.debounceTimer !== null && state.debounceTimer !== undefined) {
+        clearTimeout(state.debounceTimer);
+        state.debounceTimer = null;
+      }
+
+      try {
+        ctx.ui.syncCanonicalTextSyncControls();
+      } catch (error) {
+        log.error('Canonical text sync isolation control presentation failed:', error);
+      }
+
+      log.error('Canonical text synchronization isolated after external update mismatch.', {
+        expectedLength: expectedText.length,
+        actualLength: verification.actualLength,
+        applicationFailed: applicationError !== null,
+        textareaReadFailed: !!verification.readError,
+      });
+      return true;
+    }
+
     function appendSmallExternalTextWithoutSync(textToInsert) {
       const previousActiveElement = document.activeElement;
 
@@ -637,8 +699,7 @@
           return;
         }
 
-        log.warnOnce(
-          'editor.execCommand.appendNewline',
+        log.warn(
           "document.execCommand('insertText') unavailable or failed; using append fallback."
         );
 
@@ -648,8 +709,7 @@
           return;
         }
 
-        log.warnOnce(
-          'editor.setRangeText.appendNewline',
+        log.warn(
           'editor.setRangeText unavailable; using direct append fallback.'
         );
 
@@ -663,7 +723,7 @@
         editor.value = editor.value + textToInsert;
         dispatchNativeInputEvent();
       } finally {
-        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.append_newline.native');
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
@@ -682,10 +742,7 @@
         return true;
       }
 
-      const committed = commitWholeValueWithThresholdPolicy(newText, {
-        nativeFocusWarnKey: 'focus.prevActive.append_newline.native',
-        directFocusWarnKey: 'focus.prevActive.append_newline.full',
-      });
+      const committed = commitWholeValueWithThresholdPolicy(newText);
       if (!committed) {
         log.error('append_newline full replace failed unexpectedly.');
       }
@@ -694,54 +751,73 @@
     }
 
     async function applyInitialText(payload) {
+      let initialText;
+      let truncated = false;
+
       try {
         const normalizedPayload = normalizeExternalUpdatePayload(payload);
-        let initialText = normalizedPayload.newText;
-        let truncated = false;
+        initialText = normalizedPayload.newText;
 
         if (initialText.length > state.maxTextChars) {
           initialText = initialText.slice(0, state.maxTextChars);
           truncated = true;
         }
 
-        const committed = withLocalUpdateSuppressed(() => commitWholeValueWithThresholdPolicy(
-          initialText,
-          {
-            nativeFocusWarnKey: 'focus.prevActive.initialText.native',
-            directFocusWarnKey: 'focus.prevActive.initialText.full',
-          }
-        ));
+        const committed = withLocalUpdateSuppressed(() => commitWholeValueWithThresholdPolicy(initialText));
         if (!committed) {
           log.error('Initial whole-value application failed unexpectedly.');
           return false;
         }
         notifyIfTruncated(truncated);
-        return true;
       } catch (error) {
         log.error('applyInitialText error:', error);
         return false;
       }
+
+      const verification = verifyEditorText(initialText);
+      if (!verification.matches) {
+        log.error('Initial current-text application did not produce the expected textarea value.', {
+          expectedLength: initialText.length,
+          actualLength: verification.actualLength,
+          textareaReadFailed: !!verification.readError,
+        });
+        return false;
+      }
+
+      return true;
     }
 
     async function applyExternalUpdate(payload) {
+      if (state.canonicalTextSyncIsolated === true) {
+        return { canonicalTextSyncIsolationLatched: false };
+      }
+
+      let normalizedPayload;
       try {
-        const normalizedPayload = normalizeExternalUpdatePayload(payload);
-        const incomingMeta = normalizedPayload.incomingMeta;
-        let newText = normalizedPayload.newText;
+        normalizedPayload = normalizeExternalUpdatePayload(payload);
+      } catch (error) {
+        log.error('applyExternalUpdate error:', error);
+        return { canonicalTextSyncIsolationLatched: false };
+      }
 
-        let truncated = false;
-        if (newText.length > state.maxTextChars) {
-          newText = newText.slice(0, state.maxTextChars);
-          truncated = true;
-        }
+      const incomingMeta = normalizedPayload.incomingMeta;
+      let newText = normalizedPayload.newText;
 
-        if (incomingMeta && incomingMeta.source === 'editor') {
-          return;
-        }
+      let truncated = false;
+      if (newText.length > state.maxTextChars) {
+        newText = newText.slice(0, state.maxTextChars);
+        truncated = true;
+      }
 
+      if (incomingMeta && incomingMeta.source === 'editor') {
+        return { canonicalTextSyncIsolationLatched: false };
+      }
+
+      let applicationError = null;
+      try {
         if (editor.value === newText) {
           notifyIfTruncated(truncated);
-          return;
+          return { canonicalTextSyncIsolationLatched: false };
         }
 
         // Prevent main-driven updates from re-triggering local Text Editor sync while applying them.
@@ -758,10 +834,7 @@
           }
 
           if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
-            const committed = commitWholeValueWithThresholdPolicy(newText, {
-              nativeFocusWarnKey: 'focus.prevActive.main.native',
-              directFocusWarnKey: 'focus.prevActive.main.full',
-            });
+            const committed = commitWholeValueWithThresholdPolicy(newText);
             if (!committed) {
               log.error('Whole-value external update failed unexpectedly.');
             }
@@ -773,8 +846,22 @@
           notifyIfTruncated(truncated);
         });
       } catch (error) {
+        applicationError = error;
         log.error('applyExternalUpdate error:', error);
       }
+
+      const verification = verifyEditorText(newText);
+      if (!verification.matches) {
+        return {
+          canonicalTextSyncIsolationLatched: latchCanonicalTextSyncIsolation({
+            expectedText: newText,
+            verification,
+            applicationError,
+          }),
+        };
+      }
+
+      return { canonicalTextSyncIsolationLatched: false };
     }
 
     // =============================================================================

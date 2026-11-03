@@ -38,28 +38,36 @@ const basePresentationGeneration = getBasePresentationGeneration(
 );
 
 function reportBasePresentationState(payload) {
+  const status = payload && payload.status === 'failed' ? 'failed' : 'ready';
+  if (editorBootstrapPresentationOutcome !== 'pending') {
+    return false;
+  }
+  editorBootstrapPresentationOutcome = status === 'failed' ? 'failed' : 'ready-reported';
+
   if (!Number.isInteger(basePresentationGeneration) || basePresentationGeneration <= 0) {
     if (log) {
       log.warn('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped.');
     } else {
       console.error('BOOTSTRAP: startup firstShowGeneration missing; base presentation report skipped before logger initialization.');
     }
-    return;
+    return false;
   }
   try {
     editorBridge.reportBasePresentationState({
       generation: basePresentationGeneration,
-      status: payload && payload.status === 'failed' ? 'failed' : 'ready',
+      status,
       ...(payload && typeof payload.reason === 'string' && payload.reason.trim()
         ? { reason: payload.reason.trim() }
         : {}),
     });
+    return true;
   } catch (error) {
     if (log) {
       log.error('BOOTSTRAP: reportBasePresentationState call failed:', error);
     } else {
       console.error('BOOTSTRAP: reportBasePresentationState call failed before logger initialization:', error);
     }
+    return false;
   }
 }
 
@@ -68,6 +76,7 @@ function reportBasePresentationState(payload) {
 // =============================================================================
 let editorStartupPresentation = null;
 let startupPresentation = null;
+let editorBootstrapPresentationOutcome = 'pending';
 
 let log = null;
 let appConstants = null;
@@ -260,7 +269,9 @@ function createEditorContext() {
     state: {
       maxTextChars: appConstants.MAX_TEXT_CHARS,
       debounceTimer: null,
+      canonicalTextSyncIsolated: false,
       suppressLocalUpdate: false,
+      latestNonEditorRevisionSeen: 0,
       spellcheckEnabled: true,
       spellcheckAvailable: true,
       editorFontSizePx: editorFontSizeDefaultPx,
@@ -539,10 +550,17 @@ async function bootstrapInitialEditorText() {
     throw new Error(`[editor] editorAPI.getInitialCurrentTextSnapshot failed during bootstrap: ${String(error)}`);
   }
 
+  if (editorBootstrapPresentationOutcome !== 'pending') return;
+
   if (!snapshot || snapshot.ok !== true || typeof snapshot.text !== 'string'
     || !Number.isSafeInteger(snapshot.revision) || snapshot.revision < 1) {
     throw new Error('[editor] editorAPI.getInitialCurrentTextSnapshot returned an invalid snapshot');
   }
+
+  ctx.state.latestNonEditorRevisionSeen = Math.max(
+    ctx.state.latestNonEditorRevisionSeen,
+    snapshot.revision
+  );
 
   if (snapshot.revision > latestCurrentTextRevision) {
     latestCurrentTextRevision = snapshot.revision;
@@ -555,7 +573,23 @@ async function bootstrapInitialEditorText() {
     }
   }
   ctx.ui.updateEditorTextDirection();
-  btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
+  ctx.ui.syncCanonicalTextSyncControls();
+}
+
+function handleCanonicalTextSyncIsolation(result) {
+  if (!result || result.canonicalTextSyncIsolationLatched !== true) return;
+
+  if (editorBootstrapPresentationOutcome !== 'ready-reported') {
+    ctx.ui.setNormalInteractionAvailable(false);
+    reportBasePresentationState({ status: 'failed', reason: 'bootstrap-failed' });
+    return;
+  }
+
+  try {
+    window.Notify.notifyMain('renderer.editor.alerts.sync_isolated');
+  } catch (error) {
+    log.error('Text Editor synchronization isolation alert failed:', error);
+  }
 }
 
 function registerEditorMarginGutter(gutter, side) {
@@ -661,7 +695,12 @@ function registerEditorBridgeListeners() {
       }
       if (revision <= latestCurrentTextRevision) return;
       latestCurrentTextRevision = revision;
-      await ctx.engine.applyExternalUpdate(payload);
+      const incomingMeta = payload && payload.meta;
+      if (!incomingMeta || incomingMeta.source !== 'editor') {
+        ctx.state.latestNonEditorRevisionSeen = revision;
+      }
+      const result = await ctx.engine.applyExternalUpdate(payload);
+      handleCanonicalTextSyncIsolation(result);
       ctx.ui.updateEditorTextDirection();
     });
     ctx.editorAPI.onReplaceRequest((payload) => {
@@ -766,9 +805,13 @@ Promise.resolve()
   .then(async () => {
     if (bootstrapSetupError) throw bootstrapSetupError;
     await bootstrapEditorEnvironment();
+    if (editorBootstrapPresentationOutcome !== 'pending') return;
     await bootstrapInitialEditorText();
+    if (editorBootstrapPresentationOutcome !== 'pending') return;
     releaseStartupPresentationLock();
+    if (editorBootstrapPresentationOutcome !== 'pending') return;
     await nextAnimationFrame();
+    if (editorBootstrapPresentationOutcome !== 'pending') return;
     ctx.ui.setNormalInteractionAvailable(true);
     ctx.ui.focusEditorAtTop();
     reportBasePresentationState({ status: 'ready' });
@@ -861,7 +904,7 @@ if (!bootstrapSetupError && editor) {
     ctx.ui.updateEditorTextDirection();
     ctx.ui.scheduleReadProgressUiUpdate();
 
-    if (ctx.state.suppressLocalUpdate || editor.readOnly) return;
+    if (ctx.state.suppressLocalUpdate || editor.readOnly || ctx.state.canonicalTextSyncIsolated) return;
 
     if (ctx.state.debounceTimer) clearTimeout(ctx.state.debounceTimer);
     if (calcWhileTyping && calcWhileTyping.checked) {
@@ -921,8 +964,10 @@ if (!bootstrapSetupError && btnCalc) btnCalc.addEventListener('click', () => {
 });
 
 if (!bootstrapSetupError && calcWhileTyping) calcWhileTyping.addEventListener('change', () => {
+  ctx.ui.syncCanonicalTextSyncControls();
+  if (ctx.state.canonicalTextSyncIsolated) return;
+
   if (calcWhileTyping.checked) {
-    btnCalc.disabled = true;
     ctx.engine.sendCurrentTextToMain('typing_toggle_on', {
       text: editor.value || '',
       onError: (error) => log.warn(
@@ -930,7 +975,7 @@ if (!bootstrapSetupError && calcWhileTyping) calcWhileTyping.addEventListener('c
         error
       )
     });
-  } else btnCalc.disabled = false;
+  }
 });
 
 if (!bootstrapSetupError && spellcheckToggle) {

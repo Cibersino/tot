@@ -351,6 +351,7 @@
         "paste_truncated": "Den inklistrade texten kortades för att undvika att maxgränsen överskrids.",
         "drop_truncated": "Den dragna texten överskred tillgängligt utrymme och har kortats.",
         "text_truncated": "Texten kortades för att rymmas inom appens gräns.",
+        "sync_isolated": "Textsynkroniseringen har pausats för att skydda den aktuella texten. Du kan fortsätta redigera och kopiera text, men lokala ändringar synkroniseras inte och kan gå förlorade när textredigeraren stängs. Kopiera eller spara texten du vill behålla innan du stänger eller öppnar textredigeraren igen.",
         "calc_error": "Ett fel uppstod vid beräkning. Kontrollera konsolen."
       }
     },
