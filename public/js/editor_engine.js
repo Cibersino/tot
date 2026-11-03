@@ -66,7 +66,7 @@
     function selectAllEditor() {
       if (typeof editor.select === 'function') {
         try { editor.select(); }
-        catch (error) { log.warnOnce('editor.select', 'editor.select() failed; whole-value selection may be incomplete:', error); }
+        catch (error) { log.warn('editor.select() failed; whole-value selection may be incomplete:', error); }
         return;
       }
       setSelectionSafe(0, editor.value.length);
@@ -81,11 +81,11 @@
       }
     }
 
-    function restorePreviousActiveElement(prevActive, warnKey) {
+    function restorePreviousActiveElement(prevActive) {
       try {
         if (prevActive && prevActive !== editor) prevActive.focus();
       } catch (error) {
-        log.warnOnce(warnKey, 'prevActive.focus() failed (ignored):', error);
+        log.warn('prevActive.focus() failed (ignored):', error);
       }
     }
 
@@ -95,9 +95,8 @@
         editor.value = nextValue;
         dispatchNativeInputEvent();
       } catch (error) {
-        log.warnOnce(
-          'editor.replaceHidden.visibility',
-          'replaceEditorValueHidden visibility update failed; using direct update fallback:',
+        log.warn(
+          'Hidden whole-value update failed; attempting direct value assignment:',
           error
         );
         editor.value = nextValue;
@@ -130,8 +129,7 @@
         return true;
       }
 
-      log.warnOnce(
-        'editor.execCommand.replaceWholeValue',
+      log.warn(
         "document.execCommand('insertText') unavailable or failed; using whole-value replace fallback."
       );
 
@@ -141,8 +139,7 @@
         return true;
       }
 
-      log.warnOnce(
-        'editor.setRangeText.replaceWholeValue',
+      log.warn(
         'editor.setRangeText unavailable; using direct value replace fallback.'
       );
 
@@ -160,8 +157,7 @@
           // follow fallback
         }
 
-        log.warnOnce(
-          'editor.execCommand.insert',
+        log.warn(
           "document.execCommand('insertText') unavailable or failed; using Text Editor insert fallback."
         );
 
@@ -173,8 +169,7 @@
           return true;
         }
 
-        log.warnOnce(
-          'editor.setRangeText.insert',
+        log.warn(
           'editor.setRangeText unavailable; using value splice insert fallback.'
         );
 
@@ -205,8 +200,7 @@
           // follow fallback
         }
 
-        log.warnOnce(
-          'editor.execCommand.replaceCurrent',
+        log.warn(
           "document.execCommand('insertText') unavailable or failed; using replace-current fallback."
         );
 
@@ -216,8 +210,7 @@
           return true;
         }
 
-        log.warnOnce(
-          'editor.setRangeText.replaceCurrent',
+        log.warn(
           'editor.setRangeText unavailable; using manual replace-current fallback.'
         );
 
@@ -232,11 +225,11 @@
         log.error('tryNativeReplaceSelectionWithoutSync error:', error);
         return false;
       } finally {
-        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.replaceCurrent.selection');
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
-    function commitWholeValueNativeFirstWithoutSync(nextValue, { focusWarnKey = 'focus.prevActive.wholeValue.native' } = {}) {
+    function commitWholeValueNativeFirstWithoutSync(nextValue) {
       const safeNextValue = String(nextValue || '');
       const previousActiveElement = document.activeElement;
 
@@ -262,23 +255,15 @@
           return false;
         }
       } finally {
-        restorePreviousActiveElement(previousActiveElement, focusWarnKey);
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
-    function commitWholeValueWithThresholdPolicy(
-      nextValue,
-      {
-        nativeFocusWarnKey = 'focus.prevActive.wholeValue.native',
-        directFocusWarnKey = 'focus.prevActive.wholeValue.full',
-      } = {}
-    ) {
+    function commitWholeValueWithThresholdPolicy(nextValue) {
       const safeNextValue = String(nextValue || '');
 
       if (safeNextValue.length <= ctx.SMALL_UPDATE_THRESHOLD) {
-        return commitWholeValueNativeFirstWithoutSync(safeNextValue, {
-          focusWarnKey: nativeFocusWarnKey,
-        });
+        return commitWholeValueNativeFirstWithoutSync(safeNextValue);
       }
 
       const previousActiveElement = document.activeElement;
@@ -289,7 +274,7 @@
         log.error('commitWholeValueWithThresholdPolicy error:', error);
         return false;
       } finally {
-        restorePreviousActiveElement(previousActiveElement, directFocusWarnKey);
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
@@ -410,10 +395,7 @@
         });
       }
 
-      const replaced = commitWholeValueWithThresholdPolicy(computed.nextValue, {
-        nativeFocusWarnKey: 'focus.prevActive.replaceAll.native',
-        directFocusWarnKey: 'focus.prevActive.replaceAll.full',
-      });
+      const replaced = commitWholeValueWithThresholdPolicy(computed.nextValue);
       if (!replaced) {
         return buildReplaceResponse('replace-all', requestId, {
           ok: false,
@@ -716,8 +698,7 @@
           return;
         }
 
-        log.warnOnce(
-          'editor.execCommand.appendNewline',
+        log.warn(
           "document.execCommand('insertText') unavailable or failed; using append fallback."
         );
 
@@ -727,8 +708,7 @@
           return;
         }
 
-        log.warnOnce(
-          'editor.setRangeText.appendNewline',
+        log.warn(
           'editor.setRangeText unavailable; using direct append fallback.'
         );
 
@@ -742,7 +722,7 @@
         editor.value = editor.value + textToInsert;
         dispatchNativeInputEvent();
       } finally {
-        restorePreviousActiveElement(previousActiveElement, 'focus.prevActive.append_newline.native');
+        restorePreviousActiveElement(previousActiveElement);
       }
     }
 
@@ -761,10 +741,7 @@
         return true;
       }
 
-      const committed = commitWholeValueWithThresholdPolicy(newText, {
-        nativeFocusWarnKey: 'focus.prevActive.append_newline.native',
-        directFocusWarnKey: 'focus.prevActive.append_newline.full',
-      });
+      const committed = commitWholeValueWithThresholdPolicy(newText);
       if (!committed) {
         log.error('append_newline full replace failed unexpectedly.');
       }
@@ -785,13 +762,7 @@
           truncated = true;
         }
 
-        const committed = withLocalUpdateSuppressed(() => commitWholeValueWithThresholdPolicy(
-          initialText,
-          {
-            nativeFocusWarnKey: 'focus.prevActive.initialText.native',
-            directFocusWarnKey: 'focus.prevActive.initialText.full',
-          }
-        ));
+        const committed = withLocalUpdateSuppressed(() => commitWholeValueWithThresholdPolicy(initialText));
         if (!committed) {
           log.error('Initial whole-value application failed unexpectedly.');
           return false;
@@ -862,10 +833,7 @@
           }
 
           if (metaSource === 'main' || metaSource === 'main-window' || !metaSource) {
-            const committed = commitWholeValueWithThresholdPolicy(newText, {
-              nativeFocusWarnKey: 'focus.prevActive.main.native',
-              directFocusWarnKey: 'focus.prevActive.main.full',
-            });
+            const committed = commitWholeValueWithThresholdPolicy(newText);
             if (!committed) {
               log.error('Whole-value external update failed unexpectedly.');
             }

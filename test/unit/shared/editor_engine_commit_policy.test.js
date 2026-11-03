@@ -450,6 +450,31 @@ test('insert fallback via setRangeText dispatches input after text mutation', ()
   assert.deepEqual(dispatchedEvents, ['input']);
 });
 
+test('insert fallback reports each failed native insert operation', () => {
+  const { engine, warnLogs, warnOnceLogs } = createHarness({
+    initialValue: 'abc',
+    execCommandBehavior: 'fail',
+    autoEnabled: false,
+  });
+  const transferEvent = {
+    preventDefault() {},
+    stopPropagation() {},
+  };
+  const transferConfig = {
+    getText: () => 'Z',
+    insertOptions: { action: 'paste' },
+  };
+
+  engine.handleTextTransferInsert(transferEvent, transferConfig);
+  engine.handleTextTransferInsert(transferEvent, transferConfig);
+
+  assert.equal(
+    warnLogs.filter(([message]) => message === "document.execCommand('insertText') unavailable or failed; using Text Editor insert fallback.").length,
+    2
+  );
+  assert.equal(warnOnceLogs.length, 0);
+});
+
 test('insert direct-splice fallback dispatches input after text mutation', () => {
   const { engine, editor, dispatchedEvents } = createHarness({
     initialValue: 'abc',
