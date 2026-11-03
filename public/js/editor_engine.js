@@ -7,10 +7,11 @@
 // Text Editor engine module for the renderer editor page.
 // Responsibilities:
 // - Read and update selection state used by typing, paste, drop, and replace flows.
-// - Apply native-first insert and replace operations with local fallbacks.
+// - Apply insert and replace operations through ordered native and direct mutation strategies.
 // - Build replace responses for main-driven requests.
 // - Synchronize Text Editor text back to main and surface truncation feedback.
-// - Reconcile external text updates without echoing editor-originated changes back to main.
+// - Reconcile external canonical-text updates without echoing editor-originated changes back to main.
+// - Verify external updates and isolate canonical-text synchronization after a textarea mismatch.
 
 (() => {
   if (typeof window.getLogger !== 'function') {
@@ -154,7 +155,7 @@
           const ok = document.execCommand && document.execCommand('insertText', false, text);
           if (ok) return true;
         } catch {
-          // follow fallback
+          // The common diagnostic below covers this failure before the next strategy runs.
         }
 
         log.warn(
@@ -197,7 +198,7 @@
           const ok = document.execCommand && document.execCommand('insertText', false, replacementText);
           if (ok) return true;
         } catch {
-          // follow fallback
+          // The common diagnostic below covers this failure before the next strategy runs.
         }
 
         log.warn(
