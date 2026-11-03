@@ -459,6 +459,10 @@
     }
 
     function sendCurrentTextToMain(action, options = {}) {
+      if (state.canonicalTextSyncIsolated === true) {
+        return false;
+      }
+
       const hasText = Object.prototype.hasOwnProperty.call(options, 'text');
       const text = hasText ? options.text : editor.value;
       const onError = typeof options.onError === 'function' ? options.onError : null;
@@ -656,6 +660,49 @@
       };
     }
 
+    function verifyEditorText(expectedText) {
+      try {
+        const actualText = editor.value;
+        return {
+          matches: typeof actualText === 'string' && actualText === expectedText,
+          actualLength: typeof actualText === 'string' ? actualText.length : null,
+        };
+      } catch (error) {
+        return {
+          matches: false,
+          actualLength: null,
+          readError: error,
+        };
+      }
+    }
+
+    function latchCanonicalTextSyncIsolation({ expectedText, verification, applicationError = null }) {
+      if (state.canonicalTextSyncIsolated === true) {
+        return false;
+      }
+
+      state.canonicalTextSyncIsolated = true;
+
+      if (state.debounceTimer !== null && state.debounceTimer !== undefined) {
+        clearTimeout(state.debounceTimer);
+        state.debounceTimer = null;
+      }
+
+      try {
+        ctx.ui.syncCanonicalTextSyncControls();
+      } catch (error) {
+        log.error('Canonical text sync isolation control presentation failed:', error);
+      }
+
+      log.error('Canonical text synchronization isolated after external update mismatch.', {
+        expectedLength: expectedText.length,
+        actualLength: verification.actualLength,
+        applicationFailed: applicationError !== null,
+        textareaReadFailed: !!verification.readError,
+      });
+      return true;
+    }
+
     function appendSmallExternalTextWithoutSync(textToInsert) {
       const previousActiveElement = document.activeElement;
 
@@ -726,10 +773,12 @@
     }
 
     async function applyInitialText(payload) {
+      let initialText;
+      let truncated = false;
+
       try {
         const normalizedPayload = normalizeExternalUpdatePayload(payload);
-        let initialText = normalizedPayload.newText;
-        let truncated = false;
+        initialText = normalizedPayload.newText;
 
         if (initialText.length > state.maxTextChars) {
           initialText = initialText.slice(0, state.maxTextChars);
@@ -748,32 +797,55 @@
           return false;
         }
         notifyIfTruncated(truncated);
-        return true;
       } catch (error) {
         log.error('applyInitialText error:', error);
         return false;
       }
+
+      const verification = verifyEditorText(initialText);
+      if (!verification.matches) {
+        log.error('Initial current-text application did not produce the expected textarea value.', {
+          expectedLength: initialText.length,
+          actualLength: verification.actualLength,
+          textareaReadFailed: !!verification.readError,
+        });
+        return false;
+      }
+
+      return true;
     }
 
     async function applyExternalUpdate(payload) {
+      if (state.canonicalTextSyncIsolated === true) {
+        return { canonicalTextSyncIsolationLatched: false };
+      }
+
+      let normalizedPayload;
       try {
-        const normalizedPayload = normalizeExternalUpdatePayload(payload);
-        const incomingMeta = normalizedPayload.incomingMeta;
-        let newText = normalizedPayload.newText;
+        normalizedPayload = normalizeExternalUpdatePayload(payload);
+      } catch (error) {
+        log.error('applyExternalUpdate error:', error);
+        return { canonicalTextSyncIsolationLatched: false };
+      }
 
-        let truncated = false;
-        if (newText.length > state.maxTextChars) {
-          newText = newText.slice(0, state.maxTextChars);
-          truncated = true;
-        }
+      const incomingMeta = normalizedPayload.incomingMeta;
+      let newText = normalizedPayload.newText;
 
-        if (incomingMeta && incomingMeta.source === 'editor') {
-          return;
-        }
+      let truncated = false;
+      if (newText.length > state.maxTextChars) {
+        newText = newText.slice(0, state.maxTextChars);
+        truncated = true;
+      }
 
+      if (incomingMeta && incomingMeta.source === 'editor') {
+        return { canonicalTextSyncIsolationLatched: false };
+      }
+
+      let applicationError = null;
+      try {
         if (editor.value === newText) {
           notifyIfTruncated(truncated);
-          return;
+          return { canonicalTextSyncIsolationLatched: false };
         }
 
         // Prevent main-driven updates from re-triggering local Text Editor sync while applying them.
@@ -805,8 +877,22 @@
           notifyIfTruncated(truncated);
         });
       } catch (error) {
+        applicationError = error;
         log.error('applyExternalUpdate error:', error);
       }
+
+      const verification = verifyEditorText(newText);
+      if (!verification.matches) {
+        return {
+          canonicalTextSyncIsolationLatched: latchCanonicalTextSyncIsolation({
+            expectedText: newText,
+            verification,
+            applicationError,
+          }),
+        };
+      }
+
+      return { canonicalTextSyncIsolationLatched: false };
     }
 
     // =============================================================================

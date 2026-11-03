@@ -49,6 +49,8 @@ function createHarness({
   const setRangeTextCalls = [];
   const dispatchedEvents = [];
   const setCurrentTextCalls = [];
+  const errorLogs = [];
+  const syncCanonicalTextSyncControlCalls = [];
   const warnLogs = [];
   const warnOnceLogs = [];
   const style = createVisibilityStyleRecorder();
@@ -112,9 +114,12 @@ function createHarness({
         selectionEnd: editor.selectionEnd,
       });
 
-      if (execCommandBehavior !== 'success' || command !== 'insertText') {
+      if (command !== 'insertText') {
         return false;
       }
+
+      if (execCommandBehavior === 'success-no-mutation') return true;
+      if (execCommandBehavior !== 'success') return false;
 
       const start = typeof editor.selectionStart === 'number' ? editor.selectionStart : editor.value.length;
       const end = typeof editor.selectionEnd === 'number' ? editor.selectionEnd : start;
@@ -136,7 +141,9 @@ function createHarness({
           warnOnce(...args) {
             warnOnceLogs.push(args);
           },
-          error() {},
+          error(...args) {
+            errorLogs.push(args);
+          },
           debug() {},
         };
       },
@@ -146,6 +153,8 @@ function createHarness({
     },
     document,
     Event: FakeEvent,
+    clearTimeout,
+    setTimeout,
   };
 
   vm.createContext(sandbox);
@@ -154,6 +163,14 @@ function createHarness({
     'utf8'
   );
   vm.runInContext(engineSource, sandbox, { filename: 'public/js/editor_engine.js' });
+  const state = {
+    maxTextChars,
+    suppressLocalUpdate: false,
+    latestNonEditorRevisionSeen,
+    debounceTimer: null,
+    canonicalTextSyncIsolated: false,
+  };
+
   const engine = sandbox.window.EditorEngine.createEditorEngine({
     editorAPI: {
       setCurrentText(payload) {
@@ -169,15 +186,14 @@ function createHarness({
       editor,
       calcWhileTyping: { checked: autoEnabled },
     },
-    state: {
-      maxTextChars,
-      suppressLocalUpdate: false,
-      latestNonEditorRevisionSeen,
-    },
+    state,
     SMALL_UPDATE_THRESHOLD: smallUpdateThreshold,
     PASTE_ALLOW_LIMIT: 10_000,
     ui: {
       restoreFocusToEditor() {},
+      syncCanonicalTextSyncControls() {
+        syncCanonicalTextSyncControlCalls.push(true);
+      },
     },
   });
 
@@ -187,6 +203,9 @@ function createHarness({
     execCalls,
     setRangeTextCalls,
     setCurrentTextCalls,
+    errorLogs,
+    syncCanonicalTextSyncControlCalls,
+    state,
     warnLogs,
     warnOnceLogs,
     dispatchedEvents,
@@ -297,6 +316,93 @@ test('overwrite-like external updates use the native whole-text commit path with
   assert.equal(execCalls[0].text, 'tiny');
   assert.equal(setRangeTextCalls.length, 0);
   assert.deepEqual(visibilityHistory, []);
+});
+
+test('a live overwrite that reports native success without changing the textarea isolates synchronization', async () => {
+  const {
+    engine,
+    editor,
+    errorLogs,
+    setCurrentTextCalls,
+    state,
+    syncCanonicalTextSyncControlCalls,
+  } = createHarness({
+    initialValue: 'old',
+    smallUpdateThreshold: 100,
+    execCommandBehavior: 'success-no-mutation',
+  });
+  state.debounceTimer = setTimeout(() => {}, 1_000);
+
+  const result = await engine.applyExternalUpdate({
+    text: 'canonical text',
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(result.canonicalTextSyncIsolationLatched, true);
+  assert.equal(editor.value, 'old');
+  assert.equal(state.canonicalTextSyncIsolated, true);
+  assert.equal(state.debounceTimer, null);
+  assert.deepEqual(syncCanonicalTextSyncControlCalls, [true]);
+  assert.equal(engine.sendCurrentTextToMain('overwrite'), false);
+  assert.deepEqual(setCurrentTextCalls, []);
+  assert.equal(errorLogs.at(-1)[0], 'Canonical text synchronization isolated after external update mismatch.');
+
+  await engine.applyExternalUpdate({
+    text: 'later canonical text',
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+  assert.equal(editor.value, 'old');
+});
+
+test('a small append mismatch isolates synchronization after the append path reports success', async () => {
+  const { engine, editor, state } = createHarness({
+    initialValue: 'alpha',
+    execCommandBehavior: 'success-no-mutation',
+  });
+
+  const result = await engine.applyExternalUpdate({
+    text: 'alpha\nbeta',
+    meta: { source: 'main-window', action: 'append_newline' },
+  });
+
+  assert.equal(result.canonicalTextSyncIsolationLatched, true);
+  assert.equal(editor.value, 'alpha');
+  assert.equal(state.canonicalTextSyncIsolated, true);
+});
+
+test('a matching final textarea value keeps synchronization available after a native helper failure', async () => {
+  const { engine, editor, state, setCurrentTextCalls } = createHarness({
+    initialValue: 'old',
+    execCommandBehavior: 'fail',
+    setRangeTextThrows: true,
+  });
+
+  const result = await engine.applyExternalUpdate({
+    text: 'canonical text',
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(result.canonicalTextSyncIsolationLatched, false);
+  assert.equal(editor.value, 'canonical text');
+  assert.equal(state.canonicalTextSyncIsolated, false);
+  assert.equal(engine.sendCurrentTextToMain('overwrite'), true);
+  assert.equal(setCurrentTextCalls.length, 1);
+});
+
+test('external text verification compares the capped effective value', async () => {
+  const { engine, editor, state } = createHarness({
+    initialValue: 'old',
+    maxTextChars: 3,
+  });
+
+  const result = await engine.applyExternalUpdate({
+    text: 'abcdef',
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+
+  assert.equal(result.canonicalTextSyncIsolationLatched, false);
+  assert.equal(editor.value, 'abc');
+  assert.equal(state.canonicalTextSyncIsolated, false);
 });
 
 test('append_newline keeps its suffix fast path for small suffixes', async () => {

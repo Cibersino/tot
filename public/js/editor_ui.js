@@ -150,8 +150,23 @@
       if (bottomBar) {
         bottomBar.setAttribute('aria-label', tr('renderer.editor.title'));
       }
+      syncCanonicalTextSyncControls();
       updateEditorTextSizeUi();
       updateReadProgressUi();
+    }
+
+    function syncCanonicalTextSyncControls() {
+      if (state.canonicalTextSyncIsolated === true) {
+        if (calcWhileTyping) {
+          calcWhileTyping.checked = false;
+          calcWhileTyping.disabled = true;
+        }
+        if (btnCalc) btnCalc.disabled = true;
+        return;
+      }
+
+      if (calcWhileTyping) calcWhileTyping.disabled = false;
+      if (btnCalc) btnCalc.disabled = !!(calcWhileTyping && calcWhileTyping.checked);
     }
 
     function setNormalInteractionAvailable(available) {
@@ -647,6 +662,7 @@
       setLocalEditorMaximizedTextWidthPx,
       setNormalInteractionAvailable,
       applyEditorTranslations,
+      syncCanonicalTextSyncControls,
       restoreFocusToEditor,
       focusEditorAtTop,
       applyReadingTestPrestartState,

@@ -46,6 +46,7 @@ function createHarness() {
     editorWindowMaximized: false,
     maximizedTextWidthPx: 960,
     readProgressFramePending: false,
+    canonicalTextSyncIsolated: false,
   };
   const sandbox = {
     window: {
@@ -148,4 +149,47 @@ test('Editor markup relates each compact control to its stable description node'
   assert.match(markup, /id="btnCalc"[^>]*aria-describedby="editorApplyDescription"/);
   assert.match(markup, /id="calcWhileTyping"[^>]*aria-describedby="editorAutoApplyDescription"/);
   assert.match(markup, /id="spellcheckToggle"[^>]*aria-describedby="editorSpellcheckDescription"/);
+});
+
+test('Editor synchronization isolation disables only canonical-write controls and preserves their descriptions', async () => {
+  const harness = createHarness();
+  harness.dom.calcWhileTyping.checked = true;
+
+  await harness.ui.applyEditorTranslations();
+  harness.ui.syncCanonicalTextSyncControls();
+  assert.equal(harness.dom.calcWhileTyping.disabled, false);
+  assert.equal(harness.dom.btnCalc.disabled, true);
+
+  harness.state.canonicalTextSyncIsolated = true;
+  harness.ui.syncCanonicalTextSyncControls();
+  await harness.ui.applyEditorTranslations();
+  assert.equal(harness.dom.calcWhileTyping.checked, false);
+  assert.equal(harness.dom.calcWhileTyping.disabled, true);
+  assert.equal(harness.dom.btnCalc.disabled, true);
+  assert.equal(
+    harness.dom.applyDescription.textContent,
+    'Apply the editor text as the current text'
+  );
+  assert.equal(
+    harness.dom.autoApplyDescription.textContent,
+    'Automatically apply editor changes to the current text while typing'
+  );
+  assert.equal(
+    harness.dom.btnCalc.getAttribute('data-tot-tooltip'),
+    'Apply the editor text as the current text'
+  );
+  assert.equal(
+    harness.dom.calcLabel.getAttribute('data-tot-tooltip'),
+    'Automatically apply editor changes to the current text while typing'
+  );
+});
+
+test('Editor synchronization isolation alert explains local-work preservation in English and Spanish', () => {
+  const english = readRendererValue('en', 'renderer.editor.alerts.sync_isolated');
+  const spanish = readRendererValue('es', 'renderer.editor.alerts.sync_isolated');
+
+  assert.match(english, /not synchronized/i);
+  assert.match(english, /Copy or save/i);
+  assert.match(spanish, /no se sincronizan/i);
+  assert.match(spanish, /Copia o guarda/i);
 });
