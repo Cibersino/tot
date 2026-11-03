@@ -351,6 +351,7 @@
         "paste_truncated": "I tapahia te kuputuhi kua whakapirihia kia kore e hipa i te mōrahi.",
         "drop_truncated": "I hipa te kuputuhi kua tōia i te wāhi wātea, ā, i tapahia.",
         "text_truncated": "I tapahia te kuputuhi kia uru ki te rohe taupānga.",
+        "sync_isolated": "Kua whakatārewatia te tukutahitanga o te kuputuhi hei tiaki i te kuputuhi o nāianei. Ka taea tonu e koe te whakatika me te tārua kuputuhi, engari kāore ngā panonitanga ā-rohe e tukutahia, ā, tērā pea ka ngaro ina kati te Kaiwhakatika Kuputuhi. Tāruatia, tiakina rānei te kuputuhi e hiahia ana koe ki te pupuri i mua i te kati, i te whakatuwhera anō rānei i te Kaiwhakatika Kuputuhi.",
         "calc_error": "I puta he hapa i te tatau. Tirohia te papatohu."
       }
     },

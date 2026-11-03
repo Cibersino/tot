@@ -351,6 +351,7 @@
         "paste_truncated": "El text enganxat s’ha truncat per no superar el màxim permès.",
         "drop_truncated": "El text arrossegat superava l’espai disponible i s’ha truncat.",
         "text_truncated": "El text s’ha truncat per ajustar-se al límit màxim de l’aplicació.",
+        "sync_isolated": "La sincronització del text s’ha suspès per protegir el text actual. Pots continuar editant i copiar text, però els canvis locals no se sincronitzen i es poden perdre en tancar l’Editor de Text. Copia o desa el text que vulguis conservar abans de tancar o tornar a obrir l’Editor de Text.",
         "calc_error": "S’ha produït un error en calcular. Revisa la consola."
       }
     },

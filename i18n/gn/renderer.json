@@ -351,6 +351,7 @@
         "paste_truncated": "Jehai oñembojava’ekue oñekytĩ ani hag̃ua ohasa máximo.",
         "drop_truncated": "Jehai ojeityva’ekue ohasa espacio disponible ha oñekytĩ.",
         "text_truncated": "Jehai oñekytĩ oike hag̃ua límite máximo app-pe.",
+        "sync_isolated": "Ojejoko jehaipy sincronización oñangareko hag̃ua texto actual rehe. Ikatu resegi remohenda ha rekopia jehai, ha katu umi cambio local noñesincronizái ha ikatu okañy oñembotývo Editor de Texto. Ekopia térã eñongatu jehai reñongatuséva emboty térã eipe’a jey mboyve Editor de Texto.",
         "calc_error": "Oiko jejavy ojejapo aja cálculo. Ehecha consola."
       }
     },

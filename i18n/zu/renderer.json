@@ -351,6 +351,7 @@
         "paste_truncated": "Umbhalo onamathiselwe unqanyuliwe ukuze ungadluli umkhawulo omkhulu.",
         "drop_truncated": "Umbhalo ohudulwe wedlule isikhala esitholakalayo futhi unqanyuliwe.",
         "text_truncated": "Umbhalo unqanyuliwe ukuze ulingane nomkhawulo we-app.",
+        "sync_isolated": "Ukuvumelanisa umbhalo kumisiwe ukuze kuvikelwe umbhalo wamanje. Ungaqhubeka nokuhlela nokukopisha umbhalo, kodwa izinguquko zasendaweni azivumelaniswa futhi zingalahleka lapho uvala Isihleli Sombhalo. Kopisha noma ulondoloze umbhalo ofuna ukuwugcina ngaphambi kokuvala noma ukuvula kabusha Isihleli Sombhalo.",
         "calc_error": "Kuvele iphutha ngesikhathi kubalwa. Hlola ikhonsoli."
       }
     },

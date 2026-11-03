@@ -351,6 +351,7 @@
         "paste_truncated": "O texto colado foi truncado para evitar exceder o limite máximo.",
         "drop_truncated": "O texto arrastado excedeu o espaço disponível e foi truncado.",
         "text_truncated": "O texto foi truncado para caber no limite máximo do app.",
+        "sync_isolated": "A sincronização de texto foi suspensa para proteger o texto atual. Você pode continuar editando e copiando texto, mas as alterações locais não são sincronizadas e podem ser perdidas ao fechar o Editor de Texto. Copie ou salve o texto que deseja manter antes de fechar ou reabrir o Editor de Texto.",
         "calc_error": "Ocorreu um erro ao salvar o texto como texto atual."
       }
     },

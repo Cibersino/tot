@@ -351,6 +351,7 @@
         "paste_truncated": "Le texte collé a été tronqué pour éviter de dépasser la limite maximale.",
         "drop_truncated": "Le texte déplacé a dépassé l'espace disponible et a été tronqué.",
         "text_truncated": "Le texte a été tronqué pour respecter la limite maximale de l'application.",
+        "sync_isolated": "La synchronisation du texte a été suspendue pour protéger le texte actuel. Vous pouvez continuer à modifier et copier du texte, mais les modifications locales ne sont pas synchronisées et risquent d’être perdues à la fermeture de l’Éditeur de texte. Copiez ou enregistrez le texte que vous souhaitez conserver avant de fermer ou de rouvrir l’Éditeur de texte.",
         "calc_error": "Une erreur s'est produite lors du calcul. Vérifiez la console."
       }
     },

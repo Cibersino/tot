@@ -351,6 +351,7 @@
         "paste_truncated": "Pültrün wirin pichikünutuy.",
         "drop_truncated": "Küpalyelu wirin afiy ka pichikünutuy.",
         "text_truncated": "Wirin pichikünutuy tachi app mew.",
+        "sync_isolated": "Tachi texto sincronización katrüntungey texto actual küme müleam. Pepi wirintukukeymi ka textu kopiaymi, welu local cambios no sincronizangey ka pepi ñamüafuy Editor de Texto nürüfle. Kopiange kam guardange tami wirin nieael, petu Editor de Texto nürüfün kam wiño nülün.",
         "calc_error": "Welulkuy rakiduam mu. Kintunge consola."
       }
     },

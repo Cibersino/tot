@@ -351,6 +351,7 @@
         "paste_truncated": "Pasted text was truncated to avoid passing di maximum.",
         "drop_truncated": "Dragged text pass available space and dem truncate am.",
         "text_truncated": "Text was truncated to fit di app limit.",
+        "sync_isolated": "Dem don stop text synchronization to protect di current text. You fit still edit and copy text, but local changes no dey synchronize and dem fit loss when you close di Text Editor. Copy or save any text wey you wan keep before you close or open di Text Editor again.",
         "calc_error": "Error happen while calculating. Check console."
       }
     },

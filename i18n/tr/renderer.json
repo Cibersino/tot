@@ -351,6 +351,7 @@
         "paste_truncated": "Üst sınırın aşılmasını önlemek için yapıştırılan metin kesildi.",
         "drop_truncated": "Sürüklenen metin kullanılabilir alanı aştı ve kesildi.",
         "text_truncated": "Metin uygulama sınırına sığması için kesildi.",
+        "sync_isolated": "Geçerli metni korumak için metin eşitlemesi askıya alındı. Metni düzenlemeye ve kopyalamaya devam edebilirsiniz, ancak yerel değişiklikler eşitlenmez ve Metin Düzenleyicisi kapatıldığında kaybolabilir. Saklamak istediğiniz metni Metin Düzenleyicisi'ni kapatmadan veya yeniden açmadan önce kopyalayın ya da kaydedin.",
         "calc_error": "Hesaplama sırasında hata oluştu. Konsolu kontrol edin."
       }
     },

@@ -351,6 +351,7 @@
         "paste_truncated": "K'askachisqa qillqa kuchusqa, ama saqisqa hatun kayta yallinchu.",
         "drop_truncated": "Aysasqa qillqa kachkaq espaciomanta aswan karqan hinaspa kuchusqa.",
         "text_truncated": "Qillqa apppa hatun kayninman tupananpaq kuchusqa.",
+        "sync_isolated": "Qillqap sincronización-ninqa sayachisqa kachkan kunan qillqata waqaychanapaq. Qillqata allichayta hinallataq copiayta atinki, ichaqa kaypi ruwasqa tikraykuna mana sincronizasqachu, hinaspa Editor de Texto wichq’asqaykipi chinkayta atin. Waqaychay munasqayki qillqata copiay utaq waqaychay manaraq Editor de Texto wichq’achkaspa utaq yapamanta kichachkaspa.",
         "calc_error": "Yupaypi pantay karqan. Consolata qhaway."
       }
     },

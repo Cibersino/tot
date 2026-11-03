@@ -351,6 +351,7 @@
         "paste_truncated": "Văn bản được dán đã bị cắt bớt để tránh vượt quá mức tối đa.",
         "drop_truncated": "Văn bản được kéo vượt quá không gian còn lại và đã bị cắt bớt.",
         "text_truncated": "Văn bản đã bị cắt bớt để vừa với giới hạn của ứng dụng.",
+        "sync_isolated": "Đã tạm ngừng đồng bộ hóa văn bản để bảo vệ văn bản hiện tại. Bạn vẫn có thể chỉnh sửa và sao chép văn bản, nhưng các thay đổi cục bộ sẽ không được đồng bộ hóa và có thể bị mất khi đóng Trình chỉnh sửa văn bản. Hãy sao chép hoặc lưu văn bản muốn giữ lại trước khi đóng hoặc mở lại Trình chỉnh sửa văn bản.",
         "calc_error": "Đã xảy ra lỗi khi tính toán. Hãy kiểm tra console."
       }
     },

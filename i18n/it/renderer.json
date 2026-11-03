@@ -351,6 +351,7 @@
         "paste_truncated": "Il testo incollato è stato troncato perché supera la dimensione massima consentita.",
         "drop_truncated": "Il testo trascinato ha superato lo spazio disponibile ed è stato troncato.",
         "text_truncated": "Il testo è stato troncato per adattarsi al limite massimo dell'applicazione.",
+        "sync_isolated": "La sincronizzazione del testo è stata sospesa per proteggere il testo corrente. Puoi continuare a modificare e copiare il testo, ma le modifiche locali non vengono sincronizzate e potrebbero andare perse alla chiusura dell’Editor di testo. Copia o salva il testo che vuoi conservare prima di chiudere o riaprire l’Editor di testo.",
         "calc_error": "Si è verificato un errore durante il calcolo. Controlla la console."
       }
     },
