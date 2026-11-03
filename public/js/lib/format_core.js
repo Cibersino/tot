@@ -43,17 +43,17 @@
 
       const tag = normalizeLangTag(idioma) || defaultLang;
       const langKey = resolveLangBase(tag) || defaultLang;
-      const nf = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
-      if (nf && nf[langKey]) return nf[langKey];
+      const numberFormatting = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
+      if (numberFormatting && numberFormatting[langKey]) return numberFormatting[langKey];
 
       const defaultKey = resolveLangBase(defaultLang) || defaultLang;
-      if (nf && nf[defaultKey]) {
+      if (numberFormatting && numberFormatting[defaultKey]) {
         log.warnOnce(
           `format.numberFormatting.fallback:${langKey}`,
           'Missing numberFormatting for langKey; using default:',
           { langKey, defaultKey }
         );
-        return nf[defaultKey];
+        return numberFormatting[defaultKey];
       }
 
       log.warnOnce(
