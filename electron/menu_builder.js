@@ -26,7 +26,8 @@ const path = require('path');
 
 const Log = require('./log');
 const { DEFAULT_LANG } = require('./constants_main');
-const { normalizeLangTag, getLangBase } = require('./settings');
+const languageResources = require('./language_resources');
+const graphApi = require('../public/js/lib/language_resource_graph');
 
 // =============================================================================
 // Constants/config
@@ -44,6 +45,7 @@ const log = Log.get('menu');
 log.debug('Menu builder starting...');
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
+let defaultMainTranslations = null;
 
 const deepMerge = (base, overlay) => {
     const result = Object.assign({}, base || {});
@@ -117,131 +119,53 @@ function formatMenuLabel(template, params = {}) {
 // =============================================================================
 // Translation loading
 // =============================================================================
-// Translations live under i18n/<lang>/main.json.
-//
-// Fallback chain (in order):
-// 1) requested tag (e.g. 'es-cl')
-// 2) base tag      (e.g. 'es')
-// 3) DEFAULT_LANG as a final safe fallback
-//
-// For each language code we try these file candidates:
-// - If it has a region (contains '-'):
-//     i18n/<base>/<full>/main.json   (example: i18n/es/es-cl/main.json)
-// - Always:
-//     i18n/<lang>/main.json          (example: i18n/es/main.json)
-//
-// Behavior:
-// - If a candidate file is missing, we try the next one.
-// - If a file is empty/invalid JSON, we log once and try the next one.
-// - If nothing can be loaded, we return {} and the menu falls back to translation keys.
+function initializeDefaultMainTranslations() {
+    if (defaultMainTranslations) return defaultMainTranslations;
+
+    const graph = languageResources.getGraph();
+    const defaultDescriptor = graphApi.getDescriptor(graph, DEFAULT_LANG);
+    if (!defaultDescriptor) {
+        throw new Error(`[menu_builder] required default language is undeclared: ${DEFAULT_LANG}`);
+    }
+
+    const bundle = loadBundle(defaultDescriptor, DEFAULT_LANG, true);
+    if (!bundle) throw new Error(`[menu_builder] required default main.json unavailable: ${DEFAULT_LANG}`);
+
+    defaultMainTranslations = bundle;
+    return defaultMainTranslations;
+}
 
 function loadMainTranslations(lang) {
-    const requested = normalizeLangTag(lang);
-    if (!requested) {
-        log.warnOnce(
-            'menu_builder.loadMainTranslations.emptyLang',
-            'Invalid language tag for menu; using default bundle only.'
-        );
-    }
-
-    const base = getLangBase(requested) || '';
-
-    const defaultBundle = loadBundle(DEFAULT_LANG, DEFAULT_LANG, true);
-    if (!defaultBundle) {
-        log.errorOnce(
-            `menu_builder.loadMainTranslations.defaultMissing:${DEFAULT_LANG}`,
-            'Default main.json missing or invalid (using empty defaults):',
-            DEFAULT_LANG
-        );
-    }
-
-    let overlay = null;
-    if (requested && requested !== DEFAULT_LANG) {
-        overlay = loadOverlay(requested, base);
-        if (!overlay) {
-            log.warnOnce(
-                `menu_builder.loadMainTranslations.overlayMissing:${requested}:${base || 'none'}`,
-                'No overlay main.json found (using default only):',
-                { requested, base }
-            );
-        }
-    }
-
-    return deepMerge(defaultBundle || {}, overlay || {});
+    const graph = languageResources.getGraph();
+    const selectedId = graphApi.resolveLanguageId(graph, lang || DEFAULT_LANG);
+    if (!selectedId) throw new Error(`[menu_builder] unsupported application language: ${String(lang)}`);
+    const chain = graphApi.getMergeChain(graph, selectedId);
+    let translations = initializeDefaultMainTranslations();
+    chain.forEach((descriptor) => {
+        if (descriptor.id === DEFAULT_LANG) return;
+        const bundle = loadBundle(descriptor, selectedId, false);
+        if (!bundle) return;
+        translations = translations ? deepMerge(translations, bundle) : bundle;
+    });
+    return translations;
 }
 
-function loadOverlay(requested, base) {
-    const candidates = [];
-    if (requested) candidates.push(requested);
-    if (base && base !== requested) candidates.push(base);
-
-    for (const langCode of candidates) {
-        const parsed = loadBundle(langCode, requested, false);
-        if (parsed) return parsed;
-    }
-
-    return null;
-}
-
-function loadBundle(langCode, requested, required) {
-    const langBase = getLangBase(langCode) || langCode;
-
-    const files = [];
-    if (langCode.includes('-')) {
-        files.push(path.join(I18N_DIR, langBase, langCode, 'main.json'));
-    }
-    files.push(path.join(I18N_DIR, langCode, 'main.json'));
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileVariant = files.length > 1 && i === 0 ? 'region' : 'root';
-        if (!fs.existsSync(file)) continue;
-
-        try {
-            let raw = fs.readFileSync(file, 'utf8');
-
-            // Remove UTF-8 BOM if present (some editors add it and JSON.parse fails).
-            raw = raw.replace(/^\uFEFF/, '');
-
-            if (raw.trim() === '') {
-                log.warnOnce(
-                    `menu_builder.loadMainTranslations.empty:${langCode}:${fileVariant}`,
-                    'main.json is empty (trying fallback):',
-                    { requested, langCode, file }
-                );
-                continue;
-            }
-
-            const parsed = JSON.parse(raw);
-            if (!isPlainObject(parsed)) {
-                log.warnOnce(
-                    `menu_builder.loadMainTranslations.invalidShape:${langCode}:${fileVariant}`,
-                    'main.json root must be a JSON object (trying fallback):',
-                    { requested, langCode, file }
-                );
-                continue;
-            }
-
-            return parsed;
-        } catch (error) {
-            log.warnOnce(
-                `menu_builder.loadMainTranslations.failed:${langCode}:${fileVariant}`,
-                'Failed to load/parse main.json (trying fallback):',
-                { requested, langCode, file },
-                error
-            );
+function loadBundle(descriptor, requestedLanguageId, required) {
+    const file = path.join(I18N_DIR, descriptor.resourceDirectory, 'main.json');
+    try {
+        const raw = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '');
+        const parsed = JSON.parse(raw);
+        if (!isPlainObject(parsed)) throw new Error('root is not a JSON object');
+        return parsed;
+    } catch (error) {
+        const details = { requestedLanguageId, languageId: descriptor.id, resourceDirectory: descriptor.resourceDirectory, file };
+        if (required) {
+            log.errorOnce(`menu_builder.loadMainTranslations.requiredMissing:${descriptor.id}`, 'Required default main.json unavailable:', details, error);
+        } else {
+            log.warnOnce(`menu_builder.loadMainTranslations.failed:${descriptor.id}`, 'main.json unavailable; continuing through declared graph chain:', details, error);
         }
+        return null;
     }
-
-    if (required) {
-        log.errorOnce(
-            `menu_builder.loadMainTranslations.requiredMissing:${langCode}`,
-            'Required main.json missing/invalid:',
-            { langCode, files }
-        );
-    }
-
-    return null;
 }
 
 // =============================================================================
@@ -274,7 +198,7 @@ function getDialogTexts(lang) {
  * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
  */
 function buildAppMenu(lang, opts = {}) {
-    const effectiveLang = normalizeLangTag(lang) || DEFAULT_LANG;
+    const effectiveLang = typeof lang === 'string' && lang.trim() ? lang.trim() : DEFAULT_LANG;
     const tr = loadMainTranslations(effectiveLang) || {};
     const tMain = isPlainObject(tr.main) ? tr.main : {};
     const m = isPlainObject(tMain.menu) ? tMain.menu : {};
@@ -559,6 +483,7 @@ function buildAppMenu(lang, opts = {}) {
 module.exports = {
     getDialogTexts,
     buildAppMenu,
+    initializeDefaultMainTranslations,
     resolveDialogText,
 };
 

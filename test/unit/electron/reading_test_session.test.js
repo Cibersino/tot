@@ -592,14 +592,14 @@ test('live Questions and Result windows remain settings targets until their actu
     async waitForWindowVisible() {},
   };
   const settingsStateMock = {
-    deriveLangKey() {
+    getPreferenceScope() {
       return 'en';
     },
     getSettings() {
       return {
         language: 'en',
         modeConteo: 'preciso',
-        presets_by_language: {},
+        presetsByScope: {},
       };
     },
   };
@@ -717,8 +717,8 @@ for (const { hasQuestions, presetUnavailable } of [
       async waitForWindowVisible() {},
     };
     const settingsStateMock = {
-      deriveLangKey: () => 'en',
-      getSettings: () => ({ language: 'en', modeConteo: 'simple', presets_by_language: {} }),
+      getPreferenceScope: () => 'en',
+      getSettings: () => ({ language: 'en', modeConteo: 'simple', presetsByScope: {} }),
     };
     const pool = createReadingTestPoolMock({ entries: [{
       snapshotRelPath: '/reading_speed_test_pool/sample.json',

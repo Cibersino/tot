@@ -115,6 +115,7 @@ async function createRendererHarness({
   mainLogoLinksAvailable = true,
   mainLogoLinksOverride = null,
   statusUiOverrides = {},
+  getOcrLocaleTag = (language) => String(language || 'en'),
   transitionFailureLanguage = '',
   transitionFailure = null,
   transitionWait = null,
@@ -131,6 +132,7 @@ async function createRendererHarness({
   const subscriptions = {};
   const textExtractionDragDropConfigs = [];
   const textExtractionEntryConfigs = [];
+  const textExtractionBatchFlowConfigs = [];
   const warnings = [];
   const warningOnceKeys = new Set();
   const currentTextRuntimeCalls = {
@@ -374,14 +376,16 @@ async function createRendererHarness({
   });
 
   const rendererI18n = {
-    getLangBase(language) { return String(language || '').trim().toLowerCase().replace(/_/g, '-').split('-')[0]; },
+    getLocaleTag(language) { return String(language || 'en'); },
+    getOcrLocaleTag,
+    getPreferenceScope(language) { return String(language || 'en'); },
     getLanguageDirection(language) { return String(language || '').startsWith('ar') ? 'rtl' : 'ltr'; },
     getRendererValue(key) { return readRendererValue(activeLanguage, key); },
     async loadLocalizedDocument(documentId, language) {
       if (typeof loadLocalizedDocument === 'function') {
         return loadLocalizedDocument(documentId, language);
       }
-      return { html: null, language: '' };
+      return { html: null, descriptor: null };
     },
     async transitionRendererTranslations(language, { applyTranslations } = {}) {
       if (typeof transitionWait === 'function') await transitionWait(language);
@@ -450,7 +454,9 @@ async function createRendererHarness({
     TextExtractionBatchFinalModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionBatchFinalModal'); },
     },
-    TextExtractionBatchFlow: createNoopSurface(),
+    TextExtractionBatchFlow: createNoopSurface({
+      configure(config) { textExtractionBatchFlowConfigs.push(config); },
+    }),
     TextExtractionBatchPlanningModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionBatchPlanningModal'); },
     },
@@ -584,6 +590,10 @@ async function createRendererHarness({
     getTextExtractionEntryConfig() {
       assert.equal(textExtractionEntryConfigs.length, 1);
       return textExtractionEntryConfigs[0];
+    },
+    getTextExtractionBatchFlowConfig() {
+      assert.equal(textExtractionBatchFlowConfigs.length, 1);
+      return textExtractionBatchFlowConfigs[0];
     },
     getPresetCreatedCalls() {
       return presetCreatedCalls.length;
@@ -1108,6 +1118,26 @@ test('main renderer Spoiler persistence adapter rejects non-ok bridge results', 
   assert.equal(persistCalls, 1);
 });
 
+test('main renderer maps canonical language IDs through OCR locale metadata for both extraction flows', async () => {
+  const ocrLocaleCalls = [];
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      async getSettings() {
+        return { language: 'app-french-canada', modeConteo: 'preciso' };
+      },
+    },
+    getOcrLocaleTag(languageId) {
+      ocrLocaleCalls.push(languageId);
+      assert.equal(languageId, 'app-french-canada');
+      return 'fr';
+    },
+  });
+
+  assert.equal(harness.getTextExtractionEntryConfig().getOcrLanguage(), 'fr');
+  assert.equal(harness.getTextExtractionBatchFlowConfig().getOcrLanguage(), 'fr');
+  assert.deepEqual(ocrLocaleCalls, ['app-french-canada', 'app-french-canada']);
+});
+
 test('main renderer wires Entry dropped-file resolution only through getPathForFile', async () => {
   const droppedFile = { path: 'C:\\legacy\\drop.txt' };
   let receivedFile = null;
@@ -1193,12 +1223,12 @@ test('preset-created waits for a language transition and uses the saved mutation
   const harness = await createRendererHarness({
     transitionWait: (language) => language === 'es' ? transition.promise : undefined,
   });
-  const snapshot = { language: 'es', presets_by_language: { es: [{ name: 'Nueva', wpm: 300 }] } };
+  const snapshot = { language: 'es', presetsByScope: { es: [{ name: 'Nueva', wpm: 300 }] } };
   const languageUpdate = harness.subscriptions.settingsChanged({ language: 'es' });
   await flushAsyncWork();
   const reconciliation = harness.subscriptions.presetCreated({
     preset: { name: 'Nueva', wpm: 300 },
-    language: 'es',
+    preferenceScopeId: 'es',
     settingsSnapshot: snapshot,
   });
   await flushAsyncWork();
@@ -1217,7 +1247,7 @@ test('preset-created does not select an old-language preset after a language cha
   await harness.subscriptions.settingsChanged({ language: 'es' });
   await harness.subscriptions.presetCreated({
     preset: { name: 'Old', wpm: 300 },
-    language: 'en',
+    preferenceScopeId: 'en',
     settingsSnapshot: { language: 'en' },
   });
   assert.equal(harness.getPresetCreatedCalls(), 0);
@@ -1229,12 +1259,12 @@ for (const scenario of [
 ]) {
   test(`preset ${scenario.name} waits for settings work and uses its saved snapshot`, async () => {
     const transition = createDeferred();
-    const snapshot = { language: 'es', presets_by_language: { es: [] } };
+    const snapshot = { language: 'es', presetsByScope: { es: [] } };
     const harness = await createRendererHarness({
       presetValue: 'Selected',
       transitionWait: (language) => language === 'es' ? transition.promise : undefined,
       electronMethodOverrides: {
-        [scenario.method]: async () => ({ ok: true, language: 'es', settingsSnapshot: snapshot }),
+        [scenario.method]: async () => ({ ok: true, preferenceScopeId: 'es', settingsSnapshot: snapshot }),
       },
     });
     const languageUpdate = harness.subscriptions.settingsChanged({ language: 'es' });
@@ -1438,9 +1468,15 @@ test('open Info Modal refresh uses the effective document language and preserves
     async loadLocalizedDocument(_documentId, language) {
       documentRequests.push(language);
       if (language === 'es') {
-        return { html: '<article>Fallback English instructions</article>', language: 'en' };
+        return {
+          html: '<article>Fallback English instructions</article>',
+          descriptor: { id: 'en', localeTag: 'en' },
+        };
       }
-      return { html: '<article>English instructions</article>', language: 'en' };
+      return {
+        html: '<article>English instructions</article>',
+        descriptor: { id: 'en', localeTag: 'en' },
+      };
     },
   });
 
@@ -1474,7 +1510,7 @@ test('main renderer enhances and binds Info Modal content after each completed r
     async loadLocalizedDocument(_documentId, language) {
       return {
         html: `<article><figure class="instrucciones-media"><img src="${language}.png"></figure></article>`,
-        language,
+        descriptor: { id: language, localeTag: language },
       };
     },
   });
@@ -1509,7 +1545,10 @@ test('open Info Modal discards a stale localized-document refresh after a later 
           resolveSpanishDocument = resolve;
         });
       }
-      return { html: `<article>${language} instructions</article>`, language };
+      return {
+        html: `<article>${language} instructions</article>`,
+        descriptor: { id: language, localeTag: language },
+      };
     },
   });
 
@@ -1522,7 +1561,10 @@ test('open Info Modal discards a stale localized-document refresh after a later 
 
   await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'preciso' });
   for (let index = 0; index < 3; index += 1) await flushAsyncWork();
-  resolveSpanishDocument({ html: '<article>stale Spanish instructions</article>', language: 'es' });
+  resolveSpanishDocument({
+    html: '<article>stale Spanish instructions</article>',
+    descriptor: { id: 'es', localeTag: 'es' },
+  });
   for (let index = 0; index < 3; index += 1) await flushAsyncWork();
 
   const infoModalContent = harness.getElement('infoModalContent');
@@ -1536,7 +1578,10 @@ test('main renderer delegates every supported Info menu action to the Info modal
   const harness = await createRendererHarness({
     async loadLocalizedDocument(_documentId, language) {
       manualRequests.push(language);
-      return { html: `<article>${language} instructions</article>`, language };
+      return {
+        html: `<article>${language} instructions</article>`,
+        descriptor: { id: language, localeTag: language },
+      };
     },
   });
 

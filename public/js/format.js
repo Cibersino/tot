@@ -16,9 +16,8 @@
 
   const rendererI18n = window.RendererI18n;
   if (!rendererI18n
-    || typeof rendererI18n.normalizeLangTag !== 'function'
-    || typeof rendererI18n.getLangBase !== 'function') {
-    throw new Error('[format] window.RendererI18n.normalizeLangTag/getLangBase unavailable; cannot continue');
+    || typeof rendererI18n.getPreferenceScope !== 'function') {
+    throw new Error('[format] window.RendererI18n.getPreferenceScope unavailable; cannot continue');
   }
 
   const formatCore = window.FormatCore;
@@ -28,8 +27,7 @@
 
   window.FormatUtils = formatCore.createFormatUtils({
     DEFAULT_LANG: appConstants.DEFAULT_LANG,
-    normalizeLangTag: rendererI18n.normalizeLangTag,
-    getLangBase: rendererI18n.getLangBase,
+    getPreferenceScope: rendererI18n.getPreferenceScope,
     log
   });
 })();

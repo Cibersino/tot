@@ -6,7 +6,7 @@
 // =============================================================================
 // Shared number-formatting core for renderer-facing FormatUtils.
 // Responsibilities:
-// - Resolve number-format separators from settings and language fallbacks.
+// - Resolve number-format separators from explicit preference scopes.
 // - Support both browser-script and CommonJS consumers.
 
 (function initFormatCore(root, factory) {
@@ -20,47 +20,25 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
   function createFormatUtils({
     DEFAULT_LANG,
-    normalizeLangTag = (lang) => String(lang || '').trim().toLowerCase(),
-    getLangBase = null,
-    log,
+    getPreferenceScope,
   } = {}) {
-    const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim().toLowerCase() : '';
+    const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim() : '';
     if (!defaultLang) {
       throw new Error('[format_core] DEFAULT_LANG is required');
     }
-    const resolveLangBase = typeof getLangBase === 'function'
-      ? getLangBase
-      : (lang) => String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || defaultLang;
+    if (typeof getPreferenceScope !== 'function') {
+      throw new Error('[format_core] getPreferenceScope is required');
+    }
 
     async function obtenerSeparadoresDeNumeros(idioma, settingsCache) {
-      if (settingsCache === null) {
-        log.warnOnce(
-          'format.numberFormatting.settingsCacheNull',
-          'settingsCache null; using hardcoded defaults.'
-        );
-        return { separadorMiles: '.', separadorDecimal: ',' };
+      if (!settingsCache || typeof settingsCache !== 'object') throw new Error('[format_core] number formatting settings are unavailable');
+      const preferenceScopeId = getPreferenceScope(idioma || defaultLang);
+      const numberFormattingByScope = settingsCache.numberFormattingByScope;
+      const entry = numberFormattingByScope && numberFormattingByScope[preferenceScopeId];
+      if (!entry || typeof entry.separadorMiles !== 'string' || !entry.separadorMiles || typeof entry.separadorDecimal !== 'string' || !entry.separadorDecimal) {
+        throw new Error(`[format_core] required number formatting is unavailable for scope ${preferenceScopeId}`);
       }
-
-      const tag = normalizeLangTag(idioma) || defaultLang;
-      const langKey = resolveLangBase(tag) || defaultLang;
-      const numberFormatting = settingsCache && settingsCache.numberFormatting ? settingsCache.numberFormatting : null;
-      if (numberFormatting && numberFormatting[langKey]) return numberFormatting[langKey];
-
-      const defaultKey = resolveLangBase(defaultLang) || defaultLang;
-      if (numberFormatting && numberFormatting[defaultKey]) {
-        log.warnOnce(
-          `format.numberFormatting.fallback:${langKey}`,
-          'Missing numberFormatting for langKey; using default:',
-          { langKey, defaultKey }
-        );
-        return numberFormatting[defaultKey];
-      }
-
-      log.warnOnce(
-        'format.numberFormatting.missing',
-        'numberFormatting missing; using hardcoded defaults.'
-      );
-      return { separadorMiles: '.', separadorDecimal: ',' };
+      return entry;
     }
 
     function formatearNumero(numero, separadorMiles, separadorDecimal, fractionDigits = 0) {

@@ -2,7 +2,7 @@
 
 Este documento es una guía operativa para traducir y revisar la interfaz de toT. No es JSON válido del repo: usa formato JSONC documental para mostrar el baseline conjunto `es`/`en` y añadir notas de traducción directamente junto a las keys.
 
-La guía no reemplaza los archivos `i18n/<lang>/main.json` ni `i18n/<lang>/renderer.json`. Su función es fijar el canon semántico global, el alcance de los conceptos de la app, las formas protegidas y el propósito de keys no obvias, de modo que las revisiones por idioma no tengan que reconstruir contexto desde cero.
+La guía no reemplaza los archivos `i18n/<resourceDirectory>/main.json` ni `i18n/<resourceDirectory>/renderer.json`. Su función es fijar el canon semántico global, el alcance de los conceptos de la app, las formas protegidas y el propósito de keys no obvias, de modo que las revisiones por idioma no tengan que reconstruir contexto desde cero.
 
 ## 1. Uso operativo
 
@@ -33,11 +33,13 @@ Estos criterios aplican a todos los idiomas. Las guías específicas por idioma 
 
 ### 3.1 Idiomas padre y variantes
 
-Un idioma padre no es una base vaciada, artificialmente neutral o meramente funcional para que sus variantes tengan identidad. Cada idioma padre tiene una voz editorial completa y debe sostener por sí mismo una experiencia de uso estable.
+La identidad de idioma de la aplicación, su tag de locale, su directorio de recursos y su scope de preferencias se declaran por separado en `i18n/languages.json`. La sintaxis de un identificador, sus subtags BCP 47 y la posición de un directorio no crean relaciones de herencia.
+
+Un nodo padre no es una base vaciada, artificialmente neutral o meramente funcional para que sus overlays tengan identidad. Cada idioma raíz conserva una voz editorial propia cuando aporta un recurso, pero su condición de raíz no exige que duplique todos los recursos: solo `DEFAULT_LANG` debe proveer los tres recursos finales. Si una raíz no predeterminada omite un recurso, el loader aplica el fallback explícito hasta `DEFAULT_LANG`; eso no la convierte en overlay ni crea una relación de parentesco implícita. `zh-Hans` y `zh-Hant` son raíces distintas, con directorios, locales y scopes independientes; no son variantes de un nodo `zh`.
 
 Las variantes funcionan como capas de especialización mediante fallback directo. Sobrescriben keys cuando existe una diferencia lingüística, cultural, terminológica, tonal o experimental justificada. Su existencia no obliga al idioma padre a borrar marcas legítimas de uso, registro o riqueza expresiva.
 
-El idioma padre puede ser un locale regional cuando la arquitectura de fallback o una decisión editorial/pragmática así lo definan. En ese caso, su condición de padre no borra su carácter local ni convierte sus variantes en formas subordinadas culturalmente: solo establece la relación técnica y editorial desde la cual se especializan las diferencias justificadas.
+Una relación de overlay existe solo cuando el catálogo declara explícitamente `parentId`. `es-CL` es un overlay no seleccionable de `es`, con recursos planos en `i18n/es-cl/`; conserva la función de sobrescribir solo diferencias chilenas. Un overlay no hereda automáticamente el scope de preferencias de su padre.
 
 ### 3.2 Comprensibilidad amplia sin neutralización rígida
 
@@ -193,7 +195,7 @@ El preflight RTL del issue 286 dejó cerrados los follow-ups renderer-owned dete
 
 ## 8. Relación con guías específicas por idioma
 
-Esta guía global define el canon semántico y operativo. Las guías específicas por idioma (`i18n/<lang>/LANGUAGE_GUIDE_<lang>.md`) documentan cómo se escribe ese canon en cada idioma.
+Esta guía global define el canon semántico y operativo. Las guías específicas por idioma (`i18n/<resourceDirectory>/LANGUAGE_GUIDE_<resourceDirectory>.md`) documentan cómo se escribe ese canon en cada idioma.
 
 Debe ir a la guía global:
 

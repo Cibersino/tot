@@ -9,7 +9,7 @@
 // - Define refresh-kind constants and priority ordering.
 // - Normalize settings/count-context inputs used by refresh classification.
 // - Decide whether settings or preset changes require full, stats-only, or time-only refreshes.
-// - Bridge optional RendererI18n.getLangBase usage to local language-base fallback logic.
+// - Resolve number-format entries through explicit graph preference scopes.
 // - Build a controller that dispatches refresh requests through injected callbacks.
 
 (() => {
@@ -21,6 +21,7 @@
     throw new Error('[current-text-refresh-policy] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('current-text-refresh-policy');
+  log.debug('Current text refresh policy starting...');
 
   // =============================================================================
   // Constants / config
@@ -49,31 +50,32 @@
     return settings;
   }
 
-  function normalizeCountContext(context) {
+  function normalizeCountContext(context, getDefaultCountLocaleTag) {
     const source = context && typeof context === 'object' ? context : {};
+    const explicitLocaleTag = typeof source.idioma === 'string' && source.idioma.trim()
+      ? source.idioma.trim()
+      : '';
+    const defaultLocaleTag = explicitLocaleTag ? '' : getDefaultCountLocaleTag();
+    const localeTag = explicitLocaleTag || (
+      typeof defaultLocaleTag === 'string' && defaultLocaleTag.trim()
+        ? defaultLocaleTag.trim()
+        : ''
+    );
+    if (!localeTag) {
+      throw new Error('[current-text-refresh-policy] default count locale tag unavailable');
+    }
     return {
       modoConteo: source.modoConteo === 'simple' ? 'simple' : 'preciso',
-      idioma: typeof source.idioma === 'string' && source.idioma.trim()
-        ? source.idioma.trim()
-        : 'es',
+      idioma: localeTag,
     };
   }
 
-  function getLangBase(language) {
-    const helper = window.RendererI18n && typeof window.RendererI18n.getLangBase === 'function'
-      ? window.RendererI18n.getLangBase
+  function getPreferenceScope(language) {
+    const helper = window.RendererI18n && typeof window.RendererI18n.getPreferenceScope === 'function'
+      ? window.RendererI18n.getPreferenceScope
       : null;
-    if (helper) {
-      const resolved = helper(language);
-      if (typeof resolved === 'string' && resolved.trim()) {
-        return resolved.trim().toLowerCase();
-      }
-    }
-    log.warnOnce(
-      'current_text_refresh_policy.rendererI18n.getLangBase.fallback',
-      'RendererI18n.getLangBase did not resolve a language base; using fallback.'
-    );
-    return String(language || '').trim().toLowerCase().split(/[-_]/)[0] || 'es';
+    if (!helper) throw new Error('[current-text-refresh-policy] RendererI18n.getPreferenceScope unavailable');
+    return helper(language);
   }
 
   function getRefreshKindPriority(kind) {
@@ -86,13 +88,13 @@
       : currentKind;
   }
 
-  function getNumberFormattingEntry(settings, language) {
+  function getNumberFormattingEntry(settings, languageId) {
     const normalizedSettings = normalizeSettings(settings);
-    const numberFormatting = normalizedSettings.numberFormatting;
-    if (!numberFormatting || typeof numberFormatting !== 'object' || Array.isArray(numberFormatting)) {
+    const numberFormattingByScope = normalizedSettings.numberFormattingByScope;
+    if (!numberFormattingByScope || typeof numberFormattingByScope !== 'object' || Array.isArray(numberFormattingByScope)) {
       return null;
     }
-    const entry = numberFormatting[getLangBase(language)];
+    const entry = numberFormattingByScope[getPreferenceScope(languageId)];
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
       return null;
     }
@@ -107,9 +109,9 @@
     };
   }
 
-  function isNumberFormattingChanged(previousSettings, nextSettings, language) {
-    const previousEntry = getNumberFormattingEntry(previousSettings, language);
-    const nextEntry = getNumberFormattingEntry(nextSettings, language);
+  function isNumberFormattingChanged(previousSettings, nextSettings, languageId) {
+    const previousEntry = getNumberFormattingEntry(previousSettings, languageId);
+    const nextEntry = getNumberFormattingEntry(nextSettings, languageId);
     if (!previousEntry && !nextEntry) return false;
     if (!previousEntry || !nextEntry) return true;
     return previousEntry.separadorMiles !== nextEntry.separadorMiles
@@ -128,9 +130,9 @@
     previousCountContext,
     nextCountContext,
     presetOutcome,
-  } = {}) {
-    const previousContext = normalizeCountContext(previousCountContext);
-    const nextContext = normalizeCountContext(nextCountContext);
+  } = {}, getDefaultCountLocaleTag) {
+    const previousContext = normalizeCountContext(previousCountContext, getDefaultCountLocaleTag);
+    const nextContext = normalizeCountContext(nextCountContext, getDefaultCountLocaleTag);
     let refreshKind = REFRESH_KIND_NONE;
 
     if (previousContext.modoConteo !== nextContext.modoConteo) {
@@ -146,7 +148,8 @@
       );
     }
 
-    if (isNumberFormattingChanged(previousSettings, nextSettings, nextContext.idioma)) {
+    const nextLanguageId = normalizeSettings(nextSettings).language;
+    if (isNumberFormattingChanged(previousSettings, nextSettings, nextLanguageId)) {
       refreshKind = pickHigherPriorityRefresh(refreshKind, REFRESH_KIND_STATS_DISPLAY);
     }
 
@@ -158,10 +161,14 @@
   // =============================================================================
 
   function createController({
+    getDefaultCountLocaleTag,
     requestFullRefresh,
     requestStatsDisplayRefresh,
     requestTimeOnlyRefresh,
   } = {}) {
+    if (typeof getDefaultCountLocaleTag !== 'function') {
+      throw new Error('[current-text-refresh-policy] getDefaultCountLocaleTag missing');
+    }
     if (typeof requestFullRefresh !== 'function') {
       throw new Error('[current-text-refresh-policy] requestFullRefresh missing');
     }
@@ -170,6 +177,10 @@
     }
     if (typeof requestTimeOnlyRefresh !== 'function') {
       throw new Error('[current-text-refresh-policy] requestTimeOnlyRefresh missing');
+    }
+
+    function classifySettingsChangeForDefaultLocale(args = {}) {
+      return classifySettingsChange(args, getDefaultCountLocaleTag);
     }
 
     function dispatchRefresh(kind, reason = 'current-text refresh') {
@@ -195,14 +206,14 @@
     }
 
     function dispatchSettingsChange(args = {}) {
-      const kind = classifySettingsChange(args);
+      const kind = classifySettingsChangeForDefaultLocale(args);
       dispatchRefresh(kind, args.reason || 'settings change');
       return kind;
     }
 
     return {
       classifyPresetOutcome,
-      classifySettingsChange,
+      classifySettingsChange: classifySettingsChangeForDefaultLocale,
       dispatchPresetOutcome,
       dispatchRefresh,
       dispatchSettingsChange,

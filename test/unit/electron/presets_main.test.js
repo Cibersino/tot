@@ -109,11 +109,11 @@ function createPresetHarness(t, {
   const settingsFile = storage.getSettingsFile();
   storage.saveJsonStrict(settingsFile, {
     language: 'en',
-    presets_by_language: {
+    presetsByScope: {
       en: [{ name: 'Custom', wpm: 200, description: 'Custom text' }, { name: 'Default', wpm: 250, description: 'Override' }],
       es: [{ name: 'Otro', wpm: 180, description: '' }],
     },
-    disabled_default_presets: { en: ['Default2', 'Other'], es: ['Otro'] },
+    disabledDefaultPresetsByScope: { en: ['Default2', 'Other'], es: ['Otro'] },
   });
   const settings = require(modulePaths[1]);
   const handlers = new Map();
@@ -316,7 +316,7 @@ test('get-default-presets omits invalid configured entries and retains valid ent
   assert.deepEqual(defaults.general, [
     { name: 'Valid', wpm: 210, description: 'Configured default' },
   ]);
-  assert.deepEqual(defaults.languagePresets.en, []);
+  assert.deepEqual(defaults.defaultPresetsByScope.en, []);
 });
 
 test('registerIpc seeds missing configured default-preset files from bundled sources', (t) => {
@@ -370,13 +370,13 @@ test('get-default-presets keeps explicit empty, malformed, and non-array configu
   fs.writeFileSync(englishDefaults, '{');
   let defaults = await harness.invoke('get-default-presets');
   assert.deepEqual(defaults.general, []);
-  assert.deepEqual(defaults.languagePresets.en, []);
+  assert.deepEqual(defaults.defaultPresetsByScope.en, []);
 
   fs.writeFileSync(configDefaults, '{}');
   fs.writeFileSync(englishDefaults, '[]');
   defaults = await harness.invoke('get-default-presets');
   assert.deepEqual(defaults.general, []);
-  assert.deepEqual(defaults.languagePresets.en, []);
+  assert.deepEqual(defaults.defaultPresetsByScope.en, []);
 });
 
 test('get-default-presets logs unusable configured files distinctly from valid empty catalogs', async (t) => {
@@ -416,10 +416,10 @@ test('get-default-presets reads the complete catalog, including malformed unrela
   );
 
   assert.deepEqual(defaults.general, []);
-  assert.deepEqual(defaults.languagePresets.en, [
+  assert.deepEqual(defaults.defaultPresetsByScope.en, [
     { name: 'Default', wpm: 240, description: 'English default' },
   ]);
-  assert.deepEqual(defaults.languagePresets.es, []);
+  assert.deepEqual(defaults.defaultPresetsByScope.es, []);
   assert.equal(
     warnings.some((args) => args.includes(otherLanguagePath)),
     true
@@ -432,8 +432,23 @@ test('get-default-presets preserves its empty public result when the catalog is 
 
   assert.deepEqual(
     await harness.invoke('get-default-presets'),
-    { general: [], languagePresets: {} }
+    { general: [], defaultPresetsByScope: {} }
   );
+});
+
+test('get-default-presets preserves the exact declared preference-scope ID in catalog keys', async (t) => {
+  const harness = createPresetHarness(t);
+  fs.writeFileSync(
+    path.join(harness.configPresetsDir, 'defaults_presets_zh-Hans.json'),
+    JSON.stringify([{ name: 'Han', wpm: 240, description: 'Script root' }])
+  );
+
+  const defaults = await harness.invoke('get-default-presets');
+
+  assert.deepEqual(defaults.defaultPresetsByScope['zh-Hans'], [
+    { name: 'Han', wpm: 240, description: 'Script root' },
+  ]);
+  assert.equal(Object.prototype.hasOwnProperty.call(defaults.defaultPresetsByScope, 'zh-hans'), false);
 });
 
 for (const scenario of [
@@ -514,7 +529,7 @@ test('delete resolves an empty configured catalog the same way as get-default-pr
   const saved = JSON.parse(harness.getDisk());
 
   assert.equal(result.action, 'deleted_custom');
-  assert.equal(saved.disabled_default_presets.en.includes('default'), false);
+  assert.equal(saved.disabledDefaultPresetsByScope.en.includes('default'), false);
 });
 
 test('edit resolves an empty configured catalog the same way as get-default-presets', async (t) => {
@@ -535,7 +550,7 @@ test('edit resolves an empty configured catalog the same way as get-default-pres
   const saved = JSON.parse(harness.getDisk());
 
   assert.equal(result.deletedAction, 'deleted_custom');
-  assert.equal(saved.disabled_default_presets.en.includes('default'), false);
+  assert.equal(saved.disabledDefaultPresetsByScope.en.includes('default'), false);
 });
 
 test('restore resolves an empty configured catalog the same way as get-default-presets', async (t) => {
@@ -554,7 +569,7 @@ test('restore resolves an empty configured catalog the same way as get-default-p
 
   assert.deepEqual(result.removedCustom, []);
   assert.equal(
-    saved.presets_by_language.en.some((preset) => preset.name === 'default'),
+    saved.presetsByScope.en.some((preset) => preset.name === 'default'),
     true
   );
 });
@@ -583,7 +598,7 @@ for (const scenario of [
     payload: 'Default',
     assertMutation: (result, saved) => {
       assert.equal(result.action, 'deleted_and_ignored');
-      assert.equal(saved.disabled_default_presets.en.includes('Default'), true);
+      assert.equal(saved.disabledDefaultPresetsByScope.en.includes('Default'), true);
     },
   },
   {
@@ -592,7 +607,7 @@ for (const scenario of [
     assertMutation: (result, saved) => {
       assert.equal(result.action, 'restored');
       assert.deepEqual(result.removedCustom, ['Default']);
-      assert.equal(saved.presets_by_language.en.some((preset) => preset.name === 'Default'), false);
+      assert.equal(saved.presetsByScope.en.some((preset) => preset.name === 'Default'), false);
     },
   },
   {
@@ -605,7 +620,7 @@ for (const scenario of [
     assertMutation: (result, saved) => {
       assert.equal(result.action, 'edited');
       assert.deepEqual(
-        saved.presets_by_language.en.find((preset) => preset.name === 'Edited'),
+        saved.presetsByScope.en.find((preset) => preset.name === 'Edited'),
         { name: 'Edited', wpm: 275, description: 'Edited default' }
       );
     },
@@ -646,10 +661,10 @@ test('confirmed preset deletion preserves an intervening language selection and 
   const saved = JSON.parse(harness.getDisk());
 
   assert.equal(result.ok, true);
-  assert.equal(result.language, 'en');
+  assert.equal(result.preferenceScopeId, 'en');
   assert.equal(saved.language, 'es');
-  assert.equal(saved.disabled_default_presets.en.includes('Default'), true);
-  assert.equal(saved.disabled_default_presets.es.includes('Default'), false);
+  assert.equal(saved.disabledDefaultPresetsByScope.en.includes('Default'), true);
+  assert.equal(saved.disabledDefaultPresetsByScope.es.includes('Default'), false);
 });
 
 for (const scenario of presetMutationCases) {
@@ -671,21 +686,21 @@ for (const scenario of presetMutationCases) {
 
     assert.equal(result.ok, true);
     if (scenario.action) assert.equal(result.action, scenario.action);
-    assert.deepEqual(saved.presets_by_language.es, [{ name: 'Otro', wpm: 180, description: '' }]);
-    assert.deepEqual(saved.disabled_default_presets.es, ['Otro']);
+    assert.deepEqual(saved.presetsByScope.es, [{ name: 'Otro', wpm: 180, description: '' }]);
+    assert.deepEqual(saved.disabledDefaultPresetsByScope.es, ['Otro']);
     if (scenario.name === 'create' || scenario.name === 'edit default override') {
-      assert.deepEqual(saved.presets_by_language.en.find((preset) => preset.name === 'New'), { name: 'New', wpm: 300, description: 'New text' });
+      assert.deepEqual(saved.presetsByScope.en.find((preset) => preset.name === 'New'), { name: 'New', wpm: 300, description: 'New text' });
     }
-    if (scenario.name === 'overwrite') assert.equal(saved.presets_by_language.en.find((preset) => preset.name === 'Custom').wpm, 300);
-    if (scenario.name === 'delete custom') assert.equal(saved.presets_by_language.en.some((preset) => preset.name === 'Custom'), false);
+    if (scenario.name === 'overwrite') assert.equal(saved.presetsByScope.en.find((preset) => preset.name === 'Custom').wpm, 300);
+    if (scenario.name === 'delete custom') assert.equal(saved.presetsByScope.en.some((preset) => preset.name === 'Custom'), false);
     if (scenario.name === 'edit default override' || scenario.name === 'delete default override') {
-      assert.equal(saved.presets_by_language.en.some((preset) => preset.name === 'Default'), false);
-      assert.equal(saved.disabled_default_presets.en.includes('Default'), true);
+      assert.equal(saved.presetsByScope.en.some((preset) => preset.name === 'Default'), false);
+      assert.equal(saved.disabledDefaultPresetsByScope.en.includes('Default'), true);
     }
-    if (scenario.name === 'disable default') assert.equal(saved.disabled_default_presets.en.includes('Default3'), true);
+    if (scenario.name === 'disable default') assert.equal(saved.disabledDefaultPresetsByScope.en.includes('Default3'), true);
     if (scenario.name === 'restore defaults') {
-      assert.equal(saved.presets_by_language.en.some((preset) => preset.name === 'Default'), false);
-      assert.deepEqual(saved.disabled_default_presets.en, ['Other']);
+      assert.equal(saved.presetsByScope.en.some((preset) => preset.name === 'Default'), false);
+      assert.deepEqual(saved.disabledDefaultPresetsByScope.en, ['Other']);
       assert.deepEqual(result.removedCustom, ['Default']);
       assert.deepEqual(result.unignored, ['Default2']);
     }
@@ -693,7 +708,7 @@ for (const scenario of presetMutationCases) {
     assert.equal(harness.sent.some((message) => message.channel === 'preset-created'), scenario.channel === 'create-preset' || scenario.channel === 'edit-preset');
     const created = harness.sent.find((message) => message.channel === 'preset-created');
     const reconciliation = created ? created.payload : result;
-    assert.equal(reconciliation.language, 'en');
+    assert.equal(reconciliation.preferenceScopeId, 'en');
     assert.deepEqual(reconciliation.settingsSnapshot, saved);
     if (created) {
       const expectedPreset = scenario.channel === 'edit-preset' ? scenario.payload.newPreset : scenario.payload;
@@ -738,7 +753,7 @@ for (const scenario of [
 
     assert.equal(result.ok, true);
     assert.deepEqual(
-      saved.presets_by_language.en.find((preset) => preset.name === 'New'),
+      saved.presetsByScope.en.find((preset) => preset.name === 'New'),
       { name: 'New', wpm: 300, description: 'New text' }
     );
     assert.equal(

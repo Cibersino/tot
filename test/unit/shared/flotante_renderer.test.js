@@ -277,6 +277,24 @@ test('Floating Stopwatch startup has no programmatic initial DOM focus', async (
   assert.deepEqual(focusCalls, []);
 });
 
+test('Floating Stopwatch preserves canonical Chinese application IDs during bootstrap', async () => {
+  const harness = createBootstrapHarness();
+  const translationRequests = [];
+  harness.sandbox.window.flotanteAPI.getSettings = () => Promise.resolve({ language: 'zh-Hans' });
+  harness.sandbox.window.RendererI18n.transitionRendererTranslations = async (language, { applyTranslations } = {}) => {
+    translationRequests.push(language);
+    if (typeof applyTranslations === 'function') {
+      await applyTranslations({ language, restoring: false });
+    }
+  };
+
+  runFlotante(harness.sandbox);
+  await tick();
+  await tick();
+
+  assert.deepEqual(translationRequests, ['zh-Hans']);
+});
+
 test('Floating Stopwatch closes before normal interaction when live settings registration is unavailable', () => {
   const elements = {
     crono: createElement('crono'),

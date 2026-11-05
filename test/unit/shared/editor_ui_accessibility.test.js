@@ -78,6 +78,7 @@ function createHarness() {
     rendererI18n: {
       tRenderer(key) { return readRendererValue(activeLanguage, key) || key; },
       resolveUserTextDirection() { return 'ltr'; },
+      getLocaleTag(language) { return String(language || 'en'); },
     },
     dom,
     state,

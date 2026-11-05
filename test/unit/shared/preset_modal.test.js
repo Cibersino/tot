@@ -162,9 +162,6 @@ function createHarness({
         },
       }),
       RendererI18n: {
-        normalizeLangTag(language) {
-          return String(language || '').trim().toLowerCase().replace(/_/g, '-');
-        },
         async transitionRendererTranslations(language, { applyTranslations } = {}) {
           transitionLanguages.push(language);
           if (transitionLanguages.length === transitionFailureAt) {
@@ -637,10 +634,10 @@ test('preset modal does not retransition an established language for a replayed 
   assert.equal(harness.elements.btnSave.focusCount, 2);
 });
 
-test('preset modal does not retransition an established effective language for its first init', async () => {
-  const harness = createHarness({ initialLanguage: 'ES' });
+test('preset modal does not retransition an established declared language for its first init', async () => {
+  const harness = createHarness({ initialLanguage: 'es' });
 
-  harness.subscriptions.onSettingsChanged({ language: 'ES' });
+  harness.subscriptions.onSettingsChanged({ language: 'es' });
   await harness.settleSemanticWork();
 
   harness.subscriptions.onInit({

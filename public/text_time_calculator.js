@@ -36,8 +36,7 @@
 
   const rendererI18n = window.RendererI18n || null;
   if (!rendererI18n
-    || typeof rendererI18n.getLangBase !== 'function'
-    || typeof rendererI18n.normalizeLangTag !== 'function'
+    || typeof rendererI18n.getPreferenceScope !== 'function'
     || typeof rendererI18n.transitionRendererTranslations !== 'function'
     || typeof rendererI18n.tRenderer !== 'function') {
     reportTerminalCalculatorI18nFailure('startup-api');
@@ -78,16 +77,14 @@
     throw new Error('[text_time_calculator] RendererCombobox unavailable; cannot continue');
   }
   const {
-    getLangBase,
-    normalizeLangTag,
+    getPreferenceScope,
     tRenderer,
     transitionRendererTranslations,
   } = rendererI18n;
 
   const formatUtils = formatCore.createFormatUtils({
     DEFAULT_LANG,
-    normalizeLangTag,
-    getLangBase,
+    getPreferenceScope,
     log,
   });
   const stopwatchUtils = stopwatchTimeCore.createStopwatchTimeUtils();
@@ -436,10 +433,10 @@
         try {
           initialSettings = await textTimeCalculatorApi.getSettings();
         } catch (error) {
-          log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; using default language and number formatting:', error);
+          log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; attempting default-language translations, but required number-format settings are unavailable and startup will terminate:', error);
         }
       } else if (textTimeCalculatorApi) {
-        log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; using default language and number formatting.');
+        log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; attempting default-language translations, but required number-format settings are unavailable and startup will terminate.');
       }
 
       try {

@@ -72,8 +72,21 @@ function getPath(value, pathText) {
   );
 }
 
-function createHarness(uiDirection = 'ltr', { fetchImpl = null, defaultLang = 'en' } = {}) {
-  const body = createElement('body');
+function createHarness(uiDirection = 'ltr', options = {}) {
+  const { fetchImpl = null, defaultLang = 'en' } = options;
+  const body = Object.prototype.hasOwnProperty.call(options, 'body')
+    ? options.body
+    : createElement('body');
+  const getComputedStyle = Object.prototype.hasOwnProperty.call(options, 'getComputedStyle')
+    ? options.getComputedStyle
+    : (node) => {
+      const fallbackDirection = node && node.parentNode
+        ? node.parentNode.getAttribute('dir')
+        : 'ltr';
+      return {
+        direction: detectDirection(node && node.textContent, fallbackDirection),
+      };
+    };
   const logEntries = [];
   const documentElement = {
     attributes: {
@@ -107,7 +120,39 @@ function createHarness(uiDirection = 'ltr', { fetchImpl = null, defaultLang = 'e
     },
   });
 
-  const effectiveFetch = fetchImpl || (async () => ({ ok: false, text: async () => '' }));
+  const rootIds = ['ar', 'de', 'en', 'es', 'fr'];
+  const languages = rootIds.map((id) => ({
+    id,
+    kind: 'root',
+    parentId: null,
+    resourceDirectory: id,
+    localeTag: id,
+    ocrLocaleTag: id,
+    preferenceScopeId: id,
+    selectable: true,
+    label: id,
+    aliases: [],
+  }));
+  languages.push({
+    id: 'fr-CA',
+    kind: 'overlay',
+    parentId: 'fr',
+    resourceDirectory: 'fr-ca',
+    localeTag: 'fr-CA',
+    ocrLocaleTag: 'fr-CA',
+    preferenceScopeId: 'fr-CA',
+    selectable: true,
+    label: 'fr-CA',
+    aliases: [],
+  });
+  const testCatalog = { schemaVersion: 1, languages };
+  const suppliedFetch = fetchImpl || (async () => ({ ok: false, text: async () => '' }));
+  const effectiveFetch = async (pathname, options) => {
+    if (pathname === '../i18n/languages.json') {
+      return { ok: true, text: async () => JSON.stringify(testCatalog) };
+    }
+    return suppliedFetch(pathname, options);
+  };
   const sandbox = {
     window: {
       getLogger() {
@@ -122,14 +167,7 @@ function createHarness(uiDirection = 'ltr', { fetchImpl = null, defaultLang = 'e
       AppConstants: {
         DEFAULT_LANG: defaultLang,
       },
-      getComputedStyle(node) {
-        const fallbackDirection = node && node.parentNode
-          ? node.parentNode.getAttribute('dir')
-          : 'ltr';
-        return {
-          direction: detectDirection(node && node.textContent, fallbackDirection),
-        };
-      },
+      getComputedStyle,
       fetch: effectiveFetch,
     },
     document: {
@@ -142,6 +180,11 @@ function createHarness(uiDirection = 'ltr', { fetchImpl = null, defaultLang = 'e
   };
 
   vm.createContext(sandbox);
+  vm.runInContext(fs.readFileSync(
+    path.resolve(__dirname, '../../../public/js/lib/language_resource_graph.js'),
+    'utf8'
+  ), sandbox, { filename: 'public/js/lib/language_resource_graph.js' });
+  sandbox.window.LanguageResourceGraph = sandbox.LanguageResourceGraph;
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/i18n.js'),
     'utf8'
@@ -175,7 +218,23 @@ test('resolveUserTextDirection follows first-strong behavior for mixed text', ()
   assert.equal(i18n.resolveUserTextDirection('Google OCR שלום'), 'ltr');
 });
 
-test('localized document resources resolve requested tag, base tag, then DEFAULT_LANG in RendererI18n', async () => {
+test('resolveUserTextDirection diagnoses unavailable probe and computed-style fallbacks', () => {
+  const probeUnavailable = createHarness('rtl', { body: null });
+  const computedStyleUnavailable = createHarness('ltr', { getComputedStyle: undefined });
+
+  assert.equal(probeUnavailable.i18n.resolveUserTextDirection('hello'), 'rtl');
+  assert.equal(computedStyleUnavailable.i18n.resolveUserTextDirection('שלום'), 'ltr');
+  assert.ok(probeUnavailable.logEntries.some(([key, message]) => (
+    key === 'i18n.resolveUserTextDirection.probeUnavailable'
+      && message === 'resolveUserTextDirection probe unavailable; using UI fallback direction.'
+  )));
+  assert.ok(computedStyleUnavailable.logEntries.some(([key, message]) => (
+    key === 'i18n.resolveUserTextDirection.getComputedStyle.missing'
+      && message === 'window.getComputedStyle unavailable; using UI fallback direction.'
+  )));
+});
+
+test('localized document resources resolve selected node, declared parents, then DEFAULT_LANG in RendererI18n', async () => {
   const requestedPaths = [];
   const { i18n } = createHarness('ltr', {
     defaultLang: 'es',
@@ -191,12 +250,14 @@ test('localized document resources resolve requested tag, base tag, then DEFAULT
   const result = await i18n.loadLocalizedDocument('renderer.info.instructions', 'fr-CA');
 
   assert.deepEqual(requestedPaths, [
-    './info/instrucciones.fr-ca.html',
+    './info/instrucciones.fr-CA.html',
     './info/instrucciones.fr.html',
     './info/instrucciones.es.html',
   ]);
   assert.equal(result.html, '<main>Instrucciones en español</main>');
-  assert.equal(result.language, 'es');
+  assert.equal(result.descriptor.id, 'es');
+  assert.equal(result.descriptor.resourceDirectory, 'es');
+  assert.equal(result.descriptor.localeTag, 'es');
 });
 
 test('the DEFAULT_LANG renderer bundle contains the English root schema', () => {
@@ -214,7 +275,7 @@ test('the DEFAULT_LANG renderer bundle contains the English root schema', () => 
   assert.deepEqual(missingDefaultPaths, []);
 });
 
-test('renderer bundles diagnose requested-resource failures and continue through the base bundle', async () => {
+test('renderer bundles diagnose declared-resource failures and continue through the graph chain', async () => {
   const requestedPaths = [];
   const { i18n, logEntries } = createHarness('ltr', {
     defaultLang: 'en',
@@ -223,7 +284,7 @@ test('renderer bundles diagnose requested-resource failures and continue through
       if (pathname === '../i18n/en/renderer.json') {
         return { ok: true, text: async () => JSON.stringify({ renderer: { defaultLabel: 'English' } }) };
       }
-      if (pathname === '../i18n/fr/fr-ca/renderer.json') {
+      if (pathname === '../i18n/fr-ca/renderer.json') {
         return { ok: true, text: async () => '[]' };
       }
       if (pathname === '../i18n/fr/renderer.json') {
@@ -239,19 +300,42 @@ test('renderer bundles diagnose requested-resource failures and continue through
 
   assert.deepEqual(requestedPaths, [
     '../i18n/en/renderer.json',
-    '../i18n/fr/fr-ca/renderer.json',
-    '../i18n/fr-ca/renderer.json',
     '../i18n/fr/renderer.json',
+    '../i18n/fr-ca/renderer.json',
   ]);
   assert.equal(i18n.tRenderer('renderer.defaultLabel'), 'English');
   assert.equal(i18n.tRenderer('renderer.localizedLabel'), 'Français');
   assert.ok(logEntries.some(([message, details]) => (
-    message === 'renderer.json root must be a JSON object (trying fallback):'
-      && details && details.path === '../i18n/fr/fr-ca/renderer.json'
+    message === 'renderer.json unavailable; continuing through declared graph chain:'
+      && details && details.resourcePath === '../i18n/fr-ca/renderer.json'
   )));
+});
+
+test('a missing non-default root renderer bundle falls through to the default bundle', async () => {
+  const requestedPaths = [];
+  const { i18n, logEntries } = createHarness('ltr', {
+    defaultLang: 'en',
+    async fetchImpl(pathname) {
+      requestedPaths.push(pathname);
+      if (pathname === '../i18n/en/renderer.json') {
+        return { ok: true, text: async () => JSON.stringify({ renderer: { defaultLabel: 'English' } }) };
+      }
+      return { ok: false, status: 404, text: async () => '' };
+    },
+  });
+
+  await i18n.transitionRendererTranslations('de', {
+    applyTranslations() {},
+  });
+
+  assert.deepEqual(requestedPaths, [
+    '../i18n/en/renderer.json',
+    '../i18n/de/renderer.json',
+  ]);
+  assert.equal(i18n.tRenderer('renderer.defaultLabel'), 'English');
   assert.ok(logEntries.some(([message, details]) => (
-    message === 'renderer.json unavailable (trying fallback):'
-      && details && details.path === '../i18n/fr-ca/renderer.json'
+    message === 'renderer.json unavailable; continuing through declared graph chain:'
+      && details && details.languageId === 'de'
   )));
 });
 
@@ -268,7 +352,7 @@ test('renderer bundles reject invalid shapes and the default bundle is terminal 
 
   await assert.rejects(() => i18n.transitionRendererTranslations('fr', {
     applyTranslations() {},
-  }), /Default renderer\.json unavailable/);
+  }), /default renderer\.json unavailable/i);
   assert.throws(() => i18n.tRenderer('renderer.example'), /before renderer translation state/);
 });
 
@@ -609,8 +693,8 @@ test('a terminal renderer transition prevents already-queued work from applying'
     applyTranslations: ({ language }) => applied.push(language),
   });
 
-  await assert.rejects(terminal, /Default renderer\.json unavailable/);
-  await assert.rejects(queued, /Default renderer\.json unavailable/);
+  await assert.rejects(terminal, /default renderer\.json unavailable/i);
+  await assert.rejects(queued, /default renderer\.json unavailable/i);
   assert.equal(defaultBundleRequests, 1);
   assert.deepEqual(applied, []);
   assert.throws(() => i18n.tRenderer('renderer.label'), /before renderer translation state/);

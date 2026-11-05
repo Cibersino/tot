@@ -96,10 +96,9 @@
       transitionRendererTranslations,
       tRenderer,
       msgRenderer,
-      normalizeLangTag,
       resolveUserTextDirection,
     } = window.RendererI18n || {};
-    if (!transitionRendererTranslations || !tRenderer || !msgRenderer || !normalizeLangTag || !resolveUserTextDirection) {
+    if (!transitionRendererTranslations || !tRenderer || !msgRenderer || !resolveUserTextDirection) {
       reportTerminalPresetI18nFailure('startup-api');
       throw new Error('[preset_modal] RendererI18n unavailable; cannot continue');
     }
@@ -195,7 +194,7 @@
     }
 
     function getEffectivePresetLanguage(language) {
-      return normalizeLangTag(language) || DEFAULT_LANG;
+      return typeof language === 'string' && language.trim() ? language.trim() : DEFAULT_LANG;
     }
 
     async function applyPresetTranslationUpdate(language) {
@@ -314,7 +313,7 @@
         presetApi.onSettingsChanged((settings) => {
           if (presetI18nTerminal) return;
           enqueuePresetSemanticWork(async () => {
-            const nextLang = normalizeLangTag(settings && settings.language ? settings.language : '');
+            const nextLang = settings && typeof settings.language === 'string' ? settings.language.trim() : '';
             if (!nextLang || nextLang === idiomaActual) return;
             await applyPresetTranslationUpdate(nextLang);
           });

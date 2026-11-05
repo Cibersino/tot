@@ -18,6 +18,7 @@
 const path = require('path');
 const { BrowserWindow } = require('electron');
 const Log = require('./log');
+const languageResources = require('./language_resources');
 const settingsState = require('./settings');
 const { DEFAULT_LANG, PRESET_WPM_MIN, PRESET_WPM_MAX } = require('./constants_main');
 const countCore = require('../public/js/lib/count_core');
@@ -88,8 +89,16 @@ function createController(options = {}) {
     }
   }
 
+  function getLocaleTag(languageId) {
+    const descriptor = languageResources.getDescriptor(languageId);
+    if (!descriptor) {
+      throw new Error(`[reading-test-session] unsupported application language: ${String(languageId)}`);
+    }
+    return descriptor.localeTag;
+  }
+
   const countUtils = countCore.createCountUtils({
-    DEFAULT_LANG,
+    getDefaultLocaleTag: () => getLocaleTag(DEFAULT_LANG),
     log,
     intlObject: typeof Intl !== 'undefined' ? Intl : null,
   });
@@ -262,7 +271,7 @@ function createController(options = {}) {
       return settingsState.getSettings();
     } catch (error) {
       log.warn('Reading-test settings read failed; using fallback settings.', error);
-      return { language: DEFAULT_LANG, modeConteo: 'preciso', presets_by_language: {} };
+      return { language: DEFAULT_LANG, modeConteo: 'preciso', presetsByScope: {} };
     }
   }
 
@@ -446,6 +455,7 @@ function createController(options = {}) {
       getCronoState,
       getCurrentText,
       getSettingsSnapshot,
+      getLocaleTag,
       countUtils,
       fallbackPreciseCountingToSimple: settingsState.fallbackPreciseCountingToSimple,
       DEFAULT_LANG,

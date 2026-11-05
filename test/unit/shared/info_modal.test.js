@@ -179,7 +179,10 @@ function loadInfoModalHarness({ loadLocalizedDocument, fetchText, electronAPI = 
 test('InfoModal owns localized manual rendering, focus lifecycle, and language refresh', async () => {
   const harness = loadInfoModalHarness({
     async loadLocalizedDocument(_documentId, language) {
-      return { html: `<article>${language} manual</article>`, language };
+      return {
+        html: `<article>${language} manual</article>`,
+        descriptor: { id: language, localeTag: language },
+      };
     },
     fetchText: async () => '',
   });

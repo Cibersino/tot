@@ -43,7 +43,7 @@ const ZH_HANT_REGION_SET = new Set(['tw', 'hk', 'mo']);
 // =============================================================================
 function normalizeLanguageTag(value) {
   return typeof value === 'string'
-    ? settingsState.normalizeLangTag(value)
+    ? value.trim().toLowerCase().replace(/_/g, '-')
     : '';
 }
 
@@ -586,6 +586,18 @@ function createController({
       : settingsModule.getSettings();
   }
 
+  function getLocaleTagForSettings(effectiveSettings) {
+    const languageId = effectiveSettings && typeof effectiveSettings.language === 'string'
+      ? effectiveSettings.language
+      : '';
+    if (!languageId) return '';
+    // The production settings owner always supplies graph metadata. A direct
+    // locale string remains valid for an independently injected controller.
+    if (typeof settingsModule.getLanguageDescriptor !== 'function') return languageId;
+    const descriptor = settingsModule.getLanguageDescriptor(languageId);
+    return descriptor ? descriptor.localeTag : '';
+  }
+
   function apply(settingsOverride = null) {
     try {
       const effectiveSettings = resolveSettings(settingsOverride);
@@ -604,9 +616,7 @@ function createController({
 
       const result = applySpellCheckerSessionConfig({
         targetSession,
-        appLanguage: effectiveSettings && typeof effectiveSettings.language === 'string'
-          ? effectiveSettings.language
-          : '',
+        appLanguage: getLocaleTagForSettings(effectiveSettings),
         spellcheckEnabled: !effectiveSettings || effectiveSettings.spellcheckEnabled !== false,
         platform,
       });
@@ -622,9 +632,7 @@ function createController({
 
       if (result.reason === 'set-spellchecker-languages-unavailable') {
         const normalizedLanguage = normalizeLanguageTag(
-          effectiveSettings && typeof effectiveSettings.language === 'string'
-            ? effectiveSettings.language
-            : ''
+          getLocaleTagForSettings(effectiveSettings)
         ) || 'unset';
         log.warnOnce(
           'main.spellcheck.session-api.set-spellchecker-languages-unavailable',
@@ -659,9 +667,7 @@ function createController({
     const targetSession = getDefaultSession();
     const availability = getSpellcheckAvailability({
       targetSession,
-      appLanguage: effectiveSettings && typeof effectiveSettings.language === 'string'
-        ? effectiveSettings.language
-        : '',
+      appLanguage: getLocaleTagForSettings(effectiveSettings),
       platform,
     });
 

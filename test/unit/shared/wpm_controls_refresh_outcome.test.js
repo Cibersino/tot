@@ -124,8 +124,8 @@ function createHarness({
         DEFAULT_LANG: 'en',
       },
       RendererI18n: {
-        getLangBase(lang) {
-          return String(lang || '').split('-')[0] || 'en';
+        getPreferenceScope(lang) {
+          return String(lang || '').trim() || 'en';
         },
         resolveUserTextDirection(text) {
           return resolveDirectionFromText(
@@ -172,7 +172,7 @@ function createHarness({
           { name: 'default', wpm: 200, description: 'rtl:default desc' },
           { name: 'latin', wpm: 250, description: 'Google OCR desc' },
         ],
-        languagePresets: {},
+        defaultPresetsByScope: {},
       };
     },
     async setSelectedPreset(name) {
@@ -210,7 +210,7 @@ test('resolvePresetSelection keeps an intentional empty catalog quiet without a 
     list: [],
     settings: {
       language: 'en',
-      selected_preset_by_language: {},
+      selectedPresetByScope: {},
     },
     language: 'en',
     combobox: harness.dom.presetsCombobox,
@@ -233,7 +233,7 @@ test('resolvePresetSelection reports clearing a stale selection when no replacem
     list: [],
     settings: {
       language: 'en',
-      selected_preset_by_language: { en: 'missing' },
+      selectedPresetByScope: { en: 'missing' },
     },
     language: 'en',
     combobox: harness.dom.presetsCombobox,
@@ -246,7 +246,7 @@ test('resolvePresetSelection reports clearing a stale selection when no replacem
   assert.equal(harness.dom.presetDescription.textContent, '');
   assert.deepEqual(toPlainObject(harness.warningCalls), [[
     'Selected preset was not found and no replacement is available; visible preset selection cleared (NOTE: may be normal; configured presets can change independently of a saved selection).',
-    { requested: 'missing', lang: 'en' },
+    { requested: 'missing', preferenceScopeId: 'en' },
   ]]);
   assert.deepEqual(harness.selectionPersists, []);
 });
@@ -259,7 +259,7 @@ test('resolvePresetSelection reports an applied replacement without claiming per
     list: [{ name: 'replacement', wpm: 200, description: '' }],
     settings: {
       language: 'en',
-      selected_preset_by_language: { en: 'missing' },
+      selectedPresetByScope: { en: 'missing' },
     },
     language: 'en',
     combobox: harness.dom.presetsCombobox,
@@ -271,7 +271,7 @@ test('resolvePresetSelection reports an applied replacement without claiming per
   assert.equal(harness.dom.presetsCombobox.getValue(), 'replacement');
   assert.deepEqual(toPlainObject(harness.warningCalls), [[
     'Selected preset was not found; selected an available replacement (NOTE: may be normal; configured presets can change independently of a saved selection).',
-    { requested: 'missing', selected: 'replacement', lang: 'en' },
+    { requested: 'missing', selected: 'replacement', preferenceScopeId: 'en' },
   ]]);
   assert.deepEqual(harness.selectionPersists, ['replacement']);
 });
@@ -287,14 +287,14 @@ test('loadPresets reports effective fallback outcome after the selected preset d
             { name: 'default', wpm: 200, description: 'rtl:default desc' },
             { name: 'latin', wpm: 250, description: 'Google OCR desc' },
           ],
-          languagePresets: {},
+          defaultPresetsByScope: {},
         };
       }
       return {
         general: [
           { name: 'default', wpm: 200, description: 'rtl:default desc' },
         ],
-        languagePresets: {},
+        defaultPresetsByScope: {},
       };
     },
   });
@@ -302,8 +302,8 @@ test('loadPresets reports effective fallback outcome after the selected preset d
   await harness.controller.loadPresets({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: { en: 'latin' },
-      presets_by_language: {},
+      selectedPresetByScope: { en: 'latin' },
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,
@@ -312,8 +312,8 @@ test('loadPresets reports effective fallback outcome after the selected preset d
   const result = await harness.controller.loadPresets({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: {},
-      presets_by_language: {},
+      selectedPresetByScope: {},
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,
@@ -333,8 +333,8 @@ test('loadPresets reports the selection cleared by a catalog reload failure', as
   const harness = createHarness();
   const latinSettings = {
     language: 'en',
-    selected_preset_by_language: { en: 'latin' },
-    presets_by_language: {},
+    selectedPresetByScope: { en: 'latin' },
+    presetsByScope: {},
   };
 
   await harness.controller.loadPresets({
@@ -366,8 +366,8 @@ test('handlePresetCreated reports the selection cleared by a catalog reload fail
   const harness = createHarness();
   const latinSettings = {
     language: 'en',
-    selected_preset_by_language: { en: 'latin' },
-    presets_by_language: {},
+    selectedPresetByScope: { en: 'latin' },
+    presetsByScope: {},
   };
 
   await harness.controller.loadPresets({
@@ -402,8 +402,8 @@ test('handlePresetCreated reports effective post-resolution selection and WPM ou
   await harness.controller.loadPresets({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: { en: 'default' },
-      presets_by_language: {},
+      selectedPresetByScope: { en: 'default' },
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,
@@ -413,8 +413,8 @@ test('handlePresetCreated reports effective post-resolution selection and WPM ou
     preset: { name: 'custom' },
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: {},
-      presets_by_language: {
+      selectedPresetByScope: {},
+      presetsByScope: {
         en: [
           { name: 'custom', wpm: 333, description: 'Google OCR custom' },
         ],
@@ -446,7 +446,7 @@ test('handlePresetCreated reports the WPM transition applied after a deferred re
       return catalogLoads === 1
         ? {
           general: [{ name: 'default', wpm: 200, description: 'default desc' }],
-          languagePresets: {},
+          defaultPresetsByScope: {},
         }
         : deferredCatalog.promise;
     },
@@ -455,8 +455,8 @@ test('handlePresetCreated reports the WPM transition applied after a deferred re
   await harness.controller.loadPresets({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: { en: 'default' },
-      presets_by_language: {},
+      selectedPresetByScope: { en: 'default' },
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,
@@ -466,8 +466,8 @@ test('handlePresetCreated reports the WPM transition applied after a deferred re
     preset: { name: 'custom' },
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: {},
-      presets_by_language: {
+      selectedPresetByScope: {},
+      presetsByScope: {
         en: [{ name: 'custom', wpm: 200, description: 'custom desc' }],
       },
     },
@@ -479,7 +479,7 @@ test('handlePresetCreated reports the WPM transition applied after a deferred re
   harness.dom.wpmSlider.dispatch('input');
   deferredCatalog.resolve({
     general: [{ name: 'default', wpm: 200, description: 'default desc' }],
-    languagePresets: {},
+    defaultPresetsByScope: {},
   });
 
   const result = await pending;
@@ -504,7 +504,7 @@ test('loadPresets reports the WPM transition applied after a deferred reload', a
       return catalogLoads === 1
         ? {
           general: [{ name: 'default', wpm: 200, description: 'default desc' }],
-          languagePresets: {},
+          defaultPresetsByScope: {},
         }
         : deferredCatalog.promise;
     },
@@ -512,8 +512,8 @@ test('loadPresets reports the WPM transition applied after a deferred reload', a
 
   const settingsSnapshot = {
     language: 'en',
-    selected_preset_by_language: { en: 'default' },
-    presets_by_language: {},
+    selectedPresetByScope: { en: 'default' },
+    presetsByScope: {},
   };
   await harness.controller.loadPresets({
     settingsSnapshot,
@@ -531,7 +531,7 @@ test('loadPresets reports the WPM transition applied after a deferred reload', a
   harness.dom.wpmSlider.dispatch('input');
   deferredCatalog.resolve({
     general: [{ name: 'default', wpm: 200, description: 'default desc' }],
-    languagePresets: {},
+    defaultPresetsByScope: {},
   });
 
   const result = await pending;
@@ -561,8 +561,8 @@ test('preset selection preserves the existing onWpmChanged time-only callback pa
   await harness.controller.loadPresets({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: { en: 'default' },
-      presets_by_language: {},
+      selectedPresetByScope: { en: 'default' },
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,
@@ -572,8 +572,8 @@ test('preset selection preserves the existing onWpmChanged time-only callback pa
   const selected = await harness.controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: {},
-      presets_by_language: {},
+      selectedPresetByScope: {},
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,
@@ -601,7 +601,7 @@ test('preset selection notifies a WPM change applied after selection persistence
           { name: 'default', wpm: 200, description: 'default desc' },
           { name: 'same-wpm', wpm: 200, description: 'same WPM desc' },
         ],
-        languagePresets: {},
+        defaultPresetsByScope: {},
       };
     },
     setSelectedPreset() {
@@ -612,8 +612,8 @@ test('preset selection notifies a WPM change applied after selection persistence
   await harness.controller.loadPresets({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: { en: 'default' },
-      presets_by_language: {},
+      selectedPresetByScope: { en: 'default' },
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,
@@ -623,8 +623,8 @@ test('preset selection notifies a WPM change applied after selection persistence
   const pending = harness.controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'en',
-      selected_preset_by_language: {},
-      presets_by_language: {},
+      selectedPresetByScope: {},
+      presetsByScope: {},
     },
     language: 'en',
     electronAPI: harness.electronAPI,

@@ -8,8 +8,8 @@
 //
 // Responsibilities:
 // - Load and normalize settings, refreshing the in-memory cache on reads and saves.
-// - Canonicalize language tags and maintain language-scoped settings buckets.
-// - Hydrate numberFormatting defaults when persisted data is missing or invalid.
+// - Validate catalog-declared application IDs and maintain explicit preference scopes.
+// - Hydrate numberFormattingByScope defaults when persisted data is missing or invalid.
 // - Expose the state owner API consumed by main-process modules.
 // - Register settings IPC handlers and publish settings-updated to open windows.
 // - Attempt to persist a logged startup fallback language when the language picker closes without a selection.
@@ -17,8 +17,6 @@
 // =============================================================================
 // Imports / logger
 // =============================================================================
-const fs = require('fs');
-const path = require('path');
 const Log = require('./log');
 const {
   DEFAULT_LANG,
@@ -33,24 +31,24 @@ log.debug('Settings starting...');
 // =============================================================================
 // Language helpers
 // =============================================================================
-// Language tags are normalized to lowercase and use '-' as separator (e.g., "en-US" -> "en-us").
-// The "base" is the first part (e.g., "en-us" -> "en").
-const normalizeLangTag = (lang) =>
-  (lang || '').trim().toLowerCase().replace(/_/g, '-');
+let languageResources = null;
 
-const normalizeLangBase = (lang) => {
-  if (typeof lang !== 'string') return DEFAULT_LANG;
-  const base = lang.trim().toLowerCase().split(/[-_]/)[0];
-  return /^[a-z0-9]+$/.test(base) ? base : DEFAULT_LANG;
-};
+function getLanguageDescriptor(languageId) {
+  if (!languageResources) throw new Error('[settings] language resources unavailable');
+  return languageResources.getDescriptor(languageId);
+}
 
-const getLangBase = (lang) => {
-  const tag = normalizeLangTag(lang);
-  return normalizeLangBase(tag);
-};
+function getValidLanguageId(value) {
+  if (typeof value !== 'string' || !value.trim()) return '';
+  const descriptor = getLanguageDescriptor(value.trim());
+  return descriptor ? descriptor.id : '';
+}
 
-// Canonical key for language-indexed buckets (presets, numberFormatting, etc.).
-const deriveLangKey = (langTag) => getLangBase(langTag);
+function getPreferenceScope(languageId = DEFAULT_LANG) {
+  const descriptor = getLanguageDescriptor(languageId);
+  if (!descriptor) throw new Error(`[settings] unsupported application language: ${String(languageId)}`);
+  return descriptor.preferenceScopeId;
+}
 
 // =============================================================================
 // Defaults / validators
@@ -60,9 +58,10 @@ const createDefaultSettings = (language = '') => ({
   spellcheckEnabled: true,
   previewSpoilerEnabled: true,
   editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
-  presets_by_language: {},
-  selected_preset_by_language: {},
-  disabled_default_presets: {},
+  presetsByScope: {},
+  selectedPresetByScope: {},
+  disabledDefaultPresetsByScope: {},
+  numberFormattingByScope: {},
 });
 
 function normalizeEditorFontSizePx(value) {
@@ -118,80 +117,53 @@ const PRECISE_FAILURE_STAGES = new Set([
 // Number format defaults loader
 // =============================================================================
 /**
- * Reads i18n/<langBase>/numberFormat.json and returns separators.
- * Returns { thousands, decimal } or null if unavailable/invalid.
+ * Resolves a complete number format through the explicit graph chain.
  */
 function loadNumberFormatDefaults(lang) {
-  const langCode = deriveLangKey(lang);
-  const filePath = path.join(__dirname, '..', 'i18n', langCode, 'numberFormat.json');
-
-  try {
-    if (!fs.existsSync(filePath)) return null;
-
-    let raw = fs.readFileSync(filePath, 'utf8');
-    if (!raw) return null;
-
-    // Some editors may add a UTF-8 BOM.
-    raw = raw.replace(/^\uFEFF/, '');
-
-    const parsedNumberFormat = JSON.parse(raw);
-
-    const thousands = typeof parsedNumberFormat.thousands === 'string'
-      ? parsedNumberFormat.thousands
-      : '';
-    const decimal = typeof parsedNumberFormat.decimal === 'string'
-      ? parsedNumberFormat.decimal
-      : '';
-
-    if (!thousands || !decimal) {
-      log.warnOnce(
-        `settings.loadNumberFormatDefaults.invalidSchema:${langCode}`,
-        'numberFormat.json schema invalid (expected non-empty thousands/decimal strings):',
-        {
-          langCode,
-          filePath,
-          keys: parsedNumberFormat && typeof parsedNumberFormat === 'object'
-            ? Object.keys(parsedNumberFormat)
-            : [],
-        }
-      );
-      return null;
+  const graphApi = require('../public/js/lib/language_resource_graph');
+  const graph = languageResources.getGraph();
+  const selectedId = getValidLanguageId(lang) || DEFAULT_LANG;
+  const candidates = graphApi.getCompleteResourceCandidates(graph, selectedId);
+  for (const descriptor of candidates) {
+    const filePath = require('path').join(__dirname, '..', 'i18n', descriptor.resourceDirectory, 'numberFormat.json');
+    try {
+      const parsedNumberFormat = JSON.parse(require('fs').readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
+      const thousands = typeof parsedNumberFormat.thousands === 'string' ? parsedNumberFormat.thousands : '';
+      const decimal = typeof parsedNumberFormat.decimal === 'string' ? parsedNumberFormat.decimal : '';
+      if (!thousands || !decimal) throw new Error('invalid number format schema');
+      return { thousands, decimal };
+    } catch (error) {
+      const details = { languageId: descriptor.id, resourceDirectory: descriptor.resourceDirectory, filePath };
+      if (descriptor.id === DEFAULT_LANG) {
+        log.errorOnce(`settings.loadNumberFormatDefaults.required:${descriptor.id}`, 'Required default numberFormat.json unavailable:', details, error);
+      } else {
+        log.warnOnce(`settings.loadNumberFormatDefaults.failed:${descriptor.id}`, 'numberFormat.json unavailable; continuing through declared graph chain:', details, error);
+      }
     }
-
-    return { thousands, decimal };
-  } catch (error) {
-    // Recoverable: caller will apply default separators (fallback).
-    log.warnOnce(
-      `settings.loadNumberFormatDefaults.read:${langCode}`,
-      'numberFormat defaults load failed (using fallback):',
-      { langCode, filePath },
-      error
-    );
-    return null;
   }
+  throw new Error(`[settings] required default number format unavailable: ${DEFAULT_LANG}`);
 }
 
 // =============================================================================
 // Number formatting normalization helper
 // =============================================================================
 /**
- * Ensures settings.numberFormatting[langBase] exists.
- * Missing or invalid entries load separators from i18n, with safe defaults as the fallback.
+ * Ensures settings.numberFormattingByScope[preferenceScopeId] exists.
+ * Missing or invalid entries load a complete format through the declared graph chain.
  */
-function ensureNumberFormattingForBase(settings, base) {
+function ensureNumberFormattingForScope(settings, languageId) {
   if (!settings || typeof settings !== 'object') return;
-
-  const langKey = deriveLangKey(base);
-  const currentEntry = settings.numberFormatting[langKey];
+  const preferenceScopeId = getPreferenceScope(languageId || DEFAULT_LANG);
+  const currentEntry = settings.numberFormattingByScope[preferenceScopeId];
 
   if (typeof currentEntry !== 'undefined') {
     if (isValidNumberFormattingEntry(currentEntry)) return;
 
     log.warnOnce(
-      `settings.ensureNumberFormattingForBase.invalidEntry:${langKey}`,
-      'Invalid numberFormatting entry; rebuilding from defaults:',
+      `settings.ensureNumberFormattingForScope.invalidEntry:${preferenceScopeId}`,
+      'Invalid numberFormattingByScope entry; rebuilding from defaults:',
       {
-        langKey,
+        preferenceScopeId,
         type: typeof currentEntry,
         isArray: Array.isArray(currentEntry),
         keys: isNonArrayObject(currentEntry) ? Object.keys(currentEntry) : [],
@@ -199,24 +171,11 @@ function ensureNumberFormattingForBase(settings, base) {
     );
   }
 
-  const numberFormatDefaults = loadNumberFormatDefaults(langKey);
-  if (numberFormatDefaults && numberFormatDefaults.thousands && numberFormatDefaults.decimal) {
-    settings.numberFormatting[langKey] = {
-      separadorMiles: numberFormatDefaults.thousands,
-      separadorDecimal: numberFormatDefaults.decimal,
-    };
-  } else {
-    log.warnOnce(
-      `settings.ensureNumberFormattingForBase.default:${langKey}`,
-      'Using default number formatting (fallback):',
-      langKey,
-      { separadorMiles: '.', separadorDecimal: ',' }
-    );
-    settings.numberFormatting[langKey] = {
-      separadorMiles: '.',
-      separadorDecimal: ',',
-    };
-  }
+  const numberFormatDefaults = loadNumberFormatDefaults(languageId || DEFAULT_LANG);
+  settings.numberFormattingByScope[preferenceScopeId] = {
+    separadorMiles: numberFormatDefaults.thousands,
+    separadorDecimal: numberFormatDefaults.decimal,
+  };
 }
 
 // =============================================================================
@@ -228,7 +187,7 @@ function ensureNumberFormattingForBase(settings, base) {
  * Goals:
  * - Rebuild a safe in-memory shape when the persisted file is missing or edited externally.
  * - Convert invalid shapes to safe defaults (and log once).
- * - Ensure language-dependent buckets exist for the current language base.
+ * - Ensure language-dependent buckets exist for the current preference scope.
  */
 function normalizeSettings(settings) {
   if (!isNonArrayObject(settings)) {
@@ -254,69 +213,25 @@ function normalizeSettings(settings) {
     settings.language = '';
   }
 
-  // presets_by_language:
-  // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
-  if (typeof settings.presets_by_language === 'undefined') {
-    settings.presets_by_language = {};
-  } else if (!isNonArrayObject(settings.presets_by_language)) {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidPresetsByLanguage',
-      'Invalid presets_by_language; resetting to empty object:',
-      {
-        type: typeof settings.presets_by_language,
-        isArray: Array.isArray(settings.presets_by_language),
-      }
-    );
-    settings.presets_by_language = {};
-  }
-
-  // selected_preset_by_language:
-  // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
-  if (typeof settings.selected_preset_by_language === 'undefined') {
-    settings.selected_preset_by_language = {};
-  } else if (!isNonArrayObject(settings.selected_preset_by_language)) {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidSelectedPresetByLanguage',
-      'Invalid selected_preset_by_language; resetting to empty object:',
-      {
-        type: typeof settings.selected_preset_by_language,
-        isArray: Array.isArray(settings.selected_preset_by_language),
-      }
-    );
-    settings.selected_preset_by_language = {};
-  }
-
-  // numberFormatting must be a non-array object (may be missing/null/array/invalid types).
-  if (typeof settings.numberFormatting === 'undefined') {
-    settings.numberFormatting = {};
-  } else if (!isNonArrayObject(settings.numberFormatting)) {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidNumberFormatting',
-      'Invalid numberFormatting; resetting to empty object:',
-      {
-        type: typeof settings.numberFormatting,
-        isArray: Array.isArray(settings.numberFormatting),
-      }
-    );
-    settings.numberFormatting = {};
-  }
-
-  // disabled_default_presets must be a non-array object (may be missing/null/array/invalid types).
-  if (typeof settings.disabled_default_presets === 'undefined') {
-    settings.disabled_default_presets = {};
-  } else if (!isNonArrayObject(settings.disabled_default_presets)) {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidDisabledDefaultPresets',
-      'Invalid disabled_default_presets; resetting to empty object:',
-      {
-        type: typeof settings.disabled_default_presets,
-        isArray: Array.isArray(settings.disabled_default_presets),
-      }
-    );
-    settings.disabled_default_presets = {};
-  }
+  ['presetsByScope', 'selectedPresetByScope', 'disabledDefaultPresetsByScope', 'numberFormattingByScope'].forEach((field) => {
+    if (typeof settings[field] === 'undefined') {
+      settings[field] = {};
+      return;
+    }
+    if (!isNonArrayObject(settings[field])) {
+      log.warnOnce(
+        `settings.normalizeSettings.invalidScopeMap:${field}`,
+        'Invalid language-scoped settings map; resetting to empty object:',
+        {
+          field,
+          type: typeof settings[field],
+          isArray: Array.isArray(settings[field]),
+          isNull: settings[field] === null,
+        }
+      );
+      settings[field] = {};
+    }
+  });
 
   // modeConteo:
   // - missing -> default (silent)
@@ -387,58 +302,42 @@ function normalizeSettings(settings) {
     settings.editorFontSizePx = nextEditorFontSizePx;
   }
 
-  // Normalize language tag and compute its base (e.g., "en-US" -> "en").
-  const langTag =
-    settings.language && typeof settings.language === 'string' && settings.language.trim()
-      ? normalizeLangTag(settings.language)
-      : '';
-
-  if (!langTag) {
-    log.warnOnce(
-      'settings.normalizeSettings.emptyLanguage',
-      `settings.language is empty; language-dependent buckets will use fallback "${DEFAULT_LANG}" (NOTE: may be normal; a new profile has no language selection until the Language Window is completed).`
-    );
+  const languageId = getValidLanguageId(settings.language);
+  if (settings.language && !languageId) {
+    log.warnOnce('settings.normalizeSettings.undeclaredLanguage', 'Discarded undeclared application language ID:', settings.language);
   }
-
-  const langBase = deriveLangKey(langTag);
-  if (langTag) settings.language = langTag;
-
-  // presets_by_language[langBase]:
-  // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
-  if (typeof settings.presets_by_language[langBase] === 'undefined') {
-    settings.presets_by_language[langBase] = [];
-  } else if (!Array.isArray(settings.presets_by_language[langBase])) {
+  settings.language = languageId;
+  const scopeId = getPreferenceScope(languageId || DEFAULT_LANG);
+  if (typeof settings.presetsByScope[scopeId] === 'undefined') {
+    settings.presetsByScope[scopeId] = [];
+  } else if (!Array.isArray(settings.presetsByScope[scopeId])) {
     log.warnOnce(
-      'settings.normalizeSettings.invalidPresetsByLanguageEntry',
-      'Invalid presets_by_language entry; forcing empty array:',
+      `settings.normalizeSettings.invalidPresetsByScopeEntry:${scopeId}`,
+      'Invalid presetsByScope entry; resetting to empty array:',
       {
-        langBase,
-        type: typeof settings.presets_by_language[langBase],
-        isArray: Array.isArray(settings.presets_by_language[langBase]),
+        preferenceScopeId: scopeId,
+        type: typeof settings.presetsByScope[scopeId],
+        isArray: Array.isArray(settings.presetsByScope[scopeId]),
       }
     );
-    settings.presets_by_language[langBase] = [];
+    settings.presetsByScope[scopeId] = [];
   }
-
-  const selectedPreset = settings.selected_preset_by_language[langBase];
+  const selectedPreset = settings.selectedPresetByScope[scopeId];
   if (typeof selectedPreset !== 'undefined') {
     if (typeof selectedPreset !== 'string') {
       log.warnOnce(
-        'settings.normalizeSettings.invalidSelectedPresetEntry',
-        'Invalid selected_preset_by_language entry; removing:',
-        { langBase, type: typeof selectedPreset }
+        `settings.normalizeSettings.invalidSelectedPresetByScopeEntry:${scopeId}`,
+        'Invalid selectedPresetByScope entry; removing:',
+        { preferenceScopeId: scopeId, type: typeof selectedPreset }
       );
-      delete settings.selected_preset_by_language[langBase];
+      delete settings.selectedPresetByScope[scopeId];
     } else if (!selectedPreset.trim()) {
-      delete settings.selected_preset_by_language[langBase];
+      delete settings.selectedPresetByScope[scopeId];
     } else {
-      settings.selected_preset_by_language[langBase] = selectedPreset.trim();
+      settings.selectedPresetByScope[scopeId] = selectedPreset.trim();
     }
   }
-
-  // Ensure number formatting exists for the current base language.
-  ensureNumberFormattingForBase(settings, langBase);
+  ensureNumberFormattingForScope(settings, languageId || DEFAULT_LANG);
 
   return settings;
 }
@@ -450,17 +349,17 @@ function cloneSettingsForMutation(settings) {
   const source = isNonArrayObject(settings) ? settings : createDefaultSettings();
   return {
     ...source,
-    presets_by_language: isNonArrayObject(source.presets_by_language)
-      ? { ...source.presets_by_language }
+    presetsByScope: isNonArrayObject(source.presetsByScope)
+      ? { ...source.presetsByScope }
       : {},
-    selected_preset_by_language: isNonArrayObject(source.selected_preset_by_language)
-      ? { ...source.selected_preset_by_language }
+    selectedPresetByScope: isNonArrayObject(source.selectedPresetByScope)
+      ? { ...source.selectedPresetByScope }
       : {},
-    numberFormatting: isNonArrayObject(source.numberFormatting)
-      ? { ...source.numberFormatting }
+    numberFormattingByScope: isNonArrayObject(source.numberFormattingByScope)
+      ? { ...source.numberFormattingByScope }
       : {},
-    disabled_default_presets: isNonArrayObject(source.disabled_default_presets)
-      ? { ...source.disabled_default_presets }
+    disabledDefaultPresetsByScope: isNonArrayObject(source.disabledDefaultPresetsByScope)
+      ? { ...source.disabledDefaultPresetsByScope }
       : {},
   };
 }
@@ -473,7 +372,7 @@ function cloneSettingsForMutation(settings) {
  * - Stores injected dependencies and settings file path.
  * - Loads, normalizes, caches, and attempts to persist settings once on startup.
  */
-function init({ loadJson, saveJson, saveJsonStrict, settingsFile }) {
+function init({ loadJson, saveJson, saveJsonStrict, settingsFile, languageResources: injectedLanguageResources } = {}) {
   if (
     typeof loadJson !== 'function'
     || typeof saveJson !== 'function'
@@ -484,11 +383,16 @@ function init({ loadJson, saveJson, saveJsonStrict, settingsFile }) {
   if (!settingsFile) {
     throw new Error('[settings] init requires settingsFile');
   }
+  const resolvedLanguageResources = injectedLanguageResources || require('./language_resources');
+  if (!resolvedLanguageResources || typeof resolvedLanguageResources.getDescriptor !== 'function' || typeof resolvedLanguageResources.getGraph !== 'function') {
+    throw new Error('[settings] init requires initialized languageResources');
+  }
 
   _loadJson = loadJson;
   _saveJson = saveJson;
   _saveJsonStrict = saveJsonStrict;
   _settingsFile = settingsFile;
+  languageResources = resolvedLanguageResources;
 
   const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
 
@@ -804,12 +708,13 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
   try {
     let settings = getSettings();
     if (!settings.language) {
-      const lang = normalizeLangTag(fallbackLang);
-      settings.language = lang;
+      const languageId = getValidLanguageId(fallbackLang);
+      if (!languageId) throw new Error(`[settings] fallback language is not declared: ${String(fallbackLang)}`);
+      settings.language = languageId;
 
       log.warn(
         'BOOTSTRAP: language was unset; applying fallback language:',
-        lang
+        languageId
       );
       saveSettings(settings);
     }
@@ -874,12 +779,11 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
   // set-language: applies a nonempty selection, rebuilds the menu, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
     try {
-      const chosenRaw = String(lang || '');
-      const chosen = normalizeLangTag(chosenRaw);
+      const chosenRaw = typeof lang === 'string' ? lang : '';
+      const chosen = getValidLanguageId(chosenRaw);
       if (!chosen) {
-        log.warn(
-          'set-language called with empty language; leaving persisted language unchanged.'
-        );
+        log.warn('set-language rejected undeclared application language:', { language: chosenRaw });
+        return { ok: false, code: 'UNSUPPORTED_LANGUAGE' };
       }
 
       let settings = getSettings();
@@ -918,7 +822,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
 
       publishSettingsUpdated(settings);
 
-      return { ok: true, language: chosen };
+      return { ok: true, language: settings.language };
     } catch (error) {
       log.error('IPC set-language failed:', error);
       throw error;
@@ -970,20 +874,14 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
       }
 
       const settings = getSettings();
-      const langTag = settings.language;
-      if (!langTag) {
-        log.warn(
-          `settings.language is empty; using fallback "${DEFAULT_LANG}" langKey for preset selection.`
-        );
-      }
-      const langKey = deriveLangKey(langTag);
-      if (settings.selected_preset_by_language[langKey] === name) {
-        return { ok: true, langKey, name };
+      const preferenceScopeId = getPreferenceScope(settings.language || DEFAULT_LANG);
+      if (settings.selectedPresetByScope[preferenceScopeId] === name) {
+        return { ok: true, preferenceScopeId, name };
       }
       const nextSettings = cloneSettingsForMutation(settings);
-      nextSettings.selected_preset_by_language[langKey] = name;
+      nextSettings.selectedPresetByScope[preferenceScopeId] = name;
       saveSettingsStrict(nextSettings);
-      return { ok: true, langKey, name };
+      return { ok: true, preferenceScopeId, name };
     } catch (error) {
       log.error('IPC set-selected-preset failed:', error);
       throw error;
@@ -1047,10 +945,9 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
 // Exports
 // =============================================================================
 module.exports = {
-  normalizeLangTag,
-  normalizeLangBase,
-  getLangBase,
-  deriveLangKey,
+  getLanguageDescriptor,
+  getPreferenceScope,
+  getValidLanguageId,
   normalizeEditorFontSizePx,
   init,
   registerIpc,

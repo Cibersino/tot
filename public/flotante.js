@@ -186,9 +186,11 @@ function renderState(state) {
   }
 }
 
-async function applyFlotanteTranslations(lang) {
-  const target = (lang || '').toLowerCase() || DEFAULT_LANG;
-  await transitionRendererTranslations(target, {
+async function applyFlotanteTranslations(languageId) {
+  const targetLanguageId = typeof languageId === 'string' && languageId.trim()
+    ? languageId.trim()
+    : DEFAULT_LANG;
+  await transitionRendererTranslations(targetLanguageId, {
     applyTranslations: ({ language }) => {
       playIconName = 'play';
       pauseIconName = 'pause';

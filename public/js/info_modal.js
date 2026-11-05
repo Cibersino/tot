@@ -402,10 +402,10 @@
       return;
     }
     infoModalContent.innerHTML = documentHtml;
-    if (descriptor.isManual && typeof documentResult.language === 'string' && documentResult.language.trim()) {
-      const effectiveDocumentLanguage = documentResult.language.trim();
-      infoModalContent.setAttribute('lang', effectiveDocumentLanguage);
-      infoModalContent.setAttribute('dir', getLanguageDirection(effectiveDocumentLanguage));
+    if (descriptor.isManual && documentResult.descriptor && documentResult.descriptor.localeTag) {
+      const effectiveDocumentLocale = documentResult.descriptor.localeTag;
+      infoModalContent.setAttribute('lang', effectiveDocumentLocale);
+      infoModalContent.setAttribute('dir', getLanguageDirection(effectiveDocumentLocale));
     }
     if (typeof bindInfoModalLinks === 'function' && typeof enhanceInfoModalScreenshots === 'function') {
       enhanceInfoModalScreenshots(infoModalContent);

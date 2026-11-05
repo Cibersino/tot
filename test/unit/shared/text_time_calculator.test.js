@@ -150,11 +150,13 @@ async function createHarness({
   includeRendererI18n = true,
   expectStartupThrow = false,
   waitForBootstrap = true,
+  settingsReadMode = 'available',
   settingsListenerMode = 'available',
 } = {}) {
   const translations = getTranslationMap();
   let activeLanguage = initialLanguage;
   let failingTranslationApplicationLanguage = failTranslationApplicationLanguage;
+  let rendererTranslationStateEstablished = false;
   const terminalLanguage = String(terminalTransitionLanguage || '').trim().toLowerCase();
   const comboboxDisabledFailureValues = new Set(comboboxUpdateFailureDisabledValues);
   let rendererTransitionQueue = Promise.resolve();
@@ -234,23 +236,28 @@ async function createHarness({
         reportRendererI18nFailure() {
           reporterCalls += 1;
         },
-        async getSettings() {
-          if (liveSettingsDuringInitialLoad) {
-            assert.equal(typeof subscriptions.onSettingsChanged, 'function');
-            initialLiveSettingsDelivered = true;
-            subscriptions.onSettingsChanged(liveSettingsDuringInitialLoad);
-          }
-          if (initialSettingsGate) {
-            await initialSettingsGate;
-          }
-          return {
-            language: initialLanguage,
-            numberFormatting: {
-              es: { separadorMiles: '.', separadorDecimal: ',' },
-              en: { separadorMiles: ',', separadorDecimal: '.' },
-            },
-          };
-        },
+        ...(settingsReadMode === 'missing' ? {} : {
+          async getSettings() {
+            if (settingsReadMode === 'throw') {
+              throw new Error('initial settings unavailable');
+            }
+            if (liveSettingsDuringInitialLoad) {
+              assert.equal(typeof subscriptions.onSettingsChanged, 'function');
+              initialLiveSettingsDelivered = true;
+              subscriptions.onSettingsChanged(liveSettingsDuringInitialLoad);
+            }
+            if (initialSettingsGate) {
+              await initialSettingsGate;
+            }
+            return {
+              language: initialLanguage,
+              numberFormattingByScope: {
+                es: { separadorMiles: '.', separadorDecimal: ',' },
+                en: { separadorMiles: ',', separadorDecimal: '.' },
+              },
+            };
+          },
+        }),
         ...(settingsListenerMode === 'missing' ? {} : {
           onSettingsChanged(cb) {
             if (settingsListenerMode === 'throw') {
@@ -264,11 +271,8 @@ async function createHarness({
         }),
       },
       RendererI18n: includeRendererI18n ? {
-        normalizeLangTag(lang) {
-          return String(lang || '').trim().toLowerCase().replace(/_/g, '-');
-        },
-        getLangBase(lang) {
-          return String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || 'es';
+        getPreferenceScope(lang) {
+          return String(lang || '').trim() || 'es';
         },
         transitionRendererTranslations(lang, { applyTranslations } = {}) {
           const run = async () => {
@@ -276,27 +280,28 @@ async function createHarness({
             activeLanguage = String(lang || '').trim().toLowerCase() || 'es';
             transitionLanguages.push(activeLanguage);
             if (activeLanguage === terminalLanguage) {
-              const err = new Error(`Cannot restore ${activeLanguage} translations`);
-              err.rendererI18nTransition = {
-                hadEstablishedState: true,
+              const error = new Error(`Cannot restore ${activeLanguage} translations`);
+              error.rendererI18nTransition = {
+                hadEstablishedState: rendererTranslationStateEstablished,
                 restorationFailed: true,
               };
-              throw err;
+              throw error;
             }
             try {
               if (typeof applyTranslations === 'function') {
                 await applyTranslations({ language: activeLanguage, restoring: false });
               }
-            } catch (err) {
+              rendererTranslationStateEstablished = true;
+            } catch (error) {
               activeLanguage = previousLanguage;
-              if (typeof applyTranslations === 'function') {
+              if (rendererTranslationStateEstablished && typeof applyTranslations === 'function') {
                 await applyTranslations({ language: previousLanguage, restoring: true });
               }
-              err.rendererI18nTransition = {
-                hadEstablishedState: true,
+              error.rendererI18nTransition = {
+                hadEstablishedState: rendererTranslationStateEstablished,
                 restorationFailed: false,
               };
-              throw err;
+              throw error;
             }
           };
           const scheduled = rendererTransitionQueue.then(run, run);
@@ -405,6 +410,33 @@ async function createHarness({
     },
   };
 }
+
+test('text_time_calculator terminates startup when initial settings cannot establish required number formatting', async () => {
+  for (const settingsReadMode of ['throw', 'missing']) {
+    const harness = await createHarness({ settingsReadMode });
+    const startupWarning = harness.warnings.find(([message]) => (
+      typeof message === 'string' && message.startsWith('BOOTSTRAP: textTimeCalculatorAPI.getSettings')
+    ));
+
+    assert.ok(startupWarning, `${settingsReadMode} settings should produce a startup diagnostic`);
+    assert.match(startupWarning[0], /attempting default-language translations/);
+    assert.match(startupWarning[0], /required number-format settings are unavailable and startup will terminate/);
+    assert.doesNotMatch(startupWarning[0], /using default language and number formatting/);
+    assert.deepEqual(harness.transitionLanguages, ['es']);
+    assert.equal(harness.document.title, '');
+    assert.equal(harness.comboboxCreateConfigs.length, 0);
+    assert.equal(harness.getReporterCalls(), 1);
+    assert.equal(harness.getCloseCalls(), 0);
+    assert.ok(harness.errors.some(([message]) => (
+      typeof message === 'string' && message.includes('i18n failure requires window closure')
+    )));
+    [
+      harness.elements.textTimeCalculatorWordsInput,
+      harness.elements.textTimeCalculatorTimeInput,
+      harness.elements.textTimeCalculatorWpmInput,
+    ].forEach((input) => assert.equal(input.disabled, true));
+  }
+});
 
 test('text_time_calculator focuses Words after successful initial presentation', async () => {
   const harness = await createHarness();
@@ -666,7 +698,7 @@ test('text_time_calculator updates translations and localized integer formatting
 
   await subscriptions.onSettingsChanged({
     language: 'en',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -686,7 +718,7 @@ test('text_time_calculator admits a live settings delivery while its initial set
     initialLanguage: 'es',
     liveSettingsDuringInitialLoad: {
       language: 'en',
-      numberFormatting: {
+      numberFormattingByScope: {
         es: { separadorMiles: '.', separadorDecimal: ',' },
         en: { separadorMiles: ',', separadorDecimal: '.' },
       },
@@ -715,7 +747,7 @@ test('text_time_calculator restores prior settings after a translation applicati
 
   await subscriptions.onSettingsChanged({
     language: 'es',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
     },
   });
@@ -738,7 +770,7 @@ test('text_time_calculator restores the settings state current when an overlappi
 
   const spanishUpdate = subscriptions.onSettingsChanged({
     language: 'es',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -746,7 +778,7 @@ test('text_time_calculator restores the settings state current when an overlappi
   harness.setFailTranslationApplicationLanguage('en');
   const failingEnglishUpdate = subscriptions.onSettingsChanged({
     language: 'en',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -767,7 +799,7 @@ test('text_time_calculator stops later settings work after terminal i18n failure
 
   await harness.subscriptions.onSettingsChanged({
     language: 'es',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -776,7 +808,7 @@ test('text_time_calculator stops later settings work after terminal i18n failure
 
   await harness.subscriptions.onSettingsChanged({
     language: 'en',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },

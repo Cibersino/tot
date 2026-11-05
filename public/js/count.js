@@ -18,9 +18,15 @@
   if (!countCore || typeof countCore.createCountUtils !== 'function') {
     throw new Error('[count] window.CountCore.createCountUtils unavailable; cannot continue');
   }
+  const rendererI18n = window.RendererI18n;
+  if (!rendererI18n || typeof rendererI18n.getLocaleTag !== 'function') {
+    throw new Error('[count] window.RendererI18n.getLocaleTag unavailable; cannot continue');
+  }
 
   window.CountUtils = countCore.createCountUtils({
-    DEFAULT_LANG: appConstants.DEFAULT_LANG,
+    getDefaultLocaleTag() {
+      return rendererI18n.getLocaleTag(appConstants.DEFAULT_LANG);
+    },
     log,
     intlObject: typeof Intl !== 'undefined' ? Intl : null
   });

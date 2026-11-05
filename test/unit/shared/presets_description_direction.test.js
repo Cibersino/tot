@@ -64,8 +64,8 @@ function createHarness({ languageDirection = 'rtl' } = {}) {
         DEFAULT_LANG: 'en',
       },
       RendererI18n: {
-        getLangBase(lang) {
-          return String(lang || '').split('-')[0] || 'en';
+        getPreferenceScope(lang) {
+          return String(lang || '').trim() || 'en';
         },
         resolveUserTextDirection(text) {
           return resolveDirectionFromText(
@@ -115,6 +115,27 @@ test('shared preset description helper writes both text and direction', () => {
   assert.equal(descriptionEl.getAttribute('dir'), 'rtl');
 });
 
+test('default preset catalogs use exact preference-scope IDs rather than normalized language strings', () => {
+  const harness = createHarness();
+
+  const presets = harness.api.combinePresets({
+    settings: {
+      language: 'zh-Hans',
+      presetsByScope: {},
+      disabledDefaultPresetsByScope: {},
+    },
+    defaults: {
+      general: [],
+      defaultPresetsByScope: {
+        'zh-Hans': [{ name: 'Declared scope', wpm: 250, description: '' }],
+        'zh-hans': [{ name: 'Undeclared casing', wpm: 300, description: '' }],
+      },
+    },
+  });
+
+  assert.equal(presets.map((preset) => preset.name).join(','), 'Declared scope');
+});
+
 test('preset selection flows use the shared description helper for selected and clear states', async () => {
   const harness = createHarness({ languageDirection: 'rtl' });
   const combobox = {
@@ -142,8 +163,8 @@ test('preset selection flows use the shared description helper for selected and 
     ],
     settings: {
       language: 'ar',
-      selected_preset_by_language: { ar: 'latin' },
-      presets_by_language: {},
+      selectedPresetByScope: { ar: 'latin' },
+      presetsByScope: {},
     },
     language: 'ar',
     currentPresetName: null,
@@ -160,8 +181,8 @@ test('preset selection flows use the shared description helper for selected and 
     list: [],
     settings: {
       language: 'ar',
-      selected_preset_by_language: {},
-      presets_by_language: {},
+      selectedPresetByScope: {},
+      presetsByScope: {},
     },
     language: 'ar',
     currentPresetName: null,

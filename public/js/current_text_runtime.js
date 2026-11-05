@@ -112,6 +112,8 @@
       resultsTimeMultiplier: null,
       countText: null,
       getCountContext: null,
+      getDefaultCountLocaleTag: null,
+      getLanguageId: null,
       getSettingsCache: null,
       getWpm: null,
       applyStandaloneFullRefreshPendingState: null,
@@ -124,6 +126,8 @@
       resultsTimeMultiplier,
       countText,
       getCountContext,
+      getDefaultCountLocaleTag,
+      getLanguageId,
       getSettingsCache,
       getWpm,
       applyStandaloneFullRefreshPendingState,
@@ -144,6 +148,12 @@
     }
     if (typeof getCountContext !== 'function') {
       throw new Error('[current-text-runtime] getCountContext dependency missing');
+    }
+    if (typeof getDefaultCountLocaleTag !== 'function') {
+      throw new Error('[current-text-runtime] getDefaultCountLocaleTag dependency missing');
+    }
+    if (typeof getLanguageId !== 'function') {
+      throw new Error('[current-text-runtime] getLanguageId dependency missing');
     }
     if (typeof getSettingsCache !== 'function') {
       throw new Error('[current-text-runtime] getSettingsCache dependency missing');
@@ -283,13 +293,15 @@
   }
 
   function getCountArgs() {
-    const { getCountContext } = requireDeps();
+    const { getCountContext, getDefaultCountLocaleTag } = requireDeps();
     const context = getCountContext() || {};
+    const modoConteo = context.modoConteo === 'simple' ? 'simple' : 'preciso';
+    if (modoConteo === 'simple') return { modoConteo };
     return {
-      modoConteo: context.modoConteo === 'simple' ? 'simple' : 'preciso',
+      modoConteo,
       idioma: typeof context.idioma === 'string' && context.idioma.trim()
-        ? context.idioma
-        : 'es',
+        ? context.idioma.trim()
+        : getDefaultCountLocaleTag(),
     };
   }
 
@@ -532,11 +544,11 @@
   // Derived-state builders
   // =============================================================================
 
-  async function buildDisplayDerivedStateFromNormalizedStats(stats, countArgs = getCountArgs()) {
-    const { getSettingsCache, getWpm } = requireDeps();
+  async function buildDisplayDerivedStateFromNormalizedStats(stats) {
+    const { getLanguageId, getSettingsCache, getWpm } = requireDeps();
     const settingsCache = getSettingsCache();
     const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
-      countArgs.idioma,
+      getLanguageId(),
       settingsCache
     );
     const charsText = formatearNumero(stats.conEspacios, separadorMiles, separadorDecimal);
@@ -557,7 +569,7 @@
     const countArgs = getCountArgs();
     const { countText } = requireDeps();
     const stats = countText(currentText, countArgs);
-    return buildDisplayDerivedStateFromNormalizedStats(stats, countArgs);
+    return buildDisplayDerivedStateFromNormalizedStats(stats);
   }
 
   async function buildDisplayDerivedStateFromStats(stats) {

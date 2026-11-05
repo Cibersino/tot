@@ -273,6 +273,8 @@ function createRendererHarness({
       'renderer.reading_test.questions.question_heading': 'Pregunta {number}: {prompt}',
     },
   };
+  translations['zh-Hans'] = translations.en;
+  translations['zh-Hant'] = translations.en;
 
   function renderMessage(key, params = {}) {
     const template = messageOverrides[activeLanguage]?.[key]
@@ -289,10 +291,10 @@ function createRendererHarness({
     FormatUtils: {
       async obtenerSeparadoresDeNumeros(language, settings) {
         const languageBase = String(language || 'en').split(/[-_]/u)[0];
-        const numberFormatting = settings && settings.numberFormatting
-          ? settings.numberFormatting
+        const numberFormattingByScope = settings && settings.numberFormattingByScope
+          ? settings.numberFormattingByScope
           : { en: { separadorMiles: ',', separadorDecimal: '.' } };
-        return numberFormatting[languageBase] || numberFormatting.en;
+        return numberFormattingByScope[languageBase] || numberFormattingByScope.en;
       },
       formatearNumero(value, thousands, decimal, fractionDigits = 0) {
         return `${Number(value).toFixed(fractionDigits)}[${thousands}${decimal}]`;
@@ -356,7 +358,7 @@ function createRendererHarness({
         getSettingsCalls += 1;
         return {
           language: 'en',
-          numberFormatting: {
+          numberFormattingByScope: {
             en: { separadorMiles: ',', separadorDecimal: '.' },
           },
         };
@@ -802,6 +804,29 @@ test('Questions uses defaults when getSettings is unavailable', async () => {
   )).length, 1);
 });
 
+test('Questions preserves canonical Chinese application IDs during settings transitions', async () => {
+  const harness = createRendererHarness();
+  await flushRendererWork();
+
+  harness.callbacks.settingsChanged({
+    language: 'zh-Hans',
+    numberFormattingByScope: {
+      'zh-Hans': { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+  await flushRendererWork();
+  assert.equal(harness.translationRequests.at(-1), 'zh-Hans');
+
+  harness.callbacks.settingsChanged({
+    language: 'zh-Hant',
+    numberFormattingByScope: {
+      'zh-Hant': { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+  await flushRendererWork();
+  assert.equal(harness.translationRequests.at(-1), 'zh-Hant');
+});
+
 test('Questions retains a rendered questionnaire when initial focus fails', async () => {
   const focusError = new Error('initial focus failed');
   const harness = createRendererHarness({ focusError });
@@ -1012,7 +1037,7 @@ test('Questions ignores unrelated settings updates and uses current focus at lan
   harness.callbacks.settingsChanged({
     language: 'en',
     modeConteo: 'simple',
-    numberFormatting: {
+    numberFormattingByScope: {
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
   });
@@ -1029,7 +1054,7 @@ test('Questions ignores unrelated settings updates and uses current focus at lan
   const spanishLoad = harness.holdTranslationLoad('es');
   harness.callbacks.settingsChanged({
     language: 'es',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
     },
   });
@@ -1048,7 +1073,7 @@ test('Questions ignores unrelated settings updates and uses current focus at lan
   inputs[1].focus();
   harness.callbacks.settingsChanged({
     language: 'en',
-    numberFormatting: {
+    numberFormattingByScope: {
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
   });
@@ -1084,7 +1109,7 @@ test('Questions preserves its established language and formatting after translat
 
   harness.callbacks.settingsChanged({
     language: 'es',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
     },
   });
@@ -1191,7 +1216,7 @@ test('Questions stops queued init and settings work after terminal i18n failure'
   });
   harness.callbacks.settingsChanged({
     language: 'es',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
     },
   });

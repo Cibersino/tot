@@ -61,8 +61,9 @@
     const {
       tRenderer,
       resolveUserTextDirection,
+      getLocaleTag,
     } = ctx.rendererI18n || {};
-    if (!tRenderer || !resolveUserTextDirection) {
+    if (!tRenderer || !resolveUserTextDirection || !getLocaleTag) {
       throw new Error('[editor] RendererI18n unavailable; cannot continue');
     }
 
@@ -73,7 +74,7 @@
     // =============================================================================
 
     function applyEditorLanguage(language = state.idiomaActual) {
-      const langTag = (language || DEFAULT_LANG).toLowerCase();
+      const langTag = getLocaleTag(language || DEFAULT_LANG);
       if (editor) {
         editor.setAttribute('lang', langTag);
       }

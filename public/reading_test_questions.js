@@ -203,9 +203,9 @@
       return msgRenderer(path, params);
     }
 
-    function normalizeLanguage(language, fallback = defaultLanguage) {
+    function normalizeLanguageId(language, fallback = defaultLanguage) {
       const normalized = typeof language === 'string'
-        ? language.trim().toLowerCase()
+        ? language.trim()
         : '';
       return normalized || fallback;
     }
@@ -536,7 +536,7 @@
     // UI synchronization
     // =============================================================================
     async function transitionQuestionsTranslations(language, settings) {
-      const target = normalizeLanguage(language || state.currentLanguage);
+      const target = normalizeLanguageId(language || state.currentLanguage);
       const previousLanguage = state.currentLanguage;
       const previousSettings = state.settingsCache;
       const nextSettings = typeof settings === 'undefined'
@@ -659,7 +659,7 @@
           }
         }
         return {
-          language: normalizeLanguage(readSettingsLanguage(nextSettings)),
+          language: normalizeLanguageId(readSettingsLanguage(nextSettings)),
           settings: nextSettings,
         };
       }).catch((error) => {
@@ -672,7 +672,7 @@
       if (questionsI18nTerminal) return;
       enqueueUiSync(async () => {
         const nextSettings = settings || {};
-        const nextLanguage = normalizeLanguage(readSettingsLanguage(nextSettings));
+        const nextLanguage = normalizeLanguageId(readSettingsLanguage(nextSettings));
         const languageChanged = nextLanguage !== state.currentLanguage;
         const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
         if (!languageChanged && !needsTranslationRetry) {

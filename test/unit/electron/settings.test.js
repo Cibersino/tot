@@ -4,7 +4,9 @@ process.env.TOT_LOG_LEVEL = 'silent';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('path');
+const Log = require('../../../electron/log');
 
 function loadFreshSettingsModule() {
   const modulePath = path.resolve(__dirname, '../../../electron/settings.js');
@@ -59,14 +61,34 @@ function createIpcMainDouble() {
   };
 }
 
-test('language helpers normalize tags and derive safe bases', () => {
+function captureWarnings(action) {
+  const previousLevel = Log.getLevel();
+  const originalWarn = console.warn;
+  const warnings = [];
+  Log.setLevel('warn');
+  console.warn = (...args) => warnings.push(args);
+  try {
+    return { result: action(), warnings };
+  } finally {
+    console.warn = originalWarn;
+    Log.setLevel(previousLevel);
+  }
+}
+
+test('language helpers accept exact declared IDs and expose independent scopes', () => {
   const settings = loadFreshSettingsModule();
 
-  assert.equal(settings.normalizeLangTag(' EN_us '), 'en-us');
-  assert.equal(settings.normalizeLangBase('pt-BR'), 'pt');
-  assert.equal(settings.normalizeLangBase({}), 'es');
-  assert.equal(settings.getLangBase('es-CL'), 'es');
-  assert.equal(settings.deriveLangKey('arn_CL'), 'arn');
+  settings.init({
+    loadJson: () => ({}),
+    saveJson() {},
+    saveJsonStrict() {},
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  assert.equal(settings.getValidLanguageId('zh-Hans'), 'zh-Hans');
+  assert.equal(settings.getValidLanguageId('zh-hans'), '');
+  assert.equal(settings.getValidLanguageId('zh-Hans-CN'), '');
+  assert.equal(settings.getPreferenceScope('zh-Hans'), 'zh-Hans');
+  assert.equal(settings.getPreferenceScope('zh-Hant'), 'zh-Hant');
 });
 
 test('init normalizes invalid stored settings and persists safe defaults', () => {
@@ -85,9 +107,9 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.previewSpoilerEnabled, true);
   assert.equal(normalized.editorFontSizePx, 20);
-  assert.deepEqual(normalized.presets_by_language.es, []);
+  assert.deepEqual(normalized.presetsByScope.es, []);
   assert.equal(Object.prototype.hasOwnProperty.call(normalized, 'snapshotTags'), false);
-  assert.deepEqual(normalized.numberFormatting.es, {
+  assert.deepEqual(normalized.numberFormattingByScope.es, {
     separadorMiles: '.',
     separadorDecimal: ',',
   });
@@ -95,6 +117,98 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
   const writes = harness.getWrites();
   assert.equal(writes.length, 1);
   assert.deepEqual(writes[0].value, normalized);
+});
+
+test('normalization keeps absent language-scoped preferences quiet and diagnoses destructive repairs', () => {
+  const settings = loadFreshSettingsModule();
+  const missingHarness = createSettingsHarness({ language: 'en' });
+  const missingResult = captureWarnings(() => settings.init({
+    loadJson: missingHarness.loadJson,
+    saveJson: missingHarness.saveJson,
+    saveJsonStrict: missingHarness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  }));
+
+  assert.deepEqual(missingResult.warnings, []);
+  assert.deepEqual(missingResult.result.presetsByScope.en, []);
+
+  const invalidHarness = createSettingsHarness({
+    language: 'en',
+    presetsByScope: [],
+    selectedPresetByScope: null,
+    disabledDefaultPresetsByScope: 'invalid',
+    numberFormattingByScope: false,
+  });
+  const invalidResult = captureWarnings(() => {
+    const normalized = settings.init({
+      loadJson: invalidHarness.loadJson,
+      saveJson: invalidHarness.saveJson,
+      saveJsonStrict: invalidHarness.saveJsonStrict,
+      settingsFile: 'C:\\fake\\settings.json',
+    });
+    return settings.saveSettings({
+      ...normalized,
+      presetsByScope: { en: {} },
+      selectedPresetByScope: { en: 42 },
+      numberFormattingByScope: {
+        en: { separadorMiles: '.', separadorDecimal: ',' },
+      },
+    });
+  });
+
+  const warningMessages = invalidResult.warnings.map(([, message]) => message);
+  assert.deepEqual(warningMessages, [
+    'Invalid language-scoped settings map; resetting to empty object:',
+    'Invalid language-scoped settings map; resetting to empty object:',
+    'Invalid language-scoped settings map; resetting to empty object:',
+    'Invalid language-scoped settings map; resetting to empty object:',
+    'Invalid presetsByScope entry; resetting to empty array:',
+    'Invalid selectedPresetByScope entry; removing:',
+  ]);
+  assert.deepEqual(invalidResult.result.presetsByScope.en, []);
+  assert.equal(Object.prototype.hasOwnProperty.call(invalidResult.result.selectedPresetByScope, 'en'), false);
+});
+
+test('a missing non-default root number format persists the default resource through the graph chain', (t) => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
+  });
+  const selectedRootPath = path.resolve(__dirname, '../../../i18n/en/numberFormat.json');
+  const defaultRootPath = path.resolve(__dirname, '../../../i18n/es/numberFormat.json');
+  const defaultNumberFormat = {
+    thousands: '_',
+    decimal: ':',
+  };
+  const expectedNumberFormatting = {
+    separadorMiles: defaultNumberFormat.thousands,
+    separadorDecimal: defaultNumberFormat.decimal,
+  };
+  const originalReadFileSync = fs.readFileSync;
+  t.mock.method(fs, 'readFileSync', (filePath, ...args) => {
+    const resolvedPath = path.resolve(String(filePath));
+    if (resolvedPath === selectedRootPath) {
+      const error = new Error('selected root number format unavailable');
+      error.code = 'ENOENT';
+      throw error;
+    }
+    if (resolvedPath === defaultRootPath) return JSON.stringify(defaultNumberFormat);
+    return originalReadFileSync.call(fs, filePath, ...args);
+  });
+
+  const normalized = settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+
+  assert.deepEqual(normalized.numberFormattingByScope.en, expectedNumberFormatting);
+  assert.deepEqual(harness.getStoredValue().numberFormattingByScope.en, expectedNumberFormatting);
 });
 
 test('fresh settings include an enabled preview Spoiler preference', () => {
@@ -124,29 +238,29 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
   });
 
   const normalized = settings.saveSettings({
-    language: ' EN_us ',
-    presets_by_language: { en: 'bad-shape' },
-    selected_preset_by_language: { en: '  my preset  ' },
-    numberFormatting: null,
-    disabled_default_presets: null,
+    language: 'zh-Hans-CN',
+    presetsByScope: { en: 'bad-shape' },
+    selectedPresetByScope: { es: '  my preset  ' },
+    numberFormattingByScope: null,
+    disabledDefaultPresetsByScope: null,
     modeConteo: 'invalid-mode',
     spellcheckEnabled: 'invalid-flag',
     previewSpoilerEnabled: 'invalid-flag',
     editorFontSizePx: 200,
   });
 
-  assert.equal(normalized.language, 'en-us');
+  assert.equal(normalized.language, '');
   assert.equal(normalized.modeConteo, 'preciso');
   assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.previewSpoilerEnabled, true);
   assert.equal(normalized.editorFontSizePx, 36);
-  assert.deepEqual(normalized.presets_by_language.en, []);
-  assert.equal(normalized.selected_preset_by_language.en, 'my preset');
-  assert.deepEqual(normalized.numberFormatting.en, {
-    separadorMiles: ',',
-    separadorDecimal: '.',
+  assert.deepEqual(normalized.presetsByScope.es, []);
+  assert.equal(normalized.selectedPresetByScope.es, 'my preset');
+  assert.deepEqual(normalized.numberFormattingByScope.es, {
+    separadorMiles: '.',
+    separadorDecimal: ',',
   });
-  assert.deepEqual(normalized.disabled_default_presets, {});
+  assert.deepEqual(normalized.disabledDefaultPresetsByScope, {});
 });
 
 test('getSettings reloads from the backing store and re-normalizes external edits', () => {
@@ -161,11 +275,11 @@ test('getSettings reloads from the backing store and re-normalizes external edit
   });
 
   harness.setStoredValue({
-    language: ' EN_us ',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-    numberFormatting: {},
+    language: 'zh-Hans-CN',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
     modeConteo: 'simple',
     spellcheckEnabled: false,
     previewSpoilerEnabled: false,
@@ -173,14 +287,14 @@ test('getSettings reloads from the backing store and re-normalizes external edit
   });
 
   const reloaded = settings.getSettings();
-  assert.equal(reloaded.language, 'en-us');
+  assert.equal(reloaded.language, '');
   assert.equal(reloaded.modeConteo, 'simple');
   assert.equal(reloaded.spellcheckEnabled, false);
   assert.equal(reloaded.previewSpoilerEnabled, false);
   assert.equal(reloaded.editorFontSizePx, 12);
-  assert.deepEqual(reloaded.numberFormatting.en, {
-    separadorMiles: ',',
-    separadorDecimal: '.',
+  assert.deepEqual(reloaded.numberFormattingByScope.es, {
+    separadorMiles: '.',
+    separadorDecimal: ',',
   });
 });
 
@@ -188,10 +302,10 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: '',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-    numberFormatting: {},
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
   });
 
   settings.init({
@@ -201,13 +315,13 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
     settingsFile: 'C:\\fake\\settings.json',
   });
 
-  settings.applyFallbackLanguageIfUnset('EN_us');
+  settings.applyFallbackLanguageIfUnset('en');
 
-  assert.equal(settings.getSettings().language, 'en-us');
+  assert.equal(settings.getSettings().language, 'en');
 
   const writes = harness.getWrites();
-  assert.equal(writes.at(-1).value.language, 'en-us');
-  assert.deepEqual(writes.at(-1).value.numberFormatting.en, {
+  assert.equal(writes.at(-1).value.language, 'en');
+  assert.deepEqual(writes.at(-1).value.numberFormattingByScope.en, {
     separadorMiles: ',',
     separadorDecimal: '.',
   });
@@ -217,10 +331,10 @@ test('registerIpc decorates get-settings and published payloads without mutating
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: 'ar',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-    numberFormatting: {},
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
     spellcheckEnabled: true,
   });
   const ipcMain = createIpcMainDouble();
@@ -483,10 +597,10 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
   const settings = loadFreshSettingsModule();
   const initialStoredValue = {
     language: 'en',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-    numberFormatting: {},
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
     spellcheckEnabled: true,
     editorFontSizePx: 20,
     modeConteo: 'preciso',
@@ -544,10 +658,10 @@ test('Precise-counting fallback strictly persists Simple once, then publishes an
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: 'en',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-    numberFormatting: {},
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
     modeConteo: 'preciso',
   });
   const ipcMain = createIpcMainDouble();
@@ -599,10 +713,10 @@ test('Precise-counting fallback accepts a Unicode-property capability failure re
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: 'en',
-    presets_by_language: {},
-    selected_preset_by_language: {},
-    disabled_default_presets: {},
-    numberFormatting: {},
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
     modeConteo: 'preciso',
   });
   const ipcMain = createIpcMainDouble();
@@ -702,10 +816,10 @@ test('set-selected-preset rejects on strict save failure and keeps persisted sel
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: 'en',
-    presets_by_language: {},
-    selected_preset_by_language: { en: 'default' },
-    disabled_default_presets: {},
-    numberFormatting: {},
+    presetsByScope: {},
+    selectedPresetByScope: { en: 'default' },
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
     spellcheckEnabled: true,
     editorFontSizePx: 20,
     modeConteo: 'preciso',
@@ -729,6 +843,6 @@ test('set-selected-preset rejects on strict save failure and keeps persisted sel
     /disk full/i
   );
 
-  assert.equal(harness.getStoredValue().selected_preset_by_language.en, 'default');
-  assert.equal(settings.getSettings().selected_preset_by_language.en, 'default');
+  assert.equal(harness.getStoredValue().selectedPresetByScope.en, 'default');
+  assert.equal(settings.getSettings().selectedPresetByScope.en, 'default');
 });

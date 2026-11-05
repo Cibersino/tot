@@ -1058,7 +1058,8 @@ test('English and Spanish define Task Editor expanded header names and icon-cont
 });
 
 test('every shipped locale and the overriding es-cl bundle define the Task Editor snapshot-details confirmation copy', () => {
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const catalog = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const languages = catalog.languages.filter(({ kind }) => kind === 'root');
   const expectedKeys = [
     'title',
     'message',
@@ -1077,26 +1078,26 @@ test('every shipped locale and the overriding es-cl bundle define the Task Edito
     'close_aria',
   ];
 
-  languages.forEach(({ tag }) => {
-    const rendererPath = path.resolve(__dirname, `../../../i18n/${tag}/renderer.json`);
+  languages.forEach(({ id, resourceDirectory }) => {
+    const rendererPath = path.resolve(__dirname, `../../../i18n/${resourceDirectory}/renderer.json`);
     const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
     const confirmation = renderer.renderer.tasks.comentario_modal.snapshot_details_confirm;
 
-    assert.deepEqual(Object.keys(confirmation).sort(), expectedKeys.slice().sort(), `${tag} confirmation keys drifted`);
+    assert.deepEqual(Object.keys(confirmation).sort(), expectedKeys.slice().sort(), `${id} confirmation keys drifted`);
     expectedKeys.forEach((key) => {
-      assert.equal(typeof confirmation[key], 'string', `${tag} missing ${key}`);
-      assert.ok(confirmation[key].trim(), `${tag} has empty ${key}`);
+      assert.equal(typeof confirmation[key], 'string', `${id} missing ${key}`);
+      assert.ok(confirmation[key].trim(), `${id} has empty ${key}`);
     });
-    if (tag === 'en' || tag === 'es') {
+    if (id === 'en' || id === 'es') {
       assert.equal(
         confirmation.title,
-        tag === 'es'
+        id === 'es'
           ? '¿Usar la información del snapshot de texto seleccionado?'
           : 'Use data from selected text snapshot?'
       );
       assert.equal(
         confirmation.message,
-        tag === 'es'
+        id === 'es'
           ? 'Revisa los datos disponibles del snapshot de texto seleccionado antes de aplicarlos a esta lectura.'
           : 'Review the available data from the selected text snapshot before applying it to this reading.'
       );
@@ -1104,7 +1105,7 @@ test('every shipped locale and the overriding es-cl bundle define the Task Edito
   });
 
   const esClRenderer = JSON.parse(fs.readFileSync(
-    path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json'),
+    path.resolve(__dirname, '../../../i18n/es-cl/renderer.json'),
     'utf8'
   ));
   const esClConfirmation = esClRenderer.renderer.tasks.comentario_modal.snapshot_details_confirm;
@@ -1116,21 +1117,22 @@ test('every shipped locale and the overriding es-cl bundle define the Task Edito
 });
 
 test('every shipped locale and the overriding es-cl bundle define the Task Editor duration-overflow notice', () => {
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const catalog = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const languages = catalog.languages.filter(({ kind }) => kind === 'root');
   const getNotice = (renderer) => renderer.renderer.tasks.alerts.task_duration_too_large;
 
-  languages.forEach(({ tag }) => {
+  languages.forEach(({ id, resourceDirectory }) => {
     const renderer = JSON.parse(fs.readFileSync(
-      path.resolve(__dirname, `../../../i18n/${tag}/renderer.json`),
+      path.resolve(__dirname, `../../../i18n/${resourceDirectory}/renderer.json`),
       'utf8'
     ));
     const notice = getNotice(renderer);
-    assert.equal(typeof notice, 'string', `${tag} duration-overflow notice missing`);
-    assert.ok(notice.trim(), `${tag} duration-overflow notice empty`);
+    assert.equal(typeof notice, 'string', `${id} duration-overflow notice missing`);
+    assert.ok(notice.trim(), `${id} duration-overflow notice empty`);
   });
 
   const esClRenderer = JSON.parse(fs.readFileSync(
-    path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json'),
+    path.resolve(__dirname, '../../../i18n/es-cl/renderer.json'),
     'utf8'
   ));
   const esClNotice = getNotice(esClRenderer);
@@ -1709,16 +1711,18 @@ test('every shipped locale explains that a selected text snapshot association is
     'zh-Hant': '包含註解？如果此閱讀項目已選取文字快照，無論選擇哪一項，關聯都會儲存。',
     zu: 'Faka ukuphawula? Uma kukhethwe i-snapshot yombhalo yalokhu kufunda, ukuxhumana kwayo kuzolondolozwa noma ngabe ukhetha ini.',
   };
-  const languages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const catalog = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../i18n/languages.json'), 'utf8'));
+  const languages = catalog.languages.filter(({ kind }) => kind === 'root');
 
   assert.deepEqual(
     Object.keys(expectedRootCopy).sort(),
-    languages.map(({ tag }) => tag).sort(),
+    languages.map(({ id }) => id).sort(),
     'snapshot-persistence copy must cover every shipped root locale'
   );
 
   Object.entries(expectedRootCopy).forEach(([tag, expected]) => {
-    const rendererPath = path.resolve(__dirname, '../../../i18n/' + tag.toLowerCase() + '/renderer.json');
+    const descriptor = languages.find(({ id }) => id === tag);
+    const rendererPath = path.resolve(__dirname, '../../../i18n/' + descriptor.resourceDirectory + '/renderer.json');
     const renderer = JSON.parse(fs.readFileSync(rendererPath, 'utf8'));
     assert.equal(
       renderer.renderer.tasks.guardar_lectura_modal.library_save_question,
@@ -1728,7 +1732,7 @@ test('every shipped locale explains that a selected text snapshot association is
   });
 
   const chile = JSON.parse(fs.readFileSync(
-    path.resolve(__dirname, '../../../i18n/es/es-cl/renderer.json'),
+    path.resolve(__dirname, '../../../i18n/es-cl/renderer.json'),
     'utf8'
   ));
   assert.equal(

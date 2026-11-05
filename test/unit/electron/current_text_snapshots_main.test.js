@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
+const constantsMain = require('../../../electron/constants_main');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
@@ -74,6 +75,8 @@ function loadSnapshotsMainWithMocks({
   createJsonStrictImpl = null,
   countCoreOverride = null,
   fallbackPreciseCountingToSimple = null,
+  defaultLanguageId = 'es',
+  defaultLocaleTag = 'es',
 }) {
   const snapshotsModulePath = path.resolve(
     __dirname,
@@ -95,6 +98,10 @@ function loadSnapshotsMainWithMocks({
     __dirname,
     '../../../public/js/lib/count_core.js'
   );
+  const constantsMainModulePath = path.resolve(
+    __dirname,
+    '../../../electron/constants_main.js'
+  );
   const menuBuilderModulePath = path.resolve(
     __dirname,
     '../../../electron/menu_builder.js'
@@ -105,11 +112,13 @@ function loadSnapshotsMainWithMocks({
   const originalTextStateModule = require.cache[textStateModulePath];
   const originalSettingsModule = require.cache[settingsModulePath];
   const originalCountCoreModule = require.cache[countCoreModulePath];
+  const originalConstantsMainModule = require.cache[constantsMainModulePath];
   const originalMenuBuilderModule = require.cache[menuBuilderModulePath];
   const openPathCalls = [];
   const showMessageBoxCalls = [];
   const showSaveDialogCalls = [];
   const showOpenDialogCalls = [];
+  const languageDescriptorCalls = [];
   const restoreElectronModule = installElectronModuleMock({
     dialog: {
       async showSaveDialog(ownerWin, options) {
@@ -200,6 +209,17 @@ function loadSnapshotsMainWithMocks({
       getSettings() {
         return settings;
       },
+      getLanguageDescriptor(languageId) {
+        languageDescriptorCalls.push(languageId);
+        const localeTags = {
+          en: 'en',
+          es: 'es',
+          'es-CL': 'es-CL',
+          [defaultLanguageId]: defaultLocaleTag,
+        };
+        const localeTag = localeTags[languageId];
+        return localeTag ? { id: languageId, localeTag } : null;
+      },
       fallbackPreciseCountingToSimple,
     },
   };
@@ -212,6 +232,16 @@ function loadSnapshotsMainWithMocks({
       exports: countCoreOverride,
     };
   }
+
+  require.cache[constantsMainModulePath] = {
+    id: constantsMainModulePath,
+    filename: constantsMainModulePath,
+    loaded: true,
+    exports: {
+      ...constantsMain,
+      DEFAULT_LANG: defaultLanguageId,
+    },
+  };
 
   require.cache[menuBuilderModulePath] = {
     id: menuBuilderModulePath,
@@ -263,6 +293,12 @@ function loadSnapshotsMainWithMocks({
       delete require.cache[countCoreModulePath];
     }
 
+    if (originalConstantsMainModule) {
+      require.cache[constantsMainModulePath] = originalConstantsMainModule;
+    } else {
+      delete require.cache[constantsMainModulePath];
+    }
+
     if (originalMenuBuilderModule) {
       require.cache[menuBuilderModulePath] = originalMenuBuilderModule;
     } else {
@@ -277,6 +313,7 @@ function loadSnapshotsMainWithMocks({
     showMessageBoxCalls,
     showSaveDialogCalls,
     showOpenDialogCalls,
+    languageDescriptorCalls,
   };
 }
 
@@ -335,6 +372,51 @@ test('snapshot metrics retry only counting after the canonical Precise fallback 
   ]);
   const saved = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
   assert.deepEqual(saved.metrics.count, { words: 2, mode: 'simple' });
+});
+
+test('snapshot metrics use the default descriptor locale when the selected language ID is unavailable', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-default-count-locale');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+  const senderWin = { isDestroyed: () => false, webContents: {} };
+  const countCalls = [];
+  let countUtilsOptions = null;
+  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'uno dos',
+    settings: { language: 'unknown-selected-language', modeConteo: 'preciso' },
+    defaultLanguageId: 'app-default-spanish',
+    defaultLocaleTag: 'es-419',
+    countCoreOverride: {
+      createCountUtils(options) {
+        countUtilsOptions = options;
+        return {
+          contarTexto(_text, countOptions) {
+            countCalls.push(countOptions);
+            return { palabras: 2 };
+          },
+          isPreciseCountFailure() {
+            return false;
+          },
+        };
+      },
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, { getWindows: () => ({ mainWin: senderWin }) });
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-save',
+    { sender: senderWin.webContents },
+    { nonInteractive: true, autoFileBaseName: 'default-locale', includeCount: true, includeReading: false }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(countUtilsOptions.getDefaultLocaleTag(), 'es-419');
+  assert.deepEqual(countCalls, [{ modoConteo: 'preciso', idioma: 'es-419' }]);
+  const saved = JSON.parse(fs.readFileSync(path.join(rootDir, result.filename), 'utf8'));
+  assert.deepEqual(saved.metrics.count, { words: 2, mode: 'preciso', locale: 'es-419' });
 });
 
 test('task-row snapshot inspection returns canonical optional metadata and reading metrics', async (t) => {
@@ -703,7 +785,7 @@ test('simple snapshot metrics save without Intl locale canonicalization', async 
     },
     webContents: {},
   };
-  const { snapshotsMain, restore } = loadSnapshotsMainWithMocks({
+  const { snapshotsMain, restore, languageDescriptorCalls } = loadSnapshotsMainWithMocks({
     senderWin,
     rootDir,
     currentText: 'uno dos tres',
@@ -735,6 +817,7 @@ test('simple snapshot metrics save without Intl locale canonicalization', async 
       mode: 'simple',
     },
   });
+  assert.deepEqual(languageDescriptorCalls, []);
 });
 
 test('snapshot save rounds exact half-second reading estimates upward', async (t) => {

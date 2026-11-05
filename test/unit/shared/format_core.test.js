@@ -8,7 +8,7 @@ const {
 } = require('../../../public/js/lib/format_core');
 
 const TEST_DEFAULT_LANG = 'es';
-const getLangBase = (lang) => String(lang || '').trim().toLowerCase().split(/[-_]/)[0] || TEST_DEFAULT_LANG;
+const getPreferenceScope = (languageId) => String(languageId || '').trim() || TEST_DEFAULT_LANG;
 
 function createLogSpy() {
   const warnOnceCalls = [];
@@ -31,6 +31,7 @@ function createWarnOnceLogDouble() {
 test('createFormatUtils creates number-formatting utilities', () => {
   const utils = createFormatUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
+    getPreferenceScope,
     log: createWarnOnceLogDouble(),
   });
 
@@ -41,13 +42,12 @@ test('createFormatUtils creates number-formatting utilities', () => {
 test('createFormatUtils resolves separators from the requested language bucket', async () => {
   const utils = createFormatUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
-    normalizeLangTag: (lang) => String(lang || '').trim().toLowerCase(),
-    getLangBase,
+    getPreferenceScope,
     log: createWarnOnceLogDouble(),
   });
 
-  const separators = await utils.obtenerSeparadoresDeNumeros('en-US', {
-    numberFormatting: {
+  const separators = await utils.obtenerSeparadoresDeNumeros('en', {
+    numberFormattingByScope: {
       en: { separadorMiles: ',', separadorDecimal: '.' },
       es: { separadorMiles: '.', separadorDecimal: ',' },
     },
@@ -59,54 +59,37 @@ test('createFormatUtils resolves separators from the requested language bucket',
   });
 });
 
-test('createFormatUtils falls back to default language separators when the requested bucket is missing', async () => {
-  const { log, warnOnceCalls } = createLogSpy();
+test('createFormatUtils rejects a missing required scope entry', async () => {
+  const { log } = createLogSpy();
   const utils = createFormatUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
-    normalizeLangTag: (lang) => String(lang || '').trim().toLowerCase(),
-    getLangBase,
+    getPreferenceScope,
     log,
   });
 
-  const separators = await utils.obtenerSeparadoresDeNumeros('fr', {
-    numberFormatting: {
+  await assert.rejects(() => utils.obtenerSeparadoresDeNumeros('fr', {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
     },
-  });
-
-  assert.deepEqual(separators, {
-    separadorMiles: '.',
-    separadorDecimal: ',',
-  });
-  assert.equal(warnOnceCalls.length, 1);
+  }), /required number formatting/);
 });
 
-test('createFormatUtils uses hardcoded defaults when formatting data is unavailable', async () => {
-  const { log, warnOnceCalls } = createLogSpy();
+test('createFormatUtils rejects unavailable number-format state', async () => {
+  const { log } = createLogSpy();
   const utils = createFormatUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
-    normalizeLangTag: (lang) => String(lang || '').trim().toLowerCase(),
-    getLangBase,
+    getPreferenceScope,
     log,
   });
 
-  const fromNull = await utils.obtenerSeparadoresDeNumeros('es', null);
-  const fromMissing = await utils.obtenerSeparadoresDeNumeros('es', {});
-
-  assert.deepEqual(fromNull, {
-    separadorMiles: '.',
-    separadorDecimal: ',',
-  });
-  assert.deepEqual(fromMissing, {
-    separadorMiles: '.',
-    separadorDecimal: ',',
-  });
-  assert.equal(warnOnceCalls.length, 2);
+  await assert.rejects(() => utils.obtenerSeparadoresDeNumeros('es', null), /unavailable/);
+  await assert.rejects(() => utils.obtenerSeparadoresDeNumeros('es', {}), /required number formatting/);
 });
 
 test('createFormatUtils formats integers with grouping separators', () => {
   const utils = createFormatUtils({
     DEFAULT_LANG: TEST_DEFAULT_LANG,
+    getPreferenceScope,
     log: createWarnOnceLogDouble(),
   });
 

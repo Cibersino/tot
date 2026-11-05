@@ -124,9 +124,9 @@ function createElement(document, tagName = 'div') {
 
 async function createHarness({
   availableLanguages = [
-    { tag: 'ar', label: 'العربية' },
-    { tag: 'en', label: 'English' },
-    { tag: 'es', label: 'Español' },
+    { id: 'ar', label: 'العربية', localeTag: 'ar' },
+    { id: 'en', label: 'English', localeTag: 'en' },
+    { id: 'es', label: 'Español', localeTag: 'es' },
   ],
   currentLanguage = 'en',
   availableLanguagesError = null,
@@ -331,7 +331,7 @@ test('current language selection remains separate from roving keyboard focus', a
 
   assert.equal(harness.document.activeElement, harness.langFilter);
   assert.equal(items.length, 3);
-  assert.equal(items[1].dataset.tag, 'en');
+  assert.equal(items[1].dataset.languageId, 'en');
   assert.equal(items[1].getAttribute('aria-selected'), 'true');
   assert.equal(items[1].getAttribute('tabindex'), '0');
   assert.equal(items[0].getAttribute('aria-selected'), 'false');
@@ -385,8 +385,8 @@ test('first run has no selected option and empty filtering uses the external liv
   assert.equal(harness.statusNoMatches.hidden, true);
 });
 
-test('an unavailable persisted tag does not falsely select a different language option', async () => {
-  const harness = await createHarness({ currentLanguage: 'es-cl' });
+test('a non-selectable or undeclared current identity does not falsely select a language option', async () => {
+  const harness = await createHarness({ currentLanguage: 'es-CL' });
 
   assert.equal(
     harness.langList.children.some((item) => item.getAttribute('aria-selected') === 'true'),
@@ -397,34 +397,16 @@ test('an unavailable persisted tag does not falsely select a different language 
   assert.match(String(harness.warnings[0][0]), /not present in the available list/);
 });
 
-test('bootstrap fallbacks stay usable and selection failure shows pre-authored error state', async () => {
+test('a required catalog failure exposes no hard-coded fallback choices', async () => {
   const harness = await createHarness({
     availableLanguagesError: new Error('manifest unavailable'),
     currentLanguageError: new Error('settings unavailable'),
-    setLanguageError: new Error('write failed'),
   });
 
-  assert.deepEqual(harness.langList.children.map((item) => item.dataset.tag), ['es', 'en']);
-  assert.equal(
-    harness.langList.children.some((item) => item.getAttribute('aria-selected') === 'true'),
-    false
-  );
-  assert.equal(harness.warnings.length, 2);
-
-  harness.langFilter.dispatch('keydown', { key: 'ArrowDown' });
-  harness.langList.dispatch('keydown', {
-    key: 'Enter',
-    target: harness.document.activeElement,
-  });
-  await harness.settle();
-
-  assert.deepEqual(harness.selectedLanguages, ['es']);
+  assert.equal(harness.langList.children.length, 0);
+  assert.equal(harness.warnings.length, 1);
   assert.equal(harness.getCloseCount(), 0);
-  assert.equal(harness.langFilter.disabled, false);
-  assert.equal(harness.langList.getAttribute('aria-disabled'), 'false');
-  assert.equal(harness.statusSelectionError.hidden, false);
-  assert.equal(harness.statusLine.classList.contains('is-error'), true);
-  assert.equal(harness.errors.length, 1);
+  assert.equal(harness.errors.length, 2);
 });
 
 test('missing optional current read and required selection bridge degrade explicitly', async () => {
