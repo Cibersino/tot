@@ -31,7 +31,7 @@ const {
 } = require('./constants_main');
 const { getConfigPresetsDir, ensureConfigPresetsDir } = require('./fs_storage');
 const settingsState = require('./settings');
-const { normalizeLangTag, normalizeLangBase } = settingsState;
+const { getPreferenceScope, getValidLanguageId } = settingsState;
 const menuBuilder = require('./menu_builder');
 
 // =============================================================================
@@ -168,8 +168,8 @@ function readConfiguredPresetArray(filePath) {
 }
 
 /**
- * Loads the configured default-preset catalog. When a language is supplied,
- * only that language's configured defaults are read. Bundled files seed
+ * Loads the configured default-preset catalog. When a preference scope is supplied,
+ * only that scope's configured defaults are read. Bundled files seed
  * missing configuration files at startup, but do not substitute for runtime
  * reads.
  */
@@ -177,7 +177,7 @@ function loadConfiguredDefaultPresetCatalog(lang) {
   const unavailableCatalog = {
     available: false,
     general: [],
-    languagePresets: {},
+    defaultPresetsByScope: {},
   };
   let entries;
   let presetsDir;
@@ -200,45 +200,45 @@ function loadConfiguredDefaultPresetCatalog(lang) {
   const general = generalFile
     ? readConfiguredPresetArray(path.join(presetsDir, generalFile))
     : [];
-  const languagePresets = {};
-  const langCode = typeof lang === 'undefined'
+  const defaultPresetsByScope = {};
+  const preferenceScopeId = typeof lang === 'undefined'
     ? null
-    : normalizeLangBase(lang);
+    : typeof lang === 'string' ? lang.trim() : '';
 
   entries
     .filter((name) => /^defaults_presets_([a-z0-9-]+)\.json$/i.test(name))
     .forEach((name) => {
       const match = /^defaults_presets_([a-z0-9-]+)\.json$/i.exec(name);
       if (!match || !match[1]) return;
-      const fileLang = match[1].toLowerCase();
-      if (langCode && fileLang !== langCode) return;
-      languagePresets[fileLang] = readConfiguredPresetArray(
+      const fileScopeId = match[1];
+      if (preferenceScopeId && fileScopeId !== preferenceScopeId) return;
+      defaultPresetsByScope[fileScopeId] = readConfiguredPresetArray(
         path.join(presetsDir, name)
       );
     });
 
-  return { available: true, general, languagePresets };
+  return { available: true, general, defaultPresetsByScope };
 }
 
 /**
- * Resolves the effective configured defaults for one language using the same
- * general-then-language precedence as the renderer.
+ * Resolves the effective configured defaults for one scope using the same
+ * general-then-scope precedence as the renderer.
  */
-function loadDefaultPresetsCombined(lang) {
-  const langCode = normalizeLangBase(lang);
-  const catalog = loadConfiguredDefaultPresetCatalog(langCode);
+function loadDefaultPresetsCombined(preferenceScopeId) {
+  const scopeId = typeof preferenceScopeId === 'string' ? preferenceScopeId.trim() : '';
+  const catalog = loadConfiguredDefaultPresetCatalog(scopeId);
   if (!catalog.available) {
     return { available: false, presets: [] };
   }
 
-  const { general, languagePresets } = catalog;
+  const { general, defaultPresetsByScope } = catalog;
   const combinedByName = new Map();
 
   general.forEach((preset) => combinedByName.set(preset.name, preset));
 
-  const languageDefaults = langCode ? languagePresets[langCode] : [];
-  if (Array.isArray(languageDefaults)) {
-    languageDefaults.forEach((preset) => combinedByName.set(preset.name, preset));
+  const scopeDefaults = scopeId ? defaultPresetsByScope[scopeId] : [];
+  if (Array.isArray(scopeDefaults)) {
+    scopeDefaults.forEach((preset) => combinedByName.set(preset.name, preset));
   }
 
   return { available: true, presets: Array.from(combinedByName.values()) };
@@ -335,14 +335,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   }
 
   // Best-effort after persistence: this refreshes Main's preset list and attempts auto-selection. If it is lost, the preset remains saved, but Main may stay stale; a later reload does not replay auto-selection.
-  function notifyMainPresetCreated(preset, settingsSnapshot, language) {
+  function notifyMainPresetCreated(preset, settingsSnapshot, preferenceScopeId) {
     try {
       const { mainWin } = resolveWindows();
       if (mainWin && !mainWin.isDestroyed()) {
         mainWin.webContents.send('preset-created', {
           preset,
           settingsSnapshot,
-          language,
+          preferenceScopeId,
         });
       } else {
         log.warn(
@@ -357,29 +357,29 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     }
   }
 
-  // Normalize settings language to a base tag with a safe fallback.
+  // Resolve the explicit preference scope for the selected application ID.
   function getEffectiveLang(settings) {
     const s = settings || settingsState.getSettings();
     const lang =
       s.language && typeof s.language === 'string' && s.language.trim()
         ? s.language.trim()
         : DEFAULT_LANG;
-    return normalizeLangBase(lang) || DEFAULT_LANG;
+    return getPreferenceScope(lang || DEFAULT_LANG);
   }
 
   function clonePresetSettings(settings, lang) {
-    const presetsByLanguage = { ...settings.presets_by_language };
-    const disabledDefaults = { ...settings.disabled_default_presets };
-    if (Array.isArray(presetsByLanguage[lang])) {
-      presetsByLanguage[lang] = presetsByLanguage[lang].slice();
+    const presetsByScope = { ...settings.presetsByScope };
+    const disabledDefaults = { ...settings.disabledDefaultPresetsByScope };
+    if (Array.isArray(presetsByScope[lang])) {
+      presetsByScope[lang] = presetsByScope[lang].slice();
     }
     if (Array.isArray(disabledDefaults[lang])) {
       disabledDefaults[lang] = disabledDefaults[lang].slice();
     }
     return {
       ...settings,
-      presets_by_language: presetsByLanguage,
-      disabled_default_presets: disabledDefaults,
+      presetsByScope,
+      disabledDefaultPresetsByScope: disabledDefaults,
     };
   }
 
@@ -389,24 +389,24 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return clonePresetSettings(settingsState.getSettings(), lang);
   }
 
-  function getUserPresets(settings, lang) {
-    const langCode = normalizeLangBase(lang) || DEFAULT_LANG;
-    if (typeof settings.presets_by_language !== 'object' || settings.presets_by_language === null || Array.isArray(settings.presets_by_language)) {
-      settings.presets_by_language = {};
+  function getUserPresets(settings, preferenceScopeId) {
+    const scopeId = preferenceScopeId || getPreferenceScope(DEFAULT_LANG);
+    if (typeof settings.presetsByScope !== 'object' || settings.presetsByScope === null || Array.isArray(settings.presetsByScope)) {
+      settings.presetsByScope = {};
     }
-    if (!Array.isArray(settings.presets_by_language[langCode])) {
-      settings.presets_by_language[langCode] = [];
+    if (!Array.isArray(settings.presetsByScope[scopeId])) {
+      settings.presetsByScope[scopeId] = [];
     }
-    return settings.presets_by_language[langCode];
+    return settings.presetsByScope[scopeId];
   }
 
   function ensureDisabledDefaultPresets(settings, lang) {
-    settings.disabled_default_presets =
-      settings.disabled_default_presets || {};
-    if (!Array.isArray(settings.disabled_default_presets[lang])) {
-      settings.disabled_default_presets[lang] = [];
+    settings.disabledDefaultPresetsByScope =
+      settings.disabledDefaultPresetsByScope || {};
+    if (!Array.isArray(settings.disabledDefaultPresetsByScope[lang])) {
+      settings.disabledDefaultPresetsByScope[lang] = [];
     }
-    return settings.disabled_default_presets[lang];
+    return settings.disabledDefaultPresetsByScope[lang];
   }
 
   // Replace {placeholders} in i18n dialog strings.
@@ -422,7 +422,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
   function getDialogContext(settings) {
     const lang = getEffectiveLang(settings);
-    const dialogLang = normalizeLangTag(settings.language) || lang;
+    const dialogLang = getValidLanguageId(settings.language) || DEFAULT_LANG;
     const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
     return { lang, dialogLang, dialogTexts };
   }
@@ -438,14 +438,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   // The renderer combines these lists with user presets and may persist a replacement for a missing saved selection.
   ipcMain.handle('get-default-presets', () => {
     try {
-      const { general, languagePresets } = loadConfiguredDefaultPresetCatalog();
-      return { general, languagePresets };
+      const { general, defaultPresetsByScope } = loadConfiguredDefaultPresetCatalog();
+      return { general, defaultPresetsByScope };
     } catch (error) {
       log.error(
         '[presets_main] Error providing default presets (get-default-presets):',
         error
       );
-      return { general: [], languagePresets: {} };
+      return { general: [], defaultPresetsByScope: {} };
     }
   });
 
@@ -583,7 +583,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const idxUser = userPresets.findIndex((p) => p.name === name);
       const isDefault = defaultsCombined.find((p) => p.name === name);
 
-      // Ensure disabled_default_presets bucket exists for this language.
+      // Ensure disabled-default-preset bucket exists for this explicit preference scope.
       const disabledDefaults = ensureDisabledDefaultPresets(settings, lang);
 
       if (idxUser >= 0) {
@@ -596,14 +596,14 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'deleted_and_ignored', settingsSnapshot: settings, language: lang };
+          return { ok: true, action: 'deleted_and_ignored', settingsSnapshot: settings, preferenceScopeId: lang };
         } else {
           // Custom-only entry; remove it and keep defaults intact.
           userPresets.splice(idxUser, 1);
           settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'deleted_custom', settingsSnapshot: settings, language: lang };
+          return { ok: true, action: 'deleted_custom', settingsSnapshot: settings, preferenceScopeId: lang };
         }
       } else {
         // No custom preset; if a default exists, disable it for this language.
@@ -614,7 +614,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
           settings = settingsState.saveSettingsStrict(settings);
           broadcast(settings);
 
-          return { ok: true, action: 'ignored_default', settingsSnapshot: settings, language: lang };
+          return { ok: true, action: 'ignored_default', settingsSnapshot: settings, preferenceScopeId: lang };
         }
       }
 
@@ -670,7 +670,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
       const unignored = [];
 
       // Remove or keep user presets depending on whether they shadow defaults
-      settings.presets_by_language[lang] = userPresets.filter((p) => {
+      settings.presetsByScope[lang] = userPresets.filter((p) => {
         if (!p || !p.name) return false;
         if (defaultNames.has(p.name)) {
           removedCustom.push(p.name);
@@ -679,10 +679,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         return true; // keep non-shadowing custom presets
       });
 
-      // Clear disabled_default_presets entries that match existing default names
+      // Clear disabled-default-preset entries that match existing default names.
       const disabledDefaults = ensureDisabledDefaultPresets(settings, lang);
 
-      settings.disabled_default_presets[lang] =
+      settings.disabledDefaultPresetsByScope[lang] =
         disabledDefaults.filter((n) => {
           const keep = !defaultNames.has(n);
           if (!keep) {
@@ -692,22 +692,22 @@ function registerIpc(ipcMain, { getWindows } = {}) {
         });
 
       if (
-        Array.isArray(settings.disabled_default_presets[lang]) &&
-        settings.disabled_default_presets[lang].length === 0
+        Array.isArray(settings.disabledDefaultPresetsByScope[lang]) &&
+        settings.disabledDefaultPresetsByScope[lang].length === 0
       ) {
-        delete settings.disabled_default_presets[lang];
+        delete settings.disabledDefaultPresetsByScope[lang];
       }
       if (
-        settings.disabled_default_presets &&
-        Object.keys(settings.disabled_default_presets).length === 0
+        settings.disabledDefaultPresetsByScope &&
+        Object.keys(settings.disabledDefaultPresetsByScope).length === 0
       ) {
-        delete settings.disabled_default_presets;
+        delete settings.disabledDefaultPresetsByScope;
       }
 
       settings = settingsState.saveSettingsStrict(settings);
       broadcast(settings);
 
-      return { ok: true, action: 'restored', removedCustom, unignored, settingsSnapshot: settings, language: lang };
+      return { ok: true, action: 'restored', removedCustom, unignored, settingsSnapshot: settings, preferenceScopeId: lang };
     } catch (error) {
       log.error(
         '[presets_main] Error restoring default presets:',

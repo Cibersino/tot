@@ -59,13 +59,14 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * covers the production `RendererCombobox` contract in `select` and `editable` modes: ARIA/open state, value and action activation, pointer-hover active state, disabled options, one-open behavior, outside click, keyboard navigation/type-ahead, committed-text restoration, updates, focus, and destruction
   * supports the shared selector behavior exercised by `SM-07`, `SM-07A`, `SM-10A`, `SM-13`, `REG-PRESETS`, `REG-CALCULATOR`, `REG-IMPORT-08C`, and `REG-SNAPSHOTS`
 * `test/unit/shared/language_window.test.js`
-  * covers fixed-bilingual markup/status ownership, the unchanged visible filter/layout contract, first-run empty selection, persisted selection vs roving focus, keyboard activation, filtering, bootstrap fallback, and selection failure
+  * covers fixed-bilingual markup/status ownership, the unchanged visible filter/layout contract, first-run empty selection, persisted selection vs roving focus, keyboard activation, filtering, required-catalog failure without a local list, and selection failure
   * supports parts of `REG-FR-01` and `REG-I18N-01`; it does not replace the documented screen-reader or real-window checks
 * `electron/settings.js`
   * supports parts of `REG-PERSIST`
   * supports parts of `REG-I18N`
   * supports parts of `REG-EDITOR`
 * `test/unit/electron/settings.test.js`
+  * covers exact declared IDs, independent preference scopes, and graph-derived number-format defaults
   * supports parts of `REG-MODE-01`
   * supports parts of `REG-MODE-02`
   * supports parts of `REG-PRESETS-07`
@@ -73,7 +74,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-PERSIST-02`
   * supports the narrow current-language read used by `REG-FR-01` and `REG-I18N-01`
 * `test/unit/electron/language_preload.test.js`
-  * covers the Language Window's narrow available/current-language reads and normalized selection forwarding
+  * covers the Language Window's narrow available/current-language reads and exact trimmed application-ID forwarding
   * supports parts of `REG-FR-01` and `REG-I18N-01`
 * `test/unit/electron/preload.test.js`
   * supports parts of `SM-07A`

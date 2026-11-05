@@ -233,6 +233,14 @@ let settingsCache = null;
 let settingsApplicationQueue = Promise.resolve();
 let mainRendererI18nTerminal = false;
 let cronoController = null;
+
+function getCurrentTextCountContext() {
+  const countContext = { modoConteo };
+  if (modoConteo === 'preciso') {
+    countContext.idioma = getLocaleTag(idiomaActual);
+  }
+  return countContext;
+}
 // READY stays blocked until both main signals and renderer listeners are fully armed.
 let rendererReadyState = 'PRE_READY';
 let rendererInvariantsReady = false;
@@ -289,10 +297,9 @@ currentTextRuntime.configure({
   currentTextSelectorSection,
   resultsTimeMultiplier,
   countText: contarTexto,
-  getCountContext: () => ({
-    modoConteo,
-    idioma: idiomaActual,
-  }),
+  getCountContext: getCurrentTextCountContext,
+  getDefaultCountLocaleTag: () => getLocaleTag(DEFAULT_LANG),
+  getLanguageId: () => idiomaActual,
   getSettingsCache: () => settingsCache,
   getWpm: () => wpmControls.getWpm(),
   applyStandaloneFullRefreshPendingState: (state, context) => {
@@ -302,6 +309,7 @@ currentTextRuntime.configure({
   resolveCurrentTextProcessing: window.electronAPI.resolveCurrentTextProcessing.bind(window.electronAPI),
 });
 const currentTextRefreshPolicy = currentTextRefreshPolicyModule.createController({
+  getDefaultCountLocaleTag: () => getLocaleTag(DEFAULT_LANG),
   requestFullRefresh: (reason) => {
     currentTextRuntime.requestDerivedRefresh(reason);
   },
@@ -686,13 +694,17 @@ function getRequiredElectronMethod(methodName) {
 // =============================================================================
 const {
   transitionRendererTranslations,
-  getLangBase,
+  getLocaleTag,
+  getOcrLocaleTag,
+  getPreferenceScope,
   tRenderer,
   msgRenderer,
   getRendererValue,
 } = window.RendererI18n || {};
 if (!transitionRendererTranslations
-  || typeof getLangBase !== 'function'
+  || typeof getLocaleTag !== 'function'
+  || typeof getOcrLocaleTag !== 'function'
+  || typeof getPreferenceScope !== 'function'
   || !tRenderer
   || !msgRenderer
   || !getRendererValue) {
@@ -920,7 +932,7 @@ function reportPreciseCountingFailure(error) {
 }
 
 function contarTexto(texto, countContext = null) {
-  const options = countContext || { modoConteo, idioma: idiomaActual };
+  const options = countContext || getCurrentTextCountContext();
   try {
     return contarTextoModulo(texto, options);
   } catch (error) {
@@ -997,7 +1009,7 @@ async function applySettingsChange(newSettings) {
     const previousSettings = settingsCache || {};
     const previousCountContext = {
       modoConteo,
-      idioma: idiomaActual,
+      idioma: getLocaleTag(idiomaActual),
     };
     const nextSettings = newSettings && typeof newSettings === 'object' ? newSettings : {};
     const nuevoIdioma = nextSettings.language || DEFAULT_LANG;
@@ -1049,7 +1061,7 @@ async function applySettingsChange(newSettings) {
         previousCountContext,
         nextCountContext: {
           modoConteo,
-          idioma: idiomaActual,
+      idioma: getLocaleTag(idiomaActual),
         },
         presetOutcome,
         reason: 'settings change',
@@ -1080,9 +1092,9 @@ function settingsChangeHandler(newSettings) {
   return enqueueMainSemanticWork(run);
 }
 
-function enqueuePresetReconciliation({ preset, settingsSnapshot, language }, reason) {
+function enqueuePresetReconciliation({ preset, settingsSnapshot, preferenceScopeId }, reason) {
   return enqueueMainSemanticWork(async () => {
-    if (language !== (getLangBase(idiomaActual) || DEFAULT_LANG)) return;
+    if (preferenceScopeId !== getPreferenceScope(idiomaActual || DEFAULT_LANG)) return;
 
     const result = preset
       ? await wpmControls.handlePresetCreated({
@@ -1691,7 +1703,7 @@ function configureTextExtractionModules() {
   textExtractionEntry.configure({
     applyTextViaCanonicalPath,
     getClipboardRepeatCount: () => currentTextSelectorSection.getClipboardRepeatCount(),
-    getOcrLanguage: () => idiomaActual || '',
+    getOcrLanguage: () => getOcrLocaleTag(idiomaActual || DEFAULT_LANG),
     getOptionalElectronMethod,
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
@@ -1708,7 +1720,7 @@ function configureTextExtractionModules() {
   textExtractionBatchFlow.configure({
     applyTextViaCanonicalPath,
     getOptionalElectronMethod,
-    getOcrLanguage: () => idiomaActual || '',
+    getOcrLanguage: () => getOcrLocaleTag(idiomaActual || DEFAULT_LANG),
     getSettingsCache: () => settingsCache,
     guardUserAction,
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
@@ -2269,7 +2281,7 @@ const initCronoController = () => {
     contarTexto,
     obtenerSeparadoresDeNumeros,
     formatearNumero,
-    getIdiomaActual: () => idiomaActual,
+    getLanguageId: () => idiomaActual,
     getCurrentText: () => getCurrentTextValue(),
     getSettingsCache: () => settingsCache,
     playIconName: icons.playIconName,

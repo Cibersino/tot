@@ -18,7 +18,7 @@ function loadLanguagePreload() {
       if (channel === 'get-available-languages') {
         return Promise.resolve([{ tag: 'ar', label: 'العربية' }]);
       }
-      return Promise.resolve({ ok: true });
+      return Promise.resolve({ ok: true, language: payload });
     },
     send(channel, payload) {
       sent.push({ channel, payload });
@@ -69,15 +69,15 @@ test('language preload exposes narrow reads for available and current languages'
   assert.equal(currentLanguage, 'ar');
 });
 
-test('language preload normalizes and forwards a selected language', async () => {
+test('language preload forwards an exact trimmed application-language ID', async () => {
   const { exposedApi, invoked, sent } = loadLanguagePreload();
 
-  await exposedApi.api.setLanguage(' EN_us ');
+  await exposedApi.api.setLanguage(' zh-Hans ');
 
   assert.deepEqual(invoked, [
-    { channel: 'set-language', payload: 'en-us' },
+    { channel: 'set-language', payload: 'zh-Hans' },
   ]);
   assert.deepEqual(sent, [
-    { channel: 'language-selected', payload: 'en-us' },
+    { channel: 'language-selected', payload: 'zh-Hans' },
   ]);
 });

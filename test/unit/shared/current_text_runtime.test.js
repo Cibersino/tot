@@ -82,6 +82,7 @@ function createHarness({
   const countCalls = [];
   const standalonePendingCalls = [];
   const separatorQueue = [];
+  const separatorLanguageIds = [];
   let separatorCalls = 0;
   const elements = {
     resChars: createElement('resChars'),
@@ -99,8 +100,11 @@ function createHarness({
     modoConteo: 'simple',
     idioma: 'es',
   };
+  let defaultCountLocaleTag = 'es-419';
+  let defaultCountLocaleRequests = 0;
+  let languageId = 'es';
   let settingsCache = {
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -140,14 +144,22 @@ function createHarness({
         },
       },
       FormatUtils: {
-        async obtenerSeparadoresDeNumeros(_idioma, settings) {
+        async obtenerSeparadoresDeNumeros(requestedLanguageId, settings) {
           separatorCalls += 1;
+          separatorLanguageIds.push(requestedLanguageId);
           if (separatorQueue.length > 0) {
             const resolver = separatorQueue.shift();
             return resolver(settings);
           }
-          const langBase = String(countContext.idioma || 'es').split(/[-_]/)[0] || 'es';
-          const entry = settings && settings.numberFormatting ? settings.numberFormatting[langBase] : null;
+          const preferenceScopeIds = {
+            es: 'es',
+            en: 'en',
+            'app-french-canada': 'fr',
+          };
+          const preferenceScopeId = preferenceScopeIds[requestedLanguageId];
+          const entry = settings && settings.numberFormattingByScope && preferenceScopeId
+            ? settings.numberFormattingByScope[preferenceScopeId]
+            : null;
           return {
             separadorMiles: entry && entry.separadorMiles ? entry.separadorMiles : '.',
             separadorDecimal: entry && entry.separadorDecimal ? entry.separadorDecimal : ',',
@@ -233,6 +245,13 @@ function createHarness({
     getCountContext() {
       return countContext;
     },
+    getDefaultCountLocaleTag() {
+      defaultCountLocaleRequests += 1;
+      return defaultCountLocaleTag;
+    },
+    getLanguageId() {
+      return languageId;
+    },
     getSettingsCache() {
       return settingsCache;
     },
@@ -266,9 +285,21 @@ function createHarness({
     get separatorCalls() {
       return separatorCalls;
     },
+    get separatorLanguageIds() {
+      return separatorLanguageIds.slice();
+    },
+    get defaultCountLocaleRequests() {
+      return defaultCountLocaleRequests;
+    },
     standalonePendingCalls,
     setCountContext(nextContext) {
       countContext = { ...countContext, ...nextContext };
+    },
+    setDefaultCountLocaleTag(nextLocaleTag) {
+      defaultCountLocaleTag = nextLocaleTag;
+    },
+    setLanguageId(nextLanguageId) {
+      languageId = nextLanguageId;
     },
     setEmptyPreviewText(nextText) {
       emptyPreviewText = String(nextText);
@@ -284,6 +315,60 @@ function createHarness({
     },
   };
 }
+
+test('current-text display formatting resolves its preference scope from the application ID', async () => {
+  const harness = createHarness();
+  harness.setLanguageId('app-french-canada');
+  harness.setCountContext({
+    modoConteo: 'preciso',
+    idioma: 'fr-CA',
+  });
+  harness.setSettingsCache({
+    numberFormattingByScope: {
+      fr: { separadorMiles: ' ', separadorDecimal: ',' },
+    },
+  });
+
+  harness.api.handleCurrentTextUpdated({ text: 'un deux' });
+  await flushAsyncWork();
+
+  const countOptions = harness.countCalls.at(-1).options;
+  assert.equal(countOptions.modoConteo, 'preciso');
+  assert.equal(countOptions.idioma, 'fr-CA');
+  assert.deepEqual(harness.separatorLanguageIds, ['app-french-canada']);
+  assert.equal(harness.elements.resWords.textContent, 'renderer.main.results.words:2[ ,]');
+});
+
+test('current-text Precise counting resolves a missing locale from its graph-owned default provider', async () => {
+  const harness = createHarness();
+  harness.setDefaultCountLocaleTag('es-419');
+  harness.setCountContext({
+    modoConteo: 'preciso',
+    idioma: '',
+  });
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos' });
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.at(-1).options.modoConteo, 'preciso');
+  assert.equal(harness.countCalls.at(-1).options.idioma, 'es-419');
+  assert.equal(harness.defaultCountLocaleRequests, 1);
+});
+
+test('current-text Simple counting does not resolve a locale when its count context omits one', async () => {
+  const harness = createHarness();
+  harness.setCountContext({
+    modoConteo: 'simple',
+    idioma: '',
+  });
+
+  harness.api.handleCurrentTextUpdated({ text: 'uno dos' });
+  await flushAsyncWork();
+
+  assert.equal(harness.countCalls.at(-1).options.modoConteo, 'simple');
+  assert.equal(Object.hasOwn(harness.countCalls.at(-1).options, 'idioma'), false);
+  assert.equal(harness.defaultCountLocaleRequests, 0);
+});
 
 test('standalone full refresh enters pending before deferred recount starts and settles afterward', async () => {
   const harness = createHarness();
@@ -325,7 +410,7 @@ test('display-only refreshes queue behind a standalone full refresh before count
 
   harness.api.requestDerivedRefresh('mode toggle');
   harness.setSettingsCache({
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: ' ', separadorDecimal: ';' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -431,7 +516,7 @@ test('stats_display refresh reuses cached stats without recounting or rerenderin
   const countCallsBefore = harness.countCalls.length;
   const previewCallsBefore = harness.previewCalls.length;
   harness.setSettingsCache({
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: ' ', separadorDecimal: ';' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -567,15 +652,15 @@ test('stats_display requests queue behind an in-flight standalone full derive wh
   const deferredSeparators = createDeferred();
 
   harness.queueSeparatorResolver((capturedSettings) => deferredSeparators.promise.then(() => ({
-    separadorMiles: capturedSettings.numberFormatting.es.separadorMiles,
-    separadorDecimal: capturedSettings.numberFormatting.es.separadorDecimal,
+    separadorMiles: capturedSettings.numberFormattingByScope.es.separadorMiles,
+    separadorDecimal: capturedSettings.numberFormattingByScope.es.separadorDecimal,
   })));
 
   harness.api.handleCurrentTextUpdated({ text: 'uno dos tres' });
   assert.equal(harness.countCalls.length, 1);
 
   harness.setSettingsCache({
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: ' ', separadorDecimal: ';' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -803,7 +888,7 @@ test('stale queued standalone follow-up does not leak into a later successful fu
   assert.equal(harness.separatorCalls, 1);
 
   harness.setSettingsCache({
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: ' ', separadorDecimal: ';' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
@@ -832,7 +917,7 @@ test('failed queued standalone follow-up does not leak into a later successful f
   assert.equal(harness.separatorCalls, 1);
 
   harness.setSettingsCache({
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: ' ', separadorDecimal: ';' },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },

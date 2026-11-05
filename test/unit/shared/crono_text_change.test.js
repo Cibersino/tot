@@ -44,6 +44,39 @@ function createController(crono, getCurrentText) {
   return { controller, cronoDisplay, realWpmDisplay };
 }
 
+test('Real WPM formatting receives the canonical application-language ID', async (t) => {
+  const { crono } = loadRendererCrono(t);
+  const languageIds = [];
+  const controller = crono.createController({
+    elements: {
+      cronoDisplay: createDisplayElement('00:00:00'),
+      realWpmDisplay: { innerHTML: '&nbsp;', textContent: '' },
+    },
+    contarTexto() {
+      return { palabras: 120 };
+    },
+    async obtenerSeparadoresDeNumeros(languageId) {
+      languageIds.push(languageId);
+      assert.equal(languageId, 'app-french-canada');
+      return { separadorMiles: ' ', separadorDecimal: ',' };
+    },
+    formatearNumero(value) {
+      return String(value);
+    },
+    getLanguageId() {
+      return 'app-french-canada';
+    },
+    getCurrentText() {
+      return 'un deux';
+    },
+  });
+
+  controller.handleState({ elapsed: 60000, running: false });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(languageIds, ['app-french-canada']);
+});
+
 test('empty current text preserves stopwatch state and allows cumulative Real WPM after text returns', async (t) => {
   const { crono } = loadRendererCrono(t);
   let currentText = '';

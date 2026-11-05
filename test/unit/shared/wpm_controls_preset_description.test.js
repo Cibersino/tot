@@ -104,8 +104,8 @@ function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null
         DEFAULT_LANG: 'en',
       },
       RendererI18n: {
-        getLangBase(lang) {
-          return String(lang || '').split('-')[0] || 'en';
+        getPreferenceScope(lang) {
+          return String(lang || '').trim() || 'en';
         },
         resolveUserTextDirection(text) {
           return resolveDirectionFromText(
@@ -149,7 +149,7 @@ function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null
           { name: 'default', wpm: 200, description: 'rtl:الوصف الافتراضي' },
           { name: 'latin', wpm: 250, description: 'Google OCR وصف' },
         ],
-        languagePresets: {},
+        defaultPresetsByScope: {},
       };
     },
     async setSelectedPreset(name) {
@@ -185,8 +185,8 @@ test('wpm controls apply and clear preset descriptions through the shared direct
   await controller.loadPresets({
     settingsSnapshot: {
       language: 'ar',
-      selected_preset_by_language: { ar: 'default' },
-      presets_by_language: {},
+      selectedPresetByScope: { ar: 'default' },
+      presetsByScope: {},
     },
     language: 'ar',
     electronAPI,
@@ -199,8 +199,8 @@ test('wpm controls apply and clear preset descriptions through the shared direct
   const selected = await controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'ar',
-      selected_preset_by_language: {},
-      presets_by_language: {},
+      selectedPresetByScope: {},
+      presetsByScope: {},
     },
     language: 'ar',
     electronAPI,
@@ -230,8 +230,8 @@ test('wpm controls reset stale preset descriptions on preset reload failure', as
   await controller.loadPresets({
     settingsSnapshot: {
       language: 'ar',
-      selected_preset_by_language: {},
-      presets_by_language: {},
+      selectedPresetByScope: {},
+      presetsByScope: {},
     },
     language: 'ar',
     electronAPI,
@@ -253,8 +253,8 @@ test('wpm controls roll back to the previous preset when selection persistence f
   await controller.loadPresets({
     settingsSnapshot: {
       language: 'ar',
-      selected_preset_by_language: { ar: 'default' },
-      presets_by_language: {},
+      selectedPresetByScope: { ar: 'default' },
+      presetsByScope: {},
     },
     language: 'ar',
     electronAPI,
@@ -264,8 +264,8 @@ test('wpm controls roll back to the previous preset when selection persistence f
   const selected = await controller.handlePresetSelectionChange({
     settingsSnapshot: {
       language: 'ar',
-      selected_preset_by_language: {},
-      presets_by_language: {},
+      selectedPresetByScope: {},
+      presetsByScope: {},
     },
     language: 'ar',
     electronAPI,

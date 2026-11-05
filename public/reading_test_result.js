@@ -154,15 +154,15 @@
     // =============================================================================
     // Helpers
     // =============================================================================
-    function normalizeLanguage(language, fallback = DEFAULT_LANG) {
+    function normalizeLanguageId(language, fallback = DEFAULT_LANG) {
       const normalized = typeof language === 'string'
-        ? language.trim().toLowerCase()
+        ? language.trim()
         : '';
       return normalized || fallback;
     }
 
     async function transitionResultTranslations(language, settings) {
-      const target = normalizeLanguage(language || state.currentLanguage);
+      const target = normalizeLanguageId(language || state.currentLanguage);
       const previousLanguage = state.currentLanguage;
       const previousSettings = state.settingsCache;
       const nextSettings = typeof settings === 'undefined'
@@ -327,7 +327,7 @@
           }
         }
         return {
-          language: normalizeLanguage(nextSettings.language),
+          language: normalizeLanguageId(nextSettings.language),
           settings: nextSettings,
         };
       }).catch((error) => {
@@ -340,7 +340,7 @@
       if (resultI18nTerminal) return;
       enqueueUiSync(async () => {
         const nextSettings = settings || {};
-        const nextLanguage = normalizeLanguage(nextSettings.language);
+        const nextLanguage = normalizeLanguageId(nextSettings.language);
         const languageChanged = nextLanguage !== state.currentLanguage;
         const needsTranslationRetry = state.translationsLoadedFor !== nextLanguage;
         if (!languageChanged && !needsTranslationRetry) {

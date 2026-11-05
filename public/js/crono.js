@@ -52,7 +52,7 @@
     contarTexto,
     obtenerSeparadoresDeNumeros,
     formatearNumero,
-    idiomaActual,
+    languageId,
     settingsCache,
     realWpmDisplay
   }) {
@@ -62,7 +62,7 @@
     if (words > 0 && secondsTotal > 0) {
       const realWpm = (words / secondsTotal) * 60;
       const { separadorMiles, separadorDecimal } = await obtenerSeparadoresDeNumeros(
-        idiomaActual,
+        languageId,
         settingsCache
       );
       const velocidadFormateada = formatearNumero(realWpm, separadorMiles, separadorDecimal);
@@ -214,7 +214,7 @@
     contarTexto,
     obtenerSeparadoresDeNumeros,
     formatearNumero,
-    idiomaActual,
+    languageId,
     settingsCache,
     realWpmDisplay,
     setElapsed,
@@ -267,7 +267,7 @@
         contarTexto,
         obtenerSeparadoresDeNumeros,
         formatearNumero,
-        idiomaActual,
+        languageId,
         settingsCache,
         realWpmDisplay
       });
@@ -311,7 +311,7 @@
     contarTexto,
     obtenerSeparadoresDeNumeros,
     formatearNumero,
-    idiomaActual,
+    languageId,
     settingsCache,
     prevRunning = false,
     lastComputedElapsedForWpm = null,
@@ -343,7 +343,7 @@
         contarTexto,
         obtenerSeparadoresDeNumeros,
         formatearNumero,
-        idiomaActual,
+        languageId,
         settingsCache,
         realWpmDisplay
       });
@@ -374,7 +374,7 @@
       contarTexto: options.contarTexto,
       obtenerSeparadoresDeNumeros: options.obtenerSeparadoresDeNumeros,
       formatearNumero: options.formatearNumero,
-      getIdiomaActual: typeof options.getIdiomaActual === 'function' ? options.getIdiomaActual : () => null,
+      getLanguageId: typeof options.getLanguageId === 'function' ? options.getLanguageId : () => null,
       getCurrentText: typeof options.getCurrentText === 'function' ? options.getCurrentText : () => '',
       getSettingsCache: typeof options.getSettingsCache === 'function' ? options.getSettingsCache : () => null,
     };
@@ -401,7 +401,7 @@
       if (next.contarTexto) deps.contarTexto = next.contarTexto;
       if (next.obtenerSeparadoresDeNumeros) deps.obtenerSeparadoresDeNumeros = next.obtenerSeparadoresDeNumeros;
       if (next.formatearNumero) deps.formatearNumero = next.formatearNumero;
-      if (typeof next.getIdiomaActual === 'function') deps.getIdiomaActual = next.getIdiomaActual;
+      if (typeof next.getLanguageId === 'function') deps.getLanguageId = next.getLanguageId;
       if (typeof next.getCurrentText === 'function') deps.getCurrentText = next.getCurrentText;
       if (typeof next.getSettingsCache === 'function') deps.getSettingsCache = next.getSettingsCache;
     };
@@ -410,7 +410,7 @@
       contarTexto: deps.contarTexto,
       obtenerSeparadoresDeNumeros: deps.obtenerSeparadoresDeNumeros,
       formatearNumero: deps.formatearNumero,
-      idiomaActual: deps.getIdiomaActual(),
+      languageId: deps.getLanguageId(),
       settingsCache: deps.getSettingsCache()
     });
 

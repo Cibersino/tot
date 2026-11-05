@@ -9,7 +9,6 @@
 // - Read the current selection and available languages through languageAPI.
 // - Keep the selected language separate from roving keyboard focus.
 // - Apply a selection and close after the preload operation succeeds.
-// - Display a minimal local list when languageAPI cannot provide a valid language list.
 // - Attempt local closure after a first-run bootstrap failure so main can resolve startup language.
 
 // =============================================================================
@@ -65,11 +64,6 @@ if (!langFilter || !langList) {
 // =============================================================================
 // Constants and shared state
 // =============================================================================
-// Autonyms normally come from i18n/languages.json; keep this recovery list bounded for cases where languageAPI cannot provide a valid list.
-const FALLBACK_LANGUAGES = Object.freeze([
-  Object.freeze({ tag: 'es', label: 'Español' }),
-  Object.freeze({ tag: 'en', label: 'English' }),
-]);
 // Status IDs select pre-authored bilingual nodes in language_window.html.
 const STATUS_IDS = Object.freeze({
   NONE: '',
@@ -82,16 +76,12 @@ let languages = [];
 let filteredLanguages = [];
 let focusedIndex = -1;
 let isBusy = false;
-let selectedLanguageTag = '';
+let selectedLanguageId = '';
 
 // =============================================================================
 // Language list rendering and selection
 // =============================================================================
 const getItems = () => Array.from(langList.querySelectorAll('.lang-item'));
-
-const normalizeLanguageTag = (value) => {
-  return String(value || '').trim().toLowerCase().replace(/_/g, '-');
-};
 
 const setStatus = (statusId = STATUS_IDS.NONE, isError = false) => {
   if (statusId && !Object.prototype.hasOwnProperty.call(statusNodes, statusId)) {
@@ -132,7 +122,7 @@ const setRovingIndex = (index, shouldFocus = true) => {
 const renderList = () => {
   const query = langFilter.value.trim().toLowerCase();
   filteredLanguages = languages.filter((lang) => {
-    return lang.label.toLowerCase().includes(query) || lang.tag.toLowerCase().includes(query);
+    return lang.label.toLowerCase().includes(query) || lang.id.toLowerCase().includes(query);
   });
 
   langList.innerHTML = '';
@@ -150,28 +140,28 @@ const renderList = () => {
     item.setAttribute('tabindex', '-1');
     item.setAttribute(
       'aria-selected',
-      normalizeLanguageTag(lang.tag) === selectedLanguageTag ? 'true' : 'false'
+      lang.id === selectedLanguageId ? 'true' : 'false'
     );
-    item.dataset.tag = lang.tag;
+    item.dataset.languageId = lang.id;
     item.dataset.index = String(index);
 
     const label = document.createElement('span');
     label.className = 'lang-label';
-    label.setAttribute('lang', lang.tag);
+    label.setAttribute('lang', lang.localeTag);
     label.setAttribute('dir', 'auto');
     label.textContent = lang.label;
 
     const tag = document.createElement('bdi');
     tag.className = 'lang-tag';
     tag.setAttribute('dir', 'ltr');
-    tag.textContent = lang.tag;
+    tag.textContent = lang.id;
 
     item.append(label, tag);
     langList.appendChild(item);
   });
 
   const selectedIndex = filteredLanguages.findIndex((lang) => {
-    return normalizeLanguageTag(lang.tag) === selectedLanguageTag;
+    return lang.id === selectedLanguageId;
   });
   setRovingIndex(selectedIndex >= 0 ? selectedIndex : 0, false);
 };
@@ -186,8 +176,12 @@ const selectLanguage = async (lang) => {
 
   setBusy(true, STATUS_IDS.APPLYING);
   try {
-    await window.languageAPI.setLanguage(lang);
-    window.close();
+    const result = await window.languageAPI.setLanguage(lang);
+    if (result && result.ok === true) window.close();
+    else {
+      setBusy(false);
+      setStatus(STATUS_IDS.SELECTION_ERROR, true);
+    }
   } catch (error) {
     log.error('Language selection request or window close failed:', error);
     setBusy(false);
@@ -219,7 +213,7 @@ langList.addEventListener('click', (event) => {
   if (!item) return;
   const index = Number(item.dataset.index);
   setRovingIndex(index, false);
-  selectLanguage(item.dataset.tag);
+  selectLanguage(item.dataset.languageId);
 });
 
 langList.addEventListener('keydown', (event) => {
@@ -247,7 +241,7 @@ langList.addEventListener('keydown', (event) => {
   } else if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault();
     if (currentIndex >= 0 && items[currentIndex]) {
-      selectLanguage(items[currentIndex].dataset.tag);
+      selectLanguage(items[currentIndex].dataset.languageId);
     }
   }
 });
@@ -265,35 +259,20 @@ langList.addEventListener('focusin', (event) => {
 // Language data loading and bootstrap
 // =============================================================================
 const loadLanguages = async () => {
-  let available = [];
-  let fallbackLogged = false;
-
   try {
-    if (window.languageAPI && typeof window.languageAPI.getAvailableLanguages === 'function') {
-      available = await window.languageAPI.getAvailableLanguages();
-    } else {
-      throw new Error('[language] getAvailableLanguages unavailable');
-    }
-  } catch (error) {
-    fallbackLogged = true;
-    log.warn('BOOTSTRAP: getAvailableLanguages failed; falling back to local list:', error);
-  }
-
-  if (Array.isArray(available) && available.length) {
+    if (!window.languageAPI || typeof window.languageAPI.getAvailableLanguages !== 'function') throw new Error('[language] getAvailableLanguages unavailable');
+    const available = await window.languageAPI.getAvailableLanguages();
+    if (!Array.isArray(available) || !available.length || available.some((language) => !language || typeof language.id !== 'string' || typeof language.label !== 'string' || typeof language.localeTag !== 'string')) throw new Error('[language] required language catalog list is invalid');
     languages = available;
-  } else {
-    if (!fallbackLogged) {
-      log.warn('BOOTSTRAP: getAvailableLanguages returned empty/invalid; falling back to local list.');
-    }
-    languages = FALLBACK_LANGUAGES.slice();
+  } catch (error) {
+    log.error('BOOTSTRAP: required language catalog list unavailable; chooser cannot offer selections:', error);
+    throw error;
   }
 
-  if (selectedLanguageTag && !languages.some((lang) => {
-    return normalizeLanguageTag(lang.tag) === selectedLanguageTag;
-  })) {
+  if (selectedLanguageId && !languages.some((lang) => lang.id === selectedLanguageId)) {
     log.warn(
       'BOOTSTRAP: current language is not present in the available list; no option will be identified as selected:',
-      selectedLanguageTag
+      selectedLanguageId
     );
   }
 
@@ -308,7 +287,8 @@ const loadCurrentLanguage = async () => {
   }
 
   try {
-    return normalizeLanguageTag(await window.languageAPI.getCurrentLanguage());
+    const value = await window.languageAPI.getCurrentLanguage();
+    return typeof value === 'string' ? value : '';
   } catch (error) {
     log.warn('BOOTSTRAP: getCurrentLanguage failed; current selection will not be identified:', error);
     return '';
@@ -317,16 +297,12 @@ const loadCurrentLanguage = async () => {
 
 (async () => {
   try {
-    selectedLanguageTag = await loadCurrentLanguage();
+    selectedLanguageId = await loadCurrentLanguage();
     await loadLanguages();
     langFilter.focus();
   } catch (error) {
-    log.error('BOOTSTRAP: language window initialization failed; attempting local-list recovery:', error);
-    languages = FALLBACK_LANGUAGES.slice();
-    selectedLanguageTag = '';
-    filteredLanguages = languages.slice();
-    renderList();
-    langFilter.focus();
+    log.error('BOOTSTRAP: language window initialization failed; closing because the required catalog is unavailable:', error);
+    closeFirstRunChooserAfterBootstrapFailure();
   }
 })();
 // Main owns no-selection fallback during first-run startup; see createLanguageWindow() in electron/main.js.

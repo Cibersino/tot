@@ -4,6 +4,7 @@ process.env.TOT_LOG_LEVEL = 'silent';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('path');
 const {
   installElectronModuleMock,
@@ -178,6 +179,69 @@ test('getDialogTexts provides Editor Find initial-document failure copy', (t) =>
     dialogTexts.editor_find_initial_document_failure_message,
     'The find bar could not load and will close.'
   );
+});
+
+test('missing required default main bundle is terminal and does not use a selected root bundle', (t) => {
+  let selectedRootRead = false;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    Menu: {
+      buildFromTemplate() {
+        throw new Error('Menu must not be built when default main translations are unavailable');
+      },
+    },
+  });
+  const defaultMainPath = path.resolve(__dirname, '../../../i18n/es/main.json');
+  const selectedRootPath = path.resolve(__dirname, '../../../i18n/en/main.json');
+  const originalReadFileSync = fs.readFileSync;
+  t.mock.method(fs, 'readFileSync', (filePath, ...args) => {
+    const resolvedPath = path.resolve(String(filePath));
+    if (resolvedPath === defaultMainPath) {
+      const error = new Error('default main bundle unavailable');
+      error.code = 'ENOENT';
+      throw error;
+    }
+    if (resolvedPath === selectedRootPath) selectedRootRead = true;
+    return originalReadFileSync.call(fs, filePath, ...args);
+  });
+
+  assert.throws(
+    () => menuBuilder.buildAppMenu('en'),
+    /required default main\.json unavailable: es/
+  );
+  assert.equal(selectedRootRead, false);
+});
+
+test('a missing non-default root main bundle falls through to the established default bundle', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+  const defaultDialogTexts = menuBuilder.getDialogTexts('es');
+  const selectedRootPath = path.resolve(__dirname, '../../../i18n/en/main.json');
+  const originalReadFileSync = fs.readFileSync;
+  t.mock.method(fs, 'readFileSync', (filePath, ...args) => {
+    if (path.resolve(String(filePath)) === selectedRootPath) {
+      const error = new Error('selected root main bundle unavailable');
+      error.code = 'ENOENT';
+      throw error;
+    }
+    return originalReadFileSync.call(fs, filePath, ...args);
+  });
+
+  assert.deepEqual(menuBuilder.getDialogTexts('en'), defaultDialogTexts);
+});
+
+test('an established default main bundle is retained for later selected-language menu builds', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+  menuBuilder.initializeDefaultMainTranslations();
+
+  const defaultMainPath = path.resolve(__dirname, '../../../i18n/es/main.json');
+  const originalReadFileSync = fs.readFileSync;
+  t.mock.method(fs, 'readFileSync', (filePath, ...args) => {
+    if (path.resolve(String(filePath)) === defaultMainPath) {
+      throw new Error('default main bundle should not be read after establishment');
+    }
+    return originalReadFileSync.call(fs, filePath, ...args);
+  });
+
+  assert.doesNotThrow(() => menuBuilder.buildAppMenu('en'));
 });
 
 test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {

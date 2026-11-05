@@ -135,8 +135,8 @@ function persistCurrentTextOnQuit() {
     if (loadJson && saveJson && settingsFile) {
       const settingsDefaults = {
         language: DEFAULT_LANG,
-        presets_by_language: {},
-        disabled_default_presets: {},
+        presetsByScope: {},
+        disabledDefaultPresetsByScope: {},
       };
       const settings = loadJson(settingsFile, settingsDefaults);
       if (!fs.existsSync(settingsFile)) {

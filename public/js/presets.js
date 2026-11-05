@@ -29,12 +29,12 @@
   const { RendererI18n } = window;
   if (
     !RendererI18n
-    || typeof RendererI18n.getLangBase !== 'function'
+    || typeof RendererI18n.getPreferenceScope !== 'function'
     || typeof RendererI18n.resolveUserTextDirection !== 'function'
   ) {
     throw new Error('[presets] RendererI18n direction helpers unavailable; cannot continue');
   }
-  const { getLangBase, resolveUserTextDirection } = RendererI18n;
+  const { getPreferenceScope, resolveUserTextDirection } = RendererI18n;
 
   // =============================================================================
   // Helpers (merge + DOM utilities)
@@ -44,9 +44,9 @@
       ? settings
       : {
         language,
-        presets_by_language: {},
-        disabled_default_presets: {},
-        selected_preset_by_language: {}
+        presetsByScope: {},
+        disabledDefaultPresetsByScope: {},
+        selectedPresetByScope: {}
       };
   }
 
@@ -58,23 +58,23 @@
   }
 
   function combinePresets({ settings = {}, defaults = {} }) {
-    const langBase = getLangBase(settings.language) || DEFAULT_LANG;
-    const presetsByLanguage = settings.presets_by_language || {};
-    const disabledPresetsByLanguage = settings.disabled_default_presets || {};
-    const defaultPresetsByLanguage = defaults.languagePresets || {};
+    const preferenceScopeId = getPreferenceScope(settings.language || DEFAULT_LANG);
+    const presetsByScope = settings.presetsByScope || {};
+    const disabledPresetsByScope = settings.disabledDefaultPresetsByScope || {};
+    const defaultPresetsByScope = defaults.defaultPresetsByScope || {};
 
-    const userPresets = Array.isArray(presetsByLanguage[langBase])
-      ? presetsByLanguage[langBase].slice()
+    const userPresets = Array.isArray(presetsByScope[preferenceScopeId])
+      ? presetsByScope[preferenceScopeId].slice()
       : [];
     const generalDefaults = Array.isArray(defaults.general) ? defaults.general.slice() : [];
-    const langPresets = Array.isArray(defaultPresetsByLanguage[langBase])
-      ? defaultPresetsByLanguage[langBase]
+    const scopePresets = Array.isArray(defaultPresetsByScope[preferenceScopeId])
+      ? defaultPresetsByScope[preferenceScopeId]
       : [];
 
-    let combined = generalDefaults.concat(langPresets);
+    let combined = generalDefaults.concat(scopePresets);
 
-    const disabledByUser = Array.isArray(disabledPresetsByLanguage[langBase])
-      ? disabledPresetsByLanguage[langBase]
+    const disabledByUser = Array.isArray(disabledPresetsByScope[preferenceScopeId])
+      ? disabledPresetsByScope[preferenceScopeId]
       : [];
     if (disabledByUser.length) {
       combined = combined.filter(p => !disabledByUser.includes(p.name));
@@ -125,7 +125,7 @@
     combobox
   }) {
     const settingsSnapshot = normalizeSettings(settings, language);
-    let defaults = { general: [], languagePresets: {} };
+    let defaults = { general: [], defaultPresetsByScope: {} };
     if (!electronAPI || typeof electronAPI.getDefaultPresets !== 'function') {
       log.warn(
         '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
@@ -154,12 +154,12 @@
     electronAPI
   }) {
     const settingsSnapshot = normalizeSettings(settings, language);
-    const langBase = getLangBase(settingsSnapshot.language || language) || DEFAULT_LANG;
-    const selectedByLanguage = settingsSnapshot.selected_preset_by_language || {};
+    const preferenceScopeId = getPreferenceScope(settingsSnapshot.language || language || DEFAULT_LANG);
+    const selectedByScope = settingsSnapshot.selectedPresetByScope || {};
 
     const persisted =
-      typeof selectedByLanguage[langBase] === 'string'
-        ? selectedByLanguage[langBase].trim()
+      typeof selectedByScope[preferenceScopeId] === 'string'
+        ? selectedByScope[preferenceScopeId].trim()
         : '';
     const persistedSelection = findPresetByName(list, persisted);
     const rollbackSelection =
@@ -175,7 +175,7 @@
       if (selectedName && !namedSelection) {
         log.warn(
           'Selected preset was not found and no replacement is available; visible preset selection cleared (NOTE: may be normal; configured presets can change independently of a saved selection).',
-          { requested: selectedName, lang: langBase }
+          { requested: selectedName, preferenceScopeId }
         );
       }
       return selected;
@@ -185,12 +185,12 @@
     if (!selectedName) {
       log.warn(
         'No persisted preset selection for langKey; selected an available preset (NOTE: may be normal; no preset has been selected for this language).',
-        { lang: langBase, selected: selected.name }
+        { preferenceScopeId, selected: selected.name }
       );
     } else if (!namedSelection) {
       log.warn(
         'Selected preset was not found; selected an available replacement (NOTE: may be normal; configured presets can change independently of a saved selection).',
-        { requested: selectedName, selected: selected.name, lang: langBase }
+        { requested: selectedName, selected: selected.name, preferenceScopeId }
       );
     }
     if (!selected.name || selected.name === persisted) {

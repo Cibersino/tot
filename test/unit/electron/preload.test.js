@@ -95,8 +95,8 @@ test('main preload forwards preset reconciliation payloads and supports unsubscr
   const { exposedApi, subscriptions, removed } = loadMainPreload();
   const payload = {
     preset: { name: 'Quick', wpm: 300 },
-    language: 'en',
-    settingsSnapshot: { language: 'en', presets_by_language: { en: [{ name: 'Quick', wpm: 300 }] } },
+    preferenceScopeId: 'en',
+    settingsSnapshot: { language: 'en', presetsByScope: { en: [{ name: 'Quick', wpm: 300 }] } },
   };
   let received;
   const unsubscribe = exposedApi.api.onPresetCreated((value) => { received = value; });

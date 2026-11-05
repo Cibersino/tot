@@ -335,6 +335,62 @@ test('reading-test result focuses Continue after result data renders', async () 
   assert.equal(dom.getActiveElement(), dom.elements.readingTestResultContinue);
 });
 
+test('reading-test result preserves canonical Chinese application IDs during settings transitions', async () => {
+  const dom = createDomHarness([
+    'readingTestResultTitle',
+    'readingTestResultWpmLabel',
+    'readingTestResultWpmValue',
+    'readingTestResultSummary',
+    'readingTestResultContinue',
+    'readingTestResultSummaryRegion',
+  ], {
+    '.reading-test-result__meta': 'readingTestResultSummaryRegion',
+  });
+  const translationRequests = [];
+  let onSettingsChanged = null;
+  const baseWindow = createBaseWindow();
+  const window = {
+    ...baseWindow,
+    RendererI18n: {
+      ...baseWindow.RendererI18n,
+      async transitionRendererTranslations(language, options) {
+        translationRequests.push(language);
+        return baseWindow.RendererI18n.transitionRendererTranslations(language, options);
+      },
+    },
+    readingTestResultAPI: {
+      async getSettings() {
+        return {
+          language: 'zh-Hans',
+          numberFormattingByScope: {
+            'zh-Hans': { separadorMiles: ',', separadorDecimal: '.' },
+          },
+        };
+      },
+      onInitData() {},
+      onSettingsChanged(handler) {
+        onSettingsChanged = handler;
+        return () => {};
+      },
+      reportRendererI18nFailure() {},
+    },
+  };
+
+  runRendererScript('../../../public/reading_test_result.js', window, dom.document);
+  dom.start();
+  await flushAsyncWork();
+  assert.equal(translationRequests.at(-1), 'zh-Hans');
+
+  onSettingsChanged({
+    language: 'zh-Hant',
+    numberFormattingByScope: {
+      'zh-Hant': { separadorMiles: ',', separadorDecimal: '.' },
+    },
+  });
+  await flushAsyncWork();
+  assert.equal(translationRequests.at(-1), 'zh-Hant');
+});
+
 test('reading-test result uses defaults when getSettings is unavailable', async () => {
   const dom = createDomHarness([
     'readingTestResultTitle',
@@ -723,7 +779,7 @@ test('reading-test result preserves its established language and formatting afte
     ...baseWindow,
     FormatUtils: {
       async obtenerSeparadoresDeNumeros(language, settings) {
-        return settings.numberFormatting[language] || settings.numberFormatting.en;
+        return settings.numberFormattingByScope[language] || settings.numberFormattingByScope.en;
       },
       formatearNumero(value, thousands, decimal) {
         return `${value}[${thousands}${decimal}]`;
@@ -748,7 +804,7 @@ test('reading-test result preserves its established language and formatting afte
       async getSettings() {
         return {
           language: 'en',
-          numberFormatting: {
+          numberFormattingByScope: {
             en: { separadorMiles: ',', separadorDecimal: '.' },
           },
         };
@@ -770,7 +826,7 @@ test('reading-test result preserves its established language and formatting afte
 
   onSettingsChanged({
     language: 'es',
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: '.', separadorDecimal: ',' },
     },
   });

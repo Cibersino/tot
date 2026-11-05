@@ -15,11 +15,24 @@ test('snapshot language defaults match the shipped-language manifest and default
 
   assert.deepEqual(
     snapshotTagCatalog.LANGUAGE_OPTIONS.map((option) => option.value),
-    manifest.map(({ tag }) => tag)
+    manifest.languages
+      .filter(({ kind }) => kind === 'root')
+      .map(({ localeTag }) => localeTag)
   );
   assert.deepEqual(
-    manifest.find(({ tag }) => tag === 'sw'),
-    { tag: 'sw', label: 'Kiswahili' }
+    manifest.languages.find(({ id }) => id === 'sw'),
+    {
+      id: 'sw',
+      kind: 'root',
+      parentId: null,
+      resourceDirectory: 'sw',
+      localeTag: 'sw',
+      ocrLocaleTag: 'sw',
+      preferenceScopeId: 'sw',
+      selectable: true,
+      label: 'Kiswahili',
+      aliases: [],
+    }
   );
   const swRenderer = JSON.parse(fs.readFileSync(
     path.resolve(__dirname, '../../../i18n/sw/renderer.json'),

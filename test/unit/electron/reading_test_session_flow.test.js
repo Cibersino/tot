@@ -29,6 +29,7 @@ test('computeCurrentWpm retries only the final count after canonical Precise fal
     getCronoState: () => ({ elapsed: 60000 }),
     getCurrentText: () => 'one two',
     getSettingsSnapshot: () => ({ language: 'en', modeConteo: 'preciso' }),
+    getLocaleTag: (languageId) => languageId,
     countUtils: {
       contarTexto(_text, options) {
         calls.push(options);
@@ -73,6 +74,7 @@ test('computeCurrentWpm does not retry Simple counting when the global fallback 
     getCronoState: () => ({ elapsed: 60000 }),
     getCurrentText: () => 'one two',
     getSettingsSnapshot: () => ({ language: 'en', modeConteo: 'preciso' }),
+    getLocaleTag: (languageId) => languageId,
     countUtils: {
       contarTexto() {
         countCalls += 1;
@@ -93,6 +95,71 @@ test('computeCurrentWpm does not retry Simple counting when the global fallback 
     code: 'PRECISE_FALLBACK_FAILED',
   });
   assert.equal(countCalls, 1);
+});
+
+test('computeCurrentWpm converts the selected application ID to its count locale', () => {
+  const countCalls = [];
+
+  const result = readingTestSessionFlow.computeCurrentWpm({
+    getCronoState: () => ({ elapsed: 60000 }),
+    getCurrentText: () => 'un deux',
+    getSettingsSnapshot: () => ({ language: 'app-french-canada', modeConteo: 'preciso' }),
+    getLocaleTag(languageId) {
+      assert.equal(languageId, 'app-french-canada');
+      return 'fr-CA';
+    },
+    countUtils: {
+      contarTexto(_text, options) {
+        countCalls.push(options);
+        return { palabras: 2 };
+      },
+      isPreciseCountFailure() {
+        return false;
+      },
+    },
+    fallbackPreciseCountingToSimple() {
+      throw new Error('Precise fallback should not run');
+    },
+    DEFAULT_LANG: 'es',
+    PRESET_WPM_MIN: 1,
+    PRESET_WPM_MAX: 1000,
+    log: createLoggerDouble(),
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(countCalls, [{ modoConteo: 'preciso', idioma: 'fr-CA' }]);
+});
+
+test('computeCurrentWpm does not resolve a locale for Simple counting', () => {
+  const countCalls = [];
+
+  const result = readingTestSessionFlow.computeCurrentWpm({
+    getCronoState: () => ({ elapsed: 60000 }),
+    getCurrentText: () => 'one two',
+    getSettingsSnapshot: () => ({ language: 'app-french-canada', modeConteo: 'simple' }),
+    getLocaleTag() {
+      throw new Error('Simple counting must not resolve a locale');
+    },
+    countUtils: {
+      contarTexto(_text, options) {
+        countCalls.push(options);
+        return { palabras: 2 };
+      },
+      isPreciseCountFailure() {
+        return false;
+      },
+    },
+    fallbackPreciseCountingToSimple() {
+      throw new Error('Precise fallback should not run');
+    },
+    DEFAULT_LANG: 'app-default-spanish',
+    PRESET_WPM_MIN: 1,
+    PRESET_WPM_MAX: 1000,
+    log: createLoggerDouble(),
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(countCalls, [{ modoConteo: 'simple' }]);
 });
 
 test('Reading arming suppresses its renderer notice when Editor creation is lifecycle-owned', async () => {

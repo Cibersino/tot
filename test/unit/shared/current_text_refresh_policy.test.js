@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function createControllerHarness() {
+function createControllerHarness({ getDefaultCountLocaleTag = () => 'es-419' } = {}) {
   const calls = [];
   const sandbox = {
     window: {
@@ -20,8 +20,17 @@ function createControllerHarness() {
         };
       },
       RendererI18n: {
-        getLangBase(language) {
-          return String(language || '').split(/[-_]/)[0] || 'es';
+        getPreferenceScope(languageId) {
+          const preferenceScopeIds = {
+            es: 'es',
+            en: 'en',
+            'app-french-canada': 'fr',
+          };
+          const preferenceScopeId = preferenceScopeIds[languageId];
+          if (!preferenceScopeId) {
+            throw new Error(`Unexpected application language ID: ${String(languageId)}`);
+          }
+          return preferenceScopeId;
         },
       },
     },
@@ -36,6 +45,7 @@ function createControllerHarness() {
   vm.runInContext(source, sandbox, { filename: 'public/js/current_text_refresh_policy.js' });
 
   const controller = sandbox.window.CurrentTextRefreshPolicy.createController({
+    getDefaultCountLocaleTag,
     requestFullRefresh(reason) {
       calls.push({ kind: 'full', reason });
     },
@@ -56,14 +66,14 @@ function createControllerHarness() {
 function createSettings({ language = 'es', thousands = '.', decimal = ',' } = {}) {
   return {
     language,
-    numberFormatting: {
+    numberFormattingByScope: {
       es: { separadorMiles: thousands, separadorDecimal: decimal },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
     spellcheckEnabled: true,
     editorFontSizePx: 20,
-    presets_by_language: {},
-    selected_preset_by_language: {},
+    presetsByScope: {},
+    selectedPresetByScope: {},
   };
 }
 
@@ -109,6 +119,35 @@ test('settings change classifier routes precise-language or mode changes to full
   ]);
 });
 
+test('settings change classifier treats a missing count locale as the graph-derived default locale', () => {
+  let defaultLocaleRequests = 0;
+  const getDefaultCountLocaleTag = () => {
+    defaultLocaleRequests += 1;
+    return 'es-419';
+  };
+  const defaultLocaleHarness = createControllerHarness({ getDefaultCountLocaleTag });
+
+  const simpleKind = defaultLocaleHarness.controller.dispatchSettingsChange({
+    previousSettings: createSettings({ language: 'es' }),
+    nextSettings: createSettings({ language: 'es' }),
+    previousCountContext: { modoConteo: 'simple' },
+    nextCountContext: { modoConteo: 'simple', idioma: 'es-419' },
+    reason: 'simple default locale context',
+  });
+  const preciseKind = defaultLocaleHarness.controller.dispatchSettingsChange({
+    previousSettings: createSettings({ language: 'es' }),
+    nextSettings: createSettings({ language: 'es' }),
+    previousCountContext: { modoConteo: 'preciso' },
+    nextCountContext: { modoConteo: 'preciso', idioma: 'es-419' },
+    reason: 'precise default locale context',
+  });
+
+  assert.equal(simpleKind, 'none');
+  assert.equal(preciseKind, 'none');
+  assert.equal(defaultLocaleRequests, 2);
+  assert.deepEqual(defaultLocaleHarness.calls, []);
+});
+
 test('settings change classifier routes active-language number-format changes to stats_display', () => {
   const harness = createControllerHarness();
 
@@ -122,6 +161,31 @@ test('settings change classifier routes active-language number-format changes to
 
   assert.equal(kind, 'stats_display');
   assert.deepEqual(harness.calls, [{ kind: 'stats_display', reason: 'number formatting change' }]);
+});
+
+test('settings change classifier resolves number formatting through the canonical application ID', () => {
+  const harness = createControllerHarness();
+
+  const kind = harness.controller.dispatchSettingsChange({
+    previousSettings: {
+      ...createSettings({ language: 'app-french-canada' }),
+      numberFormattingByScope: {
+        fr: { separadorMiles: '.', separadorDecimal: ',' },
+      },
+    },
+    nextSettings: {
+      ...createSettings({ language: 'app-french-canada' }),
+      numberFormattingByScope: {
+        fr: { separadorMiles: ' ', separadorDecimal: ',' },
+      },
+    },
+    previousCountContext: { modoConteo: 'simple', idioma: 'fr-CA' },
+    nextCountContext: { modoConteo: 'simple', idioma: 'fr-CA' },
+    reason: 'distinct language identities',
+  });
+
+  assert.equal(kind, 'stats_display');
+  assert.deepEqual(harness.calls, [{ kind: 'stats_display', reason: 'distinct language identities' }]);
 });
 
 test('settings change classifier ignores unrelated settings and keeps preset WPM precedence lower than display refreshes', () => {

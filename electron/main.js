@@ -18,7 +18,6 @@
 // =============================================================================
 
 const { app, BrowserWindow, ipcMain, screen, globalShortcut, shell, dialog } = require('electron');
-const fs = require('fs');
 const path = require('path');
 const Log = require('./log');
 const {
@@ -47,6 +46,7 @@ const {
 } = require('./fs_storage');
 
 const settingsState = require('./settings');
+const languageResources = require('./language_resources');
 const snapshotTagSettings = require('./snapshot_tag_settings');
 const textState = require('./text_state');
 const editorState = require('./editor_state');
@@ -129,12 +129,6 @@ if (isSmokeTest && smokeUserDataDir) {
 // Language selection modal (first launch) assets
 const LANGUAGE_WINDOW_HTML = path.join(__dirname, '../public/language_window.html');
 const LANGUAGE_PRELOAD = path.join(__dirname, 'language_preload.js');
-// Fallback exists if the manifest is missing/corrupt so the picker still works.
-// Keep this list intentionally minimal to avoid drift and make fallback usage obvious.
-const FALLBACK_LANGUAGES = [
-  { tag: 'es', label: 'Español' },
-  { tag: 'en', label: 'English' },
-];
 
 // =============================================================================
 // Shared helpers and cross-window coordination
@@ -1966,37 +1960,17 @@ function setCronoElapsed(ms) {
 // IPC (main-owned handlers + config endpoints)
 // =============================================================================
 
-// Language manifest loader for the language selection window.
+// The picker receives only graph-declared, selectable application IDs.
 ipcMain.handle('get-available-languages', async () => {
-  const manifestPath = path.join(app.getAppPath(), 'i18n', 'languages.json');
-
   try {
-    const raw = await fs.promises.readFile(manifestPath, 'utf8');
-    const parsed = JSON.parse(raw);
-
-    if (!Array.isArray(parsed)) {
-      log.warn('Language manifest invalid (expected array). Using fallback:', manifestPath);
-      return FALLBACK_LANGUAGES;
-    }
-
-    const filtered = parsed.reduce((acc, entry) => {
-      if (!entry || typeof entry !== 'object') return acc;
-      const tag = typeof entry.tag === 'string' ? entry.tag.trim() : '';
-      const label = typeof entry.label === 'string' ? entry.label.trim() : '';
-      if (!tag || !label) return acc;
-      acc.push({ tag, label });
-      return acc;
-    }, []);
-
-    if (!filtered.length) {
-      log.warn('Language manifest empty or invalid entries. Using fallback:', manifestPath);
-      return FALLBACK_LANGUAGES;
-    }
-
-    return filtered;
+    return languageResources.getSelectableLanguages().map((descriptor) => ({
+      id: descriptor.id,
+      label: descriptor.label,
+      localeTag: descriptor.localeTag,
+    }));
   } catch (error) {
-    log.warn('Language manifest load failed; using fallback:', error);
-    return FALLBACK_LANGUAGES;
+    log.error('Required language catalog unavailable for Language Window:', error);
+    throw error;
   }
 });
 
@@ -2323,6 +2297,21 @@ app.whenReady().then(() => {
   // Ensure config directory exists before any module tries to read/write JSON.
   ensureConfigDir();
 
+  try {
+    languageResources.initialize({ appPath: app.getAppPath() });
+  } catch (error) {
+    log.error('Required language catalog initialization failed:', error);
+    throw error;
+  }
+
+  try {
+    menuBuilder.initializeDefaultMainTranslations();
+  } catch (error) {
+    log.error('Required default main translations unavailable; startup terminated:', error);
+    app.quit();
+    return;
+  }
+
   const readingTestPoolSync = readingTestPool.synchronizeBundledPoolContent();
   if (!readingTestPoolSync || readingTestPoolSync.ok !== true) {
     log.warn('Reading-test bundled pool startup sync failed (ignored):', readingTestPoolSync);
@@ -2350,6 +2339,7 @@ app.whenReady().then(() => {
     saveJson,
     saveJsonStrict,
     settingsFile,
+    languageResources,
   });
 
   snapshotTagSettings.init({

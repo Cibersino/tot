@@ -234,6 +234,7 @@ function computeCurrentWpm(options = {}) {
     getCronoState,
     getCurrentText,
     getSettingsSnapshot,
+    getLocaleTag,
     countUtils,
     fallbackPreciseCountingToSimple,
     DEFAULT_LANG,
@@ -252,10 +253,14 @@ function computeCurrentWpm(options = {}) {
 
   const currentText = String(getCurrentText() || '');
   const settings = getSettingsSnapshot();
+  const modoConteo = settings.modeConteo === 'simple' ? 'simple' : 'preciso';
   const countOptions = {
-    modoConteo: settings.modeConteo === 'simple' ? 'simple' : 'preciso',
-    idioma: settings.language || DEFAULT_LANG,
+    modoConteo,
   };
+  if (modoConteo === 'preciso') {
+    const languageId = settings.language || DEFAULT_LANG;
+    countOptions.idioma = getLocaleTag(languageId);
+  }
   let stats;
   try {
     stats = countUtils.contarTexto(currentText, countOptions);
@@ -316,9 +321,9 @@ function buildPrefilledPresetPayload(wpm, options = {}) {
   } = options;
 
   const settings = getSettingsSnapshot();
-  const langBase = settingsState.deriveLangKey(settings.language || DEFAULT_LANG);
-  const userPresets = settings && settings.presets_by_language && Array.isArray(settings.presets_by_language[langBase])
-    ? settings.presets_by_language[langBase]
+  const preferenceScopeId = settingsState.getPreferenceScope(settings.language || DEFAULT_LANG);
+  const userPresets = settings && settings.presetsByScope && Array.isArray(settings.presetsByScope[preferenceScopeId])
+    ? settings.presetsByScope[preferenceScopeId]
     : [];
 
   let nextNumber = 1;
@@ -333,7 +338,7 @@ function buildPrefilledPresetPayload(wpm, options = {}) {
   }
 
   const name = `Test ${nextNumber}`;
-  const description = langBase === 'en'
+  const description = preferenceScopeId === 'en'
     ? `User tested speed (${name}).`
     : `Velocidad testeada del usuario (${name}).`;
 

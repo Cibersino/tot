@@ -158,6 +158,7 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
       tRenderer() { return ''; },
       msgRenderer(_path, params = {}) { return String(params.value ?? ''); },
       resolveUserTextDirection: resolveDirection,
+      getLocaleTag(language) { return String(language || 'en'); },
     },
     dom: {
       editorWrap: createElement('editorWrap'),
@@ -409,6 +410,9 @@ function createEditorScriptHarness({
         },
         resolveUserTextDirection() {
           return 'ltr';
+        },
+        getLocaleTag(language) {
+          return String(language || 'en');
         },
         async transitionRendererTranslations(lang, { applyTranslations } = {}) {
           transitionLanguages.push(lang);

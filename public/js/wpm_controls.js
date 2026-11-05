@@ -292,7 +292,7 @@
 
     function createPresetSelectionSettings(settingsSnapshot) {
       return Object.assign({}, settingsSnapshot || {}, {
-        selected_preset_by_language: {}
+        selectedPresetByScope: {}
       });
     }
 

@@ -20,14 +20,10 @@
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
   function createCountUtils({
-    DEFAULT_LANG,
+    getDefaultLocaleTag,
     log,
     intlObject = (typeof Intl !== 'undefined' ? Intl : null),
   } = {}) {
-    const defaultLang = typeof DEFAULT_LANG === 'string' ? DEFAULT_LANG.trim() : '';
-    if (!defaultLang) {
-      throw new Error('[count_core] DEFAULT_LANG is required');
-    }
     const HYPHEN_JOINERS = new Set([
       '-',
       '\u2010',
@@ -59,10 +55,18 @@
       return typeof segment === 'string' && segment.length > 0 && reAlnumOnly.test(segment);
     }
 
-    function resolveLanguage(language) {
-      return typeof language === 'string' && language.trim()
-        ? language.trim()
-        : defaultLang;
+    function resolvePreciseLocaleTag(localeTag) {
+      if (typeof localeTag === 'string' && localeTag.trim()) {
+        return localeTag.trim();
+      }
+      if (typeof getDefaultLocaleTag !== 'function') {
+        throw new Error('[count_core] getDefaultLocaleTag is required for Precise counting without an explicit locale');
+      }
+      const defaultLocaleTag = getDefaultLocaleTag();
+      if (typeof defaultLocaleTag !== 'string' || !defaultLocaleTag.trim()) {
+        throw new Error('[count_core] default locale tag unavailable for Precise counting');
+      }
+      return defaultLocaleTag.trim();
     }
 
     function countSimpleStreamingRange(texto, startIndex, endIndex, state) {
@@ -152,7 +156,7 @@
         );
       }
 
-      const resolvedLanguage = resolveLanguage(language);
+      const resolvedLanguage = resolvePreciseLocaleTag(language);
       let segGraf;
       try {
         segGraf = new intlObject.Segmenter(resolvedLanguage, { granularity: 'grapheme' });
@@ -208,11 +212,8 @@
 
     function contarTexto(texto, opts = {}) {
       const modoConteo = opts.modoConteo === 'simple' ? 'simple' : 'preciso';
-      const idioma = resolveLanguage(opts.idioma);
-
-      return modoConteo === 'simple'
-        ? contarTextoSimple(texto)
-        : contarTextoPreciso(texto, idioma);
+      if (modoConteo === 'simple') return contarTextoSimple(texto);
+      return contarTextoPreciso(texto, opts.idioma);
     }
 
     return {

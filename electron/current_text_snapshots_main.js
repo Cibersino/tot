@@ -70,8 +70,17 @@ const SNAPSHOT_SAVE_PAYLOAD_KEYS = Object.freeze([
   'includeReading',
   'wpm',
 ]);
+
+function getDefaultCountLocaleTag() {
+  const descriptor = settingsState.getLanguageDescriptor(DEFAULT_LANG);
+  if (!descriptor) {
+    throw new Error(`[current_text_snapshots] default application language is unsupported: ${DEFAULT_LANG}`);
+  }
+  return descriptor.localeTag;
+}
+
 const countUtils = countCore.createCountUtils({
-  DEFAULT_LANG,
+  getDefaultLocaleTag: getDefaultCountLocaleTag,
   log,
   intlObject: typeof Intl !== 'undefined' ? Intl : null,
 });
@@ -379,15 +388,19 @@ function resolveSnapshotCountContext() {
   const mode = settings && settings.modeConteo === 'simple' ? 'simple' : 'preciso';
   if (mode === 'simple') return { mode };
 
-  const requestedLocale = settings && typeof settings.language === 'string'
+  const defaultLocale = normalizeSnapshotPreciseCountLocale(getDefaultCountLocaleTag());
+  if (!defaultLocale) {
+    throw new Error('snapshot default count locale unavailable');
+  }
+
+  const languageId = settings && typeof settings.language === 'string'
     ? settings.language
     : DEFAULT_LANG;
+  const descriptor = settingsState.getLanguageDescriptor(languageId);
+  const requestedLocale = descriptor ? descriptor.localeTag : defaultLocale;
   const normalizedRequestedLocale = normalizeSnapshotPreciseCountLocale(requestedLocale);
   const locale = normalizedRequestedLocale
-    || normalizeSnapshotPreciseCountLocale(DEFAULT_LANG);
-  if (!locale) {
-    throw new Error('snapshot count locale unavailable');
-  }
+    || defaultLocale;
   if (!normalizedRequestedLocale) {
     log.warn('Snapshot count locale invalid; using default locale:', { requestedLocale, locale });
   }

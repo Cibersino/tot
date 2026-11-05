@@ -433,6 +433,44 @@ test('createController applies override settings without consulting settingsStat
   assert.equal(log.errorCalls.length, 0);
 });
 
+test('createController projects a canonical application language ID to its locale tag for spellcheck', () => {
+  const spellcheck = loadFreshSpellcheckModule();
+  const descriptorCalls = [];
+  const sessionState = createControllerSessionState(['fr-CA', 'fr-FR']);
+  const controller = spellcheck.createController({
+    settingsState: {
+      getSettings() {
+        throw new Error('getSettings should not be used when an override is provided');
+      },
+      getLanguageDescriptor(languageId) {
+        descriptorCalls.push(languageId);
+        return {
+          id: 'app-french-canada',
+          localeTag: 'fr-CA',
+          ocrLocaleTag: 'fr',
+          preferenceScopeId: 'fr',
+        };
+      },
+    },
+    sessionState,
+    platform: 'win32',
+  });
+  const settings = {
+    language: 'app-french-canada',
+    spellcheckEnabled: true,
+  };
+
+  const result = controller.apply(settings);
+  const decoratedSettings = controller.decorateSettings(settings);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.reason, 'applied');
+  assert.deepEqual(result.languages, ['fr-CA']);
+  assert.deepEqual(sessionState.defaultSession.languageCalls, [['fr-CA']]);
+  assert.equal(decoratedSettings.spellcheckAvailable, true);
+  assert.deepEqual(descriptorCalls, ['app-french-canada', 'app-french-canada']);
+});
+
 test('createController warns once when no default session is available', (t) => {
   const log = createLogDouble();
   const { spellcheck, restore } = loadSpellcheckModuleWithMockLog(log);

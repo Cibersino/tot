@@ -5,11 +5,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const api = {
   setLanguage: async (lang) => {
-    const tag = String(lang || '').trim().toLowerCase().replace(/_/g, '-');
-    // Persist language via main handler
-    const res = await ipcRenderer.invoke('set-language', tag);
-    // Signal selection so main can continue startup
-    ipcRenderer.send('language-selected', tag);
+    const languageId = typeof lang === 'string' ? lang.trim() : '';
+    const res = await ipcRenderer.invoke('set-language', languageId);
+    if (res && res.ok === true) ipcRenderer.send('language-selected', res.language);
     return res;
   },
   getAvailableLanguages: () => ipcRenderer.invoke('get-available-languages'),

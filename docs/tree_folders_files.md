@@ -120,6 +120,7 @@ tot/
 │ ├── flotante_preload.js
 │ ├── fs_storage.js
 │ ├── language_preload.js
+│ ├── language_resources.js
 │ ├── link_openers.js
 │ ├── log.js
 │ ├── main.js
@@ -146,7 +147,7 @@ tot/
 ├── extensions/                    # {extensiones de navegadores distribuidas fuera de Electron}
 │ └── reading-time/
 │   └── chrome/
-├── i18n/                          # {subcarpetas por idioma y variantes regionales}
+├── i18n/                          # {catálogo de idiomas y recursos declarados por el grafo}
 │ ├── languages.json
 | └── TRANSLATION_GUIDE.md
 ├── node_modules/                  # { }
@@ -173,6 +174,7 @@ tot/
 │ │ │ ├── editor_find_replace_core.js
 │ │ │ ├── editor_maximized_layout_core.js
 │ │ │ ├── format_core.js
+│ │ │ ├── language_resource_graph.js
 │ │ │ ├── reading_duration_core.js
 │ │ │ ├── reading_test_filters_core.js
 │ │ │ ├── reading_test_questions_core.js
@@ -294,7 +296,7 @@ tot/
 - `electron/editor_find_preload.js` — Preload de la ventana de búsqueda del Editor de Texto: expone `window.editorFindAPI` hacia `public/editor_find.js`.
 - `electron/preset_preload.js` — Preload del modal de presets: expone `window.presetAPI` y maneja `preset-init` (buffer/replay) y `settings-updated` hacia `public/preset_modal.js`.
 - `electron/task_editor_preload.js` — Preload del Editor de Tareas (expone `window.taskEditorAPI` y callbacks como `onInit` / `onRequestClose`).
-- `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` (`setLanguage`, `getAvailableLanguages`) para persistir/seleccionar idioma; `setLanguage` invoca `set-language` y luego emite `language-selected` para destrabar el startup.
+- `electron/language_preload.js` — Preload de la ventana de idioma; expone `window.languageAPI` para leer el idioma y las opciones seleccionables del catálogo, y para solicitar una selección. Solo comunica `language-selected` cuando main acepta el ID.
 - `electron/flotante_preload.js` — Preload del Cronómetro Flotante.
 - `electron/text_time_calculator_preload.js` — Preload de la Calculadora rápida: expone `window.textTimeCalculatorAPI` (`getSettings`, `onSettingsChanged`) hacia `public/text_time_calculator.js`.
 - `electron/reading_test_questions_preload.js` — Preload del modal de preguntas del reading speed test; expone `window.readingTestQuestionsAPI` y bufferiza/reproduce el payload init del cuestionario.
@@ -315,8 +317,9 @@ tot/
 ### 2) Módulos del proceso principal (Electron)
 
 - `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`, estado del picker text extraction, estado externo del pool del reading speed test, credenciales/tokens OCR runtime y ruta de credenciales OCR empaquetadas en `electron/assets/ocr_google_drive/credentials.json`.
-- `electron/settings.js`: estado de settings: defaults centralizados (`createDefaultSettings`), carga/normalización y persistencia; integra defaults de formato numérico desde `i18n/<langBase>/numberFormat.json` (`ensureNumberFormattingForBase`); registra IPC `get-settings`, `set-language`, `set-mode-conteo`, `set-selected-preset`, `set-spellcheck-enabled`, `set-editor-font-size-px` y difunde cambios vía `settings-updated` más callback `onSettingsUpdated`; mantiene buckets por idioma (p.ej. `selected_preset_by_language`) y persiste `spellcheckEnabled` y `editorFontSizePx`.
-- `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: resuelve el diccionario a usar según el idioma activo de la app, aplica la configuración sobre `session.defaultSession`, respeta `spellcheckEnabled` y deshabilita spellcheck cuando el tag activo no tiene diccionario soportado (p.ej. `arn`, `es-cl`) en vez de delegar silenciosamente al locale del SO.
+- `electron/language_resources.js` — Owner main del catálogo `i18n/languages.json`: lo carga y valida una vez, y expone descriptores y opciones seleccionables a los consumidores main.
+- `electron/settings.js`: estado de settings: valida IDs declarados, persiste preferencias por `preferenceScopeId` (`presetsByScope`, `selectedPresetByScope`, `disabledDefaultPresetsByScope`, `numberFormattingByScope`) y resuelve defaults numéricos completos mediante la cadena declarada de recursos; registra IPC de settings y difunde `settings-updated`.
+- `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: recibe el `localeTag` declarado del idioma activo, resuelve el diccionario compatible y aplica la configuración sobre `session.defaultSession` respetando `spellcheckEnabled`.
 - `electron/text_state.js` — Estado del texto actual: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshot_schema.js` — Owner compartido del schema canónico de snapshots del texto actual: valida `type`, `meta`, `text` y `tags`, permite únicamente el campo opcional `readingTest` y normaliza tags/preguntas antes de que los consumers apliquen el documento.
 - `electron/current_text_snapshots_main.js` — Snapshots del texto actual (save/load): valida payloads del flujo save, abre diálogos nativos o resuelve paths determinísticos no interactivos para callers gestionados, persiste/lee JSON canónico bajo `config/saved_current_texts/` (incluye subcarpetas), expone además la apertura de la carpeta de snapshots, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
@@ -333,7 +336,7 @@ tot/
 - `electron/reading_test_session.js` — Orquestador/controlador main-owned del reading speed test: valida precondiciones, mantiene el estado compartido de la sesión, expone el surface público consumido por `main.js`, registra el IPC (`reading-test-get-entry-data`, `reading-test-reset-pool`, `reading-test-set-show-bundled-entries`, `reading-test-start`, `reading-test-get-state`) y delega la plomería de ventanas y el flujo guiado a módulos auxiliares, ampliando de forma compatible el contrato externo del reading-test entry flow.
 - `electron/reading_test_session_windows.js` — Helpers de ventanas del reading speed test: espera visibilidad/carga del Editor de Texto y el Cronómetro Flotante, abre la sesión guiada en modo diferido, sincroniza la visibilidad del overlay prestart del editor y crea los modales de resultado y de preguntas.
 - `electron/reading_test_session_flow.js` — Helpers del flujo guiado del reading speed test: ownership de las etapas `arming/running/result/questions/preset`, cómputo autoritativo de WPM, payload prellenado del preset, cancel/finish semantics, ruta `pool` vs `current_text` y reinterpretación de comandos/cierres del Cronómetro Flotante y el Editor de Texto.
-- `electron/presets_main.js` — Sistema de presets en main: defaults por idioma, CRUD, diálogos nativos y handlers IPC.
+- `electron/presets_main.js` — Sistema de presets en main: defaults por scope, CRUD, diálogos nativos y handlers IPC.
 - `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
 - `electron/task_editor_state.js` — Persistencia/estado de la ventana del Editor de Tareas (tamaño, posición y maximizado).
 - `electron/task_editor_window_lifecycle.js` — Controlador main-owned del ciclo de vida del Editor de Tareas: conserva la identidad de la ventana, coordina su inicialización y estado dirty, autentica el transporte renderer→Main sin asumir ownership del borrador y serializa la disposición terminal/cierre nativo, incluido el cierre de la ventana principal.
@@ -372,7 +375,7 @@ tot/
 - `electron/text_extraction_platform/ocr_jp2_normalization.js` — Normalización/décodificación específica de `.jp2` para OCR: materializa un PNG temporal compatible con la ruta OCR existente, preserva metadata segura para logs y expone cleanup owner-aware del artefacto generado.
 - `electron/text_extraction_platform/openjpeg_wasm_runtime.js` — Wrapper local mínimo del runtime OpenJPEG WASM usado por la normalización JP2; desacopla el consumidor interno del bundle vendorizado y evita depender del árbol de dependencias de un paquete npm completo en runtime.
 - `electron/text_extraction_platform/vendor/openjpeg_wasm_runtime.bundle.js` — Bundle vendorizado del runtime OpenJPEG WASM redistribuido por la app y consumido solo a través del wrapper local `openjpeg_wasm_runtime.js`.
-- `electron/menu_builder.js` — Construcción del menú nativo: carga bundle i18n con cadena de fallback (tag→base→DEFAULT_LANG); incluye menú Dev opcional (SHOW_DEV_MENU en dev); enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
+- `electron/menu_builder.js` — Construcción del menú nativo: fusiona `main.json` según la cadena explícita del grafo, con `DEFAULT_LANG` como recurso requerido; incluye menú Dev opcional (SHOW_DEV_MENU en dev), enruta acciones al renderer (`menu-click`) y expone textos de diálogos.
 - `electron/updater.js` — Lógica de actualización (comparación de versión, diálogos y apertura de URL de descarga).
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `ko-fi.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique), incluyendo límites/default/step del tamaño de fuente y del ancho de texto maximizado del Editor de Texto.
@@ -402,9 +405,10 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/count.js` — Wrapper renderer de conteo: valida dependencias del `window`, construye `window.CountUtils` desde `count_core.js` y conserva la superficie pública existente.
 - `public/js/format.js` — Wrapper renderer de formateo numérico: valida dependencias del `window` y construye `window.FormatUtils` desde `format_core.js`.
 - `public/js/generated_icons.js` — Artefacto runtime autogenerado del renderer: registra el catálogo serializado de SVGs funcionales a partir de `assets/icons/`; no se edita a mano y se regenera con `npm run generate:icons`.
-- `public/js/i18n.js` — Capa i18n del renderer: carga/aplicación de textos y utilidades de traducción.
+- `public/js/i18n.js` — Owner i18n del renderer: carga y valida el catálogo, resuelve descriptores/locale/scope, fusiona `renderer.json` por el grafo y carga documentos localizados.
+- `public/js/lib/language_resource_graph.js` — Núcleo compartido y puro del grafo de idiomas: valida el catálogo y resuelve IDs, cadenas de recursos, scopes y metadatos de locale sin inferir relaciones desde strings o paths.
 - `public/js/info_modal.js` — Owner renderer del `Info Modal`: expone `window.InfoModal.init/open/isOpen/applyTranslations`, conserva estado, DOM, ciclo asíncrono y foco del modal, carga/parsea documentos localizados mediante `RendererI18n`, preserva la protección contra renders stale y refresca el contenido abierto al cambiar idioma; también hidrata la presentación de About sin devolver ese ownership a `public/renderer.js`.
-- `public/js/presets.js` — Bridge/owner renderer de presets: resuelve el catálogo por idioma, carga sus opciones en el combobox compartido, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
+- `public/js/presets.js` — Bridge/owner renderer de presets: resuelve el scope del idioma activo, carga sus opciones en el combobox compartido, conserva la descripción visible y persiste la selección activa; deja el ownership de WPM widget sync a `public/js/wpm_controls.js`.
 - `public/js/crono.js` — UX del cronómetro en UI (cliente del cronómetro autoritativo en main).
 - `public/js/renderer_icons.js` — Helper compartido de íconos funcionales en renderer: consume `generated_icons.js`, resuelve variantes/tamaños y expone la aplicación común de iconos a markup estático y a controles generados por JS.
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
@@ -445,11 +449,11 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 ### 4) i18n (estructura y responsabilidades)
 
-- `i18n/languages.json` — Catálogo de idiomas soportados (y metadatos si aplica).
-- `i18n/<lang>/main.json` — Textos del proceso principal / menú / diálogos nativos.
-- `i18n/<lang>/renderer.json` — Textos de la UI (ventana principal y modales renderizados).
-- `i18n/<lang>/numberFormat.json` — Configuración de formato numérico por idioma (defaults; puede haber override vía settings).
-- `i18n/<lang>/<variant>/*.json` — Variantes regionales cuando aplica (p.ej. `i18n/es/es-cl/`).
+- `i18n/languages.json` — Fuente de verdad del grafo: IDs de aplicación, raíces/overlays, padres, directorios de recursos, locale/OCR, scopes, visibilidad y etiquetas.
+- `i18n/<resourceDirectory>/main.json` — Textos main fusionados por la cadena del grafo; solo el recurso `DEFAULT_LANG` es requerido.
+- `i18n/<resourceDirectory>/renderer.json` — Textos renderer fusionados por la cadena del grafo; solo el recurso `DEFAULT_LANG` es requerido.
+- `i18n/<resourceDirectory>/numberFormat.json` — Formato numérico completo elegido desde el recurso válido más cercano de la cadena; no se fusionan separadores.
+- Los overlays usan directorios pares bajo `i18n/` (p.ej. `i18n/es-cl/`); su relación se declara en el catálogo, no en la ruta.
 
 ### 5) Persistencia runtime (carpeta `config/`)
 
