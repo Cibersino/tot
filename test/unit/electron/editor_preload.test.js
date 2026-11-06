@@ -71,14 +71,14 @@ test('editor preload exposes the expected editor API surface', () => {
     Object.keys(exposedApi.api).sort(),
     [
       'getAppConfig',
+      'getEditorState',
       'getInitialCurrentTextSnapshot',
       'getSettings',
-      'getWindowState',
+      'onEditorStateChanged',
       'onExternalUpdate',
       'onReadingTestPrestartStateChanged',
       'onReplaceRequest',
       'onSettingsChanged',
-      'onWindowStateChanged',
       'reportBasePresentationState',
       'reportRendererI18nFailure',
       'sendReplaceResponse',
@@ -100,6 +100,22 @@ test('editor preload requests the versioned initial current-text snapshot', () =
   ]);
 });
 
+test('editor preload uses the editor-state IPC owner for editor preferences', () => {
+  const { exposedApi, invoked } = loadEditorPreload();
+
+  exposedApi.api.getEditorState();
+  exposedApi.api.setSpellcheckEnabled(false);
+  exposedApi.api.setEditorFontSizePx(24);
+  exposedApi.api.setMaximizedTextWidthPx(880);
+
+  assert.deepEqual(invoked, [
+    { channel: 'get-editor-state', payload: undefined },
+    { channel: 'set-editor-spellcheck-enabled', payload: false },
+    { channel: 'set-editor-font-size-px', payload: 24 },
+    { channel: 'set-editor-maximized-text-width-px', payload: 880 },
+  ]);
+});
+
 test('editor preload keeps editor-text-updated as an unsubscribe-based recurrent listener', () => {
   const { exposedApi, subscriptions, removed } = loadEditorPreload();
   let payloadSeen = null;
@@ -117,6 +133,27 @@ test('editor preload keeps editor-text-updated as an unsubscribe-based recurrent
   unsubscribe();
   assert.equal(removed.length, 1);
   assert.equal(removed[0].channel, 'editor-text-updated');
+  assert.equal(removed[0].listener, subscriptions[0].listener);
+});
+
+test('editor preload keeps editor-state-changed as an unsubscribe-based recurrent listener', () => {
+  const { exposedApi, subscriptions, removed } = loadEditorPreload();
+  let stateSeen = null;
+
+  const unsubscribe = exposedApi.api.onEditorStateChanged((payload) => {
+    stateSeen = payload;
+  });
+
+  assert.equal(subscriptions.length, 1);
+  assert.equal(subscriptions[0].channel, 'editor-state-changed');
+
+  const state = { maximized: true, spellcheckEnabled: false, editorFontSizePx: 24 };
+  subscriptions[0].listener(null, state);
+  assert.deepEqual(stateSeen, state);
+
+  unsubscribe();
+  assert.equal(removed.length, 1);
+  assert.equal(removed[0].channel, 'editor-state-changed');
   assert.equal(removed[0].listener, subscriptions[0].listener);
 });
 

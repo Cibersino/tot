@@ -56,16 +56,31 @@ function createEditorWindowDouble({
   maximized = false,
   destroyed = false,
   webContentsDestroyed = false,
+  bounds = { width: 1200, height: 800, x: 20, y: 20 },
 } = {}) {
   const sentMessages = [];
+  const listeners = new Map();
 
   return {
     sentMessages,
+    on(eventName, listener) {
+      listeners.set(eventName, listener);
+    },
+    emit(eventName) {
+      const listener = listeners.get(eventName);
+      if (listener) listener();
+    },
     isDestroyed() {
       return destroyed;
     },
     isMaximized() {
       return maximized;
+    },
+    getBounds() {
+      return { ...bounds };
+    },
+    setBounds(nextBounds) {
+      Object.assign(bounds, nextBounds);
     },
     webContents: {
       send(channel, payload) {
@@ -95,10 +110,12 @@ class MockIpcMain {
   }
 }
 
-test('loadInitialState normalizes persisted maximized text width from editor_state.json', (t) => {
+test('loadInitialState normalizes persisted editor preferences and maximized text width', (t) => {
   const { editorState } = createStorageHarness(t, {
     maximized: 'bad',
     reduced: null,
+    spellcheckEnabled: 'bad',
+    editorFontSizePx: 999,
     maximizedTextWidthPx: 9999,
   });
 
@@ -106,52 +123,69 @@ test('loadInitialState normalizes persisted maximized text width from editor_sta
 
   assert.equal(normalized.maximized, true);
   assert.equal(normalized.reduced, null);
+  assert.equal(normalized.spellcheckEnabled, true);
+  assert.equal(normalized.editorFontSizePx, 36);
   assert.equal(normalized.maximizedTextWidthPx, 1600);
 });
 
-test('getWindowState reflects live maximized state and persisted maximized text width', (t) => {
+test('getEditorState reflects live maximized state and persisted editor preferences', (t) => {
   const { editorState } = createStorageHarness(t, {
     maximized: true,
     reduced: null,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
     maximizedTextWidthPx: 880,
   });
 
-  assert.deepEqual(editorState.getWindowState(null), {
+  assert.deepEqual(editorState.getEditorState(null), {
     maximized: false,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
     maximizedTextWidthPx: 880,
   });
   assert.deepEqual(
-    editorState.getWindowState(createEditorWindowDouble({ maximized: true })),
+    editorState.getEditorState(createEditorWindowDouble({ maximized: true })),
     {
       maximized: true,
+      spellcheckEnabled: false,
+      editorFontSizePx: 24,
       maximizedTextWidthPx: 880,
     }
   );
 });
 
-test('notifyWindowState sends maximized text width through the editor window bridge', (t) => {
+test('notifyEditorState sends persisted editor preferences through the editor bridge', (t) => {
   const { editorState } = createStorageHarness(t, {
     maximized: true,
     reduced: null,
+    spellcheckEnabled: false,
+    editorFontSizePx: 22,
     maximizedTextWidthPx: 920,
   });
   const editorWin = createEditorWindowDouble({ maximized: true });
 
-  const ok = editorState.notifyWindowState(editorWin, 'test.notifyWindowState');
+  const ok = editorState.notifyEditorState(editorWin, 'test.notifyEditorState');
 
   assert.equal(ok, true);
   assert.deepEqual(editorWin.sentMessages, [
     {
-      channel: 'editor-window-state-changed',
-      payload: { maximized: true, maximizedTextWidthPx: 920 },
+      channel: 'editor-state-changed',
+      payload: {
+        maximized: true,
+        spellcheckEnabled: false,
+        editorFontSizePx: 22,
+        maximizedTextWidthPx: 920,
+      },
     },
   ]);
 });
 
-test('registerIpc authorizes only the editor renderer for get-editor-window-state', async (t) => {
+test('registerIpc authorizes only the editor renderer for get-editor-state', async (t) => {
   const { editorState } = createStorageHarness(t, {
     maximized: true,
     reduced: null,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
     maximizedTextWidthPx: 900,
   });
   const ipcMain = new MockIpcMain();
@@ -161,30 +195,83 @@ test('registerIpc authorizes only the editor renderer for get-editor-window-stat
     getEditorWindow: () => editorWin,
   });
 
-  const authorized = await ipcMain.invoke('get-editor-window-state', {
+  const authorized = await ipcMain.invoke('get-editor-state', {
     sender: editorWin.webContents,
   });
   assert.deepEqual(authorized, {
     ok: true,
     maximized: true,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
     maximizedTextWidthPx: 900,
   });
 
-  const unauthorized = await ipcMain.invoke('get-editor-window-state', {
+  const unauthorized = await ipcMain.invoke('get-editor-state', {
     sender: {},
   });
   assert.deepEqual(unauthorized, {
     ok: false,
     error: 'unauthorized',
     maximized: false,
+    spellcheckEnabled: true,
+    editorFontSizePx: 20,
     maximizedTextWidthPx: 960,
   });
 });
 
-test('registerIpc persists maximized text width in editor_state.json and notifies the renderer', async (t) => {
+test('registerIpc persists editor preferences in editor_state.json and notifies only the editor', async (t) => {
   const { editorState, fsStorage } = createStorageHarness(t, {
     maximized: true,
     reduced: null,
+    spellcheckEnabled: true,
+    editorFontSizePx: 20,
+    maximizedTextWidthPx: 960,
+  });
+  const ipcMain = new MockIpcMain();
+  const editorWin = createEditorWindowDouble({ maximized: true });
+
+  editorState.registerIpc(ipcMain, {
+    getEditorWindow: () => editorWin,
+  });
+
+  assert.deepEqual(
+    await ipcMain.invoke(
+      'set-editor-spellcheck-enabled',
+      { sender: editorWin.webContents },
+      false
+    ),
+    { ok: true, enabled: false }
+  );
+  assert.deepEqual(
+    await ipcMain.invoke(
+      'set-editor-font-size-px',
+      { sender: editorWin.webContents },
+      200
+    ),
+    { ok: true, editorFontSizePx: 36 }
+  );
+
+  assert.deepEqual(
+    fsStorage.loadJson(fsStorage.getEditorStateFile(), {}),
+    {
+      maximized: true,
+      reduced: null,
+      spellcheckEnabled: false,
+      editorFontSizePx: 36,
+      maximizedTextWidthPx: 960,
+    }
+  );
+  assert.equal(editorWin.sentMessages.length, 2);
+  assert.equal(editorWin.sentMessages[0].channel, 'editor-state-changed');
+  assert.equal(editorWin.sentMessages[1].channel, 'editor-state-changed');
+});
+
+test('maximized-width persistence preserves the other editor preferences', async (t) => {
+  const { editorState, fsStorage } = createStorageHarness(t, {
+    maximized: true,
+    reduced: null,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
     maximizedTextWidthPx: 960,
   });
   const ipcMain = new MockIpcMain();
@@ -204,22 +291,72 @@ test('registerIpc persists maximized text width in editor_state.json and notifie
     ok: true,
     maximizedTextWidthPx: 1600,
   });
-  assert.equal(
-    fsStorage.loadJson(fsStorage.getEditorStateFile(), {}).maximizedTextWidthPx,
-    1600
-  );
-  assert.deepEqual(editorWin.sentMessages, [
+  assert.deepEqual(
+    fsStorage.loadJson(fsStorage.getEditorStateFile(), {}),
     {
-      channel: 'editor-window-state-changed',
-      payload: { maximized: true, maximizedTextWidthPx: 1600 },
-    },
-  ]);
+      maximized: true,
+      reduced: null,
+      spellcheckEnabled: false,
+      editorFontSizePx: 24,
+      maximizedTextWidthPx: 1600,
+    }
+  );
 });
 
-test('registerIpc reports persistence failure without publishing a maximized text width update', async (t) => {
+test('window-state writes preserve editor preferences', (t) => {
+  const { editorState, fsStorage } = createStorageHarness(t, {
+    maximized: false,
+    reduced: { width: 1100, height: 760, x: 20, y: 20 },
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
+    maximizedTextWidthPx: 960,
+  });
+  const editorWin = createEditorWindowDouble({ maximized: true });
+
+  editorState.attachTo(editorWin);
+  editorWin.emit('maximize');
+
+  const savedState = fsStorage.loadJson(fsStorage.getEditorStateFile(), {});
+  assert.equal(savedState.maximized, true);
+  assert.equal(savedState.spellcheckEnabled, false);
+  assert.equal(savedState.editorFontSizePx, 24);
+  assert.equal(savedState.maximizedTextWidthPx, 960);
+});
+
+test('shortcut actions persist editor font size without publishing global settings', (t) => {
   const { editorState, fsStorage } = createStorageHarness(t, {
     maximized: true,
     reduced: null,
+    spellcheckEnabled: true,
+    editorFontSizePx: 20,
+    maximizedTextWidthPx: 960,
+  });
+  const editorWin = createEditorWindowDouble({ maximized: true });
+  const actions = editorState.getTextSizeShortcutActions({
+    getEditorWindow: () => editorWin,
+  });
+
+  assert.deepEqual(actions.onIncreaseTextSize(), {
+    ok: true,
+    editorFontSizePx: 22,
+  });
+  assert.deepEqual(actions.onResetTextSize(), {
+    ok: true,
+    editorFontSizePx: 20,
+  });
+  assert.equal(
+    fsStorage.loadJson(fsStorage.getEditorStateFile(), {}).editorFontSizePx,
+    20
+  );
+  assert.equal(editorWin.sentMessages.length, 2);
+});
+
+test('registerIpc reports preference persistence failure without publishing state', async (t) => {
+  const { editorState, fsStorage } = createStorageHarness(t, {
+    maximized: true,
+    reduced: null,
+    spellcheckEnabled: true,
+    editorFontSizePx: 20,
     maximizedTextWidthPx: 960,
   });
   const ipcMain = new MockIpcMain();
@@ -234,9 +371,9 @@ test('registerIpc reports persistence failure without publishing a maximized tex
   });
 
   const result = await ipcMain.invoke(
-    'set-editor-maximized-text-width-px',
+    'set-editor-font-size-px',
     { sender: editorWin.webContents },
-    880
+    22
   );
 
   assert.equal(result.ok, false);

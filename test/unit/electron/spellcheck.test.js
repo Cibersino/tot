@@ -300,24 +300,22 @@ test('resolveSpellCheckerLanguages rejects arn when no compatible runtime dictio
   });
 });
 
-test('applySpellCheckerSessionConfig disables by user preference before resolving dictionaries', () => {
+test('applySpellCheckerSessionConfig configures the shared session independently of editor preference', () => {
   const spellcheck = loadFreshSpellcheckModule();
   const sessionDouble = createSessionDouble(['en-US', 'es-ES']);
 
   const result = spellcheck.applySpellCheckerSessionConfig({
     targetSession: sessionDouble,
     appLanguage: 'es',
-    spellcheckEnabled: false,
     platform: 'win32',
   });
 
   assert.equal(result.ok, true);
-  assert.equal(result.reason, 'disabled-by-user');
-  assert.equal(result.preferenceEnabled, false);
-  assert.equal(result.effectiveEnabled, false);
-  assert.equal(result.resolution, null);
-  assert.deepEqual(sessionDouble.enabledCalls, [false]);
-  assert.deepEqual(sessionDouble.languageCalls, []);
+  assert.equal(result.reason, 'applied');
+  assert.equal(result.effectiveEnabled, true);
+  assert.equal(result.selectedLanguage, 'es-ES');
+  assert.deepEqual(sessionDouble.enabledCalls, [true]);
+  assert.deepEqual(sessionDouble.languageCalls, [['es-ES']]);
 });
 
 test('applySpellCheckerSessionConfig enables the resolved es-cl dictionary on non-darwin platforms', () => {
@@ -327,13 +325,11 @@ test('applySpellCheckerSessionConfig enables the resolved es-cl dictionary on no
   const result = spellcheck.applySpellCheckerSessionConfig({
     targetSession: sessionDouble,
     appLanguage: 'es-cl',
-    spellcheckEnabled: true,
     platform: 'win32',
   });
 
   assert.equal(result.ok, true);
   assert.equal(result.reason, 'applied');
-  assert.equal(result.preferenceEnabled, true);
   assert.equal(result.effectiveEnabled, true);
   assert.equal(result.selectedLanguage, 'es-ES');
   assert.deepEqual(result.languages, ['es-ES']);
@@ -349,13 +345,11 @@ test('applySpellCheckerSessionConfig disables spellcheck when resolver rejects t
   const result = spellcheck.applySpellCheckerSessionConfig({
     targetSession: sessionDouble,
     appLanguage: 'arn',
-    spellcheckEnabled: true,
     platform: 'win32',
   });
 
   assert.equal(result.ok, true);
   assert.equal(result.reason, 'resolver-rejected');
-  assert.equal(result.preferenceEnabled, true);
   assert.equal(result.effectiveEnabled, false);
   assert.equal(result.resolution.reasonCode, 'rejected.no-compatible-dictionary');
   assert.deepEqual(sessionDouble.enabledCalls, [false]);
@@ -369,7 +363,6 @@ test('applySpellCheckerSessionConfig leaves darwin spellcheck platform-managed',
   const result = spellcheck.applySpellCheckerSessionConfig({
     targetSession: sessionDouble,
     appLanguage: 'fr',
-    spellcheckEnabled: true,
     platform: 'darwin',
   });
 
@@ -390,7 +383,6 @@ test('applySpellCheckerSessionConfig disables spellcheck when setSpellCheckerLan
   const result = spellcheck.applySpellCheckerSessionConfig({
     targetSession: sessionDouble,
     appLanguage: 'fr',
-    spellcheckEnabled: true,
     platform: 'win32',
   });
 
@@ -420,7 +412,6 @@ test('createController applies override settings without consulting settingsStat
 
   const result = controller.apply({
     language: 'es-cl',
-    spellcheckEnabled: true,
   });
 
   assert.equal(result.ok, true);
@@ -457,7 +448,6 @@ test('createController projects a canonical application language ID to its local
   });
   const settings = {
     language: 'app-french-canada',
-    spellcheckEnabled: true,
   };
 
   const result = controller.apply(settings);
@@ -479,7 +469,7 @@ test('createController warns once when no default session is available', (t) => 
   const controller = spellcheck.createController({
     settingsState: {
       getSettings() {
-        return { language: 'es', spellcheckEnabled: true };
+        return { language: 'es' };
       },
     },
     sessionState: {},
@@ -503,7 +493,7 @@ test('createController logs a resolver rejection with the new reason code surfac
   const controller = spellcheck.createController({
     settingsState: {
       getSettings() {
-        return { language: 'arn', spellcheckEnabled: true };
+        return { language: 'arn' };
       },
     },
     sessionState,
@@ -531,7 +521,7 @@ test('createController decorates settings with spellcheck availability when a co
   const controller = spellcheck.createController({
     settingsState: {
       getSettings() {
-        return { language: 'es-cl', spellcheckEnabled: true };
+        return { language: 'es-cl' };
       },
     },
     sessionState: createControllerSessionState(['es-ES', 'en-US']),
@@ -542,7 +532,6 @@ test('createController decorates settings with spellcheck availability when a co
 
   assert.deepEqual(result, {
     language: 'es-cl',
-    spellcheckEnabled: true,
     spellcheckAvailable: true,
   });
 });
@@ -553,7 +542,7 @@ test('createController decorates settings with spellcheck availability false whe
   const controller = spellcheck.createController({
     settingsState: {
       getSettings() {
-        return { language: 'ar', spellcheckEnabled: true };
+        return { language: 'ar' };
       },
     },
     sessionState: createControllerSessionState(['es-ES', 'en-US']),
@@ -564,7 +553,6 @@ test('createController decorates settings with spellcheck availability false whe
 
   assert.deepEqual(result, {
     language: 'ar',
-    spellcheckEnabled: true,
     spellcheckAvailable: false,
   });
 });

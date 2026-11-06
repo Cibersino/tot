@@ -632,7 +632,7 @@ for (const scenario of [
 
     await harness.waitForConfirmation();
     assert.deepEqual(
-      await harness.invoke('set-spellcheck-enabled', false),
+      await harness.invoke('set-preview-spoiler-enabled', false),
       { ok: true, enabled: false }
     );
     harness.confirm();
@@ -641,7 +641,7 @@ for (const scenario of [
     const saved = JSON.parse(harness.getDisk());
 
     assert.equal(result.ok, true);
-    assert.equal(saved.spellcheckEnabled, false);
+    assert.equal(saved.previewSpoilerEnabled, false);
     scenario.assertMutation(result, saved);
   });
 }

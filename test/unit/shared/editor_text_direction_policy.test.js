@@ -243,9 +243,13 @@ function createEditorScriptHarness({
   getAppConfigImpl = async () => appConfig,
   getSettingsImpl = async () => ({
     language: 'en',
-    spellcheckEnabled: true,
     spellcheckAvailable: true,
+  }),
+  getEditorStateImpl = async () => ({
+    maximized: false,
+    spellcheckEnabled: true,
     editorFontSizePx: 20,
+    maximizedTextWidthPx: 960,
   }),
   getInitialCurrentTextSnapshotImpl = async () => ({ ok: true, text: '', revision: 1 }),
   includeInitialCurrentTextSnapshot = true,
@@ -399,7 +403,7 @@ function createEditorScriptHarness({
           return {
             firstShowGeneration: 1,
             isInitiallyMaximized() { return false; },
-            captureActualWindowState(windowState) { return windowState || null; },
+            captureActualEditorState(editorState) { return editorState || null; },
             releaseStartupLock() { return null; },
           };
         },
@@ -597,7 +601,7 @@ function createEditorScriptHarness({
     async getSettings() {
       return getSettingsImpl();
     },
-    async getWindowState() { return { maximized: false, maximizedTextWidthPx: 960 }; },
+    async getEditorState() { return getEditorStateImpl(); },
     reportBasePresentationState(payload) {
       basePresentationReports.push(payload);
       startupEvents.push(`base-presentation:${payload.status}`);
@@ -612,8 +616,8 @@ function createEditorScriptHarness({
       }
       subscriptions.settingsChanged = cb;
     },
-    onWindowStateChanged(cb) {
-      subscriptions.windowStateChanged = cb;
+    onEditorStateChanged(cb) {
+      subscriptions.editorStateChanged = cb;
     },
     onReadingTestPrestartStateChanged(cb) {
       subscriptions.prestartChanged = cb;
@@ -1313,15 +1317,13 @@ test('editor script recomputes textarea direction on local input, external updat
   harness.elements.editorArea.value = '  250  ';
   await harness.subscriptions.settingsChanged({
     language: 'ar',
-    spellcheckEnabled: true,
     spellcheckAvailable: true,
-    editorFontSizePx: 20,
   });
   assert.deepEqual(harness.transitionLanguages, ['ar']);
   assert.deepEqual(harness.updateDirectionCalls, ['  250  ']);
 });
 
-test('editor applies independent settings from a full settings update after a recoverable language failure', async () => {
+test('editor applies spellcheck availability from settings after a recoverable language failure', async () => {
   const transitionFailure = new Error('Cannot prepare Spanish translations');
   transitionFailure.rendererI18nTransition = {
     hadEstablishedState: true,
@@ -1334,16 +1336,14 @@ test('editor applies independent settings from a full settings update after a re
 
   await harness.subscriptions.settingsChanged({
     language: 'es',
-    spellcheckEnabled: false,
     spellcheckAvailable: false,
-    editorFontSizePx: 24,
   });
 
   assert.deepEqual(harness.transitionLanguages, ['es']);
   assert.equal(harness.spellcheckStateCalls.length, 1);
-  assert.equal(harness.spellcheckStateCalls[0].preferenceEnabled, false);
+  assert.equal(harness.spellcheckStateCalls[0].preferenceEnabled, true);
   assert.equal(harness.spellcheckStateCalls[0].available, false);
-  assert.deepEqual(harness.fontSizeCalls, [24]);
+  assert.deepEqual(harness.fontSizeCalls, []);
 });
 
 test('editor does not admit later settings semantics after a terminal language failure', async () => {
@@ -1359,15 +1359,11 @@ test('editor does not admit later settings semantics after a terminal language f
 
   await harness.subscriptions.settingsChanged({
     language: 'es',
-    spellcheckEnabled: false,
     spellcheckAvailable: false,
-    editorFontSizePx: 24,
   });
   await harness.subscriptions.settingsChanged({
     language: 'en',
-    spellcheckEnabled: false,
     spellcheckAvailable: false,
-    editorFontSizePx: 24,
   });
   const externalUpdateCallCount = harness.bootstrapApplyCalls.length;
   await harness.subscriptions.externalUpdate({ text: 'ignored after terminal failure', revision: 2 });
@@ -1382,16 +1378,12 @@ test('editor serializes overlapping full settings updates with their language tr
 
   const spanishUpdate = harness.subscriptions.settingsChanged({
     language: 'es',
-    spellcheckEnabled: false,
     spellcheckAvailable: false,
-    editorFontSizePx: 24,
   });
   await harness.waitForHeldTransition();
   const englishUpdate = harness.subscriptions.settingsChanged({
     language: 'en',
-    spellcheckEnabled: true,
     spellcheckAvailable: true,
-    editorFontSizePx: 30,
   });
   harness.releaseHeldTransition();
 
@@ -1399,10 +1391,10 @@ test('editor serializes overlapping full settings updates with their language tr
 
   assert.deepEqual(harness.transitionLanguages, ['es', 'en']);
   assert.deepEqual(JSON.parse(JSON.stringify(harness.spellcheckStateCalls)), [
-    { preferenceEnabled: false, available: false },
+    { preferenceEnabled: true, available: false },
     { preferenceEnabled: true, available: true },
   ]);
-  assert.deepEqual(harness.fontSizeCalls, [24, 30]);
+  assert.deepEqual(harness.fontSizeCalls, []);
 });
 
 test('editor admits live full settings after the bootstrap settings snapshot applies', async () => {
@@ -1424,15 +1416,11 @@ test('editor admits live full settings after the bootstrap settings snapshot app
   await bootstrapSettingsRequested;
   const liveUpdate = harness.subscriptions.settingsChanged({
     language: 'es',
-    spellcheckEnabled: false,
     spellcheckAvailable: false,
-    editorFontSizePx: 24,
   });
   releaseBootstrapSettings({
     language: 'en',
-    spellcheckEnabled: true,
     spellcheckAvailable: true,
-    editorFontSizePx: 20,
   });
 
   await liveUpdate;
@@ -1440,9 +1428,26 @@ test('editor admits live full settings after the bootstrap settings snapshot app
   assert.deepEqual(harness.transitionLanguages, ['en', 'es']);
   assert.deepEqual(JSON.parse(JSON.stringify(harness.spellcheckStateCalls)), [
     { preferenceEnabled: true, available: true },
-    { preferenceEnabled: false, available: false },
+    { preferenceEnabled: true, available: false },
+    { preferenceEnabled: true, available: false },
   ]);
-  assert.deepEqual(harness.fontSizeCalls, [20, 24]);
+  assert.deepEqual(harness.fontSizeCalls, [20, 20]);
+});
+
+test('editor applies live editor-state preferences without reconfiguring global settings', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  harness.subscriptions.editorStateChanged({
+    maximized: false,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
+    maximizedTextWidthPx: 960,
+  });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.spellcheckStateCalls)), [
+    { preferenceEnabled: false, available: true },
+  ]);
+  assert.deepEqual(harness.fontSizeCalls, [24]);
 });
 
 test('editor script recomputes direction for paste, drop, replace, append updates, and trash clear', async () => {

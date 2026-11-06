@@ -119,7 +119,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-EDITOR-05D`
 * `test/smoke/electron_launch_smoke.test.js`
   * supports a minimal startup slice of `SM-01`
-  * supports parts of `REG-PERSIST` by asserting startup tolerates the current settings schema, including `editorFontSizePx`
+  * supports parts of `REG-PERSIST` by asserting startup tolerates the current persisted-settings schema
 * `electron/text_extraction_platform/text_extraction_supported_formats.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
@@ -330,10 +330,10 @@ You must run tests under both:
 ### 2.1 Where user state lives
 
 Config is stored under Electron `app.getPath('userData')/config` and includes:
-- `user_settings.json` (`language`, `modeConteo`, preset selection buckets, `spellcheckEnabled`, `editorFontSizePx`, etc.)
+- `user_settings.json` (`language`, `modeConteo`, preset selection buckets, etc.)
 - `snapshot_tags.json` (editable snapshot-tag catalog preferences: custom tags, hidden defaults, visible order)
 - `current_text.json`
-- `editor_state.json`
+- `editor_state.json` (window geometry/maximization plus `spellcheckEnabled` and `editorFontSizePx`)
 - `text_extraction_state.json` (last picker directory)
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
@@ -1985,7 +1985,7 @@ nonconforming persisted data without migration or repair.
 
 **Expected:**
 - Files exist; JSON is valid; no zero-byte corruption.
-- `user_settings.json` reflects the current language/mode plus the current `spellcheckEnabled` and `editorFontSizePx` preferences.
+- `user_settings.json` reflects the current language/mode; `editor_state.json` reflects the current Editor spellcheck and text-size preferences.
 
 #### REG-PERSIST-02 Restore with existing config
 **Goal:** relaunch loads last state.

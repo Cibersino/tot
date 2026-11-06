@@ -60,7 +60,6 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorState = require('./task_editor_state');
 const editorFindMain = require('./editor_find_main');
-const editorTextSize = require('./editor_text_size');
 const spellcheck = require('./spellcheck');
 const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
@@ -99,9 +98,6 @@ const editorWindowLifecycleController = editorWindowLifecycle.createController({
 const taskEditorWindowLifecycleController = taskEditorWindowLifecycle.createController({
   dialog,
   getDialogTexts: () => menuBuilder.getDialogTexts(getSelectedLanguage()),
-});
-const editorTextSizeController = editorTextSize.createController({
-  settingsState,
 });
 
 // =============================================================================
@@ -807,7 +803,9 @@ function createEditorWindow(options = {}) {
 
   try {
     editorFindMain.attachEditorWindow(editorWin, {
-      shortcutActions: editorTextSizeController.getShortcutActions(),
+      shortcutActions: editorState.getTextSizeShortcutActions({
+        getEditorWindow: () => editorWin,
+      }),
       showInitialDocumentFailureDisclosure: showEditorFindInitialDocumentFailureDisclosure,
     });
   } catch (error) {
@@ -2380,7 +2378,6 @@ app.whenReady().then(() => {
   editorFindMain.registerIpc(ipcMain);
 
   settingsState.registerIpc(ipcMain, { buildAppMenu });
-  editorTextSizeController.registerIpc(ipcMain);
 
   snapshotTagSettings.registerIpc(ipcMain, {
     publishSettingsUpdate: () => settingsState.publishCurrentSettings(),

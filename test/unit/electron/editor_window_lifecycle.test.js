@@ -108,17 +108,17 @@ function createMainWindowDouble() {
 }
 
 function createController({ showStartupFailureDisclosure = null } = {}) {
-  const notifyWindowStateCalls = [];
+  const notifyEditorStateCalls = [];
   const controller = editorWindowLifecycle.createController({
     editorState: {
-      notifyWindowState(win, source) {
-        notifyWindowStateCalls.push({ win, source });
+      notifyEditorState(win, source) {
+        notifyEditorStateCalls.push({ win, source });
       },
     },
     showStartupFailureDisclosure,
   });
 
-  return { controller, notifyWindowStateCalls };
+  return { controller, notifyEditorStateCalls };
 }
 
 function createFreshOrdinaryStartup(controller, mainWin, editorWin, options = {}) {
@@ -151,8 +151,8 @@ function createFreshOrdinaryStartup(controller, mainWin, editorWin, options = {}
   };
 }
 
-test('showEditorWindow restores, shows, focuses, and reports window state for a live editor window', () => {
-  const { controller, notifyWindowStateCalls } = createController();
+test('showEditorWindow restores, shows, focuses, and reports editor state for a live editor window', () => {
+  const { controller, notifyEditorStateCalls } = createController();
   const { editorWin, calls } = createEditorWindowDouble({
     visible: false,
     maximized: false,
@@ -164,8 +164,8 @@ test('showEditorWindow restores, shows, focuses, and reports window state for a 
 
   assert.equal(result, editorWin);
   assert.deepEqual(calls, ['restore', 'maximize', 'show', 'focus', 'webContents.focus']);
-  assert.equal(notifyWindowStateCalls.length, 1);
-  assert.equal(notifyWindowStateCalls[0].source, 'showEditorWindow');
+  assert.equal(notifyEditorStateCalls.length, 1);
+  assert.equal(notifyEditorStateCalls[0].source, 'showEditorWindow');
 });
 
 test('handleOpenEditor preserves the failure envelope when the main action guard rejects the request', () => {

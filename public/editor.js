@@ -306,7 +306,7 @@ function validateEditorBootstrapRequirements() {
   // Relax these checks only with an owner-visible availability contract that disables Replace admission coherently.
   requireBootstrapMethod(ctx.editorAPI, 'onReplaceRequest', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'sendReplaceResponse', 'editorAPI');
-  requireBootstrapMethod(ctx.editorAPI, 'getWindowState', 'editorAPI');
+  requireBootstrapMethod(ctx.editorAPI, 'getEditorState', 'editorAPI');
   requireBootstrapMethod(editorMaximizedLayoutCore, 'clampPreferredTextWidthPx', 'EditorMaximizedLayoutCore');
   requireBootstrapMethod(
     editorMaximizedLayoutCore,
@@ -382,41 +382,50 @@ function initializeEditorBootstrap() {
 // =============================================================================
 // Startup presentation and local UI helpers
 // =============================================================================
-function applyActualWindowState(windowState) {
-  ctx.state.editorWindowMaximized = !!(windowState && windowState.maximized === true);
+function applyActualEditorState(editorState) {
+  ctx.state.editorWindowMaximized = !!(editorState && editorState.maximized === true);
   ctx.state.maximizedTextWidthPx = ctx.ui.clampEditorMaximizedTextWidthPx(
-    windowState && windowState.maximizedTextWidthPx
+    editorState && editorState.maximizedTextWidthPx
   );
+  ctx.state.spellcheckEnabled = !editorState || editorState.spellcheckEnabled !== false;
+  ctx.state.editorFontSizePx = ctx.ui.clampEditorFontSizePx(
+    editorState && editorState.editorFontSizePx
+  );
+  ctx.ui.setLocalSpellcheckState({
+    preferenceEnabled: ctx.state.spellcheckEnabled,
+    available: ctx.state.spellcheckAvailable,
+  });
+  ctx.ui.setLocalEditorFontSizePx(ctx.state.editorFontSizePx);
   ctx.ui.setLocalEditorMaximizedTextWidthPx(ctx.state.maximizedTextWidthPx);
   ctx.ui.setLocalEditorWindowMaximized(ctx.state.editorWindowMaximized);
 }
 
-function captureActualWindowState(windowState, options = {}) {
+function captureActualEditorState(editorState, options = {}) {
   const bootstrap = !!(options && options.bootstrap);
-  if (windowState && windowState.ok === false) {
+  if (editorState && editorState.ok === false) {
     if (bootstrap) {
       log.warn(
-        'BOOTSTRAP: editorAPI.getWindowState returned a non-ok result; keeping startup presentation until a live window-state update arrives.',
-        windowState.error || 'unknown'
+        'BOOTSTRAP: editorAPI.getEditorState returned a non-ok result; keeping startup presentation until a live editor-state update arrives.',
+        editorState.error || 'unknown'
       );
     } else {
       log.warn(
-        'editorAPI.onWindowStateChanged returned a non-ok result; keeping current maximized layout state.',
-        windowState.error || 'unknown'
+        'editorAPI.onEditorStateChanged returned a non-ok result; keeping current editor state.',
+        editorState.error || 'unknown'
       );
     }
     return;
   }
-  const nextWindowState = ctx.state.startupPresentation.captureActualWindowState(windowState);
-  if (nextWindowState) {
-    applyActualWindowState(nextWindowState);
+  const nextEditorState = ctx.state.startupPresentation.captureActualEditorState(editorState);
+  if (nextEditorState) {
+    applyActualEditorState(nextEditorState);
   }
 }
 
 function releaseStartupPresentationLock() {
-  const nextWindowState = ctx.state.startupPresentation.releaseStartupLock();
-  if (nextWindowState) {
-    applyActualWindowState(nextWindowState);
+  const nextEditorState = ctx.state.startupPresentation.releaseStartupLock();
+  if (nextEditorState) {
+    applyActualEditorState(nextEditorState);
   }
 }
 
@@ -524,10 +533,10 @@ async function bootstrapEditorEnvironment() {
     }
 
     try {
-      captureActualWindowState(await ctx.editorAPI.getWindowState(), { bootstrap: true });
+      captureActualEditorState(await ctx.editorAPI.getEditorState(), { bootstrap: true });
     } catch (error) {
       log.warn(
-        'BOOTSTRAP: getWindowState failed; keeping startup presentation until a live window-state update arrives:',
+        'BOOTSTRAP: getEditorState failed; keeping startup presentation until a live editor-state update arrives:',
         error
       );
     }
@@ -625,17 +634,11 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
   const nextLang = settings && settings.language
     ? settings.language
     : (startup ? defaultLang : '');
-  const nextSpellcheckEnabled = !settings || settings.spellcheckEnabled !== false;
   const nextSpellcheckAvailable = !settings || settings.spellcheckAvailable !== false;
-  const nextEditorFontSizePx = ctx.ui.clampEditorFontSizePx(settings && settings.editorFontSizePx);
   const languageChanged = !!nextLang && (startup || nextLang !== ctx.state.idiomaActual);
-  const spellcheckChanged = (
-    nextSpellcheckEnabled !== ctx.state.spellcheckEnabled
-    || nextSpellcheckAvailable !== ctx.state.spellcheckAvailable
-  );
-  const fontSizeChanged = nextEditorFontSizePx !== ctx.state.editorFontSizePx;
+  const spellcheckAvailabilityChanged = nextSpellcheckAvailable !== ctx.state.spellcheckAvailable;
 
-  if (!languageChanged && !spellcheckChanged && !fontSizeChanged) return;
+  if (!languageChanged && !spellcheckAvailabilityChanged) return;
 
   if (languageChanged) {
     try {
@@ -656,18 +659,14 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
   }
 
   try {
-    if (spellcheckChanged) {
-      ctx.state.spellcheckEnabled = nextSpellcheckEnabled;
+    if (spellcheckAvailabilityChanged) {
       ctx.state.spellcheckAvailable = nextSpellcheckAvailable;
       ctx.ui.setLocalSpellcheckState({
-        preferenceEnabled: nextSpellcheckEnabled,
+        preferenceEnabled: ctx.state.spellcheckEnabled,
         available: nextSpellcheckAvailable,
       });
     }
-    if (fontSizeChanged) {
-      ctx.state.editorFontSizePx = nextEditorFontSizePx;
-      ctx.ui.setLocalEditorFontSizePx(nextEditorFontSizePx);
-    } else if (languageChanged) {
+    if (languageChanged) {
       ctx.ui.updateEditorTextSizeUi();
     }
   } catch (error) {
@@ -744,20 +743,20 @@ function registerEditorBridgeListeners() {
     throw new Error(`[editor] editorAPI.onSettingsChanged registration failed: ${String(error)}`);
   }
 
-  if (typeof ctx.editorAPI.onWindowStateChanged === 'function') {
+  if (typeof ctx.editorAPI.onEditorStateChanged === 'function') {
     try {
-      ctx.editorAPI.onWindowStateChanged((windowState) => {
+      ctx.editorAPI.onEditorStateChanged((editorState) => {
         if (editorI18nTerminal) return;
-        captureActualWindowState(windowState, { bootstrap: false });
+        captureActualEditorState(editorState, { bootstrap: false });
       });
     } catch (error) {
       log.warn(
-        'BOOTSTRAP: editorAPI.onWindowStateChanged registration failed; live maximized layout updates disabled:',
+        'BOOTSTRAP: editorAPI.onEditorStateChanged registration failed; live editor-state updates disabled:',
         error
       );
     }
   } else {
-    log.warn('BOOTSTRAP: editorAPI.onWindowStateChanged missing; live maximized layout updates disabled.');
+    log.warn('BOOTSTRAP: editorAPI.onEditorStateChanged missing; live editor-state updates disabled.');
   }
 
   if (typeof ctx.editorAPI.onReadingTestPrestartStateChanged === 'function') {

@@ -459,10 +459,8 @@ function getSpellcheckAvailability({
 function applySpellCheckerSessionConfig({
   targetSession,
   appLanguage,
-  spellcheckEnabled,
   platform = process.platform,
 } = {}) {
-  const preferenceEnabled = spellcheckEnabled !== false;
   const availability = getSpellcheckAvailability({
     targetSession,
     appLanguage,
@@ -473,7 +471,6 @@ function applySpellCheckerSessionConfig({
     return {
       ok: false,
       reason: 'session-unavailable',
-      preferenceEnabled,
       effectiveEnabled: false,
       selectedLanguage: '',
       languages: [],
@@ -485,20 +482,6 @@ function applySpellCheckerSessionConfig({
     return {
       ok: false,
       reason: 'set-spellchecker-enabled-unavailable',
-      preferenceEnabled,
-      effectiveEnabled: false,
-      selectedLanguage: '',
-      languages: [],
-      resolution: null,
-    };
-  }
-
-  if (!preferenceEnabled) {
-    targetSession.setSpellCheckerEnabled(false);
-    return {
-      ok: true,
-      reason: 'disabled-by-user',
-      preferenceEnabled: false,
       effectiveEnabled: false,
       selectedLanguage: '',
       languages: [],
@@ -511,7 +494,6 @@ function applySpellCheckerSessionConfig({
     return {
       ok: true,
       reason: 'platform-managed',
-      preferenceEnabled: true,
       effectiveEnabled: true,
       selectedLanguage: '',
       languages: [],
@@ -524,7 +506,6 @@ function applySpellCheckerSessionConfig({
     return {
       ok: true,
       reason: availability.reason,
-      preferenceEnabled: true,
       effectiveEnabled: false,
       selectedLanguage: '',
       languages: [],
@@ -538,7 +519,6 @@ function applySpellCheckerSessionConfig({
   return {
     ok: true,
     reason: 'applied',
-    preferenceEnabled: true,
     effectiveEnabled: true,
     selectedLanguage: availability.selectedLanguage,
     languages: availability.languages.slice(),
@@ -617,7 +597,6 @@ function createController({
       const result = applySpellCheckerSessionConfig({
         targetSession,
         appLanguage: getLocaleTagForSettings(effectiveSettings),
-        spellcheckEnabled: !effectiveSettings || effectiveSettings.spellcheckEnabled !== false,
         platform,
       });
 
@@ -641,7 +620,6 @@ function createController({
         );
       } else if (
         result.reason === 'resolver-rejected'
-        && result.preferenceEnabled === true
         && result.resolution
       ) {
         const normalizedLanguage = result.resolution.normalizedTag || 'unset';

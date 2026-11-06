@@ -166,7 +166,7 @@ test('Reading arming suppresses its renderer notice when Editor creation is life
   const disclosures = [];
   const controller = editorWindowLifecycle.createController({
     editorState: {
-      notifyWindowState() {},
+      notifyEditorState() {},
     },
     showStartupFailureDisclosure(details) {
       disclosures.push(details);
@@ -226,7 +226,7 @@ test('Reading arming preserves its existing cleanup route for an Editor document
   const disclosures = [];
   const controller = editorWindowLifecycle.createController({
     editorState: {
-      notifyWindowState() {},
+      notifyEditorState() {},
     },
     showStartupFailureDisclosure(details) {
       disclosures.push(details);

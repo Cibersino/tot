@@ -49,7 +49,7 @@ test('parseStartupQuery normalizes initial presentation mode and generation', ()
   );
 });
 
-test('startup presentation controller keeps actual window state buffered until the startup lock releases', () => {
+test('startup presentation controller keeps actual editor state buffered until the startup lock releases', () => {
   const controller = editorStartupPresentation.createStartupPresentationController({
     initialPresentationMode: 'maximized',
     firstShowGeneration: 3,
@@ -57,8 +57,10 @@ test('startup presentation controller keeps actual window state buffered until t
 
   assert.equal(controller.isInitiallyMaximized(), true);
 
-  const bufferedWhileLocked = controller.captureActualWindowState({
+  const bufferedWhileLocked = controller.captureActualEditorState({
     maximized: false,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
     maximizedTextWidthPx: 920,
   });
   assert.equal(bufferedWhileLocked, null);
@@ -66,15 +68,21 @@ test('startup presentation controller keeps actual window state buffered until t
   const releasedState = controller.releaseStartupLock();
   assert.deepEqual(normalizeVmValue(releasedState), {
     maximized: false,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
     maximizedTextWidthPx: 920,
   });
 
-  const liveState = controller.captureActualWindowState({
+  const liveState = controller.captureActualEditorState({
     maximized: true,
+    spellcheckEnabled: true,
+    editorFontSizePx: 22,
     maximizedTextWidthPx: 1200,
   });
   assert.deepEqual(normalizeVmValue(liveState), {
     maximized: true,
+    spellcheckEnabled: true,
+    editorFontSizePx: 22,
     maximizedTextWidthPx: 1200,
   });
 });

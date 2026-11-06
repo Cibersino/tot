@@ -20,9 +20,6 @@
 const Log = require('./log');
 const {
   DEFAULT_LANG,
-  EDITOR_FONT_SIZE_MIN_PX,
-  EDITOR_FONT_SIZE_MAX_PX,
-  EDITOR_FONT_SIZE_DEFAULT_PX,
 } = require('./constants_main');
 
 const log = Log.get('settings');
@@ -55,24 +52,12 @@ function getPreferenceScope(languageId = DEFAULT_LANG) {
 // =============================================================================
 const createDefaultSettings = (language = '') => ({
   language,
-  spellcheckEnabled: true,
   previewSpoilerEnabled: true,
-  editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
   presetsByScope: {},
   selectedPresetByScope: {},
   disabledDefaultPresetsByScope: {},
   numberFormattingByScope: {},
 });
-
-function normalizeEditorFontSizePx(value) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return EDITOR_FONT_SIZE_DEFAULT_PX;
-  const rounded = Math.round(parsed);
-  return Math.min(
-    EDITOR_FONT_SIZE_MAX_PX,
-    Math.max(EDITOR_FONT_SIZE_MIN_PX, rounded)
-  );
-}
 
 function isNonArrayObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -247,20 +232,6 @@ function normalizeSettings(settings) {
     settings.modeConteo = 'preciso';
   }
 
-  // spellcheckEnabled:
-  // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
-  if (typeof settings.spellcheckEnabled === 'undefined') {
-    settings.spellcheckEnabled = true;
-  } else if (typeof settings.spellcheckEnabled !== 'boolean') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidSpellcheckEnabled',
-      'Invalid spellcheckEnabled; forcing default:',
-      { type: typeof settings.spellcheckEnabled }
-    );
-    settings.spellcheckEnabled = true;
-  }
-
   // previewSpoilerEnabled:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
@@ -273,33 +244,6 @@ function normalizeSettings(settings) {
       { type: typeof settings.previewSpoilerEnabled }
     );
     settings.previewSpoilerEnabled = true;
-  }
-
-  // editorFontSizePx:
-  // - missing -> default (silent)
-  // - invalid/out of range -> warnOnce + normalized value
-  if (typeof settings.editorFontSizePx === 'undefined') {
-    settings.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
-  } else {
-    const nextEditorFontSizePx = normalizeEditorFontSizePx(settings.editorFontSizePx);
-    if (!Number.isFinite(Number(settings.editorFontSizePx))) {
-      log.warnOnce(
-        'settings.normalizeSettings.invalidEditorFontSizePx',
-        'Invalid editorFontSizePx; forcing default:',
-        { value: settings.editorFontSizePx }
-      );
-    } else if (nextEditorFontSizePx !== Math.round(Number(settings.editorFontSizePx))) {
-      log.warnOnce(
-        'settings.normalizeSettings.outOfRangeEditorFontSizePx',
-        'Out-of-range editorFontSizePx; clamping:',
-        {
-          value: settings.editorFontSizePx,
-          min: EDITOR_FONT_SIZE_MIN_PX,
-          max: EDITOR_FONT_SIZE_MAX_PX,
-        }
-      );
-    }
-    settings.editorFontSizePx = nextEditorFontSizePx;
   }
 
   const languageId = getValidLanguageId(settings.language);
@@ -734,7 +678,6 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-mode-conteo
  * - set-selected-preset
  * - set-preview-spoiler-enabled
- * - set-spellcheck-enabled
  */
 function registerIpc(ipcMain, { buildAppMenu } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
@@ -913,32 +856,6 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     }
   });
 
-  // set-spellcheck-enabled: persists spellcheck preference and broadcasts
-  ipcMain.handle('set-spellcheck-enabled', async (_event, enabled) => {
-    try {
-      if (typeof enabled !== 'boolean') {
-        log.warn(
-          'set-spellcheck-enabled called with non-boolean value (ignored).',
-          { type: typeof enabled }
-        );
-        return { ok: false, error: 'invalid' };
-      }
-
-      const settings = getSettings();
-      if (settings.spellcheckEnabled === enabled) {
-        return { ok: true, enabled };
-      }
-      const nextSettings = cloneSettingsForMutation(settings);
-      nextSettings.spellcheckEnabled = enabled;
-      const savedSettings = saveAndPublishSettingsStrict(nextSettings);
-
-      return { ok: true, enabled: savedSettings.spellcheckEnabled };
-    } catch (error) {
-      log.error('IPC set-spellcheck-enabled failed:', error);
-      throw error;
-    }
-  });
-
 }
 
 // =============================================================================
@@ -948,7 +865,6 @@ module.exports = {
   getLanguageDescriptor,
   getPreferenceScope,
   getValidLanguageId,
-  normalizeEditorFontSizePx,
   init,
   registerIpc,
   getSettings,

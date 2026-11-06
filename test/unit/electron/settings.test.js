@@ -104,9 +104,7 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
 
   assert.equal(normalized.language, '');
   assert.equal(normalized.modeConteo, 'preciso');
-  assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.previewSpoilerEnabled, true);
-  assert.equal(normalized.editorFontSizePx, 20);
   assert.deepEqual(normalized.presetsByScope.es, []);
   assert.equal(Object.prototype.hasOwnProperty.call(normalized, 'snapshotTags'), false);
   assert.deepEqual(normalized.numberFormattingByScope.es, {
@@ -244,16 +242,12 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
     numberFormattingByScope: null,
     disabledDefaultPresetsByScope: null,
     modeConteo: 'invalid-mode',
-    spellcheckEnabled: 'invalid-flag',
     previewSpoilerEnabled: 'invalid-flag',
-    editorFontSizePx: 200,
   });
 
   assert.equal(normalized.language, '');
   assert.equal(normalized.modeConteo, 'preciso');
-  assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.previewSpoilerEnabled, true);
-  assert.equal(normalized.editorFontSizePx, 36);
   assert.deepEqual(normalized.presetsByScope.es, []);
   assert.equal(normalized.selectedPresetByScope.es, 'my preset');
   assert.deepEqual(normalized.numberFormattingByScope.es, {
@@ -281,17 +275,13 @@ test('getSettings reloads from the backing store and re-normalizes external edit
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
     modeConteo: 'simple',
-    spellcheckEnabled: false,
     previewSpoilerEnabled: false,
-    editorFontSizePx: 11,
   });
 
   const reloaded = settings.getSettings();
   assert.equal(reloaded.language, '');
   assert.equal(reloaded.modeConteo, 'simple');
-  assert.equal(reloaded.spellcheckEnabled, false);
   assert.equal(reloaded.previewSpoilerEnabled, false);
-  assert.equal(reloaded.editorFontSizePx, 12);
   assert.deepEqual(reloaded.numberFormattingByScope.es, {
     separadorMiles: '.',
     separadorDecimal: ',',
@@ -335,7 +325,6 @@ test('registerIpc decorates get-settings and published payloads without mutating
     selectedPresetByScope: {},
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
-    spellcheckEnabled: true,
   });
   const ipcMain = createIpcMainDouble();
   const sentPayloads = [];
@@ -375,22 +364,19 @@ test('registerIpc decorates get-settings and published payloads without mutating
 
   const initialSettings = await ipcMain.invoke('get-settings');
   assert.equal(initialSettings.language, 'ar');
-  assert.equal(initialSettings.spellcheckEnabled, true);
   assert.equal(initialSettings.spellcheckAvailable, false);
 
   const currentLanguage = await ipcMain.invoke('get-current-language');
   assert.equal(currentLanguage, 'ar');
 
-  const result = await ipcMain.invoke('set-spellcheck-enabled', false);
-  assert.deepEqual(result, { ok: true, enabled: false });
+  settings.publishCurrentSettings();
   assert.equal(onSettingsUpdatedCalls.length, 1);
-  assert.equal(onSettingsUpdatedCalls[0].spellcheckEnabled, false);
+  assert.equal(onSettingsUpdatedCalls[0].language, 'ar');
   assert.equal(Object.hasOwn(onSettingsUpdatedCalls[0], 'spellcheckAvailable'), false);
   assert.equal(sentPayloads.length, 1);
   assert.equal(sentPayloads[0].channel, 'settings-updated');
-  assert.equal(sentPayloads[0].payload.spellcheckEnabled, false);
   assert.equal(sentPayloads[0].payload.spellcheckAvailable, false);
-  assert.equal(settings.getSettings().spellcheckEnabled, false);
+  assert.equal(settings.getSettings().language, 'ar');
   assert.equal(Object.hasOwn(settings.getSettings(), 'spellcheckAvailable'), false);
   assert.equal(typeof settings.publishCurrentSettings, 'function');
 
@@ -399,12 +385,10 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(onSettingsUpdatedCalls.length, 2);
   assert.equal(sentPayloads.length, 2);
   assert.equal(sentPayloads[1].channel, 'settings-updated');
-  assert.equal(sentPayloads[1].payload.spellcheckEnabled, false);
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
 
   const externallyProducedSettings = {
     language: 'ar',
-    spellcheckEnabled: true,
   };
   settings.publishSettingsUpdated(externallyProducedSettings);
 
@@ -514,7 +498,7 @@ test('invalid renderer decoration drops live updates and rejects get-settings', 
   });
   settings.registerIpc(ipcMain);
 
-  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+  settings.publishSettingsUpdated({ language: 'en' });
 
   assert.deepEqual(sentPayloads, []);
   await assert.rejects(
@@ -545,7 +529,7 @@ test('throwing renderer decoration drops live updates', () => {
     },
   });
 
-  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+  settings.publishSettingsUpdated({ language: 'en' });
 
   assert.deepEqual(sentPayloads, []);
 });
@@ -601,8 +585,6 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
     selectedPresetByScope: {},
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
-    spellcheckEnabled: true,
-    editorFontSizePx: 20,
     modeConteo: 'preciso',
   };
   const harness = createSettingsHarness(initialStoredValue, {
@@ -644,14 +626,14 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
   settings.registerIpc(ipcMain);
 
   await assert.rejects(
-    ipcMain.invoke('set-spellcheck-enabled', false),
+    ipcMain.invoke('set-mode-conteo', 'simple'),
     /disk full/i
   );
 
   assert.equal(onSettingsUpdatedCalls.length, 0);
   assert.equal(sentPayloads.length, 0);
-  assert.equal(harness.getStoredValue().spellcheckEnabled, true);
-  assert.equal(settings.getSettings().spellcheckEnabled, true);
+  assert.equal(harness.getStoredValue().modeConteo, 'preciso');
+  assert.equal(settings.getSettings().modeConteo, 'preciso');
 });
 
 test('Precise-counting fallback strictly persists Simple once, then publishes and notifies the main window', async () => {
@@ -820,8 +802,6 @@ test('set-selected-preset rejects on strict save failure and keeps persisted sel
     selectedPresetByScope: { en: 'default' },
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
-    spellcheckEnabled: true,
-    editorFontSizePx: 20,
     modeConteo: 'preciso',
   }, {
     saveJsonStrictImpl() {

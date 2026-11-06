@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Parse the fresh-startup query parameters injected by main.
 // - Keep startup presentation intent stable until actual/native state is ready.
-// - Buffer actual/native window-state updates while startup intent is locked.
+// - Buffer actual/native editor-state updates while startup intent is locked.
 
 // =============================================================================
 // Module Factory
@@ -39,18 +39,18 @@ function createEditorStartupPresentation() {
     const initialPresentationMode = normalizeInitialPresentationMode(startupQuery.initialPresentationMode);
     const firstShowGeneration = normalizeFirstShowGeneration(startupQuery.firstShowGeneration);
     let startupLockReleased = false;
-    let pendingActualWindowState = null;
+    let pendingActualEditorState = null;
 
-    function captureActualWindowState(windowState) {
-      pendingActualWindowState = windowState && typeof windowState === 'object'
-        ? { ...windowState }
+    function captureActualEditorState(editorState) {
+      pendingActualEditorState = editorState && typeof editorState === 'object'
+        ? { ...editorState }
         : null;
-      return startupLockReleased ? pendingActualWindowState : null;
+      return startupLockReleased ? pendingActualEditorState : null;
     }
 
     function releaseStartupLock() {
       startupLockReleased = true;
-      return pendingActualWindowState;
+      return pendingActualEditorState;
     }
 
     return {
@@ -59,7 +59,7 @@ function createEditorStartupPresentation() {
       isInitiallyMaximized() {
         return initialPresentationMode === 'maximized';
       },
-      captureActualWindowState,
+      captureActualEditorState,
       releaseStartupLock,
     };
   }

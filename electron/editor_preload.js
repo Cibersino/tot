@@ -28,10 +28,10 @@ const api = {
   setCurrentText: (payload) => ipcRenderer.invoke('set-current-text', payload),
   getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
-  getWindowState: () => ipcRenderer.invoke('get-editor-window-state'),
+  getEditorState: () => ipcRenderer.invoke('get-editor-state'),
   reportBasePresentationState: (payload) => ipcRenderer.send('editor-report-base-presentation-state', payload),
   reportRendererI18nFailure: (payload) => ipcRenderer.send('renderer-i18n-failed', payload),
-  setSpellcheckEnabled: (enabled) => ipcRenderer.invoke('set-spellcheck-enabled', enabled),
+  setSpellcheckEnabled: (enabled) => ipcRenderer.invoke('set-editor-spellcheck-enabled', enabled),
   setEditorFontSizePx: (fontSizePx) => ipcRenderer.invoke('set-editor-font-size-px', fontSizePx),
   setMaximizedTextWidthPx: (textWidthPx) => ipcRenderer.invoke('set-editor-maximized-text-width-px', textWidthPx),
   onReplaceRequest: (cb) => subscribeWithUnsub(
@@ -53,11 +53,11 @@ const api = {
     'settings callback error:',
     'removeListener error (settings-updated):'
   ),
-  onWindowStateChanged: (cb) => subscribeWithUnsub(
-    'editor-window-state-changed',
+  onEditorStateChanged: (cb) => subscribeWithUnsub(
+    'editor-state-changed',
     cb,
-    'editor-window-state-changed callback error:',
-    'removeListener error (editor-window-state-changed):'
+    'editor-state-changed callback error:',
+    'removeListener error (editor-state-changed):'
   ),
   onReadingTestPrestartStateChanged: (cb) => subscribeWithUnsub(
     'reading-test-prestart-state-changed',
