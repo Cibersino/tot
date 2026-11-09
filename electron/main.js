@@ -2302,11 +2302,6 @@ app.whenReady().then(() => {
     return;
   }
 
-  const readingTestPoolSync = readingTestPool.synchronizeBundledPoolContent();
-  if (!readingTestPoolSync || readingTestPoolSync.ok !== true) {
-    log.warn('Reading-test bundled pool startup sync failed (ignored):', readingTestPoolSync);
-  }
-
   const settingsFile = getSettingsFile();
   const snapshotTagsFile = getSnapshotTagsFile();
   const currentTextFile = getCurrentTextFile();
@@ -2336,6 +2331,11 @@ app.whenReady().then(() => {
     },
     decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
   });
+
+  const readingTestPoolSync = readingTestPool.synchronizeBundledPoolContent();
+  if (!readingTestPoolSync || readingTestPoolSync.ok !== true) {
+    log.warn('Reading-test bundled pool startup sync failed (ignored):', readingTestPoolSync);
+  }
 
   // Delegated IPC registration (feature modules). main.js owns windows; feature modules own their IPC contract and internal logic.
   editorState.registerIpc(ipcMain, {
