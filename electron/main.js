@@ -695,8 +695,7 @@ function createMainWindow() {
     mainWin = null;
     mainWindowCreated = false;
 
-    // Force an orderly application exit.
-    // (If something goes wrong here, we still want to see it as an error.)
+    // Force an orderly application exit. (If something goes wrong here, we still want to see it as an error.)
     try {
       app.quit();
     } catch (error) {
@@ -780,8 +779,7 @@ function createEditorWindow(options = {}) {
   );
   if (waitForBasePresentationReady && firstShowGeneration) {
     editorDocumentLoad.catch((loadError) => {
-      // A close can abort loadFile(). That close is already owned by the
-      // established closed-window lifecycle path, not F07/F08.
+      // A close can abort loadFile(). That close is already owned by the established closed-window lifecycle path, not F07/F08.
       if (createdEditorWindowClosing || createdEditorWin.isDestroyed()) return;
 
       try {
@@ -914,9 +912,7 @@ function createTaskEditorWindow() {
     }
   }
 
-  // Observe only the configured initial preload. Its final source statement is
-  // the taskEditorAPI exposure, so an unhandled error here is the approved F13
-  // pre-exposure boundary rather than a renderer-reported terminal path.
+  // Observe only the configured initial preload. Its final source statement is the taskEditorAPI exposure, so an unhandled error here is the approved F13 pre-exposure boundary rather than a renderer-reported terminal path.
   createdTaskEditorWin.webContents.on('preload-error', onInitialTaskPreloadError);
 
   const initialTaskDocumentLoad = createdTaskEditorWin.loadFile(taskEditorHtmlPath);
@@ -1547,9 +1543,7 @@ function resolveLanguage(reason) {
 // =============================================================================
 // Floating Stopwatch - window placement safety
 // =============================================================================
-// The Floating Stopwatch is a small always-on-top stopwatch window.
-// We keep it fully visible by clamping its bounds to the display "work area"
-// (the usable desktop area excluding taskbar/dock).
+// The Floating Stopwatch is a small always-on-top stopwatch window. We keep it fully visible by clamping its bounds to the display "work area" (the usable desktop area excluding taskbar/dock).
 
 const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 const FLOTANTE_HTML = path.join(__dirname, '../public/flotante.html');
@@ -1813,8 +1807,7 @@ async function createFlotanteWindow(options = {}) {
 // =============================================================================
 // Stopwatch (crono)
 // =============================================================================
-// The stopwatch lives in the main process so it keeps working even if the UI windows
-// are hidden/reloaded, and so the flotante window can stay consistent.
+// The stopwatch lives in the main process so it keeps working even if the UI windows are hidden/reloaded, and so the flotante window can stay consistent.
 
 let crono = {
   running: false,
@@ -2269,8 +2262,7 @@ ipcMain.on('startup:renderer-core-ready', () => {
 // =============================================================================
 // Bootstrap bridge wiring
 // =============================================================================
-// Keep these top-level registrations in place before app.whenReady() work starts,
-// so early renderer signals and shell-opening requests have a stable main-process entrypoint.
+// Keep these top-level registrations in place before app.whenReady() work starts, so early renderer signals and shell-opening requests have a stable main-process entrypoint.
 
 registerLinkIpc({ ipcMain, app, shell });
 
@@ -2345,8 +2337,7 @@ app.whenReady().then(() => {
     decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
   });
 
-  // Delegated IPC registration (feature modules).
-  // main.js owns windows; feature modules own their IPC contract and internal logic.
+  // Delegated IPC registration (feature modules). main.js owns windows; feature modules own their IPC contract and internal logic.
   editorState.registerIpc(ipcMain, {
     getEditorWindow: () => editorWin,
   });
@@ -2489,9 +2480,7 @@ app.whenReady().then(() => {
     ),
   });
 
-  // Initialize current-text state only after the other main-process services
-  // and IPC surfaces are ready, but before any window can be created.
-  // This module owns loading/saving current text and its IPC surface.
+  // Initialize current-text state only after the other main-process services and IPC surfaces are ready, but before any window can be created. This module owns loading/saving current text and its IPC surface.
   textState.init({
     loadJson,
     saveJson,
