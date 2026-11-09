@@ -2319,18 +2319,6 @@ app.whenReady().then(() => {
   const snapshotTagsFile = getSnapshotTagsFile();
   const currentTextFile = getCurrentTextFile();
 
-  // Initialize shared text state early (current text file).
-  // This module owns loading/saving current text and its IPC surface.
-  textState.init({
-    loadJson,
-    saveJson,
-    currentTextFile,
-    settingsFile,
-    app,
-    maxTextChars: MAX_TEXT_CHARS,
-    currentTextProcessingController: currentTextProcessingStateController,
-  });
-
   // Load settings (normalized and persisted) via settingsState.
   const settings = settingsState.init({
     loadJson,
@@ -2359,18 +2347,6 @@ app.whenReady().then(() => {
 
   // Delegated IPC registration (feature modules).
   // main.js owns windows; feature modules own their IPC contract and internal logic.
-  textState.registerIpc(ipcMain, () => ({
-    mainWin,
-    editorWin,
-  }));
-
-  currentTextProcessingStateIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    controller: currentTextProcessingStateController,
-  });
-
   editorState.registerIpc(ipcMain, {
     getEditorWindow: () => editorWin,
   });
@@ -2511,6 +2487,31 @@ app.whenReady().then(() => {
     isReadingTestInteractionLocked: () => (
       !!(readingTestSessionController && readingTestSessionController.isInteractionLocked())
     ),
+  });
+
+  // Initialize current-text state only after the other main-process services
+  // and IPC surfaces are ready, but before any window can be created.
+  // This module owns loading/saving current text and its IPC surface.
+  textState.init({
+    loadJson,
+    saveJson,
+    currentTextFile,
+    settingsFile,
+    app,
+    maxTextChars: MAX_TEXT_CHARS,
+    currentTextProcessingController: currentTextProcessingStateController,
+  });
+
+  textState.registerIpc(ipcMain, () => ({
+    mainWin,
+    editorWin,
+  }));
+
+  currentTextProcessingStateIpc.registerIpc(ipcMain, {
+    getWindows: () => ({
+      mainWin,
+    }),
+    controller: currentTextProcessingStateController,
   });
 
   // First run: show language picker before creating the main window.
