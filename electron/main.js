@@ -2480,17 +2480,6 @@ app.whenReady().then(() => {
     ),
   });
 
-  // Initialize current-text state only after the other main-process services and IPC surfaces are ready, but before any window can be created. This module owns loading/saving current text and its IPC surface.
-  textState.init({
-    loadJson,
-    saveJson,
-    currentTextFile,
-    settingsFile,
-    app,
-    maxTextChars: MAX_TEXT_CHARS,
-    currentTextProcessingController: currentTextProcessingStateController,
-  });
-
   textState.registerIpc(ipcMain, () => ({
     mainWin,
     editorWin,
@@ -2501,6 +2490,17 @@ app.whenReady().then(() => {
       mainWin,
     }),
     controller: currentTextProcessingStateController,
+  });
+
+  // Initialize current-text state only after the other main-process services and IPC surfaces are ready, but before any window can be created. This module owns loading/saving current text and its IPC surface.
+  textState.init({
+    loadJson,
+    saveJson,
+    currentTextFile,
+    settingsFile,
+    app,
+    maxTextChars: MAX_TEXT_CHARS,
+    currentTextProcessingController: currentTextProcessingStateController,
   });
 
   // First run: show language picker before creating the main window.
