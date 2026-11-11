@@ -77,6 +77,21 @@ test('main startup terminates an initial main-document failure after resolving i
   assert.match(termination, /app\.quit\(\)/);
 });
 
+test('initial main-renderer i18n failure uses managed startup termination before READY', () => {
+  const rendererI18nFailure = sourceSection(
+    'function closeRendererAfterI18nFailure(event, payload)',
+    'function resolveLanguage(reason)'
+  );
+
+  assert.match(rendererI18nFailure, /sourceWindow === mainWin/);
+  assert.match(rendererI18nFailure, /failureKind === 'startup'/);
+  assert.match(rendererI18nFailure, /failureKind === 'startup-api'/);
+  assert.match(rendererI18nFailure, /mainReadyState === 'PRE_READY'/);
+  assert.match(rendererI18nFailure, /terminateAfterRequiredStartupFailure/);
+  assert.match(rendererI18nFailure, /startup_renderer_i18n_failure_title/);
+  assert.match(rendererI18nFailure, /startup_renderer_i18n_failure_message/);
+});
+
 test('macOS activation cannot recreate a window after startup is terminal', () => {
   const activation = sourceSection(
     "app.on('activate', () => {",

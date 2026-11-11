@@ -722,37 +722,41 @@ Estados de revisión recomendados:
         "es": "No se pudo instalar el menú de la aplicación",
         "en": "The application menu could not be installed"
         // [PROPÓSITO] Título del diálogo nativo terminal cuando falla la instalación inicial del menú de la aplicación antes de crear la ventana principal.
-        // [CONCEPTO_APP] inicio de la aplicación; menú de la aplicación
       },
       "startup_menu_installation_failure_message": {
         "es": "El menú de la aplicación no pudo instalarse y la aplicación se cerrará.",
         "en": "The application menu could not be installed and the application will close."
         // [PROPÓSITO] Mensaje nativo terminal para el fallo de instalación inicial del menú; informa que la aplicación se cerrará sin crear la ventana principal.
-        // [CONCEPTO_APP] inicio de la aplicación; menú de la aplicación
       },
       "startup_main_window_failure_title": {
         "es": "No se pudo crear la ventana principal",
         "en": "The main window could not be created"
         // [PROPÓSITO] Título del diálogo nativo terminal cuando no puede construirse la ventana principal requerida.
-        // [CONCEPTO_APP] inicio de la aplicación; ventana principal
       },
       "startup_main_window_failure_message": {
         "es": "La ventana principal no pudo crearse y la aplicación se cerrará.",
         "en": "The main window could not be created and the application will close."
         // [PROPÓSITO] Mensaje nativo terminal para el fallo de construcción de la ventana principal requerida.
-        // [CONCEPTO_APP] inicio de la aplicación; ventana principal
       },
       "startup_main_document_failure_title": {
         "es": "No se pudo cargar la ventana principal",
         "en": "The main window could not load"
         // [PROPÓSITO] Título del diálogo nativo terminal cuando falla la carga del documento inicial requerido de la ventana principal.
-        // [CONCEPTO_APP] inicio de la aplicación; ventana principal
       },
       "startup_main_document_failure_message": {
         "es": "La ventana principal no pudo cargar el documento inicial y la aplicación se cerrará.",
         "en": "The main window could not load its initial document and the application will close."
         // [PROPÓSITO] Mensaje nativo terminal para el fallo de carga del documento inicial; la resolución fallida del procesamiento inicial del texto permite el cierre administrado.
-        // [CONCEPTO_APP] inicio de la aplicación; ventana principal; texto actual
+      },
+      "startup_renderer_i18n_failure_title": {
+        "es": "No se pudo iniciar la interfaz",
+        "en": "The interface could not start"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando el renderer principal no puede establecer los recursos de idioma o las semánticas traducidas requeridos durante el inicio inicial.
+      },
+      "startup_renderer_i18n_failure_message": {
+        "es": "toT no pudo completar la configuración de idioma necesaria para iniciar la interfaz. La aplicación se cerrará.",
+        "en": "toT could not complete the language setup needed to start the interface. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo requerido de i18n del renderer principal antes de READY; informa que la aplicación se cerrará tras resolver el procesamiento inicial del texto.
       },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",

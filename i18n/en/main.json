@@ -103,6 +103,8 @@
       "startup_main_window_failure_message": "The main window could not be created and the application will close.",
       "startup_main_document_failure_title": "The main window could not load",
       "startup_main_document_failure_message": "The main window could not load its initial document and the application will close.",
+      "startup_renderer_i18n_failure_title": "The interface could not start",
+      "startup_renderer_i18n_failure_message": "toT could not complete the language setup needed to start the interface. The application will close.",
       "editor_startup_failed_title": "The Text Editor could not start",
       "editor_startup_failed_message": "The Text Editor could not complete startup and will close.",
       "editor_startup_timeout_title": "The Text Editor took too long to start",

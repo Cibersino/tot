@@ -87,15 +87,22 @@ for (const {
   dialogFails = false,
   firstRunFallback = false,
   vetoedClose = false,
+  closesMainWindow = false,
+  deferredPostReadyClose = false,
 } of [
   { scenario: 'menu-installation' },
   { scenario: 'main-window-construction' },
   { scenario: 'main-document-load' },
   { scenario: 'main-document-load-after-vetoed-close', vetoedClose: true },
+  { scenario: 'renderer-i18n-startup', closesMainWindow: true },
+  { scenario: 'renderer-i18n-startup-api', closesMainWindow: true },
+  { scenario: 'renderer-i18n-transition-restoration', deferredPostReadyClose: true },
   { scenario: 'first-run-fallback-menu-installation', firstRunFallback: true },
   { scenario: 'menu-installation-dialog-failure', dialogFails: true },
 ]) {
-  const expectedLifecycle = dialogFails
+  const expectedLifecycle = deferredPostReadyClose
+    ? 'defers close while post-READY processing is active, then persists and quits'
+    : dialogFails
     ? 'continues after native-dialog failure, settles initial processing, persists, and quits'
     : 'discloses, settles initial processing, persists, and quits';
   test(`main startup ${scenario} failure ${expectedLifecycle}`, async (t) => {
@@ -117,7 +124,19 @@ for (const {
     if (vetoedClose) {
       assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_CLOSE_VETOED:${scenario}`));
     }
-    assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
+    if (closesMainWindow) {
+      assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_CLOSE_COMPLETED:${scenario}`));
+      assert.doesNotMatch(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_CLOSE_VETOED:${scenario}`));
+    }
+    if (deferredPostReadyClose) {
+      assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_CLOSE_VETOED:${scenario}`));
+      assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_CLOSE_COMPLETED:${scenario}`));
+      assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":true\}/);
+      assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":2,"ok":true\}/);
+      assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
+    } else {
+      assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
+    }
     assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED/);
     assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_QUIT:${scenario}`));
   });

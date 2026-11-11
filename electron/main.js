@@ -1558,6 +1558,21 @@ function closeRendererAfterI18nFailure(event, payload) {
     return;
   }
 
+  // The main renderer cannot enter READY until its required RendererI18n API, translation state, and translated semantics have been established.
+  // Its initial failure is a required startup failure, not an ordinary affected-window close: initial_load is still active and would veto a direct close until it is settled.
+  if (sourceWindow === mainWin
+    && (failureKind === 'startup' || failureKind === 'startup-api')
+    && mainReadyState === 'PRE_READY') {
+    terminateAfterRequiredStartupFailure({
+      error: new Error('Main renderer reported a required startup translation-state failure.'),
+      logContext: 'Main renderer startup translation state',
+      titleKey: 'startup_renderer_i18n_failure_title',
+      messageKey: 'startup_renderer_i18n_failure_message',
+      sourceWindow,
+    });
+    return;
+  }
+
   const selectedLanguage = getSelectedLanguage();
   let dialogTexts = null;
   try {

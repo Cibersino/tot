@@ -9,11 +9,21 @@ const actualElectron = require('electron');
 const actualApp = actualElectron.app;
 const originalLoad = Module._load;
 const originalQuit = actualApp.quit.bind(actualApp);
+let mainWindowDouble = null;
+let currentTextProcessingController = null;
 
 actualApp.setAppPath(path.resolve(__dirname, '../..'));
 
 function emitMarker(name, detail = '') {
   process.stdout.write(`${name}${detail ? `:${detail}` : ''}\n`);
+}
+
+function reportRendererI18nFailure(webContents, kind) {
+  actualElectron.ipcMain.emit('renderer-i18n-failed', {
+    sender: webContents,
+  }, {
+    kind,
+  });
 }
 
 function createBrowserWindowDouble() {
@@ -27,13 +37,14 @@ function createBrowserWindowDouble() {
       this.webContents = new EventEmitter();
       this.webContents.isDestroyed = () => this.destroyed;
       this.webContents.send = () => {};
+      mainWindowDouble = this;
     }
 
     isDestroyed() {
       return this.destroyed;
     }
 
-    loadFile() {
+    loadFile(filePath) {
       if (scenario === 'main-document-load') {
         return Promise.reject(new Error('forced main document load failure'));
       }
@@ -42,6 +53,37 @@ function createBrowserWindowDouble() {
           queueMicrotask(() => {
             this.close();
             reject(new Error('forced main document load failure after vetoed close'));
+          });
+        });
+      }
+      if ((scenario === 'renderer-i18n-startup' || scenario === 'renderer-i18n-startup-api')
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          reportRendererI18nFailure(
+            this.webContents,
+            scenario === 'renderer-i18n-startup-api' ? 'startup-api' : 'startup'
+          );
+        });
+      }
+      if (scenario === 'renderer-i18n-transition-restoration'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          actualElectron.ipcMain.emit('startup:renderer-core-ready');
+          const initialState = currentTextProcessingController.getState();
+          currentTextProcessingController.resolve({
+            requestId: initialState.requestId,
+            ok: true,
+          });
+          const postReadyState = currentTextProcessingController.begin({
+            source: 'smoke',
+            action: 'post_ready_processing',
+          });
+          reportRendererI18nFailure(this.webContents, 'transition-restoration');
+          queueMicrotask(() => {
+            currentTextProcessingController.resolve({
+              requestId: postReadyState.requestId,
+              ok: true,
+            });
           });
         });
       }
@@ -69,6 +111,7 @@ function createBrowserWindowDouble() {
         return;
       }
       this.destroyed = true;
+      emitMarker('TOT_MAIN_STARTUP_FAILURE_CLOSE_COMPLETED', scenario);
       this.emit('closed');
     }
 
@@ -80,8 +123,10 @@ function createBrowserWindowDouble() {
       return null;
     }
 
-    static fromWebContents() {
-      return null;
+    static fromWebContents(contents) {
+      return mainWindowDouble && mainWindowDouble.webContents === contents
+        ? mainWindowDouble
+        : null;
     }
   }
 
@@ -115,7 +160,23 @@ const dialogDouble = {
 
 actualApp.quit = () => {
   emitMarker('TOT_MAIN_STARTUP_FAILURE_QUIT', scenario);
-  return originalQuit();
+  // Electron owns native-window closure during app.quit(). The double is not part
+  // of Electron's native window registry, so model that one lifecycle effect for
+  // the startup renderer-i18n scenario.
+  if ((scenario === 'renderer-i18n-startup' || scenario === 'renderer-i18n-startup-api')
+    && mainWindowDouble
+    && !mainWindowDouble.isDestroyed()) {
+    mainWindowDouble.close();
+  }
+  const result = originalQuit();
+  if (scenario === 'renderer-i18n-transition-restoration') {
+    // The double is outside Electron's native window registry. After the real
+    // managed-quit path has fired before-quit persistence, ensure this isolated
+    // probe does not remain alive solely because Electron never observed a native
+    // window-all-closed event for the double.
+    setTimeout(() => actualApp.exit(0), 0);
+  }
+  return result;
 };
 
 Module._load = function patchedModuleLoad(request, parent, isMain) {
@@ -136,6 +197,7 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
       ...currentTextProcessingStateIpc,
       createController(options) {
         const controller = currentTextProcessingStateIpc.createController(options);
+        currentTextProcessingController = controller;
         const resolve = controller.resolve;
         controller.resolve = (context) => {
           emitMarker('TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE', JSON.stringify(context));

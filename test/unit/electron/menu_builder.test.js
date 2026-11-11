@@ -181,7 +181,7 @@ test('getDialogTexts provides Editor Find initial-document failure copy', (t) =>
   );
 });
 
-test('getDialogTexts provides terminal startup copy for the initial menu and main window', (t) => {
+test('getDialogTexts provides terminal startup copy for required main-startup failures', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 
   const dialogTexts = menuBuilder.getDialogTexts('en');
@@ -198,6 +198,10 @@ test('getDialogTexts provides terminal startup copy for the initial menu and mai
     dialogTexts.startup_main_document_failure_message,
     'The main window could not load its initial document and the application will close.'
   );
+  assert.equal(
+    dialogTexts.startup_renderer_i18n_failure_message,
+    'toT could not complete the language setup needed to start the interface. The application will close.'
+  );
 
   for (const language of ['es', 'en']) {
     const localizedDialogTexts = menuBuilder.getDialogTexts(language);
@@ -208,6 +212,8 @@ test('getDialogTexts provides terminal startup copy for the initial menu and mai
       'startup_main_window_failure_message',
       'startup_main_document_failure_title',
       'startup_main_document_failure_message',
+      'startup_renderer_i18n_failure_title',
+      'startup_renderer_i18n_failure_message',
     ]) {
       assert.equal(typeof localizedDialogTexts[key], 'string', `${language} ${key}`);
       assert.ok(localizedDialogTexts[key].trim(), `${language} ${key}`);
