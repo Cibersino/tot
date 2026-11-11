@@ -679,7 +679,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-selected-preset
  * - set-preview-spoiler-enabled
  */
-function registerIpc(ipcMain, { buildAppMenu } = {}) {
+function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
   }
@@ -719,7 +719,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     }
   });
 
-  // set-language: applies a nonempty selection, rebuilds the menu, updates secondary windows, broadcasts
+  // set-language: applies a nonempty selection, rebuilds the menu when runtime owns it, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
     try {
       const chosenRaw = typeof lang === 'string' ? lang : '';
@@ -736,21 +736,25 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
         settings = saveSettingsStrict(nextSettings);
       }
 
-      const menuLang = settings.language || DEFAULT_LANG;
-
       const windows = resolvePublicationWindows();
 
-      // Rebuild the app menu using the effective language (best-effort).
-      if (typeof buildAppMenu !== 'function') {
-        log.warn(
-          'buildAppMenu unavailable; menu rebuild skipped.',
-          { type: typeof buildAppMenu }
-        );
-      } else {
-        try {
-          buildAppMenu(menuLang);
-        } catch (error) {
-          log.warn('menu rebuild failed (ignored):', menuLang, error);
+      // The first-run picker persists the selection before startup owns its one
+      // initial menu installation. Later user-initiated changes rebuild here.
+      const rebuildAppMenu = typeof shouldRebuildAppMenu !== 'function'
+        || shouldRebuildAppMenu() !== false;
+      if (rebuildAppMenu) {
+        const menuLang = settings.language || DEFAULT_LANG;
+        if (typeof buildAppMenu !== 'function') {
+          log.warn(
+            'buildAppMenu unavailable; menu rebuild skipped.',
+            { type: typeof buildAppMenu }
+          );
+        } else {
+          try {
+            buildAppMenu(menuLang);
+          } catch (error) {
+            log.warn('menu rebuild failed (ignored):', menuLang, error);
+          }
         }
       }
 

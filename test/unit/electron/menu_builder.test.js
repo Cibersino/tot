@@ -181,6 +181,40 @@ test('getDialogTexts provides Editor Find initial-document failure copy', (t) =>
   );
 });
 
+test('getDialogTexts provides terminal startup copy for the initial menu and main window', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(
+    dialogTexts.startup_menu_installation_failure_message,
+    'The application menu could not be installed and the application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_main_window_failure_message,
+    'The main window could not be created and the application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_main_document_failure_message,
+    'The main window could not load its initial document and the application will close.'
+  );
+
+  for (const language of ['es', 'en']) {
+    const localizedDialogTexts = menuBuilder.getDialogTexts(language);
+    for (const key of [
+      'startup_menu_installation_failure_title',
+      'startup_menu_installation_failure_message',
+      'startup_main_window_failure_title',
+      'startup_main_window_failure_message',
+      'startup_main_document_failure_title',
+      'startup_main_document_failure_message',
+    ]) {
+      assert.equal(typeof localizedDialogTexts[key], 'string', `${language} ${key}`);
+      assert.ok(localizedDialogTexts[key].trim(), `${language} ${key}`);
+    }
+  }
+});
+
 test('missing required default main bundle is terminal and does not use a selected root bundle', (t) => {
   let selectedRootRead = false;
   const menuBuilder = loadFreshMenuBuilder(t, {

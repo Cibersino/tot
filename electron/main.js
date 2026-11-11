@@ -388,6 +388,7 @@ let languageResolved = false;
 let menuInstalled = false;
 let mainWindowCreated = false;
 let languageSelectionHandler = null;
+let startupTerminalFailure = false;
 
 // =============================================================================
 // Text extraction orchestration (shared controller)
@@ -504,6 +505,95 @@ function buildAppMenu(lang) {
   menuInstalled = true;
 }
 
+function settleInitialCurrentTextProcessingForStartupFailure() {
+  let processingState;
+  try {
+    processingState = currentTextProcessingStateController.getState();
+  } catch (error) {
+    log.error('Startup current-text processing state read failed:', error);
+    return;
+  }
+
+  if (!processingState
+    || processingState.active !== true
+    || processingState.action !== 'initial_load'
+    || !Number.isInteger(processingState.requestId)) {
+    return;
+  }
+
+  try {
+    const result = currentTextProcessingStateController.resolve({
+      requestId: processingState.requestId,
+      ok: false,
+    });
+    if (!result || result.ok !== true) {
+      log.error('Startup initial current-text processing could not be resolved as failed:', result);
+    }
+  } catch (error) {
+    log.error('Startup initial current-text processing resolution failed:', error);
+  }
+}
+
+function showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow = null } = {}) {
+  let dialogTexts = null;
+  try {
+    dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+  } catch (error) {
+    log.error('Startup failure native dialog translations unavailable:', error);
+  }
+
+  const title = dialogTexts && dialogTexts[titleKey];
+  const message = dialogTexts && dialogTexts[messageKey];
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title !== 'string' || !title.trim()
+    || typeof message !== 'string' || !message.trim()
+    || typeof ok !== 'string' || !ok.trim()) {
+    log.error('Startup failure native dialog copy unavailable:', { titleKey, messageKey });
+    return;
+  }
+
+  const options = {
+    type: 'error',
+    title,
+    message,
+    buttons: [ok],
+    defaultId: 0,
+    noLink: true,
+  };
+  try {
+    if (isAliveWindow(sourceWindow)) {
+      dialog.showMessageBoxSync(sourceWindow, options);
+    } else {
+      dialog.showMessageBoxSync(options);
+    }
+  } catch (error) {
+    log.error('Startup failure native dialog failed:', { titleKey, messageKey }, error);
+  }
+}
+
+function terminateAfterRequiredStartupFailure({
+  error,
+  logContext,
+  titleKey,
+  messageKey,
+  sourceWindow = null,
+} = {}) {
+  if (startupTerminalFailure) return;
+  startupTerminalFailure = true;
+
+  log.error(`${logContext} failed:`, error);
+  try {
+    showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow });
+  } finally {
+    settleInitialCurrentTextProcessingForStartupFailure();
+    try {
+      app.quit();
+    } catch (quitError) {
+      log.error('Startup failure managed quit failed:', quitError);
+    }
+  }
+}
+
 /**
  * Developer-only global shortcuts (disabled in packaged builds).
  * Used for quick inspection and reload during development.
@@ -584,16 +674,28 @@ function createMainWindow() {
     },
   });
 
-  mainWin.loadFile(path.join(__dirname, '../public/index.html'));
+  const createdMainWin = mainWin;
+  const initialMainDocumentLoad = createdMainWin.loadFile(path.join(__dirname, '../public/index.html'));
+  void initialMainDocumentLoad.catch((error) => {
+    // A rejected required initial load for its still-live window is terminal.
+    if (!isAliveWindow(createdMainWin)) return;
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Main initial document load',
+      titleKey: 'startup_main_document_failure_title',
+      messageKey: 'startup_main_document_failure_message',
+      sourceWindow: createdMainWin,
+    });
+  });
 
-  mainWin.webContents.on('did-finish-load', () => {
+  createdMainWin.webContents.on('did-finish-load', () => {
     try {
-      if (!hasLiveWebContents(mainWin)) {
+      if (!hasLiveWebContents(createdMainWin)) {
         log.warn('Main did-finish-load state seed skipped (ignored): main window unavailable.');
         return;
       }
       if (readingTestSessionController) {
-        mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
+        createdMainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
       } else {
         log.warn(
           'reading-test-state-changed seed skipped (ignored): readingTestSessionController unavailable.'
@@ -606,14 +708,6 @@ function createMainWindow() {
 
   // Dev-only shortcuts for inspection/reload.
   registerDevShortcuts();
-
-  if (!menuInstalled) {
-    try {
-      buildAppMenu();
-    } catch (error) {
-      log.error('Error building app menu during main window creation:', error);
-    }
-  }
 
   mainWindowCreated = true;
   maybeMarkMainInvariantsReady();
@@ -912,7 +1006,7 @@ function createTaskEditorWindow() {
     }
   }
 
-  // Observe only the configured initial preload. Its final source statement is the taskEditorAPI exposure, so an unhandled error here is the approved F13 pre-exposure boundary rather than a renderer-reported terminal path.
+  // Observe only the configured initial preload. Its final source statement is the taskEditorAPI exposure, so an unhandled error here is the approved pre-exposure boundary rather than a renderer-reported terminal path.
   createdTaskEditorWin.webContents.on('preload-error', onInitialTaskPreloadError);
 
   const initialTaskDocumentLoad = createdTaskEditorWin.loadFile(taskEditorHtmlPath);
@@ -1528,16 +1622,25 @@ function resolveLanguage(reason) {
   try {
     buildAppMenu();
   } catch (error) {
-    log.error('Error building menu after language resolution:', error);
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Initial application-menu installation',
+      titleKey: 'startup_menu_installation_failure_title',
+      messageKey: 'startup_menu_installation_failure_message',
+    });
+    return;
   }
 
   try {
     if (!mainWin) createMainWindow();
   } catch (error) {
-    log.error('Error creating mainWin after language resolution:', error);
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Main BrowserWindow construction',
+      titleKey: 'startup_main_window_failure_title',
+      messageKey: 'startup_main_window_failure_message',
+    });
   }
-
-  maybeMarkMainInvariantsReady();
 }
 
 // =============================================================================
@@ -2344,7 +2447,10 @@ app.whenReady().then(() => {
 
   editorFindMain.registerIpc(ipcMain);
 
-  settingsState.registerIpc(ipcMain, { buildAppMenu });
+  settingsState.registerIpc(ipcMain, {
+    buildAppMenu,
+    shouldRebuildAppMenu: () => languageResolved,
+  });
 
   snapshotTagSettings.registerIpc(ipcMain, {
     publishSettingsUpdate: () => settingsState.publishCurrentSettings(),
@@ -2531,7 +2637,17 @@ app.whenReady().then(() => {
 
   // macOS behavior: recreate a window when clicking the dock icon and none are open.
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    if (startupTerminalFailure || !languageResolved || BrowserWindow.getAllWindows().length !== 0) return;
+    try {
+      createMainWindow();
+    } catch (error) {
+      terminateAfterRequiredStartupFailure({
+        error,
+        logContext: 'Main BrowserWindow construction during activation',
+        titleKey: 'startup_main_window_failure_title',
+        messageKey: 'startup_main_window_failure_message',
+      });
+    }
   });
 });
 

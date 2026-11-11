@@ -398,6 +398,60 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(Object.hasOwn(externallyProducedSettings, 'spellcheckAvailable'), false);
 });
 
+test('set-language defers only first-run menu installation to startup and retains runtime rebuilding', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: '',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
+  });
+  const ipcMain = createIpcMainDouble();
+  const menuBuilds = [];
+  const publishedLanguages = [];
+  let startupLanguageResolved = false;
+
+  settings.init({
+    loadJson: harness.loadJson,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    settingsFile: 'C:\\fake\\settings.json',
+  });
+  settings.configurePublication({
+    getWindows: () => ({}),
+    onSettingsUpdated(nextSettings) {
+      publishedLanguages.push(nextSettings.language);
+    },
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.registerIpc(ipcMain, {
+    buildAppMenu(language) {
+      menuBuilds.push(language);
+    },
+    shouldRebuildAppMenu() {
+      return startupLanguageResolved;
+    },
+  });
+
+  const firstRunResult = await ipcMain.invoke('set-language', 'en');
+
+  assert.deepEqual(firstRunResult, { ok: true, language: 'en' });
+  assert.equal(harness.getStoredValue().language, 'en');
+  assert.deepEqual(menuBuilds, []);
+  assert.deepEqual(publishedLanguages, ['en']);
+
+  startupLanguageResolved = true;
+  const runtimeResult = await ipcMain.invoke('set-language', 'es');
+
+  assert.deepEqual(runtimeResult, { ok: true, language: 'es' });
+  assert.equal(harness.getStoredValue().language, 'es');
+  assert.deepEqual(menuBuilds, ['es']);
+  assert.deepEqual(publishedLanguages, ['en', 'es']);
+});
+
 test('publishSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
   const settings = loadFreshSettingsModule();
   const sentPayloads = [];
