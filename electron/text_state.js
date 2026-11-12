@@ -261,7 +261,16 @@ function loadInitialCurrentText() {
     const isRawObject = raw && typeof raw === 'object';
     const hasTextProp = isRawObject && Object.prototype.hasOwnProperty.call(raw, 'text');
     const isRawString = typeof raw === 'string';
-    let txt = hasTextProp ? String(raw.text || '') : '';
+    let txt = '';
+    if (hasTextProp) {
+      if (typeof raw.text === 'string') {
+        txt = raw.text;
+      } else {
+        log.warn(
+          'BOOTSTRAP: Current text file has non-string text property; using empty string.'
+        );
+      }
+    }
     if (!hasTextProp && isRawString) {
       log.warn(
         'BOOTSTRAP: Current text file uses noncanonical root-string form; recovering text.'
