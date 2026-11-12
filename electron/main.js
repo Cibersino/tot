@@ -534,6 +534,38 @@ function settleInitialCurrentTextProcessingForStartupFailure() {
   }
 }
 
+function showEarlyRequiredStartupFailureNotice() {
+  // Approved bootstrap exception: these failures occur before required language resources exist, so this fixed Spanish notice must remain independent of i18n.
+  try {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      title: 'toT no pudo iniciarse',
+      message: 'No se pudo iniciar toT. La aplicación se cerrará.',
+      buttons: ['Aceptar'],
+      defaultId: 0,
+      noLink: true,
+    });
+  } catch (error) {
+    log.error('Early required startup failure native notice failed:', error);
+  }
+}
+
+function terminateAfterEarlyRequiredStartupFailure({ error, logMessage } = {}) {
+  if (startupTerminalFailure) return;
+  startupTerminalFailure = true;
+
+  log.error(logMessage, error);
+  try {
+    showEarlyRequiredStartupFailureNotice();
+  } finally {
+    try {
+      app.quit();
+    } catch (quitError) {
+      log.error('Early required startup failure managed quit failed:', quitError);
+    }
+  }
+}
+
 function showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow = null } = {}) {
   let dialogTexts = null;
   try {
@@ -2440,8 +2472,11 @@ app.whenReady().then(() => {
   try {
     initStorage(app);
   } catch (error) {
-    log.error('Storage init failed:', error);
-    throw error;
+    terminateAfterEarlyRequiredStartupFailure({
+      error,
+      logMessage: 'Storage init failed:',
+    });
+    return;
   }
 
   // Ensure config directory exists before any module tries to read/write JSON.
@@ -2450,15 +2485,20 @@ app.whenReady().then(() => {
   try {
     languageResources.initialize({ appPath: app.getAppPath() });
   } catch (error) {
-    log.error('Required language catalog initialization failed:', error);
-    throw error;
+    terminateAfterEarlyRequiredStartupFailure({
+      error,
+      logMessage: 'Required language catalog initialization failed:',
+    });
+    return;
   }
 
   try {
     menuBuilder.initializeDefaultMainTranslations();
   } catch (error) {
-    log.error('Required default main translations unavailable; startup terminated:', error);
-    app.quit();
+    terminateAfterEarlyRequiredStartupFailure({
+      error,
+      logMessage: 'Required default main translations unavailable; startup terminated:',
+    });
     return;
   }
 

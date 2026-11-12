@@ -49,6 +49,34 @@ test('main startup owns one initial menu installation before main-window constru
   );
 });
 
+test('required pre-i18n startup failures disclose in fixed Spanish and quit before later startup work', () => {
+  const earlyTermination = sourceSection(
+    'function showEarlyRequiredStartupFailureNotice()',
+    'function showStartupFailureDisclosure('
+  );
+  const bootstrap = sourceSection(
+    'app.whenReady().then(() => {',
+    "app.on('window-all-closed', () => {"
+  );
+
+  assert.match(earlyTermination, /title: 'toT no pudo iniciarse'/);
+  assert.match(earlyTermination, /message: 'No se pudo iniciar toT\. La aplicación se cerrará\.'/);
+  assert.match(earlyTermination, /buttons: \['Aceptar'\]/);
+  assert.match(earlyTermination, /Early required startup failure native notice failed:/);
+  assert.match(earlyTermination, /app\.quit\(\)/);
+  assert.match(bootstrap, /logMessage: 'Storage init failed:'/);
+  assert.match(bootstrap, /logMessage: 'Required language catalog initialization failed:'/);
+  assert.match(bootstrap, /logMessage: 'Required default main translations unavailable; startup terminated:'/);
+  assert.ok(
+    bootstrap.indexOf('initStorage(app)') < bootstrap.indexOf('settingsState.init({'),
+    'storage initialization must occur before settings initialization'
+  );
+  assert.ok(
+    bootstrap.indexOf('initializeDefaultMainTranslations()') < bootstrap.indexOf('textState.init({'),
+    'default main translations must be established before current-text initialization'
+  );
+});
+
 test('first-run selection persists before startup owns its initial menu installation', () => {
   const bootstrap = sourceSection(
     'settingsState.registerIpc(ipcMain, {',

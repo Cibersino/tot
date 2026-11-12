@@ -11,6 +11,12 @@ const originalLoad = Module._load;
 const originalQuit = actualApp.quit.bind(actualApp);
 let mainWindowDouble = null;
 let currentTextProcessingController = null;
+const earlyStartupFailureScenarios = new Set([
+  'storage-initialization',
+  'storage-initialization-dialog-failure',
+  'language-catalog',
+  'default-main-translations',
+]);
 
 actualApp.setAppPath(path.resolve(__dirname, '../..'));
 
@@ -156,9 +162,19 @@ const menuDouble = {
   },
 };
 const dialogDouble = {
-  showMessageBoxSync() {
-    if (scenario === 'menu-installation-dialog-failure') {
+  showMessageBoxSync(...args) {
+    if (scenario === 'menu-installation-dialog-failure'
+      || scenario === 'storage-initialization-dialog-failure') {
       throw new Error('forced startup native dialog failure');
+    }
+    if (earlyStartupFailureScenarios.has(scenario)) {
+      const options = args[args.length - 1];
+      emitMarker('TOT_MAIN_EARLY_STARTUP_FAILURE_NOTICE', JSON.stringify({
+        title: options.title,
+        message: options.message,
+        buttons: options.buttons,
+      }));
+      return 0;
     }
     emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', scenario);
     return 0;
@@ -226,12 +242,49 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
     const fsStorage = originalLoad.call(this, request, parent, isMain);
     return {
       ...fsStorage,
+      initStorage(app) {
+        if (scenario === 'storage-initialization'
+          || scenario === 'storage-initialization-dialog-failure') {
+          throw new Error('forced storage initialization failure');
+        }
+        return fsStorage.initStorage(app);
+      },
       saveJson(filePath, value) {
         const result = fsStorage.saveJson(filePath, value);
         if (path.basename(filePath) === 'current_text.json') {
           emitMarker('TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED');
         }
         return result;
+      },
+    };
+  }
+
+  if (request === './language_resources'
+    && parent
+    && parent.filename === path.resolve(__dirname, '../../electron/main.js')) {
+    const languageResources = originalLoad.call(this, request, parent, isMain);
+    return {
+      ...languageResources,
+      initialize(options) {
+        if (scenario === 'language-catalog') {
+          throw new Error('forced required language catalog failure');
+        }
+        return languageResources.initialize(options);
+      },
+    };
+  }
+
+  if (request === './menu_builder'
+    && parent
+    && parent.filename === path.resolve(__dirname, '../../electron/main.js')) {
+    const menuBuilder = originalLoad.call(this, request, parent, isMain);
+    return {
+      ...menuBuilder,
+      initializeDefaultMainTranslations() {
+        if (scenario === 'default-main-translations') {
+          throw new Error('forced required default main translations failure');
+        }
+        return menuBuilder.initializeDefaultMainTranslations();
       },
     };
   }

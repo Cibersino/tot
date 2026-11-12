@@ -33,13 +33,13 @@ function writeSettingsFile(userDataDir) {
   );
 }
 
-function runProbe(scenario, userDataDir) {
+function runProbe(scenario, userDataDir, { logLevel = 'silent' } = {}) {
   const childEnv = {
     ...process.env,
     TOT_MAIN_STARTUP_FAILURE_PROBE_SCENARIO: scenario,
     TOT_SMOKE_TEST: '1',
     TOT_SMOKE_USER_DATA_DIR: userDataDir,
-    TOT_LOG_LEVEL: 'silent',
+    TOT_LOG_LEVEL: logLevel,
   };
   delete childEnv.ELECTRON_RUN_AS_NODE;
 
@@ -89,7 +89,30 @@ for (const {
   vetoedClose = false,
   closesMainWindow = false,
   deferredPostReadyClose = false,
+  earlyStartupFailure = false,
+  expectedDiagnostic = '',
 } of [
+  {
+    scenario: 'storage-initialization',
+    earlyStartupFailure: true,
+    expectedDiagnostic: 'Storage init failed:',
+  },
+  {
+    scenario: 'storage-initialization-dialog-failure',
+    dialogFails: true,
+    earlyStartupFailure: true,
+    expectedDiagnostic: 'Storage init failed:',
+  },
+  {
+    scenario: 'language-catalog',
+    earlyStartupFailure: true,
+    expectedDiagnostic: 'Required language catalog initialization failed:',
+  },
+  {
+    scenario: 'default-main-translations',
+    earlyStartupFailure: true,
+    expectedDiagnostic: 'Required default main translations unavailable; startup terminated:',
+  },
   { scenario: 'menu-installation' },
   { scenario: 'main-window-construction' },
   { scenario: 'main-document-load' },
@@ -103,6 +126,8 @@ for (const {
 ]) {
   const expectedLifecycle = deferredPostReadyClose
     ? 'defers close while post-READY processing is active, then persists and quits'
+    : earlyStartupFailure
+    ? 'terminates before current-text initialization'
     : dialogFails
     ? 'continues after native-dialog failure, settles initial processing, persists, and quits'
     : 'discloses, settles initial processing, persists, and quits';
@@ -111,17 +136,34 @@ for (const {
     t.after(() => fs.rmSync(userDataDir, { recursive: true, force: true }));
     if (!firstRunFallback) writeSettingsFile(userDataDir);
 
-    const result = await runProbe(scenario, userDataDir);
+    const result = await runProbe(scenario, userDataDir, {
+      logLevel: earlyStartupFailure ? 'error' : 'silent',
+    });
 
     assert.equal(result.signal, null, `Electron exited via signal.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
     assert.equal(result.code, 0, `Electron exited with non-zero code.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
-    if (dialogFails) {
+    if (earlyStartupFailure && dialogFails) {
+      assert.doesNotMatch(result.stdout, /TOT_MAIN_EARLY_STARTUP_FAILURE_NOTICE:/);
+    } else if (earlyStartupFailure) {
+      assert.match(
+        result.stdout,
+        /TOT_MAIN_EARLY_STARTUP_FAILURE_NOTICE:\{"title":"toT no pudo iniciarse","message":"No se pudo iniciar toT\. La aplicación se cerrará\.","buttons":\["Aceptar"\]\}/
+      );
+    } else if (dialogFails) {
       assert.doesNotMatch(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG:${scenario}`));
     } else {
       assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG:${scenario}`));
     }
     const menuInstallationAttempts = result.stdout.match(/TOT_MAIN_STARTUP_MENU_INSTALL_ATTEMPT:/g) || [];
-    assert.equal(menuInstallationAttempts.length, 1, `Expected one initial menu installation attempt.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
+    assert.equal(
+      menuInstallationAttempts.length,
+      earlyStartupFailure ? 0 : 1,
+      `Unexpected initial menu installation attempts.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
+    );
+    if (earlyStartupFailure) {
+      assert.match(result.stderr, new RegExp(expectedDiagnostic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      assert.doesNotMatch(result.stdout, /TOT_SMOKE_READY/);
+    }
     if (vetoedClose) {
       assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_CLOSE_VETOED:${scenario}`));
     }
@@ -135,10 +177,15 @@ for (const {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":true\}/);
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":2,"ok":true\}/);
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
-    } else {
+    } else if (!earlyStartupFailure) {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
     }
-    assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED/);
+    if (earlyStartupFailure) {
+      assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:/);
+      assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED/);
+    } else {
+      assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED/);
+    }
     assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_QUIT:${scenario}`));
   });
 }
