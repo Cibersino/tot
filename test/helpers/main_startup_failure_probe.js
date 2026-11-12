@@ -56,6 +56,16 @@ function createBrowserWindowDouble() {
           });
         });
       }
+      if (scenario === 'main-preload' && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          this.webContents.emit(
+            'preload-error',
+            {},
+            path.resolve(__dirname, '../../electron/preload.js'),
+            new Error('forced main preload failure')
+          );
+        });
+      }
       if ((scenario === 'renderer-i18n-startup' || scenario === 'renderer-i18n-startup-api')
         && path.basename(filePath) === 'index.html') {
         queueMicrotask(() => {
@@ -162,8 +172,10 @@ actualApp.quit = () => {
   emitMarker('TOT_MAIN_STARTUP_FAILURE_QUIT', scenario);
   // Electron owns native-window closure during app.quit(). The double is not part
   // of Electron's native window registry, so model that one lifecycle effect for
-  // the startup renderer-i18n scenario.
-  if ((scenario === 'renderer-i18n-startup' || scenario === 'renderer-i18n-startup-api')
+  // managed terminal failures of the main window.
+  if ((scenario === 'main-preload'
+    || scenario === 'renderer-i18n-startup'
+    || scenario === 'renderer-i18n-startup-api')
     && mainWindowDouble
     && !mainWindowDouble.isDestroyed()) {
     mainWindowDouble.close();

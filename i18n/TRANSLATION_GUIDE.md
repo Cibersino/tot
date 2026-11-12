@@ -748,6 +748,16 @@ Estados de revisión recomendados:
         "en": "The main window could not load its initial document and the application will close."
         // [PROPÓSITO] Mensaje nativo terminal para el fallo de carga del documento inicial; la resolución fallida del procesamiento inicial del texto permite el cierre administrado.
       },
+      "startup_main_preload_failure_title": {
+        "es": "No se pudo iniciar la ventana principal",
+        "en": "The main window could not start"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando una excepción no controlada del preload inicial requerido impide establecer de forma fiable el puente de la ventana principal.
+      },
+      "startup_main_preload_failure_message": {
+        "es": "La ventana principal no pudo completar la configuración necesaria para iniciar y la aplicación se cerrará.",
+        "en": "The main window could not complete the setup it needs to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo del preload inicial requerido; la resolución fallida del procesamiento inicial del texto permite el cierre administrado.
+      },
       "startup_renderer_i18n_failure_title": {
         "es": "No se pudo iniciar la interfaz",
         "en": "The interface could not start"

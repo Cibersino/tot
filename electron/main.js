@@ -657,6 +657,7 @@ function unregisterShortcuts() {
  */
 function createMainWindow() {
   // NOTE: useContentSize:true => width/height apply to the content area (exclude window borders).
+  const mainPreloadPath = path.join(__dirname, 'preload.js');
   mainWin = new BrowserWindow({
     width: 828,
     height: 450,
@@ -665,7 +666,7 @@ function createMainWindow() {
     maximizable: false, // Prevent maximize button from changing size
     fullscreenable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: mainPreloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -675,7 +676,48 @@ function createMainWindow() {
   });
 
   const createdMainWin = mainWin;
+
+  let observingInitialMainPreload = true;
+  function removeInitialMainPreloadObserver() {
+    if (!observingInitialMainPreload) return;
+    observingInitialMainPreload = false;
+    try {
+      createdMainWin.webContents.removeListener('preload-error', onInitialMainPreloadError);
+    } catch (error) {
+      log.warn('Main initial preload listener removal failed (ignored):', error);
+    }
+  }
+
+  function onInitialMainPreloadError(_event, preloadPath, preloadError) {
+    if (!observingInitialMainPreload
+      || preloadPath !== mainPreloadPath
+      || mainReadyState !== 'PRE_READY'
+      || createdMainWin !== mainWin
+      || !isAliveWindow(createdMainWin)) {
+      return;
+    }
+
+    removeInitialMainPreloadObserver();
+    terminateAfterRequiredStartupFailure({
+      error: preloadError,
+      logContext: 'Main initial preload',
+      titleKey: 'startup_main_preload_failure_title',
+      messageKey: 'startup_main_preload_failure_message',
+      sourceWindow: createdMainWin,
+    });
+  }
+
+  // An unhandled error from this exact preload prevents the renderer from reliably reporting its own startup failure.
+  createdMainWin.webContents.on('preload-error', onInitialMainPreloadError);
   const initialMainDocumentLoad = createdMainWin.loadFile(path.join(__dirname, '../public/index.html'));
+  void initialMainDocumentLoad.then(
+    () => {
+      removeInitialMainPreloadObserver();
+    },
+    () => {
+      removeInitialMainPreloadObserver();
+    }
+  );
   void initialMainDocumentLoad.catch((error) => {
     // A rejected required initial load for its still-live window is terminal.
     if (!isAliveWindow(createdMainWin)) return;

@@ -94,6 +94,7 @@ for (const {
   { scenario: 'main-window-construction' },
   { scenario: 'main-document-load' },
   { scenario: 'main-document-load-after-vetoed-close', vetoedClose: true },
+  { scenario: 'main-preload', closesMainWindow: true },
   { scenario: 'renderer-i18n-startup', closesMainWindow: true },
   { scenario: 'renderer-i18n-startup-api', closesMainWindow: true },
   { scenario: 'renderer-i18n-transition-restoration', deferredPostReadyClose: true },
