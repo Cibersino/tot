@@ -292,4 +292,4 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
   return originalLoad.call(this, request, parent, isMain);
 };
 
-require('../../electron/main.js');
+require('../../electron/main_entry.js');

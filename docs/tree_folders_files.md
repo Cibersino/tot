@@ -122,6 +122,7 @@ tot/
 │ ├── language_resources.js
 │ ├── link_openers.js
 │ ├── log.js
+│ ├── main_entry.js
 │ ├── main.js
 │ ├── menu_builder.js
 │ ├── preset_preload.js
