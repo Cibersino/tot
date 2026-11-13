@@ -365,6 +365,7 @@ function init({
   saveJson,
   saveJsonStrict,
   createJsonStrict,
+  createSettingsStartupBackup,
   settingsFile,
   languageResources: injectedLanguageResources,
 } = {}) {
@@ -374,6 +375,7 @@ function init({
     || typeof saveJson !== 'function'
     || typeof saveJsonStrict !== 'function'
     || typeof createJsonStrict !== 'function'
+    || typeof createSettingsStartupBackup !== 'function'
   ) {
     throw new Error('[settings] init requires startup admission and persistence dependencies');
   }
@@ -385,11 +387,27 @@ function init({
     throw new Error('[settings] init requires initialized languageResources');
   }
 
-  const initialLoad = loadJsonWithStatus(settingsFile, createDefaultSettings());
+  const initialLoad = loadJsonWithStatus(
+    settingsFile,
+    createDefaultSettings(),
+    { includeRawBytes: true }
+  );
   const admissionError = getStartupAdmissionError(initialLoad);
   if (admissionError) throw admissionError;
 
   const rawSettings = initialLoad.value;
+
+  if (initialLoad.status === 'loaded') {
+    try {
+      createSettingsStartupBackup(settingsFile, initialLoad.rawBytes);
+    } catch (error) {
+      throw createStartupInitializationError(
+        'SETTINGS_STARTUP_BACKUP_FAILED',
+        '[settings] startup settings backup failed',
+        error
+      );
+    }
+  }
 
   languageResources = resolvedLanguageResources;
   const normalizedSettings = normalizeSettings(rawSettings);

@@ -44,6 +44,7 @@ const {
   saveJson,
   saveJsonStrict,
   createJsonStrict,
+  createSettingsStartupBackup,
 } = require('./fs_storage');
 
 const settingsState = require('./settings');
@@ -644,6 +645,10 @@ function terminateAfterInitialSettingsFailure(error) {
     logContext = 'Initial global settings persistence';
     titleKey = 'startup_settings_initial_write_failure_title';
     messageKey = 'startup_settings_initial_write_failure_message';
+  } else if (error && error.code === 'SETTINGS_STARTUP_BACKUP_FAILED') {
+    logContext = 'Initial global settings backup';
+    titleKey = 'startup_settings_backup_failure_title';
+    messageKey = 'startup_settings_backup_failure_message';
   }
 
   terminateAfterRequiredStartupFailure({
@@ -2544,6 +2549,7 @@ app.whenReady().then(() => {
       saveJson,
       saveJsonStrict,
       createJsonStrict,
+      createSettingsStartupBackup,
       settingsFile,
       languageResources,
     });

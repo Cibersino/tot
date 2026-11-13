@@ -57,6 +57,13 @@ test('loadJsonWithStatus preserves status, fallback, and BOM behavior across sta
     fsStorage.loadJsonWithStatus(targetPath, fallback),
     { status: 'loaded', value: { language: 'en' } }
   );
+  const loadedWithRawBytes = fsStorage.loadJsonWithStatus(
+    targetPath,
+    fallback,
+    { includeRawBytes: true }
+  );
+  assert.deepEqual(loadedWithRawBytes.value, { language: 'en' });
+  assert.deepEqual(loadedWithRawBytes.rawBytes, Buffer.from('\uFEFF{"language":"en"}', 'utf8'));
 
   fs.writeFileSync(targetPath, '   ', 'utf8');
   assert.deepEqual(
@@ -126,6 +133,92 @@ test('createJsonStrict can prepare a missing parent without replacing an appeari
     { code: 'EEXIST' }
   );
   assert.equal(fs.readFileSync(targetPath, 'utf8'), '{"language":"es"}');
+});
+
+test('createSettingsStartupBackup preserves raw bytes, advances arbitrary-size generations, and retains three files', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const settingsFile = path.join(tempDir, 'user_settings.json');
+  const initialBytes = Buffer.from('\uFEFF{"language":"es"}\r\n', 'utf8');
+
+  fsStorage.createSettingsStartupBackup(settingsFile, initialBytes);
+  fsStorage.createSettingsStartupBackup(settingsFile, Buffer.from('{"language":"en"}', 'utf8'));
+  fsStorage.createSettingsStartupBackup(settingsFile, Buffer.from('{"modeConteo":"simple"}', 'utf8'));
+  fsStorage.createSettingsStartupBackup(settingsFile, Buffer.from('{"previewSpoilerEnabled":false}', 'utf8'));
+
+  assert.deepEqual(
+    fs.readdirSync(tempDir).sort(),
+    [
+      'user_settings.json.backup.2',
+      'user_settings.json.backup.3',
+      'user_settings.json.backup.4',
+    ]
+  );
+  assert.deepEqual(
+    fs.readFileSync(path.join(tempDir, 'user_settings.json.backup.2')),
+    Buffer.from('{"language":"en"}', 'utf8')
+  );
+
+  const largeGeneration = '900719925474099312345678901234567890';
+  fs.writeFileSync(path.join(tempDir, `user_settings.json.backup.${largeGeneration}`), initialBytes);
+  fsStorage.createSettingsStartupBackup(settingsFile, initialBytes);
+  assert.equal(
+    fs.existsSync(path.join(tempDir, `user_settings.json.backup.${BigInt(largeGeneration) + 1n}`)),
+    true
+  );
+});
+
+test('createSettingsStartupBackup never replaces a colliding backup and exposes pruning failures', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const settingsFile = path.join(tempDir, 'user_settings.json');
+  const originalBytes = Buffer.from('{"language":"es"}', 'utf8');
+  const originalWriteFileSync = fs.writeFileSync;
+  let writeOptions = null;
+
+  t.mock.method(fs, 'writeFileSync', (filePath, data, options) => {
+    if (filePath === path.join(tempDir, 'user_settings.json.backup.1')) {
+      writeOptions = options;
+      originalWriteFileSync.call(fs, filePath, Buffer.from('concurrent backup', 'utf8'), {
+        flag: 'wx',
+      });
+      const error = new Error('backup appeared concurrently');
+      error.code = 'EEXIST';
+      throw error;
+    }
+    return originalWriteFileSync.call(fs, filePath, data, options);
+  });
+  assert.throws(
+    () => fsStorage.createSettingsStartupBackup(settingsFile, originalBytes),
+    { code: 'EEXIST' }
+  );
+  assert.deepEqual(writeOptions, { flag: 'wx' });
+  assert.deepEqual(
+    fs.readFileSync(path.join(tempDir, 'user_settings.json.backup.1')),
+    Buffer.from('concurrent backup', 'utf8')
+  );
+  t.mock.restoreAll();
+
+  for (const generation of ['1', '2', '3']) {
+    fs.writeFileSync(
+      path.join(tempDir, `user_settings.json.backup.${generation}`),
+      originalBytes
+    );
+  }
+  const originalUnlinkSync = fs.unlinkSync;
+  t.mock.method(fs, 'unlinkSync', (filePath, ...args) => {
+    if (filePath === path.join(tempDir, 'user_settings.json.backup.1')) {
+      const error = new Error('backup pruning denied');
+      error.code = 'EACCES';
+      throw error;
+    }
+    return originalUnlinkSync.call(fs, filePath, ...args);
+  });
+  assert.throws(
+    () => fsStorage.createSettingsStartupBackup(settingsFile, originalBytes),
+    { code: 'EACCES' }
+  );
+  assert.equal(fs.existsSync(path.join(tempDir, 'user_settings.json.backup.4')), true);
 });
 
 test('saveJson swallows write/setup failures while saveJsonStrict throws them', (t) => {

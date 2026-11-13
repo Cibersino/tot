@@ -21,6 +21,7 @@ const earlyStartupFailureScenarios = new Set([
 const settingsStartupFailureScenarios = new Set([
   'settings-admission',
   'settings-admission-dialog-failure',
+  'settings-backup',
   'settings-initial-write',
   'settings-initialization',
   'config-dir-preparation-then-settings-write-failure',
@@ -326,14 +327,23 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
         }
         return fsStorage.initStorage(app);
       },
-      loadJsonWithStatus(filePath, fallbackValue) {
+      loadJsonWithStatus(filePath, fallbackValue, options) {
         if (scenario === 'settings-admission' || scenario === 'settings-admission-dialog-failure') {
           return {
             status: 'failed',
             value: fallbackValue,
           };
         }
-        return fsStorage.loadJsonWithStatus(filePath, fallbackValue);
+        return fsStorage.loadJsonWithStatus(filePath, fallbackValue, options);
+      },
+      createSettingsStartupBackup(filePath, originalBytes) {
+        if (scenario === 'settings-backup'
+          && path.basename(filePath) === 'user_settings.json') {
+          const error = new Error('forced initial settings backup failure');
+          error.code = 'ENOSPC';
+          throw error;
+        }
+        return fsStorage.createSettingsStartupBackup(filePath, originalBytes);
       },
       saveJsonStrict(filePath, value) {
         if (scenario === 'settings-initial-write'

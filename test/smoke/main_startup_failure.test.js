@@ -125,6 +125,11 @@ for (const {
     expectedDiagnostic: 'Initial global settings admission failed:',
   },
   {
+    scenario: 'settings-backup',
+    settingsStartupFailure: true,
+    expectedDiagnostic: 'Initial global settings backup failed:',
+  },
+  {
     scenario: 'settings-initial-write',
     settingsStartupFailure: true,
     expectedDiagnostic: 'Initial global settings persistence failed:',
@@ -191,6 +196,7 @@ for (const {
       assert.match(result.stdout, /"buttons":\["Aceptar"\]/);
       const expectedTitles = {
         'settings-admission': 'No se pudo usar la configuración guardada',
+        'settings-backup': 'No se pudo respaldar la configuración guardada',
         'settings-initial-write': 'No se pudo guardar la configuración inicial',
         'settings-initialization': 'No se pudo inicializar la configuración',
         'config-dir-preparation-then-settings-write-failure': 'No se pudo guardar la configuración inicial',

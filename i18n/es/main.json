@@ -109,6 +109,8 @@
       "startup_renderer_i18n_failure_message": "toT no pudo completar la configuración de idioma necesaria para iniciar la interfaz. La aplicación se cerrará.",
       "startup_settings_admission_failure_title": "No se pudo usar la configuración guardada",
       "startup_settings_admission_failure_message": "toT no puede iniciar sin modificar la configuración guardada. La aplicación se cerrará.",
+      "startup_settings_backup_failure_title": "No se pudo respaldar la configuración guardada",
+      "startup_settings_backup_failure_message": "toT no pudo crear el respaldo necesario antes de iniciar. La aplicación se cerrará.",
       "startup_settings_initial_write_failure_title": "No se pudo guardar la configuración inicial",
       "startup_settings_initial_write_failure_message": "toT no pudo guardar la configuración necesaria para iniciar. La aplicación se cerrará.",
       "startup_settings_initialization_failure_title": "No se pudo inicializar la configuración",

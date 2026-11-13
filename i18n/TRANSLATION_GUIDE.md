@@ -778,6 +778,16 @@ Estados de revisión recomendados:
         "en": "toT cannot start without changing the saved settings. The application will close."
         // [PROPÓSITO] Mensaje terminal de admisión; informa que la aplicación se cerrará sin que toT sustituya el archivo rechazado por defaults.
       },
+      "startup_settings_backup_failure_title": {
+        "es": "No se pudo respaldar la configuración guardada",
+        "en": "Saved settings could not be backed up"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando falla el respaldo requerido de los bytes originales de preferencias admitidas antes de la normalización.
+      },
+      "startup_settings_backup_failure_message": {
+        "es": "toT no pudo crear el respaldo necesario antes de iniciar. La aplicación se cerrará.",
+        "en": "toT could not create the backup needed before starting. The application will close."
+        // [PROPÓSITO] Mensaje terminal de respaldo; comunica el cierre antes de la escritura inicial sin afirmar que se creó una copia recuperable.
+      },
       "startup_settings_initial_write_failure_title": {
         "es": "No se pudo guardar la configuración inicial",
         "en": "Initial settings could not be saved"

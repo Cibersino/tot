@@ -109,6 +109,8 @@
       "startup_renderer_i18n_failure_message": "toT could not complete the language setup needed to start the interface. The application will close.",
       "startup_settings_admission_failure_title": "Saved settings could not be used",
       "startup_settings_admission_failure_message": "toT cannot start without changing the saved settings. The application will close.",
+      "startup_settings_backup_failure_title": "Saved settings could not be backed up",
+      "startup_settings_backup_failure_message": "toT could not create the backup needed before starting. The application will close.",
       "startup_settings_initial_write_failure_title": "Initial settings could not be saved",
       "startup_settings_initial_write_failure_message": "toT could not save the settings needed to start. The application will close.",
       "startup_settings_initialization_failure_title": "Settings could not be initialized",

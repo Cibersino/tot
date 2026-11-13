@@ -21,12 +21,14 @@ function createSettingsHarness(initialStoredValue, {
   saveJsonStrictImpl = null,
   initialLoadResult = null,
   createJsonStrictImpl = null,
+  createSettingsStartupBackupImpl = null,
   initialSaveJsonStrictImpl = null,
 } = {}) {
   let storedValue = initialStoredValue;
   let initialPersistencePending = true;
   const writes = [];
   const createOptions = [];
+  const backupCalls = [];
 
   return {
     loadJson(_filePath, fallbackValue) {
@@ -53,10 +55,17 @@ function createSettingsHarness(initialStoredValue, {
       writes.push({ filePath, value: nextValue });
     },
     loadJsonWithStatus(filePath, fallbackValue) {
-      if (typeof initialLoadResult === 'function') return initialLoadResult(filePath);
-      if (initialLoadResult) return initialLoadResult;
-      if (typeof storedValue === 'undefined') return { status: 'missing', value: fallbackValue };
-      return { status: 'loaded', value: storedValue };
+      const result = typeof initialLoadResult === 'function'
+        ? initialLoadResult(filePath)
+        : initialLoadResult
+        || (typeof storedValue === 'undefined'
+          ? { status: 'missing', value: fallbackValue }
+          : { status: 'loaded', value: storedValue });
+      if (result.status !== 'loaded' || Buffer.isBuffer(result.rawBytes)) return result;
+      return {
+        ...result,
+        rawBytes: Buffer.from(JSON.stringify(result.value), 'utf8'),
+      };
     },
     createJsonStrict(filePath, nextValue, options) {
       initialPersistencePending = false;
@@ -72,6 +81,13 @@ function createSettingsHarness(initialStoredValue, {
       storedValue = nextValue;
       writes.push({ filePath, value: nextValue, created: true });
     },
+    createSettingsStartupBackup(filePath, originalBytes) {
+      backupCalls.push({ filePath, originalBytes });
+      if (typeof createSettingsStartupBackupImpl === 'function') {
+        return createSettingsStartupBackupImpl(filePath, originalBytes);
+      }
+      return `${filePath}.backup.1`;
+    },
     getStoredValue() {
       return storedValue;
     },
@@ -84,6 +100,9 @@ function createSettingsHarness(initialStoredValue, {
     getCreateOptions() {
       return createOptions.slice();
     },
+    getBackupCalls() {
+      return backupCalls.slice();
+    },
   };
 }
 
@@ -94,6 +113,7 @@ function initializeSettings(settings, harness, extraDependencies = {}) {
     saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     createJsonStrict: harness.createJsonStrict,
+    createSettingsStartupBackup: harness.createSettingsStartupBackup,
     settingsFile: 'C:\\fake\\settings.json',
     ...extraDependencies,
   });
@@ -151,6 +171,7 @@ test('init rejects an invalid stored root before caching or persistence', () => 
   );
   assert.equal(harness.getStoredValue(), null);
   assert.deepEqual(harness.getWrites(), []);
+  assert.deepEqual(harness.getBackupCalls(), []);
   assert.throws(() => settings.getSettings(), /called before init/);
 });
 
@@ -176,6 +197,7 @@ test('startup admission rejects unreadable, empty, malformed, and incompatible e
     );
     assert.equal(harness.getStoredValue(), originalValue, scenario.name);
     assert.deepEqual(harness.getWrites(), [], scenario.name);
+    assert.deepEqual(harness.getBackupCalls(), [], scenario.name);
   }
 });
 
@@ -195,6 +217,7 @@ test('startup admission leaves an actual malformed settings file byte-for-byte i
       saveJson: fsStorage.saveJson,
       saveJsonStrict: fsStorage.saveJsonStrict,
       createJsonStrict: fsStorage.createJsonStrict,
+      createSettingsStartupBackup: fsStorage.createSettingsStartupBackup,
       settingsFile,
     }),
     { code: 'SETTINGS_STARTUP_ADMISSION_FAILED' }
@@ -216,6 +239,29 @@ test('startup admission accepts all existing array scope collections, including 
 
   assert.equal(normalized.presetsByScope.en[0].name, 'saved in inactive scope');
   assert.equal(harness.getWrites().length, 1);
+  assert.equal(harness.getBackupCalls().length, 1);
+});
+
+test('startup backup receives the exact bytes returned by the admitted initial read', () => {
+  const settings = loadFreshSettingsModule();
+  const originalBytes = Buffer.from('\uFEFF{\r\n  "language": "es",\r\n  "presetsByScope": {}\r\n}\r\n', 'utf8');
+  const harness = createSettingsHarness(undefined, {
+    initialLoadResult: {
+      status: 'loaded',
+      value: {
+        language: 'es',
+        presetsByScope: {},
+      },
+      rawBytes: originalBytes,
+    },
+  });
+
+  initializeSettings(settings, harness);
+
+  assert.deepEqual(harness.getBackupCalls(), [{
+    filePath: 'C:\\fake\\settings.json',
+    originalBytes,
+  }]);
 });
 
 test('missing settings are created exclusively and an appearing file fails initial persistence', () => {
@@ -226,6 +272,7 @@ test('missing settings are created exclusively and an appearing file fails initi
   assert.equal(missingHarness.getWrites().length, 1);
   assert.equal(missingHarness.getWrites()[0].created, true);
   assert.deepEqual(missingHarness.getCreateOptions(), [{ ensureParent: true }]);
+  assert.deepEqual(missingHarness.getBackupCalls(), []);
 
   const racingSettings = loadFreshSettingsModule();
   const racingHarness = createSettingsHarness(undefined, {
@@ -241,6 +288,25 @@ test('missing settings are created exclusively and an appearing file fails initi
     (error) => error.code === 'SETTINGS_STARTUP_INITIAL_WRITE_FAILED' && error.cause.code === 'EEXIST'
   );
   assert.deepEqual(racingHarness.getWrites(), []);
+});
+
+test('an admitted existing settings file stops initialization when its required backup fails', () => {
+  const settings = loadFreshSettingsModule();
+  const originalValue = { language: 'es', presetsByScope: {} };
+  const backupFailure = new Error('backup disk full');
+  backupFailure.code = 'ENOSPC';
+  const harness = createSettingsHarness(originalValue, {
+    createSettingsStartupBackupImpl() {
+      throw backupFailure;
+    },
+  });
+
+  assert.throws(
+    () => initializeSettings(settings, harness),
+    (error) => error.code === 'SETTINGS_STARTUP_BACKUP_FAILED' && error.cause === backupFailure
+  );
+  assert.equal(harness.getBackupCalls().length, 1);
+  assert.deepEqual(harness.getWrites(), []);
 });
 
 test('an admitted existing settings file fails startup when its initial strict write fails', () => {

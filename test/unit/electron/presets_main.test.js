@@ -128,6 +128,7 @@ function createPresetHarness(t, {
       initialSettingsPersistence = false;
     },
     createJsonStrict: storage.createJsonStrict,
+    createSettingsStartupBackup: storage.createSettingsStartupBackup,
     settingsFile,
   });
   settings.configurePublication({ getWindows: () => ({ mainWin, presetWin }), decorateSettings: (value) => value, onSettingsUpdated: () => {} });
