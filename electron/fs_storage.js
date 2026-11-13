@@ -274,30 +274,39 @@ function getLoadJsonMissingNote(filePath) {
 }
 
 function loadJsonWithStatus(filePath, fallback = {}) {
+  let raw;
   try {
+    raw = fs.readFileSync(filePath, 'utf8');
+  } catch (error) {
     // Missing file is recoverable: callers decide what the fallback should be.
-    if (!fs.existsSync(filePath)) {
+    if (error && error.code === 'ENOENT') {
       log.warn(
         `loadJson missing (using fallback):${getLoadJsonMissingNote(filePath)}`,
         filePath
       );
       return { status: 'missing', value: fallback };
     }
+    log.warn(
+      'loadJson failed (using fallback):',
+      filePath,
+      error
+    );
+    return { status: 'failed', value: fallback };
+  }
 
-    let raw = fs.readFileSync(filePath, 'utf8');
+  // Remove UTF-8 BOM if present (some editors add it and JSON.parse may fail).
+  raw = raw.replace(/^\uFEFF/, '');
 
-    // Remove UTF-8 BOM if present (some editors add it and JSON.parse may fail).
-    raw = raw.replace(/^\uFEFF/, '');
+  // Empty/whitespace-only file is treated as invalid JSON (recoverable).
+  if (raw.trim() === '') {
+    log.warn(
+      'loadJson empty file (using fallback):',
+      filePath
+    );
+    return { status: 'empty', value: fallback };
+  }
 
-    // Empty/whitespace-only file is treated as invalid JSON (recoverable).
-    if (raw.trim() === '') {
-      log.warn(
-        'loadJson empty file (using fallback):',
-        filePath
-      );
-      return { status: 'empty', value: fallback };
-    }
-
+  try {
     return { status: 'loaded', value: JSON.parse(raw) };
   } catch (error) {
     log.warn(
@@ -339,10 +348,11 @@ function saveJsonStrict(filePath, obj) {
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
 }
 
-// Strict JSON creation for flows that must never replace an entry that appeared
-// after their preflight. Unlike saveJsonStrict(...), this does not create the
-// parent directory and requests exclusive filesystem creation.
-function createJsonStrict(filePath, obj) {
+// Strict JSON creation for flows that must never replace an entry that appeared after their preflight. By default, unlike saveJsonStrict(...), this does not create the parent directory and requests exclusive filesystem creation.
+function createJsonStrict(filePath, obj, { ensureParent = false } = {}) {
+  if (ensureParent) {
+    ensureDirExists(path.dirname(filePath));
+  }
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), {
     encoding: 'utf8',
     flag: 'wx',

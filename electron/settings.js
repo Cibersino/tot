@@ -308,6 +308,49 @@ function cloneSettingsForMutation(settings) {
   };
 }
 
+function createStartupInitializationError(code, message, cause = null) {
+  const error = new Error(message);
+  error.code = code;
+  if (cause) error.cause = cause;
+  return error;
+}
+
+function getStartupAdmissionError(initialLoad) {
+  if (initialLoad.status === 'missing') return null;
+
+  if (initialLoad.status === 'loaded') {
+    const settings = initialLoad.value;
+    if (!isNonArrayObject(settings)) {
+      return createStartupInitializationError(
+        'SETTINGS_STARTUP_ADMISSION_FAILED',
+        '[settings] startup settings root must be a non-array object'
+      );
+    }
+    if (!Object.prototype.hasOwnProperty.call(settings, 'presetsByScope')) return null;
+    if (!isNonArrayObject(settings.presetsByScope)) {
+      return createStartupInitializationError(
+        'SETTINGS_STARTUP_ADMISSION_FAILED',
+        '[settings] startup presetsByScope must be a non-array object when present'
+      );
+    }
+    for (const [preferenceScopeId, presets] of Object.entries(settings.presetsByScope)) {
+      if (!Array.isArray(presets)) {
+        return createStartupInitializationError(
+          'SETTINGS_STARTUP_ADMISSION_FAILED',
+          `[settings] startup presetsByScope entry must be an array: ${preferenceScopeId}`
+        );
+      }
+    }
+    return null;
+  }
+
+  return createStartupInitializationError(
+    'SETTINGS_STARTUP_ADMISSION_FAILED',
+    `[settings] startup settings file is ${initialLoad.status}`,
+    initialLoad.error || null
+  );
+}
+
 // =============================================================================
 // State API: init / getSettings / saveSettings / saveSettingsStrict
 // =============================================================================
@@ -316,13 +359,23 @@ function cloneSettingsForMutation(settings) {
  * - Stores injected dependencies and settings file path.
  * - Loads, normalizes, caches, and attempts to persist settings once on startup.
  */
-function init({ loadJson, saveJson, saveJsonStrict, settingsFile, languageResources: injectedLanguageResources } = {}) {
+function init({
+  loadJson,
+  loadJsonWithStatus,
+  saveJson,
+  saveJsonStrict,
+  createJsonStrict,
+  settingsFile,
+  languageResources: injectedLanguageResources,
+} = {}) {
   if (
     typeof loadJson !== 'function'
+    || typeof loadJsonWithStatus !== 'function'
     || typeof saveJson !== 'function'
     || typeof saveJsonStrict !== 'function'
+    || typeof createJsonStrict !== 'function'
   ) {
-    throw new Error('[settings] init requires loadJson, saveJson, and saveJsonStrict');
+    throw new Error('[settings] init requires startup admission and persistence dependencies');
   }
   if (!settingsFile) {
     throw new Error('[settings] init requires settingsFile');
@@ -332,23 +385,33 @@ function init({ loadJson, saveJson, saveJsonStrict, settingsFile, languageResour
     throw new Error('[settings] init requires initialized languageResources');
   }
 
+  const initialLoad = loadJsonWithStatus(settingsFile, createDefaultSettings());
+  const admissionError = getStartupAdmissionError(initialLoad);
+  if (admissionError) throw admissionError;
+
+  const rawSettings = initialLoad.value;
+
+  languageResources = resolvedLanguageResources;
+  const normalizedSettings = normalizeSettings(rawSettings);
+  try {
+    if (initialLoad.status === 'missing') {
+      createJsonStrict(settingsFile, normalizedSettings, { ensureParent: true });
+    } else {
+      saveJsonStrict(settingsFile, normalizedSettings);
+    }
+  } catch (error) {
+    throw createStartupInitializationError(
+      'SETTINGS_STARTUP_INITIAL_WRITE_FAILED',
+      '[settings] startup settings persistence failed',
+      error
+    );
+  }
+
   _loadJson = loadJson;
   _saveJson = saveJson;
   _saveJsonStrict = saveJsonStrict;
   _settingsFile = settingsFile;
-  languageResources = resolvedLanguageResources;
-
-  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
-
-  const normalizedSettings = normalizeSettings(rawSettings);
   _currentSettings = normalizedSettings;
-
-  try {
-    _saveJson(_settingsFile, _currentSettings);
-  } catch (error) {
-    log.error('init failed to persist settings:', _settingsFile, error);
-  }
-
   return _currentSettings;
 }
 

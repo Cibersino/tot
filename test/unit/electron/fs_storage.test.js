@@ -41,7 +41,7 @@ test('saveJsonStrict creates parent directories and persists JSON content', (t) 
   );
 });
 
-test('loadJsonWithStatus distinguishes recoverable absence from unusable stored content', (t) => {
+test('loadJsonWithStatus preserves status, fallback, and BOM behavior across startup-relevant reads', (t) => {
   const tempDir = createTempDir(t);
   const fsStorage = loadFreshFsStorage();
   const fallback = { language: 'es' };
@@ -50,6 +50,12 @@ test('loadJsonWithStatus distinguishes recoverable absence from unusable stored 
   assert.deepEqual(
     fsStorage.loadJsonWithStatus(targetPath, fallback),
     { status: 'missing', value: fallback }
+  );
+
+  fs.writeFileSync(targetPath, '\uFEFF{"language":"en"}', 'utf8');
+  assert.deepEqual(
+    fsStorage.loadJsonWithStatus(targetPath, fallback),
+    { status: 'loaded', value: { language: 'en' } }
   );
 
   fs.writeFileSync(targetPath, '   ', 'utf8');
@@ -70,6 +76,25 @@ test('loadJsonWithStatus distinguishes recoverable absence from unusable stored 
   );
 });
 
+test('loadJsonWithStatus treats only ENOENT as missing and preserves non-ENOENT failures as failed', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'user_settings.json');
+  const fallback = { language: 'es' };
+  const originalReadFileSync = fs.readFileSync;
+  const inaccessible = new Error('access denied');
+  inaccessible.code = 'EACCES';
+
+  t.mock.method(fs, 'readFileSync', (filePath, ...args) => {
+    if (filePath === targetPath) throw inaccessible;
+    return originalReadFileSync.call(fs, filePath, ...args);
+  });
+
+  const result = fsStorage.loadJsonWithStatus(targetPath, fallback);
+  assert.deepEqual(result, { status: 'failed', value: fallback });
+  assert.equal(fsStorage.loadJson(targetPath, fallback), fallback);
+});
+
 test('createJsonStrict creates only a new file in an existing parent directory', (t) => {
   const tempDir = createTempDir(t);
   const fsStorage = loadFreshFsStorage();
@@ -84,6 +109,23 @@ test('createJsonStrict creates only a new file in an existing parent directory',
     () => fsStorage.createJsonStrict(path.join(tempDir, 'missing', 'state.json'), payload),
     { code: 'ENOENT' }
   );
+});
+
+test('createJsonStrict can prepare a missing parent without replacing an appearing file', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'new-parent', 'user_settings.json');
+  const payload = { language: 'en' };
+
+  fsStorage.createJsonStrict(targetPath, payload, { ensureParent: true });
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), JSON.stringify(payload, null, 2));
+
+  fs.writeFileSync(targetPath, '{"language":"es"}', 'utf8');
+  assert.throws(
+    () => fsStorage.createJsonStrict(targetPath, payload, { ensureParent: true }),
+    { code: 'EEXIST' }
+  );
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), '{"language":"es"}');
 });
 
 test('saveJson swallows write/setup failures while saveJsonStrict throws them', (t) => {

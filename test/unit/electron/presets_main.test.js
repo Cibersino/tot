@@ -117,13 +117,17 @@ function createPresetHarness(t, {
   });
   const settings = require(modulePaths[1]);
   const handlers = new Map();
+  let initialSettingsPersistence = true;
   settings.init({
     loadJson: storage.loadJson,
+    loadJsonWithStatus: storage.loadJsonWithStatus,
     saveJson: storage.saveJson,
     saveJsonStrict(file, value) {
-      if (failWrite) throw new Error('disk full');
+      if (!initialSettingsPersistence && failWrite) throw new Error('disk full');
       storage.saveJsonStrict(file, value);
+      initialSettingsPersistence = false;
     },
+    createJsonStrict: storage.createJsonStrict,
     settingsFile,
   });
   settings.configurePublication({ getWindows: () => ({ mainWin, presetWin }), decorateSettings: (value) => value, onSettingsUpdated: () => {} });

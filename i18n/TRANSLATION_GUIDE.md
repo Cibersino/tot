@@ -768,6 +768,36 @@ Estados de revisión recomendados:
         "en": "toT could not complete the language setup needed to start the interface. The application will close."
         // [PROPÓSITO] Mensaje nativo terminal para el fallo requerido de i18n del renderer principal antes de READY; informa que la aplicación se cerrará tras resolver el procesamiento inicial del texto.
       },
+      "startup_settings_admission_failure_title": {
+        "es": "No se pudo usar la configuración guardada",
+        "en": "Saved settings could not be used"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando el archivo inicial de preferencias globales existente no supera la admisión estructural.
+      },
+      "startup_settings_admission_failure_message": {
+        "es": "toT no puede iniciar sin modificar la configuración guardada. La aplicación se cerrará.",
+        "en": "toT cannot start without changing the saved settings. The application will close."
+        // [PROPÓSITO] Mensaje terminal de admisión; informa que la aplicación se cerrará sin que toT sustituya el archivo rechazado por defaults.
+      },
+      "startup_settings_initial_write_failure_title": {
+        "es": "No se pudo guardar la configuración inicial",
+        "en": "Initial settings could not be saved"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando falla la escritura inicial obligatoria de preferencias admitidas.
+      },
+      "startup_settings_initial_write_failure_message": {
+        "es": "toT no pudo guardar la configuración necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not save the settings needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal de fallo de escritura inicial; no afirma que el archivo existente permanezca intacto.
+      },
+      "startup_settings_initialization_failure_title": {
+        "es": "No se pudo inicializar la configuración",
+        "en": "Settings could not be initialized"
+        // [PROPÓSITO] Título del diálogo nativo terminal para otra excepción que escape de la inicialización inicial de preferencias, incluido un recurso obligatorio de formato numérico.
+      },
+      "startup_settings_initialization_failure_message": {
+        "es": "toT no pudo completar la configuración necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not complete the settings needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal genérico de inicialización de preferencias; no atribuye una causa de almacenamiento que no esté demostrada.
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"

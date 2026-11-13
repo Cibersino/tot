@@ -1,6 +1,7 @@
 'use strict';
 
 const Module = require('node:module');
+const fs = require('node:fs');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
 
@@ -17,6 +18,56 @@ const earlyStartupFailureScenarios = new Set([
   'language-catalog',
   'default-main-translations',
 ]);
+const settingsStartupFailureScenarios = new Set([
+  'settings-admission',
+  'settings-admission-dialog-failure',
+  'settings-initial-write',
+  'settings-initialization',
+  'config-dir-preparation-then-settings-write-failure',
+]);
+const configDirectoryPreparationFailureScenarios = new Set([
+  'config-dir-preparation-recovers',
+  'config-dir-preparation-then-settings-write-failure',
+]);
+
+const smokeUserDataDir = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
+  ? process.env.TOT_SMOKE_USER_DATA_DIR.trim()
+  : '';
+const smokeConfigDir = smokeUserDataDir ? path.join(path.resolve(smokeUserDataDir), 'config') : '';
+const smokeSettingsFile = smokeConfigDir ? path.join(smokeConfigDir, 'user_settings.json') : '';
+
+if (configDirectoryPreparationFailureScenarios.has(scenario)) {
+  const originalExistsSync = fs.existsSync;
+  const originalMkdirSync = fs.mkdirSync;
+  const originalWriteFileSync = fs.writeFileSync;
+  let failInitialConfigPreparation = true;
+
+  fs.existsSync = function injectedExistsSync(filePath, ...args) {
+    if (failInitialConfigPreparation && path.resolve(String(filePath)) === smokeConfigDir) {
+      return false;
+    }
+    return originalExistsSync.call(this, filePath, ...args);
+  };
+  fs.mkdirSync = function injectedMkdirSync(dirPath, ...args) {
+    if (failInitialConfigPreparation && path.resolve(String(dirPath)) === smokeConfigDir) {
+      failInitialConfigPreparation = false;
+      const error = new Error('forced configuration directory preparation failure');
+      error.code = 'EACCES';
+      throw error;
+    }
+    return originalMkdirSync.call(this, dirPath, ...args);
+  };
+  if (scenario === 'config-dir-preparation-then-settings-write-failure') {
+    fs.writeFileSync = function injectedWriteFileSync(filePath, ...args) {
+      if (path.resolve(String(filePath)) === smokeSettingsFile) {
+        const error = new Error('forced settings write after configuration preparation failure');
+        error.code = 'EACCES';
+        throw error;
+      }
+      return originalWriteFileSync.call(this, filePath, ...args);
+    };
+  }
+}
 
 actualApp.setAppPath(path.resolve(__dirname, '../..'));
 
@@ -103,6 +154,19 @@ function createBrowserWindowDouble() {
           });
         });
       }
+      if (scenario === 'config-dir-preparation-recovers' && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          actualElectron.ipcMain.emit('startup:renderer-core-ready');
+          const initialState = currentTextProcessingController.getState();
+          currentTextProcessingController.resolve({
+            requestId: initialState.requestId,
+            ok: true,
+          });
+          queueMicrotask(() => {
+            actualElectron.ipcMain.emit('startup:splash-removed');
+          });
+        });
+      }
       if (scenario === 'first-run-fallback-menu-installation') {
         queueMicrotask(() => {
           this.emit('closed');
@@ -163,6 +227,10 @@ const menuDouble = {
 };
 const dialogDouble = {
   showMessageBoxSync(...args) {
+    if (scenario === 'settings-admission-dialog-failure') {
+      emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG_ATTEMPT', scenario);
+      throw new Error('forced startup native dialog failure');
+    }
     if (scenario === 'menu-installation-dialog-failure'
       || scenario === 'storage-initialization-dialog-failure') {
       throw new Error('forced startup native dialog failure');
@@ -174,6 +242,15 @@ const dialogDouble = {
         message: options.message,
         buttons: options.buttons,
       }));
+      return 0;
+    }
+    if (settingsStartupFailureScenarios.has(scenario)) {
+      const options = args[args.length - 1];
+      emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', `${scenario}:${JSON.stringify({
+        title: options.title,
+        message: options.message,
+        buttons: options.buttons,
+      })}`);
       return 0;
     }
     emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', scenario);
@@ -249,12 +326,45 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
         }
         return fsStorage.initStorage(app);
       },
+      loadJsonWithStatus(filePath, fallbackValue) {
+        if (scenario === 'settings-admission' || scenario === 'settings-admission-dialog-failure') {
+          return {
+            status: 'failed',
+            value: fallbackValue,
+          };
+        }
+        return fsStorage.loadJsonWithStatus(filePath, fallbackValue);
+      },
+      saveJsonStrict(filePath, value) {
+        if (scenario === 'settings-initial-write'
+          && path.basename(filePath) === 'user_settings.json') {
+          const error = new Error('forced initial settings write failure');
+          error.code = 'ENOSPC';
+          throw error;
+        }
+        return fsStorage.saveJsonStrict(filePath, value);
+      },
       saveJson(filePath, value) {
         const result = fsStorage.saveJson(filePath, value);
         if (path.basename(filePath) === 'current_text.json') {
           emitMarker('TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED');
         }
         return result;
+      },
+    };
+  }
+
+  if (request === './settings'
+    && parent
+    && parent.filename === path.resolve(__dirname, '../../electron/main.js')) {
+    const settings = originalLoad.call(this, request, parent, isMain);
+    return {
+      ...settings,
+      init(options) {
+        if (scenario === 'settings-initialization') {
+          throw new Error('forced unexpected initial settings initialization failure');
+        }
+        return settings.init(options);
       },
     };
   }

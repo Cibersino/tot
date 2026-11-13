@@ -43,6 +43,7 @@ const {
   loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
+  createJsonStrict,
 } = require('./fs_storage');
 
 const settingsState = require('./settings');
@@ -566,10 +567,13 @@ function terminateAfterEarlyRequiredStartupFailure({ error, logMessage } = {}) {
   }
 }
 
-function showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow = null } = {}) {
+function showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow = null, language = null } = {}) {
   let dialogTexts = null;
   try {
-    dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+    const dialogLanguage = typeof language === 'string' && language.trim()
+      ? language.trim()
+      : getSelectedLanguage();
+    dialogTexts = menuBuilder.getDialogTexts(dialogLanguage);
   } catch (error) {
     log.error('Startup failure native dialog translations unavailable:', error);
   }
@@ -609,13 +613,14 @@ function terminateAfterRequiredStartupFailure({
   titleKey,
   messageKey,
   sourceWindow = null,
+  language = null,
 } = {}) {
   if (startupTerminalFailure) return;
   startupTerminalFailure = true;
 
   log.error(`${logContext} failed:`, error);
   try {
-    showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow });
+    showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow, language });
   } finally {
     settleInitialCurrentTextProcessingForStartupFailure();
     try {
@@ -624,6 +629,30 @@ function terminateAfterRequiredStartupFailure({
       log.error('Startup failure managed quit failed:', quitError);
     }
   }
+}
+
+function terminateAfterInitialSettingsFailure(error) {
+  let logContext = 'Initial global settings initialization';
+  let titleKey = 'startup_settings_initialization_failure_title';
+  let messageKey = 'startup_settings_initialization_failure_message';
+
+  if (error && error.code === 'SETTINGS_STARTUP_ADMISSION_FAILED') {
+    logContext = 'Initial global settings admission';
+    titleKey = 'startup_settings_admission_failure_title';
+    messageKey = 'startup_settings_admission_failure_message';
+  } else if (error && error.code === 'SETTINGS_STARTUP_INITIAL_WRITE_FAILED') {
+    logContext = 'Initial global settings persistence';
+    titleKey = 'startup_settings_initial_write_failure_title';
+    messageKey = 'startup_settings_initial_write_failure_message';
+  }
+
+  terminateAfterRequiredStartupFailure({
+    error,
+    logContext,
+    titleKey,
+    messageKey,
+    language: DEFAULT_LANG,
+  });
 }
 
 /**
@@ -2479,7 +2508,7 @@ app.whenReady().then(() => {
     return;
   }
 
-  // Ensure config directory exists before any module tries to read/write JSON.
+  // Best-effort directory preparation; required settings operations determine whether startup can continue.
   ensureConfigDir();
 
   try {
@@ -2506,14 +2535,22 @@ app.whenReady().then(() => {
   const snapshotTagsFile = getSnapshotTagsFile();
   const currentTextFile = getCurrentTextFile();
 
-  // Load settings (normalized and persisted) via settingsState.
-  const settings = settingsState.init({
-    loadJson,
-    saveJson,
-    saveJsonStrict,
-    settingsFile,
-    languageResources,
-  });
+  // Load settings (admitted, normalized, and persisted) via settingsState.
+  let settings;
+  try {
+    settings = settingsState.init({
+      loadJson,
+      loadJsonWithStatus,
+      saveJson,
+      saveJsonStrict,
+      createJsonStrict,
+      settingsFile,
+      languageResources,
+    });
+  } catch (error) {
+    terminateAfterInitialSettingsFailure(error);
+    return;
+  }
 
   snapshotTagSettings.init({
     loadJsonWithStatus,

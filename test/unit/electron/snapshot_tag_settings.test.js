@@ -110,7 +110,7 @@ test('init creates default snapshot-tag preferences when the file is missing', (
   assert.deepEqual(harness.getStoredValue(), normalized);
 });
 
-test('snapshot-tag IPC preserves stored preferences after a degraded storage read', async () => {
+test('snapshot-tag IPC preserves stored preferences after the shared JSON reader returns failed', async () => {
   const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
   const existingType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
   const existingPreferences = {
