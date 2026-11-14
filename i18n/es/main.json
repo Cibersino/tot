@@ -107,6 +107,8 @@
       "startup_main_preload_failure_message": "La ventana principal no pudo completar la configuración necesaria para iniciar y la aplicación se cerrará.",
       "startup_renderer_i18n_failure_title": "No se pudo iniciar la interfaz",
       "startup_renderer_i18n_failure_message": "toT no pudo completar la configuración de idioma necesaria para iniciar la interfaz. La aplicación se cerrará.",
+      "startup_registration_failure_title": "No se pudo completar el inicio de la aplicación",
+      "startup_registration_failure_message": "toT no pudo completar la preparación necesaria para iniciar. La aplicación se cerrará.",
       "startup_settings_admission_failure_title": "No se pudo usar la configuración guardada",
       "startup_settings_admission_failure_message": "toT no puede iniciar sin modificar la configuración guardada. La aplicación se cerrará.",
       "startup_settings_backup_failure_title": "No se pudo respaldar la configuración guardada",

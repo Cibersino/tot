@@ -32,6 +32,14 @@ const snapshotTagStartupFailureScenarios = new Set([
   'snapshot-tags-admission-dialog-failure',
   'snapshot-tags-initial-write',
 ]);
+const startupRegistrationFailureScenarios = new Set([
+  'startup-registration-settings-publication',
+  'startup-registration-editor-state',
+  'startup-registration-reading-test-controller',
+  'startup-registration-current-text',
+  'startup-registration-current-text-processing',
+  'startup-registration-current-text-processing-dialog-failure',
+]);
 const configDirectoryPreparationFailureScenarios = new Set([
   'config-dir-preparation-recovers',
   'config-dir-preparation-then-settings-write-failure',
@@ -235,7 +243,8 @@ const menuDouble = {
 const dialogDouble = {
   showMessageBoxSync(...args) {
     if (scenario === 'settings-admission-dialog-failure'
-      || scenario === 'snapshot-tags-admission-dialog-failure') {
+      || scenario === 'snapshot-tags-admission-dialog-failure'
+      || scenario === 'startup-registration-current-text-processing-dialog-failure') {
       emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG_ATTEMPT', scenario);
       throw new Error('forced startup native dialog failure');
     }
@@ -253,7 +262,8 @@ const dialogDouble = {
       return 0;
     }
     if (settingsStartupFailureScenarios.has(scenario)
-      || snapshotTagStartupFailureScenarios.has(scenario)) {
+      || snapshotTagStartupFailureScenarios.has(scenario)
+      || startupRegistrationFailureScenarios.has(scenario)) {
       const options = args[args.length - 1];
       emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', `${scenario}:${JSON.stringify({
         title: options.title,
@@ -318,6 +328,64 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
           return resolve(context);
         };
         return controller;
+      },
+      registerIpc(...args) {
+        if (scenario === 'startup-registration-current-text-processing'
+          || scenario === 'startup-registration-current-text-processing-dialog-failure') {
+          throw new Error('forced current-text processing-state IPC registration failure');
+        }
+        return currentTextProcessingStateIpc.registerIpc(...args);
+      },
+    };
+  }
+
+  if (request === './text_state'
+    && parent
+    && parent.filename === path.resolve(__dirname, '../../electron/main.js')) {
+    const textState = originalLoad.call(this, request, parent, isMain);
+    return {
+      ...textState,
+      init(...args) {
+        if (startupRegistrationFailureScenarios.has(scenario)) {
+          emitMarker('TOT_MAIN_STARTUP_FAILURE_TEXT_INIT_UNEXPECTED', scenario);
+        }
+        return textState.init(...args);
+      },
+      registerIpc(...args) {
+        if (scenario === 'startup-registration-current-text') {
+          throw new Error('forced current-text IPC registration failure');
+        }
+        return textState.registerIpc(...args);
+      },
+    };
+  }
+
+  if (request === './editor_state'
+    && parent
+    && parent.filename === path.resolve(__dirname, '../../electron/main.js')) {
+    const editorState = originalLoad.call(this, request, parent, isMain);
+    return {
+      ...editorState,
+      registerIpc(...args) {
+        if (scenario === 'startup-registration-editor-state') {
+          throw new Error('forced Text Editor state IPC registration failure');
+        }
+        return editorState.registerIpc(...args);
+      },
+    };
+  }
+
+  if (request === './reading_test_session'
+    && parent
+    && parent.filename === path.resolve(__dirname, '../../electron/main.js')) {
+    const readingTestSession = originalLoad.call(this, request, parent, isMain);
+    return {
+      ...readingTestSession,
+      createController(...args) {
+        if (scenario === 'startup-registration-reading-test-controller') {
+          throw new Error('forced Reading Test session controller setup failure');
+        }
+        return readingTestSession.createController(...args);
       },
     };
   }
@@ -398,6 +466,12 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
           throw new Error('forced unexpected initial settings initialization failure');
         }
         return settings.init(options);
+      },
+      configurePublication(...args) {
+        if (scenario === 'startup-registration-settings-publication') {
+          throw new Error('forced settings publication setup failure');
+        }
+        return settings.configurePublication(...args);
       },
     };
   }

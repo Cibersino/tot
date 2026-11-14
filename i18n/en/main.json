@@ -107,6 +107,8 @@
       "startup_main_preload_failure_message": "The main window could not complete the setup it needs to start. The application will close.",
       "startup_renderer_i18n_failure_title": "The interface could not start",
       "startup_renderer_i18n_failure_message": "toT could not complete the language setup needed to start the interface. The application will close.",
+      "startup_registration_failure_title": "The application could not complete startup",
+      "startup_registration_failure_message": "toT could not complete the setup needed to start. The application will close.",
       "startup_settings_admission_failure_title": "Saved settings could not be used",
       "startup_settings_admission_failure_message": "toT cannot start without changing the saved settings. The application will close.",
       "startup_settings_backup_failure_title": "Saved settings could not be backed up",

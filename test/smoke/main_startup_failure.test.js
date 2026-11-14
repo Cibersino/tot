@@ -90,9 +90,11 @@ for (const {
   earlyStartupFailure = false,
   settingsStartupFailure = false,
   snapshotTagStartupFailure = false,
+  registrationStartupFailure = false,
   settingsLanguage = 'en',
   normalStartup = false,
   expectedDiagnostic = '',
+  expectedCause = '',
 } of [
   {
     scenario: 'storage-initialization',
@@ -168,6 +170,43 @@ for (const {
     snapshotTagStartupFailure: true,
     expectedDiagnostic: 'Initial snapshot-tag settings persistence failed:',
   },
+  {
+    scenario: 'startup-registration-settings-publication',
+    registrationStartupFailure: true,
+    expectedDiagnostic: 'Startup structural setup (settings publication setup) failed:',
+    expectedCause: 'forced settings publication setup failure',
+  },
+  {
+    scenario: 'startup-registration-editor-state',
+    registrationStartupFailure: true,
+    expectedDiagnostic: 'Startup structural setup (Text Editor state IPC registration) failed:',
+    expectedCause: 'forced Text Editor state IPC registration failure',
+  },
+  {
+    scenario: 'startup-registration-reading-test-controller',
+    registrationStartupFailure: true,
+    expectedDiagnostic: 'Startup structural setup (Reading Test session controller setup) failed:',
+    expectedCause: 'forced Reading Test session controller setup failure',
+  },
+  {
+    scenario: 'startup-registration-current-text',
+    registrationStartupFailure: true,
+    expectedDiagnostic: 'Startup structural setup (current-text IPC registration) failed:',
+    expectedCause: 'forced current-text IPC registration failure',
+  },
+  {
+    scenario: 'startup-registration-current-text-processing',
+    registrationStartupFailure: true,
+    expectedDiagnostic: 'Startup structural setup (current-text processing-state IPC registration) failed:',
+    expectedCause: 'forced current-text processing-state IPC registration failure',
+  },
+  {
+    scenario: 'startup-registration-current-text-processing-dialog-failure',
+    dialogFails: true,
+    registrationStartupFailure: true,
+    expectedDiagnostic: 'Startup structural setup (current-text processing-state IPC registration) failed:',
+    expectedCause: 'forced current-text processing-state IPC registration failure',
+  },
   { scenario: 'config-dir-preparation-recovers', normalStartup: true },
   { scenario: 'menu-installation' },
   { scenario: 'main-window-construction' },
@@ -184,7 +223,7 @@ for (const {
     ? 'defers close while post-READY processing is active, then persists and quits'
     : earlyStartupFailure
     ? 'terminates before current-text initialization'
-    : settingsStartupFailure || snapshotTagStartupFailure
+    : settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure
     ? 'terminates before current-text initialization'
     : normalStartup
     ? 'continues after best-effort configuration-directory preparation fails'
@@ -197,14 +236,14 @@ for (const {
     const initialSettingsContents = firstRunFallback ? null : writeSettingsFile(userDataDir, settingsLanguage);
 
     const result = await runProbe(scenario, userDataDir, {
-      logLevel: earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || normalStartup
+      logLevel: earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure || normalStartup
         ? 'error'
         : 'silent',
     });
 
     assert.equal(result.signal, null, `Electron exited via signal.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
     assert.equal(result.code, 0, `Electron exited with non-zero code.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
-    if ((settingsStartupFailure || snapshotTagStartupFailure) && dialogFails) {
+    if ((settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) && dialogFails) {
       assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG_ATTEMPT:${scenario}`));
       assert.match(result.stderr, /Startup failure native dialog failed:/);
     } else if (earlyStartupFailure && dialogFails) {
@@ -214,12 +253,12 @@ for (const {
         result.stdout,
         /TOT_MAIN_EARLY_STARTUP_FAILURE_NOTICE:\{"title":"toT no pudo iniciarse","message":"No se pudo iniciar toT\. La aplicación se cerrará\.","buttons":\["Aceptar"\]\}/
       );
-    } else if (settingsStartupFailure || snapshotTagStartupFailure) {
+    } else if (settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) {
       assert.match(
         result.stdout,
         new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG:${scenario}:`)
       );
-      const expectedButton = snapshotTagStartupFailure && settingsLanguage ? 'OK' : 'Aceptar';
+      const expectedButton = (snapshotTagStartupFailure || registrationStartupFailure) && settingsLanguage ? 'OK' : 'Aceptar';
       assert.match(result.stdout, new RegExp(`"buttons":\\["${expectedButton}"\\]`));
       const expectedTitles = {
         'settings-admission': 'No se pudo usar la configuración guardada',
@@ -230,12 +269,22 @@ for (const {
         'snapshot-tags-admission': 'Saved snapshot-tag preferences could not be used',
         'snapshot-tags-admission-default-language': 'No se pudieron usar las preferencias de etiquetas de snapshots guardadas',
         'snapshot-tags-initial-write': 'Snapshot-tag preferences could not be saved',
+        'startup-registration-settings-publication': 'The application could not complete startup',
+        'startup-registration-editor-state': 'The application could not complete startup',
+        'startup-registration-reading-test-controller': 'The application could not complete startup',
+        'startup-registration-current-text': 'The application could not complete startup',
+        'startup-registration-current-text-processing': 'The application could not complete startup',
       };
       assert.match(result.stdout, new RegExp(expectedTitles[scenario]));
       const expectedMessages = {
         'snapshot-tags-admission': 'toT cannot safely recover the saved snapshot-tag preferences. The application will close without changing them.',
         'snapshot-tags-admission-default-language': 'toT no puede recuperar de forma segura las preferencias de etiquetas de snapshots guardadas. La aplicación se cerrará sin modificarlas.',
         'snapshot-tags-initial-write': 'toT could not save the snapshot-tag preferences needed to start. The application will close.',
+        'startup-registration-settings-publication': 'toT could not complete the setup needed to start. The application will close.',
+        'startup-registration-editor-state': 'toT could not complete the setup needed to start. The application will close.',
+        'startup-registration-reading-test-controller': 'toT could not complete the setup needed to start. The application will close.',
+        'startup-registration-current-text': 'toT could not complete the setup needed to start. The application will close.',
+        'startup-registration-current-text-processing': 'toT could not complete the setup needed to start. The application will close.',
       };
       if (expectedMessages[scenario]) {
         assert.match(result.stdout, new RegExp(expectedMessages[scenario].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
@@ -250,11 +299,14 @@ for (const {
     const menuInstallationAttempts = result.stdout.match(/TOT_MAIN_STARTUP_MENU_INSTALL_ATTEMPT:/g) || [];
     assert.equal(
       menuInstallationAttempts.length,
-      (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure) ? 0 : 1,
+      (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) ? 0 : 1,
       `Unexpected initial menu installation attempts.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
     );
-    if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure) {
+    if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) {
       assert.match(result.stderr, new RegExp(expectedDiagnostic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      if (expectedCause) {
+        assert.match(result.stderr, new RegExp(expectedCause.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      }
       assert.doesNotMatch(result.stdout, /TOT_SMOKE_READY/);
     }
     if (scenario === 'settings-admission' || scenario === 'settings-admission-dialog-failure') {
@@ -281,12 +333,15 @@ for (const {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":true\}/);
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":2,"ok":true\}/);
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
-    } else if (!earlyStartupFailure && !settingsStartupFailure && !snapshotTagStartupFailure && !normalStartup) {
+    } else if (!earlyStartupFailure && !settingsStartupFailure && !snapshotTagStartupFailure && !registrationStartupFailure && !normalStartup) {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
     }
-    if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure) {
+    if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) {
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:/);
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED/);
+      if (registrationStartupFailure) {
+        assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_TEXT_INIT_UNEXPECTED/);
+      }
     } else {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED/);
     }

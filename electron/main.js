@@ -686,6 +686,22 @@ function terminateAfterInitialSnapshotTagFailure(error, admittedLanguage) {
   });
 }
 
+function terminateAfterStartupRegistrationFailure(error, operation, admittedLanguage) {
+  const operationLabel = typeof operation === 'string' && operation.trim()
+    ? operation.trim()
+    : 'required startup setup';
+
+  terminateAfterRequiredStartupFailure({
+    error,
+    logContext: `Startup structural setup (${operationLabel})`,
+    titleKey: 'startup_registration_failure_title',
+    messageKey: 'startup_registration_failure_message',
+    language: typeof admittedLanguage === 'string' && admittedLanguage.trim()
+      ? admittedLanguage
+      : DEFAULT_LANG,
+  });
+}
+
 /**
  * Developer-only global shortcuts (disabled in packaged builds).
  * Used for quick inspection and reload during development.
@@ -2597,13 +2613,18 @@ app.whenReady().then(() => {
 
   spellcheckController.apply(settings);
 
-  settingsState.configurePublication({
-    getWindows: () => getSettingsBroadcastWindows(),
-    onSettingsUpdated: (nextSettings) => {
-      spellcheckController.apply(nextSettings);
-    },
-    decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
-  });
+  try {
+    settingsState.configurePublication({
+      getWindows: () => getSettingsBroadcastWindows(),
+      onSettingsUpdated: (nextSettings) => {
+        spellcheckController.apply(nextSettings);
+      },
+      decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
+    });
+  } catch (error) {
+    terminateAfterStartupRegistrationFailure(error, 'settings publication setup', settings.language);
+    return;
+  }
 
   const readingTestPoolSync = readingTestPool.synchronizeBundledPoolContent();
   if (!readingTestPoolSync || readingTestPoolSync.ok !== true) {
@@ -2611,162 +2632,190 @@ app.whenReady().then(() => {
   }
 
   // Delegated IPC registration (feature modules). main.js owns windows; feature modules own their IPC contract and internal logic.
-  editorState.registerIpc(ipcMain, {
-    getEditorWindow: () => editorWin,
-  });
+  let startupRegistrationOperation = 'Text Editor state IPC registration';
+  try {
+    editorState.registerIpc(ipcMain, {
+      getEditorWindow: () => editorWin,
+    });
 
-  editorFindMain.registerIpc(ipcMain);
+    startupRegistrationOperation = 'Text Editor Find IPC registration';
+    editorFindMain.registerIpc(ipcMain);
 
-  settingsState.registerIpc(ipcMain, {
-    buildAppMenu,
-    shouldRebuildAppMenu: () => languageResolved,
-  });
+    startupRegistrationOperation = 'global settings IPC registration';
+    settingsState.registerIpc(ipcMain, {
+      buildAppMenu,
+      shouldRebuildAppMenu: () => languageResolved,
+    });
 
-  snapshotTagSettings.registerIpc(ipcMain, {
-    publishSettingsUpdate: () => settingsState.publishCurrentSettings(),
-  });
+    startupRegistrationOperation = 'snapshot-tag settings IPC registration';
+    snapshotTagSettings.registerIpc(ipcMain, {
+      publishSettingsUpdate: () => settingsState.publishCurrentSettings(),
+    });
 
-  presetsMain.registerIpc(ipcMain, {
-    getWindows: () => ({
+    startupRegistrationOperation = 'preset IPC registration';
+    presetsMain.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+        editorWin,
+        editorFindWin: editorFindMain.getFindWindow(),
+        presetWin,
+        langWin,
+        flotanteWin,
+        taskEditorWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'current-text snapshot IPC registration';
+    snapshotsMain.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'task IPC registration';
+    tasksMain.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+        taskEditorWin,
+      }),
+      ensureTaskEditorWindow: () => {
+        if (!isAliveWindow(taskEditorWin)) {
+          createTaskEditorWindow();
+        } else {
+          taskEditorWin.show();
+        }
+      },
+      taskEditorLifecycle: taskEditorWindowLifecycleController,
+    });
+
+    startupRegistrationOperation = 'updater IPC registration';
+    updater.registerIpc(ipcMain, {
+      mainWinRef: () => mainWin,
+      currentLanguageRef: () => getSelectedLanguage(),
+    });
+
+    // Text extraction + OCR integration points.
+    startupRegistrationOperation = 'text-extraction processing-mode IPC registration';
+    textExtractionProcessingModeIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      controller: textExtractionProcessingModeController,
+    });
+
+    startupRegistrationOperation = 'text-extraction file-picker IPC registration';
+    textExtractionFilePickerIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'text-extraction preconditions IPC registration';
+    textExtractionPreconditionsIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      getPreconditionContext,
+    });
+
+    startupRegistrationOperation = 'text-extraction OCR activation IPC registration';
+    textExtractionOcrActivationIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+    });
+
+    startupRegistrationOperation = 'text-extraction OCR disconnect IPC registration';
+    textExtractionOcrDisconnectIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+    });
+
+    startupRegistrationOperation = 'text-extraction PDF inspection IPC registration';
+    textExtractionPdfInspectIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'text-extraction preparation IPC registration';
+    textExtractionPrepareIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+    });
+
+    startupRegistrationOperation = 'text-extraction execution IPC registration';
+    textExtractionExecutePreparedIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+      controller: textExtractionProcessingModeController,
+    });
+
+    startupRegistrationOperation = 'text-extraction generated-PDF reveal IPC registration';
+    textExtractionGeneratedPdfRevealIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+      shellApi: shell,
+    });
+
+    startupRegistrationOperation = 'Reading Test session controller setup';
+    readingTestSessionController = readingTestSession.createController({
+      resolveMainWindow: () => resolveMainWindow(),
+      getPreconditionContext,
+      isProcessingModeActive: () => textExtractionProcessingModeController.isActive(),
+      ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
+      showEditorWindow: (options) => showEditorWindow(options),
+      ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
+      closeEditorWindow: () => requestCloseEditorWindow(),
+      closeFlotanteWindow: () => requestCloseFlotanteWindow(),
+      startCrono: () => startCrono(),
+      resetCrono: () => resetCrono(),
+      stopCrono: () => stopCrono(),
+      getCronoState: () => getCronoState(),
+      getCurrentText: () => textState.getCurrentText(),
+      applyCurrentText: (text, meta) => textState.applyCurrentText(text, meta),
+      openPresetWindow: (initialData) => createPresetWindow(initialData),
+    });
+
+    startupRegistrationOperation = 'Reading Test session IPC registration';
+    readingTestSessionController.registerIpc(ipcMain);
+
+    startupRegistrationOperation = 'Reading Test pool import IPC registration';
+    readingTestPoolImport.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      isReadingTestInteractionLocked: () => (
+        !!(readingTestSessionController && readingTestSessionController.isInteractionLocked())
+      ),
+    });
+
+    startupRegistrationOperation = 'current-text IPC registration';
+    textState.registerIpc(ipcMain, () => ({
       mainWin,
       editorWin,
-      editorFindWin: editorFindMain.getFindWindow(),
-      presetWin,
-      langWin,
-      flotanteWin,
-      taskEditorWin,
-    }),
-  });
+    }));
 
-  snapshotsMain.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-  });
-
-  tasksMain.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-      taskEditorWin,
-    }),
-    ensureTaskEditorWindow: () => {
-      if (!isAliveWindow(taskEditorWin)) {
-        createTaskEditorWindow();
-      } else {
-        taskEditorWin.show();
-      }
-    },
-    taskEditorLifecycle: taskEditorWindowLifecycleController,
-  });
-
-  updater.registerIpc(ipcMain, {
-    mainWinRef: () => mainWin,
-    currentLanguageRef: () => getSelectedLanguage(),
-  });
-
-  // Text extraction + OCR integration points.
-  textExtractionProcessingModeIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    controller: textExtractionProcessingModeController,
-  });
-
-  textExtractionFilePickerIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-  });
-
-  textExtractionPreconditionsIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    getPreconditionContext,
-  });
-
-  textExtractionOcrActivationIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-  });
-
-  textExtractionOcrDisconnectIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-  });
-
-  textExtractionPdfInspectIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-  });
-
-  textExtractionPrepareIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-  });
-
-  textExtractionExecutePreparedIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-    controller: textExtractionProcessingModeController,
-  });
-
-  textExtractionGeneratedPdfRevealIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-    shellApi: shell,
-  });
-
-  readingTestSessionController = readingTestSession.createController({
-    resolveMainWindow: () => resolveMainWindow(),
-    getPreconditionContext,
-    isProcessingModeActive: () => textExtractionProcessingModeController.isActive(),
-    ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
-    showEditorWindow: (options) => showEditorWindow(options),
-    ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
-    closeEditorWindow: () => requestCloseEditorWindow(),
-    closeFlotanteWindow: () => requestCloseFlotanteWindow(),
-    startCrono: () => startCrono(),
-    resetCrono: () => resetCrono(),
-    stopCrono: () => stopCrono(),
-    getCronoState: () => getCronoState(),
-    getCurrentText: () => textState.getCurrentText(),
-    applyCurrentText: (text, meta) => textState.applyCurrentText(text, meta),
-    openPresetWindow: (initialData) => createPresetWindow(initialData),
-  });
-  readingTestSessionController.registerIpc(ipcMain);
-
-  readingTestPoolImport.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    isReadingTestInteractionLocked: () => (
-      !!(readingTestSessionController && readingTestSessionController.isInteractionLocked())
-    ),
-  });
-
-  textState.registerIpc(ipcMain, () => ({
-    mainWin,
-    editorWin,
-  }));
-
-  currentTextProcessingStateIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    controller: currentTextProcessingStateController,
-  });
+    startupRegistrationOperation = 'current-text processing-state IPC registration';
+    currentTextProcessingStateIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      controller: currentTextProcessingStateController,
+    });
+  } catch (error) {
+    terminateAfterStartupRegistrationFailure(error, startupRegistrationOperation, settings.language);
+    return;
+  }
 
   // Initialize current-text state only after the other main-process services and IPC surfaces are ready, but before any window can be created. This module owns loading/saving current text and its IPC surface.
   textState.init({

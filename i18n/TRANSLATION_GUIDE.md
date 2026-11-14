@@ -768,6 +768,16 @@ Estados de revisión recomendados:
         "en": "toT could not complete the language setup needed to start the interface. The application will close."
         // [PROPÓSITO] Mensaje nativo terminal para el fallo requerido de i18n del renderer principal antes de READY; informa que la aplicación se cerrará tras resolver el procesamiento inicial del texto.
       },
+      "startup_registration_failure_title": {
+        "es": "No se pudo completar el inicio de la aplicación",
+        "en": "The application could not complete startup"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando falla una preparación estructural de servicio, controlador o IPC antes de inicializar el texto actual.
+      },
+      "startup_registration_failure_message": {
+        "es": "toT no pudo completar la preparación necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not complete the setup needed to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal previo a la inicialización del texto actual; no identifica al servicio técnico concreto, que queda en el diagnóstico de desarrollo.
+      },
       "startup_settings_admission_failure_title": {
         "es": "No se pudo usar la configuración guardada",
         "en": "Saved settings could not be used"
