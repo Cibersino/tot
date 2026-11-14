@@ -727,25 +727,22 @@ function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
 /**
  * If the language modal closes without selecting anything, apply a fallback language.
  * Used by main.js startup flow when language resolution must continue.
- * This is intentionally not silent: it updates settings.language and attempts a best-effort save.
+ * The initial fallback must be persisted before startup can continue.
  */
 function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
-  try {
-    let settings = getSettings();
-    if (!settings.language) {
-      const languageId = getValidLanguageId(fallbackLang);
-      if (!languageId) throw new Error(`[settings] fallback language is not declared: ${String(fallbackLang)}`);
-      settings.language = languageId;
+  const settings = getSettings();
+  if (settings.language) return settings;
 
-      log.warn(
-        'BOOTSTRAP: language was unset; applying fallback language:',
-        languageId
-      );
-      saveSettings(settings);
-    }
-  } catch (error) {
-    log.error('applyFallbackLanguageIfUnset failed:', error);
-  }
+  const languageId = getValidLanguageId(fallbackLang);
+  if (!languageId) throw new Error(`[settings] fallback language is not declared: ${String(fallbackLang)}`);
+
+  const nextSettings = cloneSettingsForMutation(settings);
+  nextSettings.language = languageId;
+  log.warn(
+    'BOOTSTRAP: language was unset; applying fallback language:',
+    languageId
+  );
+  return saveSettingsStrict(nextSettings);
 }
 
 // =============================================================================

@@ -499,7 +499,7 @@ test('getSettings reloads from the backing store and re-normalizes external edit
   });
 });
 
-test('applyFallbackLanguageIfUnset persists a normalized fallback language', () => {
+test('applyFallbackLanguageIfUnset strictly persists a normalized fallback language', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: '',
@@ -521,6 +521,31 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
     separadorMiles: ',',
     separadorDecimal: '.',
   });
+});
+
+test('applyFallbackLanguageIfUnset leaves the cached language unset when strict persistence fails', () => {
+  const settings = loadFreshSettingsModule();
+  const persistenceError = new Error('forced fallback-language persistence failure');
+  const harness = createSettingsHarness({
+    language: '',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
+  }, {
+    saveJsonStrictImpl() {
+      throw persistenceError;
+    },
+  });
+
+  initializeSettings(settings, harness);
+
+  assert.throws(
+    () => settings.applyFallbackLanguageIfUnset('en'),
+    persistenceError
+  );
+  assert.equal(settings.getSettings().language, '');
+  assert.equal(harness.getStoredValue().language, '');
 });
 
 test('registerIpc decorates get-settings and published payloads without mutating persisted settings', async () => {

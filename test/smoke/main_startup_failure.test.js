@@ -83,7 +83,12 @@ function runProbe(scenario, userDataDir, { logLevel = 'silent' } = {}) {
 for (const {
   scenario,
   dialogFails = false,
-  firstRunFallback = false,
+  firstRunLanguageChooser = false,
+  firstRunFallbackPersistenceFailure = false,
+  firstRunBootstrapFailure = false,
+  firstRunDocumentLoadFailure = false,
+  firstRunStructuralFailure = false,
+  expectedMenuInstallationAttempts = 1,
   vetoedClose = false,
   closesMainWindow = false,
   deferredPostReadyClose = false,
@@ -216,7 +221,35 @@ for (const {
   { scenario: 'renderer-i18n-startup', closesMainWindow: true },
   { scenario: 'renderer-i18n-startup-api', closesMainWindow: true },
   { scenario: 'renderer-i18n-transition-restoration', deferredPostReadyClose: true },
-  { scenario: 'first-run-fallback-menu-installation', firstRunFallback: true },
+  { scenario: 'first-run-fallback-menu-installation', firstRunLanguageChooser: true },
+  {
+    scenario: 'first-run-fallback-persistence-failure',
+    firstRunLanguageChooser: true,
+    firstRunFallbackPersistenceFailure: true,
+    expectedMenuInstallationAttempts: 0,
+    expectedDiagnostic: 'Initial fallback-language persistence failed:',
+    expectedCause: 'forced fallback-language persistence failure',
+  },
+  {
+    scenario: 'first-run-bootstrap-failure',
+    firstRunLanguageChooser: true,
+    firstRunBootstrapFailure: true,
+    expectedDiagnostic: 'First-run Language Window reported a bootstrap failure; language selection is unavailable.',
+  },
+  {
+    scenario: 'first-run-document-load-menu-installation',
+    firstRunLanguageChooser: true,
+    firstRunDocumentLoadFailure: true,
+    expectedDiagnostic: 'Language chooser initial document load failed:',
+  },
+  {
+    scenario: 'first-run-language-window-setup',
+    firstRunLanguageChooser: true,
+    firstRunStructuralFailure: true,
+    expectedMenuInstallationAttempts: 0,
+    expectedDiagnostic: 'Initial Language Window structural setup failed:',
+    expectedCause: 'forced initial Language Window setup failure',
+  },
   { scenario: 'menu-installation-dialog-failure', dialogFails: true },
 ]) {
   const expectedLifecycle = deferredPostReadyClose
@@ -233,10 +266,12 @@ for (const {
   test(`main startup ${scenario} failure ${expectedLifecycle}`, async (t) => {
     const userDataDir = createTestTempDir(`main-startup-${scenario}`);
     t.after(() => fs.rmSync(userDataDir, { recursive: true, force: true }));
-    const initialSettingsContents = firstRunFallback ? null : writeSettingsFile(userDataDir, settingsLanguage);
+    const initialSettingsContents = firstRunLanguageChooser ? null : writeSettingsFile(userDataDir, settingsLanguage);
 
     const result = await runProbe(scenario, userDataDir, {
-      logLevel: earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure || normalStartup
+      logLevel: earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure
+        || normalStartup || firstRunFallbackPersistenceFailure || firstRunBootstrapFailure
+        || firstRunDocumentLoadFailure || firstRunStructuralFailure
         ? 'error'
         : 'silent',
     });
@@ -299,10 +334,20 @@ for (const {
     const menuInstallationAttempts = result.stdout.match(/TOT_MAIN_STARTUP_MENU_INSTALL_ATTEMPT:/g) || [];
     assert.equal(
       menuInstallationAttempts.length,
-      (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) ? 0 : 1,
+      (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure)
+        ? 0
+        : expectedMenuInstallationAttempts,
       `Unexpected initial menu installation attempts.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
     );
     if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) {
+      assert.match(result.stderr, new RegExp(expectedDiagnostic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      if (expectedCause) {
+        assert.match(result.stderr, new RegExp(expectedCause.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      }
+      assert.doesNotMatch(result.stdout, /TOT_SMOKE_READY/);
+    }
+    if ((firstRunFallbackPersistenceFailure || firstRunBootstrapFailure
+      || firstRunDocumentLoadFailure || firstRunStructuralFailure) && expectedDiagnostic) {
       assert.match(result.stderr, new RegExp(expectedDiagnostic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
       if (expectedCause) {
         assert.match(result.stderr, new RegExp(expectedCause.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
@@ -350,6 +395,30 @@ for (const {
       assert.match(result.stderr, /forced configuration directory preparation failure/);
       assert.match(result.stdout, /TOT_SMOKE_READY/);
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":true\}/);
+    }
+    if (firstRunLanguageChooser) {
+      const savedSettings = JSON.parse(fs.readFileSync(path.join(userDataDir, 'config', 'user_settings.json'), 'utf8'));
+      if (firstRunFallbackPersistenceFailure || firstRunStructuralFailure) {
+        assert.equal(savedSettings.language, '');
+      } else {
+        assert.equal(savedSettings.language, 'es');
+      }
+    }
+    if (firstRunBootstrapFailure) {
+      assert.match(result.stdout, /"title":"No se pudo iniciar la selección de idioma"/);
+      assert.match(result.stdout, /"message":"toT no pudo completar la selección de idioma\. Se intentará continuar con el idioma predeterminado\."/);
+    }
+    if (firstRunDocumentLoadFailure) {
+      assert.match(result.stdout, /"title":"No se pudo abrir la ventana de idioma"/);
+      assert.match(result.stdout, /"message":"La ventana de idioma no pudo cargarse\. El inicio continuará con el idioma predeterminado\."/);
+    }
+    if (firstRunFallbackPersistenceFailure) {
+      assert.match(result.stdout, /"title":"No se pudo guardar el idioma inicial"/);
+      assert.match(result.stdout, /"message":"toT no pudo guardar el idioma predeterminado necesario para iniciar\. La aplicación se cerrará\."/);
+    }
+    if (firstRunStructuralFailure) {
+      assert.match(result.stdout, /"title":"No se pudo preparar la selección de idioma"/);
+      assert.match(result.stdout, /"message":"toT no pudo preparar la selección de idioma necesaria para iniciar\. La aplicación se cerrará\."/);
     }
     assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_QUIT:${scenario}`));
   });

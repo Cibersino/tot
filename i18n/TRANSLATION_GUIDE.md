@@ -694,6 +694,42 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Mensaje del fallo de carga inicial al abrir posteriormente la ventana de idioma; no implica fallback ni cambio del idioma ya resuelto.
         // [CONCEPTO_APP] ventana de idioma
       },
+      "language_chooser_first_run_bootstrap_failure_title": {
+        "es": "No se pudo iniciar la selección de idioma",
+        "en": "Language selection could not start"
+        // [PROPÓSITO] Título del aviso nativo cuando el bootstrap directamente detectable del selector del primer inicio falla antes de que la persona pueda elegir un idioma.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "language_chooser_first_run_bootstrap_failure_message": {
+        "es": "toT no pudo completar la selección de idioma. Se intentará continuar con el idioma predeterminado.",
+        "en": "toT could not complete language selection. It will try to continue with the fallback language."
+        // [PROPÓSITO] Aviso nativo no terminal por un fallo técnico reportado por el selector inicial; la continuación depende de persistir el idioma predeterminado.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "startup_language_fallback_persistence_failure_title": {
+        "es": "No se pudo guardar el idioma inicial",
+        "en": "Initial language could not be saved"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando el fallback del selector inicial no puede persistirse de forma verificable.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "startup_language_fallback_persistence_failure_message": {
+        "es": "toT no pudo guardar el idioma predeterminado necesario para iniciar. La aplicación se cerrará.",
+        "en": "toT could not save the fallback language needed to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo de persistencia del fallback del selector inicial, incluso cuando el cierre fue causado por un fallo técnico del selector.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "startup_language_chooser_setup_failure_title": {
+        "es": "No se pudo preparar la selección de idioma",
+        "en": "Language selection could not be prepared"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando Main no puede construir o preparar el selector inicial de idioma.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "startup_language_chooser_setup_failure_message": {
+        "es": "toT no pudo preparar la selección de idioma necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not prepare the language selection needed to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal del fallo estructural de Main antes de que el selector inicial pueda establecer su ciclo de cierre/fallback.
+        // [CONCEPTO_APP] ventana de idioma
+      },
       "floating_stopwatch_initial_document_failure_title": {
         "es": "No se pudo abrir el Cronómetro Flotante",
         "en": "The Floating Stopwatch could not open"

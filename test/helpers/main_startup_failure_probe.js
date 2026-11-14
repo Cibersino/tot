@@ -10,6 +10,8 @@ const actualElectron = require('electron');
 const actualApp = actualElectron.app;
 const originalLoad = Module._load;
 const originalQuit = actualApp.quit.bind(actualApp);
+const originalIpcMainHandle = actualElectron.ipcMain.handle.bind(actualElectron.ipcMain);
+const ipcHandlers = new Map();
 let mainWindowDouble = null;
 let currentTextProcessingController = null;
 const earlyStartupFailureScenarios = new Set([
@@ -86,6 +88,11 @@ if (configDirectoryPreparationFailureScenarios.has(scenario)) {
 
 actualApp.setAppPath(path.resolve(__dirname, '../..'));
 
+actualElectron.ipcMain.handle = (channel, handler) => {
+  ipcHandlers.set(channel, handler);
+  return originalIpcMainHandle(channel, handler);
+};
+
 function emitMarker(name, detail = '') {
   process.stdout.write(`${name}${detail ? `:${detail}` : ''}\n`);
 }
@@ -98,12 +105,23 @@ function reportRendererI18nFailure(webContents, kind) {
   });
 }
 
+async function reportLanguageChooserBootstrapFailure(webContents) {
+  const handler = ipcHandlers.get('language-chooser-bootstrap-failure');
+  if (typeof handler !== 'function') {
+    throw new Error('language-chooser-bootstrap-failure handler was not registered');
+  }
+  return handler({ sender: webContents });
+}
+
 function createBrowserWindowDouble() {
   class BrowserWindowDouble extends EventEmitter {
     constructor() {
       super();
       if (scenario === 'main-window-construction') {
         throw new Error('forced main BrowserWindow construction failure');
+      }
+      if (scenario === 'first-run-language-window-setup') {
+        throw new Error('forced initial Language Window setup failure');
       }
       this.destroyed = false;
       this.webContents = new EventEmitter();
@@ -117,6 +135,21 @@ function createBrowserWindowDouble() {
     }
 
     loadFile(filePath) {
+      if (path.basename(filePath) === 'language_window.html') {
+        if (scenario === 'first-run-document-load-menu-installation') {
+          return Promise.reject(new Error('forced first-run language chooser document load failure'));
+        }
+        if (scenario === 'first-run-bootstrap-failure') {
+          queueMicrotask(() => {
+            void reportLanguageChooserBootstrapFailure(this.webContents)
+              .then(() => this.close());
+          });
+        }
+        if (scenario === 'first-run-fallback-menu-installation'
+          || scenario === 'first-run-fallback-persistence-failure') {
+          queueMicrotask(() => this.close());
+        }
+      }
       if (scenario === 'main-document-load') {
         return Promise.reject(new Error('forced main document load failure'));
       }
@@ -182,11 +215,6 @@ function createBrowserWindowDouble() {
           });
         });
       }
-      if (scenario === 'first-run-fallback-menu-installation') {
-        queueMicrotask(() => {
-          this.emit('closed');
-        });
-      }
       return Promise.resolve();
     }
 
@@ -235,7 +263,7 @@ const menuDouble = {
   },
   setApplicationMenu() {
     emitMarker('TOT_MAIN_STARTUP_MENU_INSTALL_ATTEMPT', scenario);
-    if (scenario.includes('menu-installation')) {
+    if (scenario.includes('menu-installation') || scenario === 'first-run-bootstrap-failure') {
       throw new Error('forced initial menu installation failure');
     }
   },
@@ -264,6 +292,15 @@ const dialogDouble = {
     if (settingsStartupFailureScenarios.has(scenario)
       || snapshotTagStartupFailureScenarios.has(scenario)
       || startupRegistrationFailureScenarios.has(scenario)) {
+      const options = args[args.length - 1];
+      emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', `${scenario}:${JSON.stringify({
+        title: options.title,
+        message: options.message,
+        buttons: options.buttons,
+      })}`);
+      return 0;
+    }
+    if (scenario.startsWith('first-run-')) {
       const options = args[args.length - 1];
       emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', `${scenario}:${JSON.stringify({
         title: options.title,
@@ -440,6 +477,12 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
         if (scenario === 'snapshot-tags-initial-write'
           && path.basename(filePath) === 'snapshot_tags.json') {
           const error = new Error('forced initial snapshot-tag settings write failure');
+          error.code = 'ENOSPC';
+          throw error;
+        }
+        if (scenario === 'first-run-fallback-persistence-failure'
+          && path.basename(filePath) === 'user_settings.json') {
+          const error = new Error('forced fallback-language persistence failure');
           error.code = 'ENOSPC';
           throw error;
         }

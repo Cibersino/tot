@@ -1442,115 +1442,136 @@ function createLanguageWindow() {
     return;
   }
 
-  langWin = new BrowserWindow({
-    width: 420,
-    height: 360,
-    resizable: false,
-    minimizable: false,
-    maximizable: false,
-    parent: null,
-    modal: false,
-    show: false,
-    frame: true,
-    alwaysOnTop: true,
-    webPreferences: {
-      preload: LANGUAGE_PRELOAD,
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-    },
-  });
-
-  langWin.setMenu(null);
-  const createdLanguageWin = langWin;
   const isFirstRunLanguageChooser = !languageResolved;
-  let createdLanguageWindowClosing = false;
-  createdLanguageWin.on('close', () => {
-    createdLanguageWindowClosing = true;
-  });
+  try {
+    langWin = new BrowserWindow({
+      width: 420,
+      height: 360,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      parent: null,
+      modal: false,
+      show: false,
+      frame: true,
+      alwaysOnTop: true,
+      webPreferences: {
+        preload: LANGUAGE_PRELOAD,
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      },
+    });
 
-  const initialLanguageDocumentLoad = createdLanguageWin.loadFile(
-    LANGUAGE_WINDOW_HTML,
-    isFirstRunLanguageChooser
-      ? { query: { languageChooserFirstRun: '1' } }
-      : undefined
-  );
-  void initialLanguageDocumentLoad.catch((error) => {
-    // A close can abort loadFile(). Ordinary chooser closure owns that disposition and is not an F26/F27 required-initial-document failure.
-    if (createdLanguageWindowClosing || !isAliveWindow(createdLanguageWin)) return;
+    langWin.setMenu(null);
+    const createdLanguageWin = langWin;
+    let createdLanguageWindowClosing = false;
+    createdLanguageWin.on('close', () => {
+      createdLanguageWindowClosing = true;
+    });
 
-    log.error('Language chooser initial document load failed:', error);
+    const initialLanguageDocumentLoad = createdLanguageWin.loadFile(
+      LANGUAGE_WINDOW_HTML,
+      isFirstRunLanguageChooser
+        ? { query: { languageChooserFirstRun: '1' } }
+        : undefined
+    );
+    void initialLanguageDocumentLoad.catch((error) => {
+      // A close can abort loadFile(). Ordinary chooser closure owns that disposition and is not an F26/F27 required-initial-document failure.
+      if (createdLanguageWindowClosing || !isAliveWindow(createdLanguageWin)) return;
 
-    let dialogTexts = null;
-    try {
-      dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
-    } catch (error) {
-      log.error('Language chooser initial document load native dialog translations unavailable:', error);
-    }
+      log.error('Language chooser initial document load failed:', error);
 
-    const title = dialogTexts && dialogTexts.language_chooser_initial_document_failure_title;
-    const message = dialogTexts && (isFirstRunLanguageChooser
-      ? dialogTexts.language_chooser_first_run_initial_document_failure_message
-      : dialogTexts.language_chooser_initial_document_failure_message);
-    const ok = dialogTexts && dialogTexts.ok;
-    if (typeof title === 'string' && title.trim()
-      && typeof message === 'string' && message.trim()
-      && typeof ok === 'string' && ok.trim()) {
+      let dialogTexts = null;
       try {
-        const dialogOptions = {
-          type: 'error',
-          title,
-          message,
-          buttons: [ok],
-          defaultId: 0,
-          noLink: true,
-        };
-        if (isFirstRunLanguageChooser) {
-          dialog.showMessageBoxSync(dialogOptions);
-        } else {
-          dialog.showMessageBoxSync(mainWin, dialogOptions);
+        dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+      } catch (error) {
+        log.error('Language chooser initial document load native dialog translations unavailable:', error);
+      }
+
+      const title = dialogTexts && dialogTexts.language_chooser_initial_document_failure_title;
+      const message = dialogTexts && (isFirstRunLanguageChooser
+        ? dialogTexts.language_chooser_first_run_initial_document_failure_message
+        : dialogTexts.language_chooser_initial_document_failure_message);
+      const ok = dialogTexts && dialogTexts.ok;
+      if (typeof title === 'string' && title.trim()
+        && typeof message === 'string' && message.trim()
+        && typeof ok === 'string' && ok.trim()) {
+        try {
+          const dialogOptions = {
+            type: 'error',
+            title,
+            message,
+            buttons: [ok],
+            defaultId: 0,
+            noLink: true,
+          };
+          if (isFirstRunLanguageChooser) {
+            dialog.showMessageBoxSync(dialogOptions);
+          } else {
+            dialog.showMessageBoxSync(mainWin, dialogOptions);
+          }
+        } catch (error) {
+          log.error('Language chooser initial document load native dialog failed:', error);
+        }
+      } else {
+        log.error('Language chooser initial document load native dialog copy unavailable.');
+      }
+
+      try {
+        if (isAliveWindow(createdLanguageWin)) {
+          createdLanguageWin.close();
         }
       } catch (error) {
-        log.error('Language chooser initial document load native dialog failed:', error);
+        log.error('Language chooser initial document load window close failed:', error);
       }
-    } else {
-      log.error('Language chooser initial document load native dialog copy unavailable.');
-    }
+    });
 
-    try {
-      if (isAliveWindow(createdLanguageWin)) {
-        createdLanguageWin.close();
-      }
-    } catch (error) {
-      log.error('Language chooser initial document load window close failed:', error);
-    }
-  });
+    langWin.once('ready-to-show', () => {
+      langWin.show();
+    });
 
-  langWin.once('ready-to-show', () => {
-    langWin.show();
-  });
-
-  // Before startup language resolution, closing this window persists the safe fallback and continues startup.
-  langWin.on('closed', () => {
-    try {
-      if (!languageResolved) {
-        settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
-        if (languageSelectionHandler) {
-          try {
-            ipcMain.removeListener('language-selected', languageSelectionHandler);
-          } catch (error) {
-            log.warn('Error removing language-selected handler after fallback:', error);
+    // Before startup language resolution, closing this window persists the safe fallback and continues startup.
+    langWin.on('closed', () => {
+      try {
+        if (!languageResolved && !startupTerminalFailure) {
+          if (languageSelectionHandler) {
+            try {
+              ipcMain.removeListener('language-selected', languageSelectionHandler);
+            } catch (error) {
+              log.warn('Error removing language-selected handler after fallback:', error);
+            }
+            languageSelectionHandler = null;
           }
-          languageSelectionHandler = null;
+          try {
+            settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
+          } catch (error) {
+            terminateAfterRequiredStartupFailure({
+              error,
+              logContext: 'Initial fallback-language persistence',
+              titleKey: 'startup_language_fallback_persistence_failure_title',
+              messageKey: 'startup_language_fallback_persistence_failure_message',
+            });
+            return;
+          }
+          resolveLanguage('fallback');
         }
-        resolveLanguage('fallback');
+      } finally {
+        langWin = null;
       }
-    } catch (error) {
-      log.error('Error applying fallback language:', error);
-    } finally {
-      langWin = null;
-    }
-  });
+    });
+
+    return createdLanguageWin;
+  } catch (error) {
+    if (!isFirstRunLanguageChooser) throw error;
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Initial Language Window structural setup',
+      titleKey: 'startup_language_chooser_setup_failure_title',
+      messageKey: 'startup_language_chooser_setup_failure_message',
+    });
+    return null;
+  }
 }
 
 // =============================================================================
@@ -1767,6 +1788,26 @@ function closeRendererAfterI18nFailure(event, payload) {
   } catch (error) {
     log.error('Renderer i18n failure window close failed:', error);
   }
+}
+
+function handleInitialLanguageChooserBootstrapFailure(event) {
+  const sourceContents = event && event.sender;
+  const sourceWindow = sourceContents && typeof BrowserWindow.fromWebContents === 'function'
+    ? BrowserWindow.fromWebContents(sourceContents)
+    : null;
+  if (startupTerminalFailure || languageResolved || sourceWindow !== langWin) {
+    log.warn('First-run Language Window bootstrap failure report ignored outside its startup window.');
+    return { ok: false };
+  }
+
+  log.error('First-run Language Window reported a bootstrap failure; language selection is unavailable.');
+  showStartupFailureDisclosure({
+    titleKey: 'language_chooser_first_run_bootstrap_failure_title',
+    messageKey: 'language_chooser_first_run_bootstrap_failure_message',
+    sourceWindow,
+    language: DEFAULT_LANG,
+  });
+  return { ok: true };
 }
 
 function resolveLanguage(reason) {
@@ -2539,6 +2580,7 @@ ipcMain.on('startup:splash-removed', () => {
 });
 
 ipcMain.on('renderer-i18n-failed', closeRendererAfterI18nFailure);
+ipcMain.handle('language-chooser-bootstrap-failure', handleInitialLanguageChooserBootstrapFailure);
 
 // =============================================================================
 // App lifecycle and startup bootstrap
@@ -2830,7 +2872,8 @@ app.whenReady().then(() => {
 
   // First run: show language picker before creating the main window.
   if (!settings.language || settings.language === '') {
-    createLanguageWindow();
+    const initialLanguageChooser = createLanguageWindow();
+    if (startupTerminalFailure || !initialLanguageChooser) return;
 
     // The language window notifies the main process via IPC once the user picks a language.
     languageSelectionHandler = () => {

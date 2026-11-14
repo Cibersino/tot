@@ -12,6 +12,7 @@ const api = {
   },
   getAvailableLanguages: () => ipcRenderer.invoke('get-available-languages'),
   getCurrentLanguage: () => ipcRenderer.invoke('get-current-language'),
+  reportBootstrapFailure: () => ipcRenderer.invoke('language-chooser-bootstrap-failure'),
 };
 
 contextBridge.exposeInMainWorld('languageAPI', api);

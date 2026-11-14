@@ -134,6 +134,8 @@ async function createHarness({
   setLanguageError = null,
   currentLanguageApiAvailable = true,
   setLanguageApiAvailable = true,
+  firstRun = false,
+  reportBootstrapFailure = null,
 } = {}) {
   const document = { activeElement: null };
   const elements = new Map();
@@ -194,8 +196,14 @@ async function createHarness({
       return { ok: true, language };
     };
   }
+  if (typeof reportBootstrapFailure === 'function') {
+    languageAPI.reportBootstrapFailure = reportBootstrapFailure;
+  }
 
   const window = {
+    location: {
+      search: firstRun ? '?languageChooserFirstRun=1' : '',
+    },
     getLogger() {
       return logger;
     },
@@ -323,6 +331,32 @@ test('first-run bootstrap guards close locally without changing later chooser be
     );
     assert.equal(laterOpen.closeCount, 0, `${failureKind} must not change F25 behavior`);
   });
+});
+
+test('first-run catalog bootstrap failure reports before closing without changing later chooser behavior', async () => {
+  const reports = [];
+  const firstRun = await createHarness({
+    firstRun: true,
+    availableLanguagesError: new Error('required catalog unavailable'),
+    reportBootstrapFailure: async () => {
+      reports.push('reported');
+    },
+  });
+
+  assert.deepEqual(reports, ['reported']);
+  assert.equal(firstRun.getCloseCount(), 1);
+  assert.equal(firstRun.errors.length, 2);
+
+  const laterOpen = await createHarness({
+    availableLanguagesError: new Error('required catalog unavailable'),
+    reportBootstrapFailure: async () => {
+      reports.push('later-open-reported');
+    },
+  });
+
+  assert.deepEqual(reports, ['reported']);
+  assert.equal(laterOpen.getCloseCount(), 0);
+  assert.equal(laterOpen.errors.length, 2);
 });
 
 test('current language selection remains separate from roving keyboard focus', async () => {

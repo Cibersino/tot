@@ -132,7 +132,7 @@ test('getDialogTexts provides Preset modal initial-document failure copy', (t) =
   );
 });
 
-test('getDialogTexts provides first-run and later Language chooser load-failure copy', (t) => {
+test('getDialogTexts provides first-run Language chooser failure copy', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 
   const dialogTexts = menuBuilder.getDialogTexts('en');
@@ -148,6 +148,30 @@ test('getDialogTexts provides first-run and later Language chooser load-failure 
   assert.equal(
     dialogTexts.language_chooser_initial_document_failure_message,
     'The language chooser could not load.'
+  );
+  assert.equal(
+    dialogTexts.language_chooser_first_run_bootstrap_failure_title,
+    'Language selection could not start'
+  );
+  assert.equal(
+    dialogTexts.language_chooser_first_run_bootstrap_failure_message,
+    'toT could not complete language selection. It will try to continue with the fallback language.'
+  );
+  assert.equal(
+    dialogTexts.startup_language_fallback_persistence_failure_title,
+    'Initial language could not be saved'
+  );
+  assert.equal(
+    dialogTexts.startup_language_fallback_persistence_failure_message,
+    'toT could not save the fallback language needed to start. The application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_language_chooser_setup_failure_title,
+    'Language selection could not be prepared'
+  );
+  assert.equal(
+    dialogTexts.startup_language_chooser_setup_failure_message,
+    'toT could not prepare the language selection needed to start. The application will close.'
   );
 });
 
