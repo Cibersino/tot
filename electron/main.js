@@ -660,6 +660,32 @@ function terminateAfterInitialSettingsFailure(error) {
   });
 }
 
+function terminateAfterInitialSnapshotTagFailure(error, admittedLanguage) {
+  let logContext = 'Initial snapshot-tag settings initialization';
+  let titleKey = 'startup_snapshot_tags_initialization_failure_title';
+  let messageKey = 'startup_snapshot_tags_initialization_failure_message';
+
+  if (error && error.code === 'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED') {
+    logContext = 'Initial snapshot-tag settings admission';
+    titleKey = 'startup_snapshot_tags_admission_failure_title';
+    messageKey = 'startup_snapshot_tags_admission_failure_message';
+  } else if (error && error.code === 'SNAPSHOT_TAGS_STARTUP_INITIAL_WRITE_FAILED') {
+    logContext = 'Initial snapshot-tag settings persistence';
+    titleKey = 'startup_snapshot_tags_initial_write_failure_title';
+    messageKey = 'startup_snapshot_tags_initial_write_failure_message';
+  }
+
+  terminateAfterRequiredStartupFailure({
+    error,
+    logContext,
+    titleKey,
+    messageKey,
+    language: typeof admittedLanguage === 'string' && admittedLanguage.trim()
+      ? admittedLanguage
+      : DEFAULT_LANG,
+  });
+}
+
 /**
  * Developer-only global shortcuts (disabled in packaged builds).
  * Used for quick inspection and reload during development.
@@ -2558,12 +2584,16 @@ app.whenReady().then(() => {
     return;
   }
 
-  snapshotTagSettings.init({
-    loadJsonWithStatus,
-    saveJson,
-    saveJsonStrict,
-    snapshotTagsFile,
-  });
+  try {
+    snapshotTagSettings.init({
+      loadJsonWithStatus,
+      saveJsonStrict,
+      snapshotTagsFile,
+    });
+  } catch (error) {
+    terminateAfterInitialSnapshotTagFailure(error, settings.language);
+    return;
+  }
 
   spellcheckController.apply(settings);
 

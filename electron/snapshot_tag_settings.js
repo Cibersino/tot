@@ -8,7 +8,7 @@
 // Responsibilities:
 // - Load and normalize persisted snapshot-tag preferences.
 // - Reload public reads from disk while keeping the latest normalized value in memory.
-// - Repair normal bootstrap persistence through best-effort saveJson(...).
+// - Admit and strictly persist normal bootstrap preferences before publication.
 // - Persist user-triggered mutations through verified saveJsonStrict(...).
 // - Own direct snapshot-tag IPC operations that require usable storage before reporting success or saving.
 // - Request a follow-up settings publish after confirmed writes.
@@ -28,7 +28,6 @@ log.debug('Snapshot tag settings starting...');
 // =============================================================================
 
 let _loadJsonWithStatus = null;
-let _saveJson = null;
 let _saveJsonStrict = null;
 let _snapshotTagsFile = null;
 let _currentSnapshotTagPreferences = null;
@@ -53,8 +52,74 @@ function normalizeSnapshotTagPreferences(rawSnapshotTags) {
   return snapshotTagCatalog.normalizeSnapshotTagPreferences(rawSnapshotTags);
 }
 
+function createStartupInitializationError(code, message, cause = null) {
+  const error = new Error(message);
+  error.code = code;
+  if (cause) error.cause = cause;
+  return error;
+}
+
+function getStructuralAdmissionError(rawSnapshotTags) {
+  if (!snapshotTagCatalog.isPlainObject(rawSnapshotTags)) {
+    return new Error('snapshot-tag preferences root is not an object');
+  }
+
+  for (const category of snapshotTagCatalog.TAG_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(rawSnapshotTags, category)) continue;
+
+    const categoryPreferences = rawSnapshotTags[category];
+    if (!snapshotTagCatalog.isPlainObject(categoryPreferences)) {
+      return new Error(`snapshot-tag category ${category} is not an object`);
+    }
+
+    for (const collectionName of ['custom', 'hiddenDefaults', 'order']) {
+      if (!Object.prototype.hasOwnProperty.call(categoryPreferences, collectionName)) continue;
+      if (!Array.isArray(categoryPreferences[collectionName])) {
+        return new Error(
+          `snapshot-tag category ${category}.${collectionName} is not an array`
+        );
+      }
+    }
+
+    for (const entry of categoryPreferences.custom || []) {
+      if (!snapshotTagCatalog.isPlainObject(entry)) {
+        return new Error(`snapshot-tag category ${category}.custom contains a non-object entry`);
+      }
+      if (!snapshotTagCatalog.validateCustomLabel(entry.label).ok) {
+        return new Error(`snapshot-tag category ${category}.custom contains an unrecoverable label`);
+      }
+    }
+  }
+
+  return null;
+}
+
+function getStartupAdmissionError(loadResult) {
+  if (!loadResult || loadResult.status === 'empty' || loadResult.status === 'failed') {
+    return createStartupInitializationError(
+      'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED',
+      `[snapshot-tag-settings] startup snapshot-tag file is ${loadResult && loadResult.status || 'unavailable'}`
+    );
+  }
+  if (loadResult.status === 'missing') return null;
+  if (loadResult.status !== 'loaded') {
+    return createStartupInitializationError(
+      'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED',
+      `[snapshot-tag-settings] startup snapshot-tag file has unsupported status ${loadResult.status}`
+    );
+  }
+
+  const structuralError = getStructuralAdmissionError(loadResult.value);
+  if (!structuralError) return null;
+  return createStartupInitializationError(
+    'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED',
+    '[snapshot-tag-settings] startup snapshot-tag file is structurally unrecoverable',
+    structuralError
+  );
+}
+
 function assertInitialized(apiName) {
-  if (!_loadJsonWithStatus || !_saveJson || !_snapshotTagsFile) {
+  if (!_loadJsonWithStatus || !_snapshotTagsFile) {
     throw new Error(`[snapshot-tag-settings] ${apiName} called before init`);
   }
 }
@@ -103,46 +168,42 @@ function saveSnapshotTagPreferencesStrict(nextSnapshotTags) {
   return _currentSnapshotTagPreferences;
 }
 
-function init({ loadJsonWithStatus, saveJson, saveJsonStrict, snapshotTagsFile }) {
+function init({ loadJsonWithStatus, saveJsonStrict, snapshotTagsFile }) {
   if (
     typeof loadJsonWithStatus !== 'function'
-    || typeof saveJson !== 'function'
     || typeof saveJsonStrict !== 'function'
   ) {
     throw new Error(
-      '[snapshot-tag-settings] init requires loadJsonWithStatus, saveJson, and saveJsonStrict'
+      '[snapshot-tag-settings] init requires loadJsonWithStatus and saveJsonStrict'
     );
   }
   if (!snapshotTagsFile) {
     throw new Error('[snapshot-tag-settings] init requires snapshotTagsFile');
   }
 
-  _loadJsonWithStatus = loadJsonWithStatus;
-  _saveJson = saveJson;
-  _saveJsonStrict = saveJsonStrict;
-  _snapshotTagsFile = snapshotTagsFile;
+  const initialLoad = loadJsonWithStatus(
+    snapshotTagsFile,
+    createDefaultSnapshotTagPreferences()
+  );
+  const admissionError = getStartupAdmissionError(initialLoad);
+  if (admissionError) throw admissionError;
 
-  const loadResult = loadSnapshotTagPreferencesFromDisk();
-  // Do not repair an unreadable catalog by persisting the fallback used for its degraded read.
-  if (isSnapshotTagStorageReadUsable(loadResult.storageReadStatus)) {
-    try {
-      _saveJson(_snapshotTagsFile, loadResult.snapshotTags);
-    } catch (error) {
-      log.warn(
-        'BOOTSTRAP: Snapshot-tag init normalization persist failed (ignored):',
-        _snapshotTagsFile,
-        error
-      );
-    }
-  } else {
-    log.warn(
-      'BOOTSTRAP: Snapshot-tag init persistence skipped after degraded storage read:',
-      _snapshotTagsFile,
-      loadResult.storageReadStatus
+  const normalizedSnapshotTags = normalizeSnapshotTagPreferences(initialLoad.value);
+  try {
+    saveJsonStrict(snapshotTagsFile, normalizedSnapshotTags);
+  } catch (error) {
+    throw createStartupInitializationError(
+      'SNAPSHOT_TAGS_STARTUP_INITIAL_WRITE_FAILED',
+      '[snapshot-tag-settings] startup snapshot-tag persistence failed',
+      error
     );
   }
 
-  return loadResult.snapshotTags;
+  _loadJsonWithStatus = loadJsonWithStatus;
+  _saveJsonStrict = saveJsonStrict;
+  _snapshotTagsFile = snapshotTagsFile;
+  _currentSnapshotTagPreferences = normalizedSnapshotTags;
+  return _currentSnapshotTagPreferences;
 }
 
 // =============================================================================

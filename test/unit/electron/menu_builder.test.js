@@ -221,6 +221,30 @@ test('getDialogTexts provides terminal startup copy for required main-startup fa
   }
 });
 
+test('getDialogTexts resolves F-09 startup notices through the selected language or DEFAULT_LANG', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const englishDialogTexts = menuBuilder.getDialogTexts('en');
+  assert.equal(
+    englishDialogTexts.startup_snapshot_tags_admission_failure_title,
+    'Saved snapshot-tag preferences could not be used'
+  );
+  assert.equal(
+    englishDialogTexts.startup_snapshot_tags_initial_write_failure_message,
+    'toT could not save the snapshot-tag preferences needed to start. The application will close.'
+  );
+
+  const defaultDialogTexts = menuBuilder.getDialogTexts('');
+  assert.equal(
+    defaultDialogTexts.startup_snapshot_tags_admission_failure_title,
+    'No se pudieron usar las preferencias de etiquetas de snapshots guardadas'
+  );
+  assert.equal(
+    defaultDialogTexts.startup_snapshot_tags_admission_failure_message,
+    'toT no puede recuperar de forma segura las preferencias de etiquetas de snapshots guardadas. La aplicación se cerrará sin modificarlas.'
+  );
+});
+
 test('missing required default main bundle is terminal and does not use a selected root bundle', (t) => {
   let selectedRootRead = false;
   const menuBuilder = loadFreshMenuBuilder(t, {

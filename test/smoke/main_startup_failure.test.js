@@ -15,11 +15,11 @@ const electronBinary = require('electron');
 // menu, and native-dialog effects are simulated by the probe. It does not verify
 // native Chromium window or dialog behavior.
 
-function writeSettingsFile(userDataDir) {
+function writeSettingsFile(userDataDir, language = 'en') {
   const configDir = path.join(userDataDir, 'config');
   fs.mkdirSync(configDir, { recursive: true });
   const contents = JSON.stringify({
-    language: 'en',
+    language,
     presetsByScope: {},
     selectedPresetByScope: {},
     disabledDefaultPresetsByScope: {},
@@ -89,6 +89,8 @@ for (const {
   deferredPostReadyClose = false,
   earlyStartupFailure = false,
   settingsStartupFailure = false,
+  snapshotTagStartupFailure = false,
+  settingsLanguage = 'en',
   normalStartup = false,
   expectedDiagnostic = '',
 } of [
@@ -144,6 +146,28 @@ for (const {
     settingsStartupFailure: true,
     expectedDiagnostic: 'Initial global settings persistence failed:',
   },
+  {
+    scenario: 'snapshot-tags-admission',
+    snapshotTagStartupFailure: true,
+    expectedDiagnostic: 'Initial snapshot-tag settings admission failed:',
+  },
+  {
+    scenario: 'snapshot-tags-admission-default-language',
+    snapshotTagStartupFailure: true,
+    settingsLanguage: '',
+    expectedDiagnostic: 'Initial snapshot-tag settings admission failed:',
+  },
+  {
+    scenario: 'snapshot-tags-admission-dialog-failure',
+    dialogFails: true,
+    snapshotTagStartupFailure: true,
+    expectedDiagnostic: 'Initial snapshot-tag settings admission failed:',
+  },
+  {
+    scenario: 'snapshot-tags-initial-write',
+    snapshotTagStartupFailure: true,
+    expectedDiagnostic: 'Initial snapshot-tag settings persistence failed:',
+  },
   { scenario: 'config-dir-preparation-recovers', normalStartup: true },
   { scenario: 'menu-installation' },
   { scenario: 'main-window-construction' },
@@ -160,7 +184,7 @@ for (const {
     ? 'defers close while post-READY processing is active, then persists and quits'
     : earlyStartupFailure
     ? 'terminates before current-text initialization'
-    : settingsStartupFailure
+    : settingsStartupFailure || snapshotTagStartupFailure
     ? 'terminates before current-text initialization'
     : normalStartup
     ? 'continues after best-effort configuration-directory preparation fails'
@@ -170,15 +194,17 @@ for (const {
   test(`main startup ${scenario} failure ${expectedLifecycle}`, async (t) => {
     const userDataDir = createTestTempDir(`main-startup-${scenario}`);
     t.after(() => fs.rmSync(userDataDir, { recursive: true, force: true }));
-    const initialSettingsContents = firstRunFallback ? null : writeSettingsFile(userDataDir);
+    const initialSettingsContents = firstRunFallback ? null : writeSettingsFile(userDataDir, settingsLanguage);
 
     const result = await runProbe(scenario, userDataDir, {
-      logLevel: earlyStartupFailure || settingsStartupFailure || normalStartup ? 'error' : 'silent',
+      logLevel: earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || normalStartup
+        ? 'error'
+        : 'silent',
     });
 
     assert.equal(result.signal, null, `Electron exited via signal.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
     assert.equal(result.code, 0, `Electron exited with non-zero code.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
-    if (settingsStartupFailure && dialogFails) {
+    if ((settingsStartupFailure || snapshotTagStartupFailure) && dialogFails) {
       assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG_ATTEMPT:${scenario}`));
       assert.match(result.stderr, /Startup failure native dialog failed:/);
     } else if (earlyStartupFailure && dialogFails) {
@@ -188,20 +214,32 @@ for (const {
         result.stdout,
         /TOT_MAIN_EARLY_STARTUP_FAILURE_NOTICE:\{"title":"toT no pudo iniciarse","message":"No se pudo iniciar toT\. La aplicación se cerrará\.","buttons":\["Aceptar"\]\}/
       );
-    } else if (settingsStartupFailure) {
+    } else if (settingsStartupFailure || snapshotTagStartupFailure) {
       assert.match(
         result.stdout,
         new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG:${scenario}:`)
       );
-      assert.match(result.stdout, /"buttons":\["Aceptar"\]/);
+      const expectedButton = snapshotTagStartupFailure && settingsLanguage ? 'OK' : 'Aceptar';
+      assert.match(result.stdout, new RegExp(`"buttons":\\["${expectedButton}"\\]`));
       const expectedTitles = {
         'settings-admission': 'No se pudo usar la configuración guardada',
         'settings-backup': 'No se pudo respaldar la configuración guardada',
         'settings-initial-write': 'No se pudo guardar la configuración inicial',
         'settings-initialization': 'No se pudo inicializar la configuración',
         'config-dir-preparation-then-settings-write-failure': 'No se pudo guardar la configuración inicial',
+        'snapshot-tags-admission': 'Saved snapshot-tag preferences could not be used',
+        'snapshot-tags-admission-default-language': 'No se pudieron usar las preferencias de etiquetas de snapshots guardadas',
+        'snapshot-tags-initial-write': 'Snapshot-tag preferences could not be saved',
       };
       assert.match(result.stdout, new RegExp(expectedTitles[scenario]));
+      const expectedMessages = {
+        'snapshot-tags-admission': 'toT cannot safely recover the saved snapshot-tag preferences. The application will close without changing them.',
+        'snapshot-tags-admission-default-language': 'toT no puede recuperar de forma segura las preferencias de etiquetas de snapshots guardadas. La aplicación se cerrará sin modificarlas.',
+        'snapshot-tags-initial-write': 'toT could not save the snapshot-tag preferences needed to start. The application will close.',
+      };
+      if (expectedMessages[scenario]) {
+        assert.match(result.stdout, new RegExp(expectedMessages[scenario].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      }
     } else if (normalStartup) {
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_DIALOG:/);
     } else if (dialogFails) {
@@ -212,10 +250,10 @@ for (const {
     const menuInstallationAttempts = result.stdout.match(/TOT_MAIN_STARTUP_MENU_INSTALL_ATTEMPT:/g) || [];
     assert.equal(
       menuInstallationAttempts.length,
-      (earlyStartupFailure || settingsStartupFailure) ? 0 : 1,
+      (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure) ? 0 : 1,
       `Unexpected initial menu installation attempts.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
     );
-    if (earlyStartupFailure || settingsStartupFailure) {
+    if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure) {
       assert.match(result.stderr, new RegExp(expectedDiagnostic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
       assert.doesNotMatch(result.stdout, /TOT_SMOKE_READY/);
     }
@@ -243,10 +281,10 @@ for (const {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":true\}/);
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":2,"ok":true\}/);
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
-    } else if (!earlyStartupFailure && !settingsStartupFailure && !normalStartup) {
+    } else if (!earlyStartupFailure && !settingsStartupFailure && !snapshotTagStartupFailure && !normalStartup) {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
     }
-    if (earlyStartupFailure || settingsStartupFailure) {
+    if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure) {
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:/);
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_CURRENT_TEXT_PERSISTED/);
     } else {

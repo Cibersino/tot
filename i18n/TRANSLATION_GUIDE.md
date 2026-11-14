@@ -808,6 +808,36 @@ Estados de revisión recomendados:
         "en": "toT could not complete the settings needed to start. The application will close."
         // [PROPÓSITO] Mensaje terminal genérico de inicialización de preferencias; no atribuye una causa de almacenamiento que no esté demostrada.
       },
+      "startup_snapshot_tags_admission_failure_title": {
+        "es": "No se pudieron usar las preferencias de etiquetas de snapshots guardadas",
+        "en": "Saved snapshot-tag preferences could not be used"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando el archivo existente de preferencias de etiquetas no se puede admitir sin riesgo de sobrescribir datos.
+      },
+      "startup_snapshot_tags_admission_failure_message": {
+        "es": "toT no puede recuperar de forma segura las preferencias de etiquetas de snapshots guardadas. La aplicación se cerrará sin modificarlas.",
+        "en": "toT cannot safely recover the saved snapshot-tag preferences. The application will close without changing them."
+        // [PROPÓSITO] Mensaje terminal de admisión; informa que no se sustituye ni modifica el archivo rechazado.
+      },
+      "startup_snapshot_tags_initial_write_failure_title": {
+        "es": "No se pudieron guardar las preferencias de etiquetas de snapshots",
+        "en": "Snapshot-tag preferences could not be saved"
+        // [PROPÓSITO] Título del diálogo nativo terminal cuando falla la escritura inicial requerida de preferencias de etiquetas admitidas.
+      },
+      "startup_snapshot_tags_initial_write_failure_message": {
+        "es": "toT no pudo guardar las preferencias de etiquetas de snapshots necesarias para iniciar. La aplicación se cerrará.",
+        "en": "toT could not save the snapshot-tag preferences needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal de escritura; comunica el cierre sin afirmar que el archivo original permanece intacto.
+      },
+      "startup_snapshot_tags_initialization_failure_title": {
+        "es": "No se pudieron inicializar las preferencias de etiquetas de snapshots",
+        "en": "Snapshot-tag preferences could not be initialized"
+        // [PROPÓSITO] Título terminal para una excepción inesperada durante la inicialización de preferencias de etiquetas.
+      },
+      "startup_snapshot_tags_initialization_failure_message": {
+        "es": "toT no pudo completar las preferencias de etiquetas de snapshots necesarias para iniciar. La aplicación se cerrará.",
+        "en": "toT could not complete the snapshot-tag preferences needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal para una excepción no clasificada de inicialización de etiquetas antes de READY.
+      },
       "editor_startup_failed_title": {
         "es": "No se pudo iniciar el Editor de Texto",
         "en": "The Text Editor could not start"

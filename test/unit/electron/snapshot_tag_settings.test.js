@@ -4,8 +4,12 @@ process.env.TOT_LOG_LEVEL = 'silent';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('path');
 const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 function loadFreshSnapshotTagSettingsModule() {
   const modulePath = path.resolve(__dirname, '../../../electron/snapshot_tag_settings.js');
@@ -15,9 +19,14 @@ function loadFreshSnapshotTagSettingsModule() {
 
 function createSnapshotTagSettingsHarness(
   initialStoredValue,
-  { loadJsonWithStatusImpl = null, saveJsonStrictImpl = null } = {}
+  {
+    loadJsonWithStatusImpl = null,
+    initialSaveJsonStrictImpl = null,
+    saveJsonStrictImpl = null,
+  } = {}
 ) {
   let storedValue = initialStoredValue;
+  let initialPersistencePending = true;
   const writes = [];
 
   return {
@@ -30,11 +39,16 @@ function createSnapshotTagSettingsHarness(
         value: typeof storedValue === 'undefined' ? fallbackValue : storedValue,
       };
     },
-    saveJson(filePath, nextValue) {
-      storedValue = nextValue;
-      writes.push({ filePath, value: nextValue });
-    },
     saveJsonStrict(filePath, nextValue) {
+      if (initialPersistencePending) {
+        initialPersistencePending = false;
+        if (typeof initialSaveJsonStrictImpl === 'function') {
+          return initialSaveJsonStrictImpl(filePath, nextValue);
+        }
+        storedValue = nextValue;
+        writes.push({ filePath, value: nextValue });
+        return undefined;
+      }
       if (typeof saveJsonStrictImpl === 'function') {
         return saveJsonStrictImpl(filePath, nextValue);
       }
@@ -70,25 +84,48 @@ function createIpcMainDouble() {
   };
 }
 
-test('init normalizes invalid stored snapshot-tag preferences and persists safe defaults', () => {
+test('init rejects structurally unrecoverable snapshot-tag preferences before persistence', () => {
   const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
   const harness = createSnapshotTagSettingsHarness(null);
 
+  assert.throws(
+    () => snapshotTagSettings.init({
+      loadJsonWithStatus: harness.loadJsonWithStatus,
+      saveJsonStrict: harness.saveJsonStrict,
+      snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
+    }),
+    { code: 'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED' }
+  );
+  assert.equal(harness.getStoredValue(), null);
+  assert.deepEqual(harness.getWrites(), []);
+  assert.throws(() => snapshotTagSettings.getSnapshotTagPreferences(), /called before init/);
+});
+
+test('init admits conservative snapshot-tag normalization and retains custom tags, visibility, and ordering', () => {
+  const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
+  const customType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
+  const harness = createSnapshotTagSettingsHarness({
+    type: {
+      custom: [{ value: customType, label: '  Short   story  ' }],
+      hiddenDefaults: ['fiction'],
+      order: [customType],
+    },
+  });
+
   const normalized = snapshotTagSettings.init({
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
   });
 
-  assert.deepEqual(
-    normalized,
-    snapshotTagCatalog.createEmptySnapshotTagPreferences()
-  );
-
   const writes = harness.getWrites();
   assert.equal(writes.length, 1);
   assert.deepEqual(writes[0].value, normalized);
+  assert.deepEqual(normalized.type, {
+    custom: [{ value: customType, label: 'Short story' }],
+    hiddenDefaults: ['fiction'],
+    order: [customType],
+  });
 });
 
 test('init creates default snapshot-tag preferences when the file is missing', () => {
@@ -97,7 +134,6 @@ test('init creates default snapshot-tag preferences when the file is missing', (
 
   const normalized = snapshotTagSettings.init({
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
   });
@@ -110,7 +146,105 @@ test('init creates default snapshot-tag preferences when the file is missing', (
   assert.deepEqual(harness.getStoredValue(), normalized);
 });
 
-test('snapshot-tag IPC preserves stored preferences after the shared JSON reader returns failed', async () => {
+test('init strictly persists admitted preferences even when they need no normalization', () => {
+  const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
+  const preferences = snapshotTagCatalog.createEmptySnapshotTagPreferences();
+  const harness = createSnapshotTagSettingsHarness(preferences);
+
+  const initialized = snapshotTagSettings.init({
+    loadJsonWithStatus: harness.loadJsonWithStatus,
+    saveJsonStrict: harness.saveJsonStrict,
+    snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
+  });
+
+  assert.deepEqual(initialized, preferences);
+  assert.deepEqual(harness.getWrites(), [{
+    filePath: 'C:\\fake\\snapshot_tags.json',
+    value: preferences,
+  }]);
+});
+
+test('init rejects unreadable, empty, malformed, and incompatible existing preferences without writes', () => {
+  const customType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
+  const cases = [
+    { name: 'failed read', result: { status: 'failed', value: {} } },
+    { name: 'empty file', result: { status: 'empty', value: {} } },
+    { name: 'array root', result: { status: 'loaded', value: [] } },
+    { name: 'invalid category', result: { status: 'loaded', value: { type: [] } } },
+    { name: 'invalid custom collection', result: { status: 'loaded', value: { type: { custom: {} } } } },
+    {
+      name: 'unrecoverable custom entry',
+      result: { status: 'loaded', value: { type: { custom: [{ value: customType, label: '' }] } } },
+    },
+  ];
+
+  for (const scenario of cases) {
+    const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
+    const originalValue = { type: { custom: [{ value: customType, label: 'Short story' }] } };
+    const harness = createSnapshotTagSettingsHarness(originalValue, {
+      loadJsonWithStatusImpl() {
+        return scenario.result;
+      },
+    });
+
+    assert.throws(
+      () => snapshotTagSettings.init({
+        loadJsonWithStatus: harness.loadJsonWithStatus,
+        saveJsonStrict: harness.saveJsonStrict,
+        snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
+      }),
+      { code: 'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED' },
+      scenario.name
+    );
+    assert.equal(harness.getStoredValue(), originalValue, scenario.name);
+    assert.deepEqual(harness.getWrites(), [], scenario.name);
+  }
+});
+
+test('init leaves a rejected malformed snapshot-tag file byte-for-byte intact', (t) => {
+  const tempDir = createTestTempDir('snapshot-tag-startup-admission');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const snapshotTagsFile = path.join(tempDir, 'snapshot_tags.json');
+  const originalBytes = Buffer.from('\uFEFF{"type":', 'utf8');
+  fs.writeFileSync(snapshotTagsFile, originalBytes);
+
+  const fsStorage = require('../../../electron/fs_storage');
+  const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
+  assert.throws(
+    () => snapshotTagSettings.init({
+      loadJsonWithStatus: fsStorage.loadJsonWithStatus,
+      saveJsonStrict: fsStorage.saveJsonStrict,
+      snapshotTagsFile,
+    }),
+    { code: 'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED' }
+  );
+  assert.deepEqual(fs.readFileSync(snapshotTagsFile), originalBytes);
+});
+
+test('init reports a required initial snapshot-tag write failure without caching preferences', () => {
+  const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
+  const writeFailure = new Error('disk full');
+  writeFailure.code = 'ENOSPC';
+  const harness = createSnapshotTagSettingsHarness({}, {
+    initialSaveJsonStrictImpl() {
+      throw writeFailure;
+    },
+  });
+
+  assert.throws(
+    () => snapshotTagSettings.init({
+      loadJsonWithStatus: harness.loadJsonWithStatus,
+      saveJsonStrict: harness.saveJsonStrict,
+      snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
+    }),
+    (error) => error.code === 'SNAPSHOT_TAGS_STARTUP_INITIAL_WRITE_FAILED'
+      && error.cause === writeFailure
+  );
+  assert.deepEqual(harness.getWrites(), []);
+  assert.throws(() => snapshotTagSettings.getSnapshotTagPreferences(), /called before init/);
+});
+
+test('snapshot-tag IPC preserves stored preferences after a later shared JSON reader failure', async () => {
   const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
   const existingType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
   const existingPreferences = {
@@ -120,8 +254,13 @@ test('snapshot-tag IPC preserves stored preferences after the shared JSON reader
       order: [existingType],
     },
   };
+  let loadCount = 0;
   const harness = createSnapshotTagSettingsHarness(existingPreferences, {
     loadJsonWithStatusImpl(_filePath, fallbackValue) {
+      loadCount += 1;
+      if (loadCount === 1) {
+        return { status: 'loaded', value: existingPreferences };
+      }
       return { status: 'failed', value: fallbackValue };
     },
   });
@@ -130,7 +269,6 @@ test('snapshot-tag IPC preserves stored preferences after the shared JSON reader
 
   snapshotTagSettings.init({
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
   });
@@ -140,7 +278,8 @@ test('snapshot-tag IPC preserves stored preferences after the shared JSON reader
     },
   });
 
-  assert.equal(harness.getWrites().length, 0);
+  assert.equal(harness.getWrites().length, 1);
+  const admittedPreferences = harness.getStoredValue();
 
   const readResult = await ipcMain.invoke('get-snapshot-tag-preferences');
   assert.equal(readResult.ok, false);
@@ -160,8 +299,8 @@ test('snapshot-tag IPC preserves stored preferences after the shared JSON reader
 
   assert.equal(saveResult.ok, false);
   assert.equal(publishCount, 0);
-  assert.deepEqual(harness.getStoredValue(), existingPreferences);
-  assert.equal(harness.getWrites().length, 0);
+  assert.deepEqual(harness.getStoredValue(), admittedPreferences);
+  assert.equal(harness.getWrites().length, 1);
 });
 
 test('registerIpc persists snapshot-tag preferences and requests settings publish on success', async () => {
@@ -172,7 +311,6 @@ test('registerIpc persists snapshot-tag preferences and requests settings publis
 
   snapshotTagSettings.init({
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
   });
@@ -223,7 +361,6 @@ test('registerIpc does not publish snapshot-tag updates or mutate persisted pref
 
   snapshotTagSettings.init({
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
   });
@@ -263,7 +400,6 @@ test('getSnapshotTagPreferences reloads external snapshot-tag file edits from di
 
   snapshotTagSettings.init({
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
   });
@@ -313,7 +449,6 @@ test('registerIpc logs each invalid snapshot-tag preference request', async (t) 
   const ipcMain = createIpcMainDouble();
   snapshotTagSettings.init({
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     snapshotTagsFile: 'C:\\fake\\snapshot_tags.json',
   });

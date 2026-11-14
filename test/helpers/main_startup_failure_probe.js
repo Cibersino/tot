@@ -26,6 +26,12 @@ const settingsStartupFailureScenarios = new Set([
   'settings-initialization',
   'config-dir-preparation-then-settings-write-failure',
 ]);
+const snapshotTagStartupFailureScenarios = new Set([
+  'snapshot-tags-admission',
+  'snapshot-tags-admission-default-language',
+  'snapshot-tags-admission-dialog-failure',
+  'snapshot-tags-initial-write',
+]);
 const configDirectoryPreparationFailureScenarios = new Set([
   'config-dir-preparation-recovers',
   'config-dir-preparation-then-settings-write-failure',
@@ -228,7 +234,8 @@ const menuDouble = {
 };
 const dialogDouble = {
   showMessageBoxSync(...args) {
-    if (scenario === 'settings-admission-dialog-failure') {
+    if (scenario === 'settings-admission-dialog-failure'
+      || scenario === 'snapshot-tags-admission-dialog-failure') {
       emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG_ATTEMPT', scenario);
       throw new Error('forced startup native dialog failure');
     }
@@ -245,7 +252,8 @@ const dialogDouble = {
       }));
       return 0;
     }
-    if (settingsStartupFailureScenarios.has(scenario)) {
+    if (settingsStartupFailureScenarios.has(scenario)
+      || snapshotTagStartupFailureScenarios.has(scenario)) {
       const options = args[args.length - 1];
       emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', `${scenario}:${JSON.stringify({
         title: options.title,
@@ -334,6 +342,15 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
             value: fallbackValue,
           };
         }
+        if ((scenario === 'snapshot-tags-admission'
+          || scenario === 'snapshot-tags-admission-default-language'
+          || scenario === 'snapshot-tags-admission-dialog-failure')
+          && path.basename(filePath) === 'snapshot_tags.json') {
+          return {
+            status: 'failed',
+            value: fallbackValue,
+          };
+        }
         return fsStorage.loadJsonWithStatus(filePath, fallbackValue, options);
       },
       createSettingsStartupBackup(filePath, originalBytes) {
@@ -349,6 +366,12 @@ Module._load = function patchedModuleLoad(request, parent, isMain) {
         if (scenario === 'settings-initial-write'
           && path.basename(filePath) === 'user_settings.json') {
           const error = new Error('forced initial settings write failure');
+          error.code = 'ENOSPC';
+          throw error;
+        }
+        if (scenario === 'snapshot-tags-initial-write'
+          && path.basename(filePath) === 'snapshot_tags.json') {
+          const error = new Error('forced initial snapshot-tag settings write failure');
           error.code = 'ENOSPC';
           throw error;
         }
