@@ -4080,6 +4080,20 @@ Estados de revisión recomendados:
           "en": "Could not open the default presets folder."
           // [CONCEPTO_APP] preset de velocidad de lectura
         },
+        "catalog_load_partial": {
+          "es": "No se pudieron cargar uno o más archivos del catálogo de presets por defecto. toT continuará con los presets por defecto disponibles y con cualquier preset personalizado que se haya podido recibir. El preset seleccionado o el WPM pueden diferir de la configuración.",
+          "en": "One or more default preset catalog files could not be loaded. toT will continue with the available default presets and any custom presets that were delivered. The selected preset or WPM may differ from the configuration."
+          // [PROPÓSITO] Aviso recuperable de fallo parcial de recursos configurados del catálogo de presets por defecto. Distingue que siguen utilizándose los presets disponibles y los personalizados entregados, sin afirmar corrupción, pérdida, restauración ni respaldo de archivos de configuración independientes.
+          // [CONCEPTO_APP] preset de velocidad de lectura
+          // [PROTEGIDO] `WPM`
+        },
+        "catalog_load_complete": {
+          "es": "No se pudo cargar el catálogo de presets por defecto. toT continuará con cualquier preset personalizado que se haya podido recibir. El preset seleccionado o el WPM pueden diferir de la configuración.",
+          "en": "The default preset catalog could not be loaded. toT will continue with any custom presets that were delivered. The selected preset or WPM may differ from the configuration."
+          // [PROPÓSITO] Aviso recuperable de fallo completo de recursos configurados del catálogo de presets por defecto. No afirma corrupción, pérdida, restauración ni respaldo de archivos de configuración independientes.
+          // [CONCEPTO_APP] preset de velocidad de lectura
+          // [PROTEGIDO] `WPM`
+        },
         "unavailable": {
           "es": "La ventana de preset no está disponible en esta build de la app.",
           "en": "The preset window is unavailable in this app build."

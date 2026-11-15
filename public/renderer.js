@@ -251,6 +251,7 @@ let splashRemovedSent = false;
 let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
 let pendingStartupSettingsPayloadNotice = false;
+let pendingStartupDefaultPresetCatalogFailure = 'none';
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
 let textExtractionPrepareAttemptId = 0;
@@ -654,6 +655,11 @@ function maybeUnblockReady() {
     pendingStartupSettingsPayloadNotice = false;
     window.Notify.notifyMain('renderer.main.alerts.settings_payload_unavailable');
   }
+  if (pendingStartupDefaultPresetCatalogFailure !== 'none') {
+    const catalogFailure = pendingStartupDefaultPresetCatalogFailure;
+    pendingStartupDefaultPresetCatalogFailure = 'none';
+    reportDefaultPresetCatalogFailure(catalogFailure);
+  }
   // Keep the bootstrap current-text settle behind the READY/splash unlock because its synchronous recount work can delay the first useful paint.
   // Current-text derived results may remain pending at READY and settle immediately afterward.
   // Main intentionally has no programmatic initial DOM focus.
@@ -699,6 +705,19 @@ function isSettingsPayloadUnavailableError(error) {
   return !!(error
     && typeof error.message === 'string'
     && error.message.includes(SETTINGS_PAYLOAD_UNAVAILABLE_ERROR_MESSAGE));
+}
+
+function reportDefaultPresetCatalogFailure(catalogFailure) {
+  if (catalogFailure !== 'partial' && catalogFailure !== 'complete') return;
+  if (!isRendererReady()) {
+    pendingStartupDefaultPresetCatalogFailure = catalogFailure;
+    return;
+  }
+  window.Notify.notifyMain(
+    catalogFailure === 'partial'
+      ? 'renderer.presets.alerts.catalog_load_partial'
+      : 'renderer.presets.alerts.catalog_load_complete'
+  );
 }
 
 // =============================================================================
@@ -1010,6 +1029,7 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
     electronAPI: window.electronAPI,
   });
   syncPresetActionButtons();
+  reportDefaultPresetCatalogFailure(result && result.catalogFailure);
   return result;
 };
 
@@ -1116,6 +1136,9 @@ function enqueuePresetReconciliation({ preset, settingsSnapshot, preferenceScope
         electronAPI: window.electronAPI,
       })
       : await loadPresets({ settingsSnapshot });
+    if (preset) {
+      reportDefaultPresetCatalogFailure(result && result.catalogFailure);
+    }
     currentTextRefreshPolicy.dispatchPresetOutcome(
       result && result.selectionOutcome ? result.selectionOutcome : null,
       reason

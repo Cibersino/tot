@@ -120,6 +120,7 @@ async function createRendererHarness({
   transitionFailure = null,
   transitionWait = null,
   useReadingSpeedTestUi = false,
+  wpmControlsOverrides = {},
 } = {}) {
   const absentElectronMethodSet = new Set(absentElectronMethods);
   const createElement = Array.isArray(focusCalls)
@@ -280,6 +281,7 @@ async function createRendererHarness({
       presetLoadCalls.push(options);
       return { selectionOutcome: null };
     },
+    ...wpmControlsOverrides,
   });
   const currentTextRuntime = createNoopSurface({
     applyCurrentTextProcessingState(state, options) {
@@ -671,6 +673,52 @@ test('main startup does not attribute other settings-access failures to an unava
   assert.deepEqual(harness.notifications, []);
   assert.equal(harness.presetLoadCalls.length, 1);
   assert.equal(Object.keys(harness.presetLoadCalls[0].settingsSnapshot).length, 0);
+  assert.deepEqual(harness.errors, []);
+});
+
+test('main startup discloses a default-preset catalog failure only after READY', async () => {
+  const catalogLoadCalls = [];
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    wpmControlsOverrides: {
+      async loadPresets(options) {
+        catalogLoadCalls.push(options);
+        return { catalogFailure: 'partial', selectionOutcome: null };
+      },
+    },
+  });
+
+  for (let index = 0; index < 4; index += 1) await flushAsyncWork();
+
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(catalogLoadCalls.length, 1);
+  assert.deepEqual(harness.errors, []);
+
+  await harness.completeStartupReady();
+
+  assert.equal(harness.getElement('startupSplash').removed, true);
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.catalog_load_partial']);
+  assert.deepEqual(harness.notificationCalls, [{
+    key: 'renderer.presets.alerts.catalog_load_partial',
+    method: 'notifyMain',
+  }]);
+});
+
+test('main startup distinguishes a complete default-preset catalog failure', async () => {
+  const harness = await createRendererHarness({
+    wpmControlsOverrides: {
+      async loadPresets() {
+        return { catalogFailure: 'complete', selectionOutcome: null };
+      },
+    },
+  });
+
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.catalog_load_complete']);
+  assert.deepEqual(harness.notificationCalls, [{
+    key: 'renderer.presets.alerts.catalog_load_complete',
+    method: 'notifyMain',
+  }]);
   assert.deepEqual(harness.errors, []);
 });
 

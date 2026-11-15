@@ -708,6 +708,8 @@
         "open_folder_unsupported": "Cannot open presets folder in this environment.",
         "open_folder_error": "An error occurred while trying to open the presets folder.",
         "open_default_folder_failed": "Could not open the default presets folder.",
+        "catalog_load_partial": "One or more default preset catalog files could not be loaded. toT will continue with the available default presets and any custom presets that were delivered. The selected preset or WPM may differ from the configuration.",
+        "catalog_load_complete": "The default preset catalog could not be loaded. toT will continue with any custom presets that were delivered. The selected preset or WPM may differ from the configuration.",
         "unavailable": "The preset window is unavailable in this app build.",
         "open_error": "An error occurred while opening the preset window.",
         "name_empty": "Name cannot be empty.",

@@ -708,6 +708,8 @@
         "open_folder_unsupported": "No es posible abrir la carpeta de presets en este entorno.",
         "open_folder_error": "Ocurrió un error al intentar abrir la carpeta de presets.",
         "open_default_folder_failed": "No se pudo abrir la carpeta de presets por defecto.",
+        "catalog_load_partial": "No se pudieron cargar uno o más archivos del catálogo de presets por defecto. toT continuará con los presets por defecto disponibles y con cualquier preset personalizado que se haya podido recibir. El preset seleccionado o el WPM pueden diferir de la configuración.",
+        "catalog_load_complete": "No se pudo cargar el catálogo de presets por defecto. toT continuará con cualquier preset personalizado que se haya podido recibir. El preset seleccionado o el WPM pueden diferir de la configuración.",
         "unavailable": "La ventana de preset no está disponible en esta build de la app.",
         "open_error": "Ocurrió un error al abrir la ventana de preset.",
         "name_empty": "El nombre no puede estar vacío.",
