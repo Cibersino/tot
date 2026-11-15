@@ -128,6 +128,7 @@ async function createRendererHarness({
   let activeLanguage = 'en';
   const errors = [];
   const notifications = [];
+  const notificationCalls = [];
   const pendingStates = [];
   const subscriptions = {};
   const textExtractionDragDropConfigs = [];
@@ -435,8 +436,14 @@ async function createRendererHarness({
         initialFocus.focus({ preventScroll: true });
       },
       deactivateModalFocus() {},
-      notifyMain(key) { notifications.push(key); },
-      toastMain(key) { notifications.push(key); },
+      notifyMain(key) {
+        notifications.push(key);
+        notificationCalls.push({ key, method: 'notifyMain' });
+      },
+      toastMain(key) {
+        notifications.push(key);
+        notificationCalls.push({ key, method: 'toastMain' });
+      },
       ...notifyOverrides,
     }),
     ReadingSpeedTestUi: readingSpeedTestUi,
@@ -581,6 +588,7 @@ async function createRendererHarness({
       assert.ok(handler, `main renderer did not register ${actionId}`);
       return handler();
     },
+    notificationCalls,
     pendingStates,
     presetComboboxUpdates,
     getTextExtractionDragDropConfig() {
@@ -621,6 +629,49 @@ test('Main startup has no programmatic initial DOM focus', async () => {
   await createRendererHarness({ focusCalls });
 
   assert.deepEqual(focusCalls, []);
+});
+
+test('main startup discloses an unavailable settings payload after READY and retains empty-settings continuation', async () => {
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    electronMethodOverrides: {
+      async getSettings() {
+        throw new Error('[settings] renderer settings payload unavailable');
+      },
+    },
+  });
+
+  for (let index = 0; index < 4; index += 1) await flushAsyncWork();
+
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(harness.presetLoadCalls.length, 1);
+  assert.equal(Object.keys(harness.presetLoadCalls[0].settingsSnapshot).length, 0);
+  assert.deepEqual(harness.errors, []);
+
+  await harness.completeStartupReady();
+
+  assert.equal(harness.getElement('startupSplash').removed, true);
+  assert.deepEqual(harness.notifications, ['renderer.main.alerts.settings_payload_unavailable']);
+  assert.deepEqual(harness.notificationCalls, [{
+    key: 'renderer.main.alerts.settings_payload_unavailable',
+    method: 'notifyMain',
+  }]);
+});
+
+test('main startup does not attribute other settings-access failures to an unavailable payload', async () => {
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      async getSettings() {
+        throw new Error('settings IPC temporarily unavailable');
+      },
+    },
+  });
+
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.presetLoadCalls.length, 1);
+  assert.equal(Object.keys(harness.presetLoadCalls[0].settingsSnapshot).length, 0);
+  assert.deepEqual(harness.errors, []);
 });
 
 test('main renderer keeps stopwatch controls named without visual tooltips across language changes', async () => {

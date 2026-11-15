@@ -1350,6 +1350,13 @@ Estados de revisión recomendados:
           "en": "An error occurred while clearing the current text."
           // [CONCEPTO_APP] texto actual
         },
+        "settings_payload_unavailable": {
+          "es": "No se pudieron entregar a esta ventana tus preferencias guardadas, por lo que no se pudieron aplicar. El idioma, modo de conteo, preset seleccionado o WPM efectivos pueden diferir de tu configuración guardada. Revisa estos ajustes antes de continuar.",
+          "en": "Your saved preferences could not be delivered to this window, so they could not be applied. The effective language, counting mode, selected preset, or WPM may differ from your saved configuration. Review these settings before continuing."
+          // [PROPÓSITO] Aviso de continuación recuperable cuando el renderer principal no recibe el payload de preferencias decorado. Declara que la configuración efectiva de esta ventana puede diferir de la guardada, sin afirmar corrupción, pérdida, restauración automática ni disponibilidad de respaldos.
+          // [CONCEPTO_APP] modo de conteo; preset de velocidad de lectura; palabras por minuto (WPM)
+          // [PROTEGIDO] `WPM`
+        },
         "current_text_processing_locked": {
           "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
           "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."

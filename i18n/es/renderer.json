@@ -93,6 +93,7 @@
         "overwrite_clipboard_error": "Ocurrió un error al reemplazar el texto actual con el texto del portapapeles.",
         "append_clipboard_error": "Ocurrió un error al agregar el texto del portapapeles al texto actual.",
         "clear_error": "Ocurrió un error al vaciar el texto actual.",
+        "settings_payload_unavailable": "No se pudieron entregar a esta ventana tus preferencias guardadas, por lo que no se pudieron aplicar. El idioma, modo de conteo, preset seleccionado o WPM efectivos pueden diferir de tu configuración guardada. Revisa estos ajustes antes de continuar.",
         "current_text_processing_locked": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
         "precise_counting_fallback": "No se pudo usar el modo Preciso. toT cambió al modo Simple.",
         "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",

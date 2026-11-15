@@ -31,6 +31,7 @@ const {
   DEFAULT_LANG,
   MAX_CLIPBOARD_REPEAT,
 } = AppConstants;
+const SETTINGS_PAYLOAD_UNAVAILABLE_ERROR_MESSAGE = '[settings] renderer settings payload unavailable';
 if (typeof DEFAULT_LANG !== 'string' || !DEFAULT_LANG.trim()) {
   throw new Error('[renderer] AppConstants.DEFAULT_LANG unavailable; cannot continue');
 }
@@ -249,6 +250,7 @@ let rendererCoreReadySent = false;
 let splashRemovedSent = false;
 let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
+let pendingStartupSettingsPayloadNotice = false;
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
 let textExtractionPrepareAttemptId = 0;
@@ -648,6 +650,10 @@ function maybeUnblockReady() {
 
   sendSplashRemoved();
   syncMainInteractionLockUi();
+  if (pendingStartupSettingsPayloadNotice) {
+    pendingStartupSettingsPayloadNotice = false;
+    window.Notify.notifyMain('renderer.main.alerts.settings_payload_unavailable');
+  }
   // Keep the bootstrap current-text settle behind the READY/splash unlock because its synchronous recount work can delay the first useful paint.
   // Current-text derived results may remain pending at READY and settle immediately afterward.
   // Main intentionally has no programmatic initial DOM focus.
@@ -687,6 +693,12 @@ function getRequiredElectronMethod(methodName) {
     throw new Error(`[renderer] electronAPI.${methodName} unavailable; cannot continue bootstrap`);
   }
   return api[methodName].bind(api);
+}
+
+function isSettingsPayloadUnavailableError(error) {
+  return !!(error
+    && typeof error.message === 'string'
+    && error.message.includes(SETTINGS_PAYLOAD_UNAVAILABLE_ERROR_MESSAGE));
 }
 
 // =============================================================================
@@ -1329,6 +1341,7 @@ async function runMainStartup() {
         if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
       } catch (error) {
         log.warn('BOOTSTRAP: getSettings failed; using defaults:', error);
+        pendingStartupSettingsPayloadNotice = isSettingsPayloadUnavailableError(error);
         settingsCache = {};
         settingsSnapshot = settingsCache;
       }
