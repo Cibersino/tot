@@ -218,6 +218,40 @@ function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
 }
 
+function isActiveInitialStartupMainWindow(win) {
+  return !!win
+    && win === initialStartupMainWin
+    && win === mainWin
+    && isAliveWindow(win);
+}
+
+function resolveInitialStartupMainWindowSender(event, channelName) {
+  const sourceContents = event && event.sender;
+  const sourceWindow = sourceContents && typeof BrowserWindow.fromWebContents === 'function'
+    ? BrowserWindow.fromWebContents(sourceContents)
+    : null;
+  if (isActiveInitialStartupMainWindow(sourceWindow)) {
+    return sourceWindow;
+  }
+
+  log.warn(`${channelName} unauthorized or outside the initial Main Window startup lifecycle (ignored).`);
+  return null;
+}
+
+function isPreReadyStartupAdmission() {
+  return mainReadyState === 'PRE_READY'
+    && !startupReadySent
+    && !splashRemoved
+    && !menuEnabled;
+}
+
+function isAwaitingStartupSplashRemovalAcknowledgment() {
+  return mainReadyState === 'READY'
+    && startupReadySent
+    && !splashRemoved
+    && !menuEnabled;
+}
+
 function showEditorWindow(options = {}) {
   return editorWindowLifecycleController.showEditorWindow(editorWin, options);
 }
@@ -370,6 +404,7 @@ let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating Stopwatch (flotante.html)
 let taskEditorWin = null; // Task Editor window (task_editor.html)
 let textTimeCalculatorWin = null; // Quick text/time calculator window
+let initialStartupMainWin = null;
 let pendingMainWindowCloseAfterProcessingAbort = false;
 let pendingMainWindowCloseAfterTaskResolution = false;
 let currentTextProcessingStateMainBridge = null;
@@ -784,6 +819,9 @@ function createMainWindow() {
   });
 
   const createdMainWin = mainWin;
+  if (!initialStartupMainWin) {
+    initialStartupMainWin = createdMainWin;
+  }
 
   let observingInitialMainPreload = true;
   function removeInitialMainPreloadObserver() {
@@ -1590,6 +1628,7 @@ function maybeMarkMainInvariantsReady() {
 }
 
 function maybeAuthorizeStartupReady() {
+  if (startupTerminalFailure) return;
   if (startupReadySent) return;
   if (!mainInvariantsReady || !rendererCoreReady) return;
 
@@ -1598,19 +1637,75 @@ function maybeAuthorizeStartupReady() {
     log.error('startup:ready emit failed: main window unavailable.');
     return;
   }
+  if (!isActiveInitialStartupMainWindow(targetWin)) {
+    log.error('startup:ready emit failed: initial Main Window unavailable.');
+    return;
+  }
 
   try {
     targetWin.webContents.send('startup:ready');
     startupReadySent = true;
     mainReadyState = 'READY';
   } catch (error) {
-    log.error('Error emitting startup:ready to renderer:', error);
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Main startup:ready emission',
+      titleKey: 'startup_registration_failure_title',
+      messageKey: 'startup_registration_failure_message',
+      sourceWindow: targetWin,
+    });
   }
 }
 
-function handleSplashRemoved() {
+function handleRendererStartupFailure(event, payload) {
+  const failureKind = payload && typeof payload.kind === 'string' ? payload.kind : '';
+  const sourceWindow = resolveInitialStartupMainWindowSender(event, 'startup:renderer-failed');
+  if (!sourceWindow) return;
+  if (startupTerminalFailure) {
+    log.warn('Renderer startup failure report ignored after terminal shutdown began.', { failureKind });
+    return;
+  }
+
+  const acceptedPreReady = (failureKind === 'required-initialization' || failureKind === 'renderer-core-ready')
+    && isPreReadyStartupAdmission();
+  const acceptedBeforeSplashAcknowledgment = (
+    failureKind === 'renderer-core-ready'
+    || failureKind === 'splash-removal'
+    || failureKind === 'splash-removed-send'
+  ) && isAwaitingStartupSplashRemovalAcknowledgment();
+  if (!acceptedPreReady && !acceptedBeforeSplashAcknowledgment) {
+    // Once Main has processed the splash acknowledgment, a later renderer report cannot revoke admission.
+    log.warn('Renderer startup failure report ignored outside the startup admission window.', {
+      failureKind,
+      mainReadyState,
+      startupReadySent,
+      splashRemoved,
+    });
+    return;
+  }
+
+  terminateAfterRequiredStartupFailure({
+    error: new Error(`Main renderer reported a required startup failure: ${failureKind || 'unknown'}.`),
+    logContext: 'Main renderer required startup',
+    titleKey: 'startup_registration_failure_title',
+    messageKey: 'startup_registration_failure_message',
+    sourceWindow,
+  });
+}
+
+function handleSplashRemoved(event) {
+  const sourceWindow = resolveInitialStartupMainWindowSender(event, 'startup:splash-removed');
+  if (!sourceWindow) return;
+  if (startupTerminalFailure) {
+    log.warn('startup:splash-removed ignored after terminal shutdown began.');
+    return;
+  }
   if (splashRemoved) {
     log.warn('startup:splash-removed already handled (ignored).');
+    return;
+  }
+  if (!isAwaitingStartupSplashRemovalAcknowledgment()) {
+    log.warn('startup:splash-removed ignored outside the startup acknowledgment window.');
     return;
   }
   splashRemoved = true;
@@ -2559,7 +2654,8 @@ ipcMain.handle('get-app-runtime-info', () => {
   }
 });
 
-ipcMain.on('startup:renderer-core-ready', () => {
+ipcMain.on('startup:renderer-core-ready', (event) => {
+  if (!resolveInitialStartupMainWindowSender(event, 'startup:renderer-core-ready')) return;
   if (rendererCoreReady) {
     log.warnOnce('startup.rendererCoreReady.duplicate', 'startup:renderer-core-ready already handled (ignored).');
     return;
@@ -2575,11 +2671,12 @@ ipcMain.on('startup:renderer-core-ready', () => {
 
 registerLinkIpc({ ipcMain, app, shell });
 
-ipcMain.on('startup:splash-removed', () => {
-  handleSplashRemoved();
+ipcMain.on('startup:splash-removed', (event) => {
+  handleSplashRemoved(event);
 });
 
 ipcMain.on('renderer-i18n-failed', closeRendererAfterI18nFailure);
+ipcMain.on('startup:renderer-failed', handleRendererStartupFailure);
 ipcMain.handle('language-chooser-bootstrap-failure', handleInitialLanguageChooserBootstrapFailure);
 
 // =============================================================================

@@ -46,6 +46,14 @@ const configDirectoryPreparationFailureScenarios = new Set([
   'config-dir-preparation-recovers',
   'config-dir-preparation-then-settings-write-failure',
 ]);
+const rendererStartupFailureScenarios = new Set([
+  'renderer-required-initialization',
+  'renderer-core-ready-failure',
+  'startup-ready-send-failure',
+  'renderer-splash-removal-failure-before-ack',
+  'renderer-splash-failure-before-ack',
+  'renderer-splash-failure-after-unauthorized-ack',
+]);
 
 const smokeUserDataDir = typeof process.env.TOT_SMOKE_USER_DATA_DIR === 'string'
   ? process.env.TOT_SMOKE_USER_DATA_DIR.trim()
@@ -105,6 +113,26 @@ function reportRendererI18nFailure(webContents, kind) {
   });
 }
 
+function reportRendererStartupFailure(webContents, kind) {
+  actualElectron.ipcMain.emit('startup:renderer-failed', {
+    sender: webContents,
+  }, {
+    kind,
+  });
+}
+
+function emitRendererCoreReady(webContents) {
+  actualElectron.ipcMain.emit('startup:renderer-core-ready', {
+    sender: webContents,
+  });
+}
+
+function emitSplashRemoved(webContents) {
+  actualElectron.ipcMain.emit('startup:splash-removed', {
+    sender: webContents,
+  });
+}
+
 async function reportLanguageChooserBootstrapFailure(webContents) {
   const handler = ipcHandlers.get('language-chooser-bootstrap-failure');
   if (typeof handler !== 'function') {
@@ -126,7 +154,11 @@ function createBrowserWindowDouble() {
       this.destroyed = false;
       this.webContents = new EventEmitter();
       this.webContents.isDestroyed = () => this.destroyed;
-      this.webContents.send = () => {};
+      this.webContents.send = (channel) => {
+        if (scenario === 'startup-ready-send-failure' && channel === 'startup:ready') {
+          throw new Error('forced startup:ready send failure');
+        }
+      };
       mainWindowDouble = this;
     }
 
@@ -183,7 +215,7 @@ function createBrowserWindowDouble() {
       if (scenario === 'renderer-i18n-transition-restoration'
         && path.basename(filePath) === 'index.html') {
         queueMicrotask(() => {
-          actualElectron.ipcMain.emit('startup:renderer-core-ready');
+          emitRendererCoreReady(this.webContents);
           const initialState = currentTextProcessingController.getState();
           currentTextProcessingController.resolve({
             requestId: initialState.requestId,
@@ -202,16 +234,94 @@ function createBrowserWindowDouble() {
           });
         });
       }
+      if (scenario === 'renderer-required-initialization'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          reportRendererStartupFailure(this.webContents, 'required-initialization');
+        });
+      }
+      if (scenario === 'renderer-core-ready-failure'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          reportRendererStartupFailure(this.webContents, 'renderer-core-ready');
+        });
+      }
+      if (scenario === 'startup-ready-send-failure'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          emitRendererCoreReady(this.webContents);
+        });
+      }
+      if (scenario === 'renderer-splash-failure-before-ack'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          emitRendererCoreReady(this.webContents);
+          queueMicrotask(() => {
+            reportRendererStartupFailure(this.webContents, 'splash-removed-send');
+            queueMicrotask(() => emitSplashRemoved(this.webContents));
+          });
+        });
+      }
+      if (scenario === 'renderer-splash-removal-failure-before-ack'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          emitRendererCoreReady(this.webContents);
+          queueMicrotask(() => {
+            reportRendererStartupFailure(this.webContents, 'splash-removal');
+            queueMicrotask(() => emitSplashRemoved(this.webContents));
+          });
+        });
+      }
+      if (scenario === 'renderer-splash-failure-after-ack'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          emitRendererCoreReady(this.webContents);
+          queueMicrotask(() => {
+            const initialState = currentTextProcessingController.getState();
+            currentTextProcessingController.resolve({
+              requestId: initialState.requestId,
+              ok: true,
+            });
+            emitSplashRemoved(this.webContents);
+            queueMicrotask(() => reportRendererStartupFailure(this.webContents, 'splash-removed-send'));
+          });
+        });
+      }
+      if (scenario === 'renderer-splash-failure-after-unauthorized-ack'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          emitRendererCoreReady(this.webContents);
+          queueMicrotask(() => {
+            emitSplashRemoved(new EventEmitter());
+            reportRendererStartupFailure(this.webContents, 'splash-removed-send');
+          });
+        });
+      }
+      if (scenario === 'renderer-startup-report-unauthorized'
+        && path.basename(filePath) === 'index.html') {
+        queueMicrotask(() => {
+          reportRendererStartupFailure(new EventEmitter(), 'required-initialization');
+          emitRendererCoreReady(this.webContents);
+          queueMicrotask(() => {
+            const initialState = currentTextProcessingController.getState();
+            currentTextProcessingController.resolve({
+              requestId: initialState.requestId,
+              ok: true,
+            });
+            emitSplashRemoved(this.webContents);
+          });
+        });
+      }
       if (scenario === 'config-dir-preparation-recovers' && path.basename(filePath) === 'index.html') {
         queueMicrotask(() => {
-          actualElectron.ipcMain.emit('startup:renderer-core-ready');
+          emitRendererCoreReady(this.webContents);
           const initialState = currentTextProcessingController.getState();
           currentTextProcessingController.resolve({
             requestId: initialState.requestId,
             ok: true,
           });
           queueMicrotask(() => {
-            actualElectron.ipcMain.emit('startup:splash-removed');
+            emitSplashRemoved(this.webContents);
           });
         });
       }
@@ -300,6 +410,15 @@ const dialogDouble = {
       })}`);
       return 0;
     }
+    if (rendererStartupFailureScenarios.has(scenario)) {
+      const options = args[args.length - 1];
+      emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', `${scenario}:${JSON.stringify({
+        title: options.title,
+        message: options.message,
+        buttons: options.buttons,
+      })}`);
+      return 0;
+    }
     if (scenario.startsWith('first-run-')) {
       const options = args[args.length - 1];
       emitMarker('TOT_MAIN_STARTUP_FAILURE_DIALOG', `${scenario}:${JSON.stringify({
@@ -324,7 +443,8 @@ actualApp.quit = () => {
   // managed terminal failures of the main window.
   if ((scenario === 'main-preload'
     || scenario === 'renderer-i18n-startup'
-    || scenario === 'renderer-i18n-startup-api')
+    || scenario === 'renderer-i18n-startup-api'
+    || rendererStartupFailureScenarios.has(scenario))
     && mainWindowDouble
     && !mainWindowDouble.isDestroyed()) {
     mainWindowDouble.close();

@@ -115,6 +115,7 @@ async function createRendererHarness({
   mainLogoLinksAvailable = true,
   mainLogoLinksOverride = null,
   statusUiOverrides = {},
+  startupSplashOverrides = {},
   getOcrLocaleTag = (language) => String(language || 'en'),
   transitionFailureLanguage = '',
   transitionFailure = null,
@@ -204,6 +205,7 @@ async function createRendererHarness({
   const infoModal = getElement('infoModal');
   const infoModalContent = getElement('infoModalContent');
   const infoModalClose = getElement('infoModalClose');
+  Object.assign(getElement('startupSplash'), startupSplashOverrides);
   const infoModalPanel = createElement('infoModalPanel');
   const infoContentFocusTarget = createElement('infoContentFocusTarget');
   infoModalPanel.scrollTop = 0;
@@ -361,6 +363,7 @@ async function createRendererHarness({
     onStartupReady(callback) { subscriptions.startupReady = callback; },
     async openEditor() { return { ok: true, launchDisposition: 'first-show-pending' }; },
     resolveCurrentTextProcessing() {},
+    reportRendererStartupFailure() {},
     reportRendererI18nFailure() {},
     sendStartupRendererCoreReady() {
       currentTextRuntimeCalls.currentTextSubscriptionArmedAtRendererCoreReady = (
@@ -1891,18 +1894,106 @@ test('main renderer aborts bootstrap instead of synthesizing current-text or pro
 
   for (const testCase of cases) {
     await t.test(testCase.name, async () => {
+      const startupFailureReports = [];
       const harness = await createRendererHarness({
         ...testCase,
+        electronMethodOverrides: {
+          ...testCase.electronMethodOverrides,
+          reportRendererStartupFailure(payload) {
+            startupFailureReports.push(payload);
+          },
+        },
         expectStartupError: true,
       });
 
       assert.equal(harness.currentTextRuntimeCalls.bootstrapStates.length, 0);
       assert.equal(harness.errors.length > 0, true);
+      assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['required-initialization']);
       if (testCase.expectedDiagnostic) {
         assert.equal(harness.errors[0][1].message, testCase.expectedDiagnostic);
       }
     });
   }
+});
+
+test('main renderer reports a core READY send failure when the startup reporter remains usable', async () => {
+  const startupFailureReports = [];
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      sendStartupRendererCoreReady() {
+        throw new Error('core READY transport failed');
+      },
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
+    },
+    expectStartupError: true,
+  });
+
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['renderer-core-ready']);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(harness.errors[0][1].message, '[renderer] sendStartupRendererCoreReady failed; cannot complete renderer READY handshake: Error: core READY transport failed');
+});
+
+test('main renderer does not claim a core READY failure was reported when its reporter is unavailable', async () => {
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      sendStartupRendererCoreReady() {
+        throw new Error('core READY transport failed');
+      },
+      reportRendererStartupFailure: undefined,
+    },
+    expectStartupError: true,
+  });
+
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(harness.errors.some((entry) => entry[0] === 'Required renderer startup failure could not be reported: reporter unavailable.'), true);
+});
+
+test('main renderer reports a startup-splash removal failure before acknowledgment', async () => {
+  const startupFailureReports = [];
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    startupSplashOverrides: {
+      remove() {
+        throw new Error('splash removal failed');
+      },
+    },
+    electronMethodOverrides: {
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
+    },
+  });
+
+  await harness.completeStartupReady();
+
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['splash-removal']);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.errors[0][1].message, 'splash removal failed');
+});
+
+test('main renderer reports a startup-splash acknowledgment send failure without presenting deferred notices', async () => {
+  const startupFailureReports = [];
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    electronMethodOverrides: {
+      sendStartupSplashRemoved() {
+        throw new Error('splash acknowledgment transport failed');
+      },
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
+    },
+  });
+
+  await harness.completeStartupReady();
+
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['splash-removed-send']);
+  assert.equal(harness.getElement('startupSplash').removed, true);
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.errors[0][1].message, '[renderer] sendStartupSplashRemoved failed; cannot complete renderer READY handshake: Error: splash acknowledgment transport failed');
 });
 
 test('main renderer accepts clipboard text only from an explicit successful envelope', async () => {

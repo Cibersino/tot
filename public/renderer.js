@@ -606,6 +606,26 @@ function sendRendererCoreReady() {
   rendererCoreReadySent = true;
 }
 
+function reportRequiredRendererStartupFailure(failureKind, error) {
+  const api = window.electronAPI;
+  if (!api || typeof api.reportRendererStartupFailure !== 'function') {
+    log.error('Required renderer startup failure could not be reported: reporter unavailable.', {
+      failureKind,
+      error,
+    });
+    return;
+  }
+
+  try {
+    api.reportRendererStartupFailure({ kind: failureKind });
+  } catch (reportError) {
+    log.error('Required renderer startup failure could not be reported:', {
+      failureKind,
+      error,
+    }, reportError);
+  }
+}
+
 function sendSplashRemoved() {
   if (splashRemovedSent) return;
   if (!window.electronAPI || typeof window.electronAPI.sendStartupSplashRemoved !== 'function') {
@@ -644,12 +664,24 @@ function maybeUnblockReady() {
   rendererReadyState = 'READY';
 
   if (startupSplash && typeof startupSplash.remove === 'function') {
-    startupSplash.remove();
+    try {
+      startupSplash.remove();
+    } catch (error) {
+      log.error('Error removing startup splash:', error);
+      reportRequiredRendererStartupFailure('splash-removal', error);
+      return;
+    }
   } else {
     log.warn('BOOTSTRAP: Startup splash element missing; proceeding to READY.');
   }
 
-  sendSplashRemoved();
+  try {
+    sendSplashRemoved();
+  } catch (error) {
+    log.error('Error confirming startup splash removal:', error);
+    reportRequiredRendererStartupFailure('splash-removed-send', error);
+    return;
+  }
   syncMainInteractionLockUi();
   if (pendingStartupSettingsPayloadNotice) {
     pendingStartupSettingsPayloadNotice = false;
@@ -1328,6 +1360,7 @@ function setupToggleModoPreciso() {
 }
 
 async function runMainStartup() {
+  let requiredRendererStartupActive = false;
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
       unavailableMessage: 'BOOTSTRAP: getAppConfig unavailable; bootstrap will use default limits.'
@@ -1382,6 +1415,7 @@ async function runMainStartup() {
       return;
     }
 
+    requiredRendererStartupActive = true;
     const getCurrentText = getRequiredElectronMethod('getCurrentText');
     let initialText = await getCurrentText();
     if (typeof initialText !== 'string') {
@@ -1437,9 +1471,17 @@ async function runMainStartup() {
       }
     }
 
-    markRendererInvariantsReady();
+    try {
+      markRendererInvariantsReady();
+    } catch (error) {
+      log.error('Error completing renderer READY handshake:', error);
+      reportRequiredRendererStartupFailure('renderer-core-ready', error);
+    }
   } catch (error) {
     log.error('Error initializing renderer:', error);
+    if (requiredRendererStartupActive) {
+      reportRequiredRendererStartupFailure('required-initialization', error);
+    }
   }
 }
 

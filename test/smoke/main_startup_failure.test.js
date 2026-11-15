@@ -88,6 +88,8 @@ for (const {
   firstRunBootstrapFailure = false,
   firstRunDocumentLoadFailure = false,
   firstRunStructuralFailure = false,
+  rendererStartupFailure = false,
+  successfulStartup = false,
   expectedMenuInstallationAttempts = 1,
   vetoedClose = false,
   closesMainWindow = false,
@@ -250,6 +252,45 @@ for (const {
     expectedDiagnostic: 'Initial Language Window structural setup failed:',
     expectedCause: 'forced initial Language Window setup failure',
   },
+  {
+    scenario: 'renderer-required-initialization',
+    rendererStartupFailure: true,
+    closesMainWindow: true,
+    expectedDiagnostic: 'Main renderer required startup failed:',
+  },
+  {
+    scenario: 'renderer-core-ready-failure',
+    rendererStartupFailure: true,
+    closesMainWindow: true,
+    expectedDiagnostic: 'Main renderer required startup failed:',
+  },
+  {
+    scenario: 'startup-ready-send-failure',
+    rendererStartupFailure: true,
+    closesMainWindow: true,
+    expectedDiagnostic: 'Main startup:ready emission failed:',
+    expectedCause: 'forced startup:ready send failure',
+  },
+  {
+    scenario: 'renderer-splash-failure-before-ack',
+    rendererStartupFailure: true,
+    closesMainWindow: true,
+    expectedDiagnostic: 'Main renderer required startup failed:',
+  },
+  {
+    scenario: 'renderer-splash-removal-failure-before-ack',
+    rendererStartupFailure: true,
+    closesMainWindow: true,
+    expectedDiagnostic: 'Main renderer required startup failed:',
+  },
+  {
+    scenario: 'renderer-splash-failure-after-unauthorized-ack',
+    rendererStartupFailure: true,
+    closesMainWindow: true,
+    expectedDiagnostic: 'Main renderer required startup failed:',
+  },
+  { scenario: 'renderer-splash-failure-after-ack', successfulStartup: true },
+  { scenario: 'renderer-startup-report-unauthorized', successfulStartup: true },
   { scenario: 'menu-installation-dialog-failure', dialogFails: true },
 ]) {
   const expectedLifecycle = deferredPostReadyClose
@@ -260,6 +301,8 @@ for (const {
     ? 'terminates before current-text initialization'
     : normalStartup
     ? 'continues after best-effort configuration-directory preparation fails'
+    : successfulStartup
+    ? 'continues after a non-terminal startup report is ignored'
     : dialogFails
     ? 'continues after native-dialog failure, settles initial processing, persists, and quits'
     : 'discloses, settles initial processing, persists, and quits';
@@ -271,7 +314,7 @@ for (const {
     const result = await runProbe(scenario, userDataDir, {
       logLevel: earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure
         || normalStartup || firstRunFallbackPersistenceFailure || firstRunBootstrapFailure
-        || firstRunDocumentLoadFailure || firstRunStructuralFailure
+        || firstRunDocumentLoadFailure || firstRunStructuralFailure || rendererStartupFailure
         ? 'error'
         : 'silent',
     });
@@ -324,7 +367,7 @@ for (const {
       if (expectedMessages[scenario]) {
         assert.match(result.stdout, new RegExp(expectedMessages[scenario].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
       }
-    } else if (normalStartup) {
+    } else if (normalStartup || successfulStartup) {
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_DIALOG:/);
     } else if (dialogFails) {
       assert.doesNotMatch(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG:${scenario}`));
@@ -354,6 +397,16 @@ for (const {
       }
       assert.doesNotMatch(result.stdout, /TOT_SMOKE_READY/);
     }
+    if (rendererStartupFailure) {
+      assert.match(result.stderr, new RegExp(expectedDiagnostic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      if (expectedCause) {
+        assert.match(result.stderr, new RegExp(expectedCause.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      }
+      assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG:${scenario}:`));
+      assert.match(result.stdout, /"title":"The application could not complete startup"/);
+      assert.match(result.stdout, /"message":"toT could not complete the setup needed to start\. The application will close\."/);
+      assert.doesNotMatch(result.stdout, /TOT_SMOKE_READY/);
+    }
     if (scenario === 'settings-admission' || scenario === 'settings-admission-dialog-failure') {
       assert.equal(
         fs.readFileSync(path.join(userDataDir, 'config', 'user_settings.json'), 'utf8'),
@@ -378,7 +431,7 @@ for (const {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":true\}/);
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":2,"ok":true\}/);
       assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
-    } else if (!earlyStartupFailure && !settingsStartupFailure && !snapshotTagStartupFailure && !registrationStartupFailure && !normalStartup) {
+    } else if (!earlyStartupFailure && !settingsStartupFailure && !snapshotTagStartupFailure && !registrationStartupFailure && !normalStartup && !successfulStartup) {
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
     }
     if (earlyStartupFailure || settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) {
@@ -395,6 +448,10 @@ for (const {
       assert.match(result.stderr, /forced configuration directory preparation failure/);
       assert.match(result.stdout, /TOT_SMOKE_READY/);
       assert.match(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":true\}/);
+    }
+    if (successfulStartup) {
+      assert.match(result.stdout, /TOT_SMOKE_READY/);
+      assert.doesNotMatch(result.stdout, /TOT_MAIN_STARTUP_FAILURE_PROCESSING_RESOLVE:\{"requestId":1,"ok":false\}/);
     }
     if (firstRunLanguageChooser) {
       const savedSettings = JSON.parse(fs.readFileSync(path.join(userDataDir, 'config', 'user_settings.json'), 'utf8'));
