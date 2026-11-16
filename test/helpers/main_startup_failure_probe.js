@@ -133,6 +133,20 @@ function emitSplashRemoved(webContents) {
   });
 }
 
+function scheduleSuccessfulStartupReady(webContents) {
+  queueMicrotask(() => {
+    emitRendererCoreReady(webContents);
+    const initialState = currentTextProcessingController.getState();
+    currentTextProcessingController.resolve({
+      requestId: initialState.requestId,
+      ok: true,
+    });
+    queueMicrotask(() => {
+      emitSplashRemoved(webContents);
+    });
+  });
+}
+
 async function reportLanguageChooserBootstrapFailure(webContents) {
   const handler = ipcHandlers.get('language-chooser-bootstrap-failure');
   if (typeof handler !== 'function') {
@@ -178,7 +192,8 @@ function createBrowserWindowDouble() {
           });
         }
         if (scenario === 'first-run-fallback-menu-installation'
-          || scenario === 'first-run-fallback-persistence-failure') {
+          || scenario === 'first-run-fallback-persistence-failure'
+          || scenario === 'first-run-fallback-continuation') {
           queueMicrotask(() => this.close());
         }
       }
@@ -312,18 +327,10 @@ function createBrowserWindowDouble() {
           });
         });
       }
-      if (scenario === 'config-dir-preparation-recovers' && path.basename(filePath) === 'index.html') {
-        queueMicrotask(() => {
-          emitRendererCoreReady(this.webContents);
-          const initialState = currentTextProcessingController.getState();
-          currentTextProcessingController.resolve({
-            requestId: initialState.requestId,
-            ok: true,
-          });
-          queueMicrotask(() => {
-            emitSplashRemoved(this.webContents);
-          });
-        });
+      if ((scenario === 'config-dir-preparation-recovers'
+        || scenario === 'first-run-fallback-continuation')
+        && path.basename(filePath) === 'index.html') {
+        scheduleSuccessfulStartupReady(this.webContents);
       }
       return Promise.resolve();
     }

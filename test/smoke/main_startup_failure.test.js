@@ -88,6 +88,7 @@ for (const {
   firstRunBootstrapFailure = false,
   firstRunDocumentLoadFailure = false,
   firstRunStructuralFailure = false,
+  firstRunFallbackContinuation = false,
   rendererStartupFailure = false,
   successfulStartup = false,
   expectedMenuInstallationAttempts = 1,
@@ -225,6 +226,12 @@ for (const {
   { scenario: 'renderer-i18n-transition-restoration', deferredPostReadyClose: true },
   { scenario: 'first-run-fallback-menu-installation', firstRunLanguageChooser: true },
   {
+    scenario: 'first-run-fallback-continuation',
+    firstRunLanguageChooser: true,
+    firstRunFallbackContinuation: true,
+    successfulStartup: true,
+  },
+  {
     scenario: 'first-run-fallback-persistence-failure',
     firstRunLanguageChooser: true,
     firstRunFallbackPersistenceFailure: true,
@@ -293,7 +300,9 @@ for (const {
   { scenario: 'renderer-startup-report-unauthorized', successfulStartup: true },
   { scenario: 'menu-installation-dialog-failure', dialogFails: true },
 ]) {
-  const expectedLifecycle = deferredPostReadyClose
+  const expectedLifecycle = firstRunFallbackContinuation
+    ? 'persists the fallback language and reaches READY'
+    : deferredPostReadyClose
     ? 'defers close while post-READY processing is active, then persists and quits'
     : earlyStartupFailure
     ? 'terminates before current-text initialization'
