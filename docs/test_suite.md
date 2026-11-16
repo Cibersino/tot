@@ -37,7 +37,7 @@
 
 This document remains the **manual** app-level source of truth.
 
-The current automated baseline does **not** replace the release smoke or full regression flows in this document. It currently covers a small contract-focused slice under `test/unit/**`, plus one local Electron launch smoke under `test/smoke/`.
+The automated suites do **not** replace the release smoke or full regression flows in this document. They cover focused unit/renderer contracts and several local Electron smoke paths, including normal startup and injected startup failures. Their evidence is limited to the behavior exercised by each harness.
 
 Ownership for test-related docs:
 
@@ -59,20 +59,24 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * covers the production `RendererCombobox` contract in `select` and `editable` modes: ARIA/open state, value and action activation, pointer-hover active state, disabled options, one-open behavior, outside click, keyboard navigation/type-ahead, committed-text restoration, updates, focus, and destruction
   * supports the shared selector behavior exercised by `SM-07`, `SM-07A`, `SM-10A`, `SM-13`, `REG-PRESETS`, `REG-CALCULATOR`, `REG-IMPORT-08C`, and `REG-SNAPSHOTS`
 * `test/unit/shared/language_window.test.js`
-  * covers fixed-bilingual markup/status ownership, the unchanged visible filter/layout contract, first-run empty selection, persisted selection vs roving focus, keyboard activation, filtering, required-catalog failure without a local list, and selection failure
+  * covers fixed-bilingual markup/status ownership, the unchanged visible filter/layout contract, first-run empty selection, persisted selection vs roving focus, keyboard activation, filtering, required-catalog failure, report-before-close ordering, and selection failure followed by a successful retry
   * supports parts of `REG-FR-01` and `REG-I18N-01`; it does not replace the documented screen-reader or real-window checks
 * `electron/settings.js`
   * supports parts of `REG-PERSIST`
   * supports parts of `REG-I18N`
   * supports parts of `REG-EDITOR`
+* `test/unit/electron/fs_storage.test.js`
+  * covers JSON read-status classification and strict storage operations relevant to initial settings admission
+  * supports parts of `REG-PERSIST` and `EDGE-03`
 * `test/unit/electron/settings.test.js`
-  * covers exact declared IDs, independent preference scopes, and graph-derived number-format defaults
+  * covers initial settings admission/rejection, startup backup and strict-write behavior, exact declared IDs, independent preference scopes, and graph-derived number-format defaults
   * supports parts of `REG-MODE-01`
   * supports parts of `REG-MODE-02`
   * supports parts of `REG-PRESETS-07`
   * supports parts of `REG-PERSIST-01`
   * supports parts of `REG-PERSIST-02`
   * supports the narrow current-language read used by `REG-FR-01` and `REG-I18N-01`
+  * supports the settings-admission checks in `EDGE-03`
 * `test/unit/electron/language_preload.test.js`
   * covers the Language Window's narrow available/current-language reads and exact trimmed application-ID forwarding
   * supports parts of `REG-FR-01` and `REG-I18N-01`
@@ -118,8 +122,14 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-EDITOR-05C`
   * supports parts of `REG-EDITOR-05D`
 * `test/smoke/electron_launch_smoke.test.js`
-  * supports a minimal startup slice of `SM-01`
+  * supports a minimal real-renderer startup slice of `SM-01`
   * supports parts of `REG-PERSIST` by asserting startup tolerates the current persisted-settings schema
+* `test/smoke/main_entry_failure.test.js`
+  * checks the protected Main entry response to injected synchronous load failures, including termination when the notice succeeds or fails
+  * supports the startup failure boundary relevant to `SM-01`
+* `test/smoke/main_startup_failure.test.js`
+  * exercises Main startup admission, managed termination, first-run fallback persistence/continuation, and renderer-startup event authorization through an Electron-process probe with simulated windows, dialogs, and renderer IPC
+  * supports parts of `SM-01`, `REG-FR-03`, `REG-PERSIST`, and `EDGE-03`
 * `electron/text_extraction_platform/text_extraction_supported_formats.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
@@ -197,6 +207,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/unit/electron/snapshot_tag_settings.test.js`
   * supports parts of `REG-PERSIST-03B`
   * supports parts of `REG-SNAPSHOTS-02`
+  * checks startup rejection of invalid snapshot-tag preferences without rewriting the rejected file (`EDGE-03`)
 * `test/unit/shared/notify.test.js`
   * supports parts of `REG-SNAPSHOTS-02`
 * `test/unit/shared/text_extraction_status_ui.test.js`
@@ -285,7 +296,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
 
 Important limitations:
 
-* a minimal local Electron launch smoke now exists under `test/smoke/`, but it is not part of CI and does not replace the manual smoke steps in this document;
+* local Electron smoke coverage includes the normal launch and injected Main-entry/startup-failure paths, but it does not replace the manual smoke steps in this document; failure probes simulate `BrowserWindow`, menu, native dialogs, and renderer IPC, so they do not demonstrate actual native-dialog presentation or full Chromium-renderer failure delivery;
 * the editor still has no renderer/UI automation for the spellcheck checkbox, text-size controls, editor-only zoom shortcuts, narrow-width bottom-bar layout, underline rendering, live cross-language spellcheck behavior, find/replace window shortcut routing, focus routing between query and replace fields, visible re-sync after refocusing Find, and single-step undo behavior for Replace / Replace All;
 * the quick calculator now has contract-style automation for launcher wiring, preload surfaces, shared stopwatch/calculation rules, renderer invalid-state behavior, and live language/number-format refresh, but real BrowserWindow creation/focus/reuse behavior, launcher placement in the main `RESULTS` area, and native layout/scroll verification are still primarily validated through the manual suite;
 * reading-test automation covers pool, entry, session-state and selected completion contracts; real modal interaction, guided session windows, stopwatch handoff, comprehension UI, and the cross-window preset workflow are still primarily validated through the manual suite;
@@ -458,8 +469,8 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 3. Confirm window closes and app continues.
 
 **Expected:**
-- Language is applied without crash.
-- If language picker does not appear automatically, it must be reachable via menu “Preferences → Language” (see REG-I18N-01).
+- On a genuine clean first run, the language picker appears before the main window. A missing picker is a failure of this test, not something remedied by opening Language from the menu later.
+- A successful selection is applied and startup continues without crash.
 
 ### SM-03 Clipboard overwrite + automatic results
 **Goal:** overwrite-from-clipboard (with repeat input) updates preview + counts + time.
@@ -728,15 +739,16 @@ Record each test as Pass/Fail. If Fail, file an issue and reference it in the ru
 - No unexpected resets of presets/text unless intentionally cleared.
 
 #### REG-FR-03 First-run fallback when closing language window
-**Goal:** startup remains unblocked if language window closes without explicit selection.
-1. Remove config (2.2).
-2. Launch app to show the language window.
-3. Close the language window using the window close button (without selecting language).
+**Goal:** voluntary closure continues startup only after the default language has been durably established.
+1. Use an isolated, disposable test profile with no config (clean-state criteria in 2.2).
+2. Launch the app and close the language window without selecting a language.
+3. Confirm the main window becomes usable, then inspect `config/user_settings.json`.
+4. Close and relaunch the app using the same test profile.
 
 **Expected:**
-- App continues startup and main window opens.
-- A safe fallback language is applied/persisted.
-- No startup deadlock or blank state.
+- Startup reaches the main window without a startup-failure notice or deadlock.
+- The default language (`es`) is present in `user_settings.json` when the main window becomes usable and remains selected on relaunch; the initial chooser does not reappear.
+- Failure to persist the required fallback is not a permissible continuation: it requires a user-facing startup-failure notice and managed termination before READY. This failure case requires separate controlled fault injection to verify.
 
 ---
 
@@ -2194,13 +2206,20 @@ nonconforming persisted data without migration or repair.
 **Expected:**
 - Safe failure dialog; no crash.
 
-### EDGE-03 Corrupt JSON recovery
-**Goal:** app recovers from invalid JSON using fallback.
-1. (Advanced) Corrupt `user_settings.json` or `current_text.json` (invalid JSON).
-2. Launch app.
+### EDGE-03 Invalid startup JSON: distinguish required settings from current text
+**Goal:** verify that malformed persisted files do not all share the same recovery policy.
+
+Run each case **independently in an isolated, disposable user-data profile**, with toT fully closed before modifying files. Keep a copy of the deliberately malformed test bytes for comparison after launch; never corrupt the normal user profile.
+
+1. **Global settings:** begin with a working profile and an existing `config/user_settings.json`. Replace its contents with invalid JSON (for example, `{`), then launch toT. After it exits, compare the file with the deliberately corrupted bytes.
+2. **Snapshot-tag preferences:** restore a valid profile, then make an existing `config/snapshot_tags.json` malformed. Launch again and compare the file after termination.
+3. **Current text:** restore valid settings and snapshot-tag preferences, then make `config/current_text.json` malformed. Launch toT, inspect the initial text and startup behavior, and quit normally.
 
 **Expected:**
-- App logs warning and uses fallback values; remains usable.
+- **Global settings:** invalid existing JSON is rejected during startup admission. toT does not reach READY; it attempts a user-facing native startup-failure notice and terminates through managed shutdown. The rejected `user_settings.json` bytes are not replaced with defaults or automatically restored from backups.
+- **Snapshot-tag preferences:** malformed existing preferences likewise prevent normal startup; the application discloses the startup failure and terminates without rewriting the rejected `snapshot_tags.json` file.
+- **Current text:** malformed `current_text.json` is handled as recoverable working text. The application diagnoses the read failure, initializes with empty current text, and can reach normal startup. The ordinary quit-time best-effort save may replace the malformed file with `{ "text": "" }`; preservation of its original bytes is **not** guaranteed.
+- These cases must not be judged by one common “fallback and remain usable” expectation. A failed native notice does not authorize continuing startup when a required settings file was rejected.
 
 ### EDGE-04 Snapshot load: invalid file + outside snapshots tree
 **Goal:** invalid/outside selections do not crash and do not change current text.
