@@ -4,16 +4,20 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Persist and restore Task Editor window geometry and maximized state.
-// - Reads/writes task_editor_state.json via fs_storage.
-// - Validates stored reduced bounds against available displays when possible.
-// - Attaches Task Editor window listeners to persist reduced bounds and maximized state.
+// Own the recoverable Task Editor presentation preferences:
+// - window geometry and maximized state;
+// - the six user-resizable utility column widths.
+//
+// A single in-memory snapshot is authoritative while a Task Editor BrowserWindow
+// is alive. Every accepted change updates that snapshot before attempting a
+// best-effort write of the complete document. This avoids independent writers
+// accidentally discarding another presentation preference.
 
 // =============================================================================
 // Imports / logger
 // =============================================================================
 const { screen } = require('electron');
-const { getTaskEditorStateFile, loadJson, saveJson } = require('./fs_storage');
+const { getTaskEditorStateFile, loadJson, saveJsonStrict } = require('./fs_storage');
 const Log = require('./log');
 
 const log = Log.get('task-editor-state');
@@ -22,32 +26,66 @@ log.debug('Task Editor state starting...');
 // =============================================================================
 // Constants / defaults
 // =============================================================================
+const TASK_COLUMN_WIDTH_MAX_PX = 100_000;
 const DEFAULT_REDUCED_WIDTH = 1130;
 const DEFAULT_REDUCED_HEIGHT = 720;
 const MIN_REDUCED_WIDTH = 756;
 const MIN_REDUCED_HEIGHT = 400;
 const MIN_VISIBLE_EDGE_PX = 40;
 
+const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
+  comentario: 82,
+  tiempo: 88,
+  percent: 63,
+  falta: 65,
+  enlace: 250,
+  acciones: 124,
+});
+
+const DEFAULT_COLUMN_WIDTHS = Object.freeze({ ...TASK_UTILITY_COLUMN_MIN_WIDTHS });
 const DEFAULT_STATE = Object.freeze({
   maximized: false,
   reduced: null,
+  columnWidths: DEFAULT_COLUMN_WIDTHS,
 });
+
+let activeState = null;
 
 // =============================================================================
 // Geometry and state normalization helpers
 // =============================================================================
+function isPlainObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
 function isFiniteNumber(n) {
   return typeof n === 'number' && Number.isFinite(n);
 }
 
+function copyColumnWidths(widths) {
+  return { ...widths };
+}
+
+function copyState(state) {
+  return {
+    maximized: state.maximized,
+    reduced: state.reduced ? { ...state.reduced } : null,
+    columnWidths: copyColumnWidths(state.columnWidths),
+  };
+}
+
+function createDefaultState() {
+  return copyState(DEFAULT_STATE);
+}
+
 function isValidReduced(reduced) {
-  if (!reduced || typeof reduced !== 'object') return false;
+  if (!isPlainObject(reduced)) return false;
   const { x, y, width, height } = reduced;
   return (
-    isFiniteNumber(x) &&
-    isFiniteNumber(y) &&
-    isFiniteNumber(width) &&
-    isFiniteNumber(height)
+    isFiniteNumber(x)
+    && isFiniteNumber(y)
+    && isFiniteNumber(width)
+    && isFiniteNumber(height)
   );
 }
 
@@ -104,13 +142,33 @@ function normalizeReduced(rawReduced) {
   }
 }
 
-function normalizeState(raw) {
-  const state = {
-    maximized: DEFAULT_STATE.maximized,
-    reduced: DEFAULT_STATE.reduced,
-  };
+function hasExactKeys(value, expectedKeys) {
+  if (!isPlainObject(value)) return false;
+  const keys = Object.keys(value);
+  return keys.length === expectedKeys.length
+    && expectedKeys.every((key) => Object.hasOwn(value, key));
+}
 
-  if (!raw || typeof raw !== 'object') {
+function normalizeColumnWidths(rawWidths) {
+  const keys = Object.keys(TASK_UTILITY_COLUMN_MIN_WIDTHS);
+  if (!isPlainObject(rawWidths) || !hasExactKeys(rawWidths, keys)) return null;
+
+  const widths = {};
+  for (const key of keys) {
+    const width = rawWidths[key];
+    if (
+      !Number.isSafeInteger(width)
+      || width < TASK_UTILITY_COLUMN_MIN_WIDTHS[key]
+      || width > TASK_COLUMN_WIDTH_MAX_PX
+    ) return null;
+    widths[key] = width;
+  }
+  return widths;
+}
+
+function normalizeState(raw) {
+  const state = createDefaultState();
+  if (!isPlainObject(raw)) {
     log.warnOnce(
       'task-editor-state.normalize.invalid-root',
       'normalizeState: invalid state; using defaults (ignored).',
@@ -121,7 +179,7 @@ function normalizeState(raw) {
 
   if (typeof raw.maximized === 'boolean') {
     state.maximized = raw.maximized;
-  } else if ('maximized' in raw) {
+  } else {
     log.warnOnce(
       'task-editor-state.normalize.invalid-maximized',
       'normalizeState: invalid maximized; using default (ignored).',
@@ -129,26 +187,45 @@ function normalizeState(raw) {
     );
   }
 
-  if (raw.reduced) {
+  if (raw.reduced === null) {
+    state.reduced = null;
+  } else {
     const normalizedReduced = normalizeReduced(raw.reduced);
     if (normalizedReduced) {
       state.reduced = normalizedReduced;
     } else {
       log.warnOnce(
         'task-editor-state.normalize.invalid-reduced',
-        'normalizeState: invalid reduced bounds; ignoring.',
+        'normalizeState: invalid reduced bounds; using default (ignored).',
         raw.reduced
       );
     }
-  } else if ('reduced' in raw && raw.reduced !== null) {
+  }
+
+  const widths = normalizeColumnWidths(raw.columnWidths);
+  if (widths) {
+    state.columnWidths = widths;
+  } else {
     log.warnOnce(
-      'task-editor-state.normalize.invalid-reduced-shape',
-      'normalizeState: invalid reduced payload; ignoring.',
-      raw.reduced
+      'task-editor-state.normalize.invalid-column-widths',
+      'normalizeState: invalid column widths; using defaults (ignored).',
+      raw.columnWidths
     );
   }
 
   return state;
+}
+
+function normalizeColumnLayoutRecord(raw) {
+  if (!hasExactKeys(raw, ['widths'])) return null;
+  const widths = normalizeColumnWidths(raw.widths);
+  return widths ? { widths } : null;
+}
+
+function getColumnLayoutRecord(state) {
+  return {
+    widths: copyColumnWidths(state.columnWidths),
+  };
 }
 
 // =============================================================================
@@ -180,51 +257,64 @@ function isWindowMaximized(taskEditorWin) {
   return taskEditorWin.isMaximized();
 }
 
-function readCurrentState(loader, stateFile) {
-  return normalizeState(loader(stateFile, DEFAULT_STATE));
-}
-
 function getReducedBounds(taskEditorWin) {
   if (!isLiveWindow(taskEditorWin) || typeof taskEditorWin.getBounds !== 'function') return null;
   return normalizeReduced(taskEditorWin.getBounds());
 }
 
-// =============================================================================
-// API (public entrypoints)
-// =============================================================================
-function loadInitialState(customLoadJson) {
-  const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
+function persistActiveState() {
   try {
-    const filePath = getTaskEditorStateFile();
-    return normalizeState(loader(filePath, DEFAULT_STATE));
+    saveJsonStrict(getTaskEditorStateFile(), copyState(activeState));
+    return true;
   } catch (error) {
-    log.error('[task_editor_state] Error reading initial state:', error);
-    return { ...DEFAULT_STATE };
+    log.warn('Task Editor presentation state save failed (ignored):', error);
+    return false;
   }
 }
 
-function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
+function requireActiveState() {
+  if (activeState) return activeState;
+  return loadInitialState();
+}
+
+// =============================================================================
+// API (public entrypoints)
+// =============================================================================
+function loadInitialState() {
+  try {
+    activeState = normalizeState(loadJson(getTaskEditorStateFile(), DEFAULT_STATE));
+  } catch (error) {
+    log.warn('Task Editor presentation state load failed; using defaults (ignored):', error);
+    activeState = createDefaultState();
+  }
+  return copyState(activeState);
+}
+
+function getColumnLayout() {
+  return getColumnLayoutRecord(requireActiveState());
+}
+
+function saveColumnLayout(rawRecord) {
+  const record = normalizeColumnLayoutRecord(rawRecord);
+  if (!record) {
+    log.warn('saveColumnLayout received invalid column layout payload.');
+    return { ok: false, code: 'INVALID_SCHEMA' };
+  }
+
+  const state = requireActiveState();
+  state.columnWidths = copyColumnWidths(record.widths);
+  return persistActiveState() ? { ok: true } : { ok: false, code: 'WRITE_FAILED' };
+}
+
+function attachTo(taskEditorWin) {
   if (!taskEditorWin) {
     log.warn('attachTo: Task Editor window unavailable; persistence listeners not attached (ignored).');
     return;
   }
 
-  const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
-  const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJson;
-  let stateFile = null;
-
-  try {
-    stateFile = getTaskEditorStateFile();
-  } catch (error) {
-    log.error('[task_editor_state] getTaskEditorStateFile failed:', error);
-    return;
-  }
-
   const saveReducedState = () => {
     try {
-      if (!isLiveWindow(taskEditorWin)) return;
-      if (isWindowMaximized(taskEditorWin)) return;
-
+      if (!isLiveWindow(taskEditorWin) || isWindowMaximized(taskEditorWin)) return;
       const reduced = getReducedBounds(taskEditorWin);
       if (!reduced) {
         log.warnOnce(
@@ -233,24 +323,22 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
         );
         return;
       }
-
-      const state = readCurrentState(loader, stateFile);
+      const state = requireActiveState();
       state.maximized = false;
       state.reduced = reduced;
-      saver(stateFile, state);
+      persistActiveState();
     } catch (error) {
-      log.error('[task_editor_state] Error saving reduced Task Editor state:', error);
+      log.warn('Task Editor reduced presentation state update failed (ignored):', error);
     }
   };
 
   const saveMaximizedFlag = (maximized) => {
     try {
-      // Preserve normalized reduced bounds while updating only the maximized flag.
-      const state = readCurrentState(loader, stateFile);
-      state.maximized = !!maximized;
-      saver(stateFile, state);
+      const state = requireActiveState();
+      state.maximized = Boolean(maximized);
+      persistActiveState();
     } catch (error) {
-      log.error('[task_editor_state] Error saving Task Editor maximized flag:', error);
+      log.warn('Task Editor maximized presentation state update failed (ignored):', error);
     }
   };
 
@@ -262,12 +350,10 @@ function attachTo(taskEditorWin, customLoadJson, customSaveJson) {
     try {
       if (!isLiveWindow(taskEditorWin)) return;
       const maximized = isWindowMaximized(taskEditorWin);
-      if (!maximized) {
-        saveReducedState();
-      }
+      if (!maximized) saveReducedState();
       saveMaximizedFlag(maximized);
     } catch (error) {
-      log.error('[task_editor_state] Error saving Task Editor closed state:', error);
+      log.warn('Task Editor close presentation state update failed (ignored):', error);
     }
   });
 }
@@ -280,7 +366,11 @@ module.exports = {
   DEFAULT_REDUCED_HEIGHT,
   MIN_REDUCED_WIDTH,
   MIN_REDUCED_HEIGHT,
+  TASK_COLUMN_WIDTH_MAX_PX,
+  TASK_UTILITY_COLUMN_MIN_WIDTHS,
   loadInitialState,
+  getColumnLayout,
+  saveColumnLayout,
   attachTo,
 };
 

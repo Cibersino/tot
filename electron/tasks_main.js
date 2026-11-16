@@ -8,7 +8,7 @@
 // - Open/load the Task Editor and send task-editor-init payloads.
 // - Save/delete task lists via native dialogs with path containment under config/tasks/lists.
 // - Manage task library entries (list/save/delete) under config/tasks.
-// - Persist task column widths under config/tasks.
+// - Route Task Editor presentation preference requests to their Main-owned owner.
 // - Open task links with confirmation and allowlist rules.
 // - Register IPC handlers for Task Editor actions.
 
@@ -36,13 +36,13 @@ const {
   getTasksListsDir,
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
-  getTasksColumnWidthsFile,
   getTaskFilePickerStateFile,
   loadJson,
   saveJson,
   saveJsonStrict,
   createJsonStrict,
 } = require('./fs_storage');
+const taskEditorState = require('./task_editor_state');
 const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
 const log = Log.get('tasks-main');
@@ -54,16 +54,6 @@ log.debug('Tasks main starting...');
 const TASK_EXT = '.json';
 const TASK_TYPE = 'task';
 const TASK_SAVED_WITH = 'toT (totapp.org)';
-const TASK_COLUMN_LAYOUT_VERSION = 1;
-const TASK_COLUMN_WIDTH_MAX_PX = 100_000;
-const TASK_UTILITY_COLUMN_MIN_WIDTHS = Object.freeze({
-  comentario: 82,
-  tiempo: 88,
-  percent: 63,
-  falta: 65,
-  enlace: 250,
-  acciones: 124,
-});
 const TASK_FILE_PICKER_STATE_FALLBACK = Object.freeze({
   lastDirectory: '',
 });
@@ -438,30 +428,6 @@ function normalizeTaskList(raw) {
     rows: rowsRes.rows,
   };
   return { ok: true, task };
-}
-
-function validateColumnLayoutRecord(raw) {
-  if (!hasExactKeys(raw, ['version', 'widths'])) return null;
-  if (raw.version !== TASK_COLUMN_LAYOUT_VERSION) return null;
-
-  const widthKeys = Object.keys(TASK_UTILITY_COLUMN_MIN_WIDTHS);
-  if (!hasExactKeys(raw.widths, widthKeys)) return null;
-
-  const widths = {};
-  for (const key of widthKeys) {
-    const width = raw.widths[key];
-    if (
-      !Number.isSafeInteger(width)
-      || width < TASK_UTILITY_COLUMN_MIN_WIDTHS[key]
-      || width > TASK_COLUMN_WIDTH_MAX_PX
-    ) return null;
-    widths[key] = width;
-  }
-
-  return {
-    version: TASK_COLUMN_LAYOUT_VERSION,
-    widths,
-  };
 }
 
 // =============================================================================
@@ -1225,7 +1191,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
   });
 
   // =============================================================================
-  // IPC: task column widths load/save
+  // IPC: Task Editor presentation column widths
   // =============================================================================
   ipcMain.handle('task-columns-load', async (event) => {
     try {
@@ -1235,27 +1201,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
-      ensureTasksDirs();
-      const file = getTasksColumnWidthsFile();
-      const res = readJsonFile(file);
-      if (!res.ok) {
-        if (res.code === 'NOT_FOUND') {
-          log.warn('task column widths missing; returning null. (NOTE: may be normal; fresh layouts are persisted after initialization)');
-          return { ok: true, record: null };
-        }
-        if (res.code === 'INVALID_JSON') {
-          log.warn('Task column layout JSON invalid; returning fresh-default signal.');
-          return { ok: true, record: null };
-        }
-        log.error('Task column layout read failed:', res.error);
-        return { ok: false, code: 'READ_FAILED' };
-      }
-      const record = validateColumnLayoutRecord(res.data);
-      if (!record) {
-        log.warn('Task column layout schema invalid; returning fresh-default signal.');
-        return { ok: true, record: null };
-      }
-      return { ok: true, record };
+      return { ok: true, record: taskEditorState.getColumnLayout() };
     } catch (error) {
       log.error('task-columns-load failed:', error);
       return { ok: false, code: 'READ_FAILED' };
@@ -1270,15 +1216,7 @@ function registerIpc(ipcMain, { getWindows, ensureTaskEditorWindow, taskEditorLi
       );
       if (!taskEditorWin) return { ok: false, code: 'UNAUTHORIZED' };
 
-      ensureTasksDirs();
-      const record = validateColumnLayoutRecord(payload && payload.record ? payload.record : null);
-      if (!record) {
-        log.warn('task-columns-save received invalid column layout payload.');
-        return { ok: false, code: 'INVALID_SCHEMA' };
-      }
-      const file = getTasksColumnWidthsFile();
-      saveJsonStrict(file, record);
-      return { ok: true };
+      return taskEditorState.saveColumnLayout(payload && payload.record ? payload.record : null);
     } catch (error) {
       log.error('task-columns-save failed:', error);
       return { ok: false, code: 'WRITE_FAILED' };

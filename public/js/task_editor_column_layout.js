@@ -7,7 +7,7 @@
 // Responsibilities:
 // - Own utility-column widths while keeping the text column readable across wrapper sizes.
 // - Build accessible pointer and keyboard dividers for the Task Editor table.
-// - Validate and persist versioned width records without blocking resize interaction.
+// - Validate and persist utility-column width records without blocking resize interaction.
 // - Coalesce saves so the newest completed resize is retained and failures remain visible.
 // - Expose the narrow controller surface consumed by public/task_editor.js.
 
@@ -23,7 +23,6 @@
   // =============================================================================
   // Constants / column schema
   // =============================================================================
-  const LAYOUT_VERSION = 1;
   const TEXT_COLUMN_KEY = 'texto';
   const TEXT_MIN_WIDTH_PX = 250;
   const FITTED_WIDTH_SAFETY_PX = 1;
@@ -56,7 +55,7 @@
   }
 
   function copyValidRecord(raw) {
-    if (!hasExactKeys(raw, ['version', 'widths']) || raw.version !== LAYOUT_VERSION) return null;
+    if (!hasExactKeys(raw, ['widths'])) return null;
     const widthKeys = UTILITY_COLUMNS.map(({ key }) => key);
     if (!hasExactKeys(raw.widths, widthKeys)) return null;
 
@@ -66,7 +65,7 @@
       if (!Number.isSafeInteger(width) || width < minWidth || width > WIDTH_MAX_PX) return null;
       widths[key] = width;
     }
-    return { version: LAYOUT_VERSION, widths };
+    return { widths };
   }
 
   function createDefaultWidths() {
@@ -79,7 +78,6 @@
 
   function freezeRecord(widths) {
     return Object.freeze({
-      version: LAYOUT_VERSION,
       widths: Object.freeze({ ...widths }),
     });
   }
@@ -396,39 +394,31 @@
         return false;
       }
 
-      // A null record is the main-side fresh-layout signal; persist defaults after setup.
-      if (
-        hasExactKeys(result, ['ok', 'record'])
-        && result.ok === true
-        && result.record === null
-      ) return true;
-
       if (hasExactKeys(result, ['ok', 'record']) && result.ok === true) {
         const record = copyValidRecord(result.record);
         if (record) {
           utilityWidths = record.widths;
-          return false;
+          return;
         }
       }
 
       if (hasExactKeys(result, ['ok', 'code']) && result.ok === false) {
         log.warn('BOOTSTRAP: Task column layout load failed; using session defaults:', result.code);
-        return false;
+        return;
       }
 
       log.warn('BOOTSTRAP: Task column layout response invalid; using session defaults:', result);
-      return false;
+      return;
     }
 
     async function initialize() {
-      const shouldPersistDefaults = await loadInitialWidths();
+      await loadInitialWidths();
       if (destroyed) return;
       createDividers();
       applyLayout();
       resizeObserver.observe(wrapper);
       window.addEventListener('blur', handleWindowBlur);
       window.addEventListener('beforeunload', cancelActiveResize);
-      if (shouldPersistDefaults) enqueueSnapshot(0);
     }
 
     function destroy() {
