@@ -338,7 +338,7 @@ for (const {
     } else if (earlyStartupFailure) {
       assert.match(
         result.stdout,
-        /TOT_MAIN_EARLY_STARTUP_FAILURE_NOTICE:\{"title":"toT no pudo iniciarse","message":"No se pudo iniciar toT\. La aplicación se cerrará\.","buttons":\["Aceptar"\]\}/
+        /TOT_MAIN_EARLY_STARTUP_FAILURE_NOTICE:\{"title":"Problema de la aplicación","message":"No se pudo iniciar toT\. La aplicación se cerrará\.","buttons":\["Aceptar"\]\}/
       );
     } else if (settingsStartupFailure || snapshotTagStartupFailure || registrationStartupFailure) {
       assert.match(
@@ -347,23 +347,16 @@ for (const {
       );
       const expectedButton = (snapshotTagStartupFailure || registrationStartupFailure) && settingsLanguage ? 'OK' : 'Aceptar';
       assert.match(result.stdout, new RegExp(`"buttons":\\["${expectedButton}"\\]`));
-      const expectedTitles = {
-        'settings-admission': 'No se pudo usar la configuración guardada',
-        'settings-backup': 'No se pudo respaldar la configuración guardada',
-        'settings-initial-write': 'No se pudo guardar la configuración inicial',
-        'settings-initialization': 'No se pudo inicializar la configuración',
-        'config-dir-preparation-then-settings-write-failure': 'No se pudo guardar la configuración inicial',
-        'snapshot-tags-admission': 'Saved snapshot-tag preferences could not be used',
-        'snapshot-tags-admission-default-language': 'No se pudieron usar las preferencias de etiquetas de snapshots guardadas',
-        'snapshot-tags-initial-write': 'Snapshot-tag preferences could not be saved',
-        'startup-registration-settings-publication': 'The application could not complete startup',
-        'startup-registration-editor-state': 'The application could not complete startup',
-        'startup-registration-reading-test-controller': 'The application could not complete startup',
-        'startup-registration-current-text': 'The application could not complete startup',
-        'startup-registration-current-text-processing': 'The application could not complete startup',
-      };
-      assert.match(result.stdout, new RegExp(expectedTitles[scenario]));
+      const expectedTitle = (snapshotTagStartupFailure || registrationStartupFailure) && settingsLanguage
+        ? 'Application problem'
+        : 'Problema de la aplicación';
+      assert.match(result.stdout, new RegExp(`"title":"${expectedTitle}"`));
       const expectedMessages = {
+        'settings-admission': 'toT no puede iniciar porque no puede usar la configuración guardada sin modificarla. La aplicación se cerrará.',
+        'settings-backup': 'toT no pudo crear el respaldo necesario antes de iniciar. La aplicación se cerrará.',
+        'settings-initial-write': 'toT no pudo guardar la configuración necesaria para iniciar. La aplicación se cerrará.',
+        'settings-initialization': 'toT no pudo completar la configuración necesaria para iniciar. La aplicación se cerrará.',
+        'config-dir-preparation-then-settings-write-failure': 'toT no pudo guardar la configuración necesaria para iniciar. La aplicación se cerrará.',
         'snapshot-tags-admission': 'toT cannot safely recover the saved snapshot-tag preferences. The application will close without changing them.',
         'snapshot-tags-admission-default-language': 'toT no puede recuperar de forma segura las preferencias de etiquetas de snapshots guardadas. La aplicación se cerrará sin modificarlas.',
         'snapshot-tags-initial-write': 'toT could not save the snapshot-tag preferences needed to start. The application will close.',
@@ -412,7 +405,7 @@ for (const {
         assert.match(result.stderr, new RegExp(expectedCause.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
       }
       assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_DIALOG:${scenario}:`));
-      assert.match(result.stdout, /"title":"The application could not complete startup"/);
+      assert.match(result.stdout, /"title":"Application problem"/);
       assert.match(result.stdout, /"message":"toT could not complete the setup needed to start\. The application will close\."/);
       assert.doesNotMatch(result.stdout, /TOT_SMOKE_READY/);
     }
@@ -471,19 +464,19 @@ for (const {
       }
     }
     if (firstRunBootstrapFailure) {
-      assert.match(result.stdout, /"title":"No se pudo iniciar la selección de idioma"/);
+      assert.match(result.stdout, /"title":"Problema con la selección de idioma"/);
       assert.match(result.stdout, /"message":"toT no pudo completar la selección de idioma\. Se intentará continuar con el idioma predeterminado\."/);
     }
     if (firstRunDocumentLoadFailure) {
-      assert.match(result.stdout, /"title":"No se pudo abrir la ventana de idioma"/);
+      assert.match(result.stdout, /"title":"Problema con la selección de idioma"/);
       assert.match(result.stdout, /"message":"La ventana de idioma no pudo cargarse\. El inicio continuará con el idioma predeterminado\."/);
     }
     if (firstRunFallbackPersistenceFailure) {
-      assert.match(result.stdout, /"title":"No se pudo guardar el idioma inicial"/);
+      assert.match(result.stdout, /"title":"Problema de la aplicación"/);
       assert.match(result.stdout, /"message":"toT no pudo guardar el idioma predeterminado necesario para iniciar\. La aplicación se cerrará\."/);
     }
     if (firstRunStructuralFailure) {
-      assert.match(result.stdout, /"title":"No se pudo preparar la selección de idioma"/);
+      assert.match(result.stdout, /"title":"Problema de la aplicación"/);
       assert.match(result.stdout, /"message":"toT no pudo preparar la selección de idioma necesaria para iniciar\. La aplicación se cerrará\."/);
     }
     assert.match(result.stdout, new RegExp(`TOT_MAIN_STARTUP_FAILURE_QUIT:${scenario}`));

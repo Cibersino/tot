@@ -339,7 +339,7 @@ function showFlotanteInitialDocumentFailureDisclosure() {
     log.error('Floating Stopwatch initial document load native dialog translations unavailable:', error);
   }
 
-  const title = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_title;
+  const title = dialogTexts && dialogTexts.window_problem_title;
   const message = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_message;
   const ok = dialogTexts && dialogTexts.ok;
   if (typeof title === 'string' && title.trim()
@@ -576,7 +576,7 @@ function showEarlyRequiredStartupFailureNotice() {
   try {
     dialog.showMessageBoxSync({
       type: 'error',
-      title: 'toT no pudo iniciarse',
+      title: 'Problema de la aplicación',
       message: 'No se pudo iniciar toT. La aplicación se cerrará.',
       buttons: ['Aceptar'],
       defaultId: 0,
@@ -646,7 +646,6 @@ function showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow = nul
 function terminateAfterRequiredStartupFailure({
   error,
   logContext,
-  titleKey,
   messageKey,
   sourceWindow = null,
   language = null,
@@ -656,7 +655,12 @@ function terminateAfterRequiredStartupFailure({
 
   log.error(`${logContext} failed:`, error);
   try {
-    showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow, language });
+    showStartupFailureDisclosure({
+      titleKey: 'application_problem_title',
+      messageKey,
+      sourceWindow,
+      language,
+    });
   } finally {
     settleInitialCurrentTextProcessingForStartupFailure();
     try {
@@ -669,27 +673,22 @@ function terminateAfterRequiredStartupFailure({
 
 function terminateAfterInitialSettingsFailure(error) {
   let logContext = 'Initial global settings initialization';
-  let titleKey = 'startup_settings_initialization_failure_title';
   let messageKey = 'startup_settings_initialization_failure_message';
 
   if (error && error.code === 'SETTINGS_STARTUP_ADMISSION_FAILED') {
     logContext = 'Initial global settings admission';
-    titleKey = 'startup_settings_admission_failure_title';
     messageKey = 'startup_settings_admission_failure_message';
   } else if (error && error.code === 'SETTINGS_STARTUP_INITIAL_WRITE_FAILED') {
     logContext = 'Initial global settings persistence';
-    titleKey = 'startup_settings_initial_write_failure_title';
     messageKey = 'startup_settings_initial_write_failure_message';
   } else if (error && error.code === 'SETTINGS_STARTUP_BACKUP_FAILED') {
     logContext = 'Initial global settings backup';
-    titleKey = 'startup_settings_backup_failure_title';
     messageKey = 'startup_settings_backup_failure_message';
   }
 
   terminateAfterRequiredStartupFailure({
     error,
     logContext,
-    titleKey,
     messageKey,
     language: DEFAULT_LANG,
   });
@@ -697,23 +696,19 @@ function terminateAfterInitialSettingsFailure(error) {
 
 function terminateAfterInitialSnapshotTagFailure(error, admittedLanguage) {
   let logContext = 'Initial snapshot-tag settings initialization';
-  let titleKey = 'startup_snapshot_tags_initialization_failure_title';
   let messageKey = 'startup_snapshot_tags_initialization_failure_message';
 
   if (error && error.code === 'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED') {
     logContext = 'Initial snapshot-tag settings admission';
-    titleKey = 'startup_snapshot_tags_admission_failure_title';
     messageKey = 'startup_snapshot_tags_admission_failure_message';
   } else if (error && error.code === 'SNAPSHOT_TAGS_STARTUP_INITIAL_WRITE_FAILED') {
     logContext = 'Initial snapshot-tag settings persistence';
-    titleKey = 'startup_snapshot_tags_initial_write_failure_title';
     messageKey = 'startup_snapshot_tags_initial_write_failure_message';
   }
 
   terminateAfterRequiredStartupFailure({
     error,
     logContext,
-    titleKey,
     messageKey,
     language: typeof admittedLanguage === 'string' && admittedLanguage.trim()
       ? admittedLanguage
@@ -729,7 +724,6 @@ function terminateAfterStartupRegistrationFailure(error, operation, admittedLang
   terminateAfterRequiredStartupFailure({
     error,
     logContext: `Startup structural setup (${operationLabel})`,
-    titleKey: 'startup_registration_failure_title',
     messageKey: 'startup_registration_failure_message',
     language: typeof admittedLanguage === 'string' && admittedLanguage.trim()
       ? admittedLanguage
@@ -847,7 +841,6 @@ function createMainWindow() {
     terminateAfterRequiredStartupFailure({
       error: preloadError,
       logContext: 'Main initial preload',
-      titleKey: 'startup_main_preload_failure_title',
       messageKey: 'startup_main_preload_failure_message',
       sourceWindow: createdMainWin,
     });
@@ -870,7 +863,6 @@ function createMainWindow() {
     terminateAfterRequiredStartupFailure({
       error,
       logContext: 'Main initial document load',
-      titleKey: 'startup_main_document_failure_title',
       messageKey: 'startup_main_document_failure_message',
       sourceWindow: createdMainWin,
     });
@@ -1307,7 +1299,7 @@ function createTextTimeCalculatorWindow() {
       log.error('Text-time calculator initial document load native dialog translations unavailable:', error);
     }
 
-    const title = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_title;
+    const title = dialogTexts && dialogTexts.window_problem_title;
     const message = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_message;
     const ok = dialogTexts && dialogTexts.ok;
     if (typeof title === 'string' && title.trim()
@@ -1412,7 +1404,7 @@ function createPresetWindow(initialData) {
       log.error('Preset modal initial document load native dialog translations unavailable:', error);
     }
 
-    const title = dialogTexts && dialogTexts.preset_modal_initial_document_failure_title;
+    const title = dialogTexts && dialogTexts.window_problem_title;
     const message = dialogTexts && dialogTexts.preset_modal_initial_document_failure_message;
     const ok = dialogTexts && dialogTexts.ok;
     if (typeof title === 'string' && title.trim()
@@ -1527,7 +1519,7 @@ function createLanguageWindow() {
         log.error('Language chooser initial document load native dialog translations unavailable:', error);
       }
 
-      const title = dialogTexts && dialogTexts.language_chooser_initial_document_failure_title;
+      const title = dialogTexts && dialogTexts.language_selection_problem_title;
       const message = dialogTexts && (isFirstRunLanguageChooser
         ? dialogTexts.language_chooser_first_run_initial_document_failure_message
         : dialogTexts.language_chooser_initial_document_failure_message);
@@ -1587,7 +1579,6 @@ function createLanguageWindow() {
             terminateAfterRequiredStartupFailure({
               error,
               logContext: 'Initial fallback-language persistence',
-              titleKey: 'startup_language_fallback_persistence_failure_title',
               messageKey: 'startup_language_fallback_persistence_failure_message',
             });
             return;
@@ -1605,7 +1596,6 @@ function createLanguageWindow() {
     terminateAfterRequiredStartupFailure({
       error,
       logContext: 'Initial Language Window structural setup',
-      titleKey: 'startup_language_chooser_setup_failure_title',
       messageKey: 'startup_language_chooser_setup_failure_message',
     });
     return null;
@@ -1650,7 +1640,6 @@ function maybeAuthorizeStartupReady() {
     terminateAfterRequiredStartupFailure({
       error,
       logContext: 'Main startup:ready emission',
-      titleKey: 'startup_registration_failure_title',
       messageKey: 'startup_registration_failure_message',
       sourceWindow: targetWin,
     });
@@ -1687,7 +1676,6 @@ function handleRendererStartupFailure(event, payload) {
   terminateAfterRequiredStartupFailure({
     error: new Error(`Main renderer reported a required startup failure: ${failureKind || 'unknown'}.`),
     logContext: 'Main renderer required startup',
-    titleKey: 'startup_registration_failure_title',
     messageKey: 'startup_registration_failure_message',
     sourceWindow,
   });
@@ -1747,9 +1735,7 @@ function showEditorStartupFailureDisclosure(details = {}) {
     log.error('Text Editor startup failure native dialog translations unavailable:', error);
   }
 
-  const title = dialogTexts && dialogTexts[
-    isTimeout ? 'editor_startup_timeout_title' : 'editor_startup_failed_title'
-  ];
+  const title = dialogTexts && dialogTexts.text_editor_problem_title;
   const message = dialogTexts && dialogTexts[
     isTimeout ? 'editor_startup_timeout_message' : 'editor_startup_failed_message'
   ];
@@ -1783,7 +1769,7 @@ function showEditorFindInitialDocumentFailureDisclosure(findWindow) {
     log.error('Text Editor find initial document load native dialog translations unavailable:', error);
   }
 
-  const title = dialogTexts && dialogTexts.editor_find_initial_document_failure_title;
+  const title = dialogTexts && dialogTexts.window_problem_title;
   const message = dialogTexts && dialogTexts.editor_find_initial_document_failure_message;
   const ok = dialogTexts && dialogTexts.ok;
   if (typeof title !== 'string' || !title.trim()
@@ -1832,7 +1818,6 @@ function closeRendererAfterI18nFailure(event, payload) {
     terminateAfterRequiredStartupFailure({
       error: new Error('Main renderer reported a required startup translation-state failure.'),
       logContext: 'Main renderer startup translation state',
-      titleKey: 'startup_renderer_i18n_failure_title',
       messageKey: 'startup_renderer_i18n_failure_message',
       sourceWindow,
     });
@@ -1848,9 +1833,7 @@ function closeRendererAfterI18nFailure(event, payload) {
   }
 
   const isSettingsListenerFailure = failureKind === 'settings-listener';
-  const title = dialogTexts && (isSettingsListenerFailure
-    ? dialogTexts.renderer_settings_listener_failure_title
-    : dialogTexts.renderer_i18n_failure_title);
+  const title = dialogTexts && dialogTexts.interface_problem_title;
   const message = dialogTexts && (isSettingsListenerFailure
     ? dialogTexts.renderer_settings_listener_failure_message
     : dialogTexts.renderer_i18n_failure_message);
@@ -1897,7 +1880,7 @@ function handleInitialLanguageChooserBootstrapFailure(event) {
 
   log.error('First-run Language Window reported a bootstrap failure; language selection is unavailable.');
   showStartupFailureDisclosure({
-    titleKey: 'language_chooser_first_run_bootstrap_failure_title',
+    titleKey: 'language_selection_problem_title',
     messageKey: 'language_chooser_first_run_bootstrap_failure_message',
     sourceWindow,
     language: DEFAULT_LANG,
@@ -1926,7 +1909,6 @@ function resolveLanguage(reason) {
     terminateAfterRequiredStartupFailure({
       error,
       logContext: 'Initial application-menu installation',
-      titleKey: 'startup_menu_installation_failure_title',
       messageKey: 'startup_menu_installation_failure_message',
     });
     return;
@@ -1938,7 +1920,6 @@ function resolveLanguage(reason) {
     terminateAfterRequiredStartupFailure({
       error,
       logContext: 'Main BrowserWindow construction',
-      titleKey: 'startup_main_window_failure_title',
       messageKey: 'startup_main_window_failure_message',
     });
   }
@@ -3003,7 +2984,6 @@ app.whenReady().then(() => {
       terminateAfterRequiredStartupFailure({
         error,
         logContext: 'Main BrowserWindow construction during activation',
-        titleKey: 'startup_main_window_failure_title',
         messageKey: 'startup_main_window_failure_message',
       });
     }

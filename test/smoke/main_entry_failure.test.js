@@ -75,7 +75,7 @@ for (const scenario of ['notice-success', 'notice-failure']) {
     assert.equal(noticeAttempts.length, 1, `Unexpected native notice attempts.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
     assert.match(
       result.stdout,
-      /TOT_MAIN_ENTRY_FAILURE_NOTICE_ATTEMPT:\{"title":"toT no pudo iniciarse","message":"No se pudo iniciar toT\. La aplicación se cerrará\."\}/
+      /TOT_MAIN_ENTRY_FAILURE_NOTICE_ATTEMPT:\{"title":"Problema de la aplicación","message":"No se pudo iniciar toT\. La aplicación se cerrará\."\}/
     );
 
     if (scenario === 'notice-failure') {

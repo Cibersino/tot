@@ -6,7 +6,7 @@
 
 const { app, dialog } = require('electron');
 
-const MAIN_ENTRY_FAILURE_TITLE = 'toT no pudo iniciarse';
+const MAIN_ENTRY_FAILURE_TITLE = 'Problema de la aplicación';
 const MAIN_ENTRY_FAILURE_MESSAGE = 'No se pudo iniciar toT. La aplicación se cerrará.';
 
 function describeError(error) {

@@ -163,7 +163,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
       manual && mainWin && !mainWin.isDestroyed();
 
     const showUpdateFailureDialog = async () => {
-      const title = resolveDialogText(dlg, 'update_failed_title');
+      const title = resolveDialogText(dlg, 'update_title');
       const message = resolveDialogText(dlg, 'update_failed_message');
       await dialog.showMessageBox(mainWin, {
         type: 'none',
@@ -219,7 +219,7 @@ async function checkForUpdates({ lang, manual = false } = {}) {
 
     if (compareSemVer(remoteParsed, localParsed) <= 0) {
       if (manual && mainWin && !mainWin.isDestroyed()) {
-        const title = resolveDialogText(dlg, 'update_up_to_date_title');
+        const title = resolveDialogText(dlg, 'update_title');
         const message = resolveDialogText(dlg, 'update_up_to_date_message')
           .replace('{local}', localVer);
         await dialog.showMessageBox(mainWin, {

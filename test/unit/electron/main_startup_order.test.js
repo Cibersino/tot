@@ -59,7 +59,7 @@ test('required pre-i18n startup failures disclose in fixed Spanish and quit befo
     "app.on('window-all-closed', () => {"
   );
 
-  assert.match(earlyTermination, /title: 'toT no pudo iniciarse'/);
+  assert.match(earlyTermination, /title: 'Problema de la aplicación'/);
   assert.match(earlyTermination, /message: 'No se pudo iniciar toT\. La aplicación se cerrará\.'/);
   assert.match(earlyTermination, /buttons: \['Aceptar'\]/);
   assert.match(earlyTermination, /Early required startup failure native notice failed:/);
@@ -116,7 +116,6 @@ test('initial main-renderer i18n failure uses managed startup termination before
   assert.match(rendererI18nFailure, /failureKind === 'startup-api'/);
   assert.match(rendererI18nFailure, /mainReadyState === 'PRE_READY'/);
   assert.match(rendererI18nFailure, /terminateAfterRequiredStartupFailure/);
-  assert.match(rendererI18nFailure, /startup_renderer_i18n_failure_title/);
   assert.match(rendererI18nFailure, /startup_renderer_i18n_failure_message/);
 });
 
