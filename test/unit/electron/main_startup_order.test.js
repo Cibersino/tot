@@ -77,14 +77,30 @@ test('required pre-i18n startup failures disclose in fixed Spanish and quit befo
   );
 });
 
-test('first-run selection persists before startup owns its initial menu installation', () => {
-  const bootstrap = sourceSection(
+test('first-run selection defers settings-side menu rebuilding to the startup resolver', () => {
+  const settingsRegistration = sourceSection(
     'settingsState.registerIpc(ipcMain, {',
-    "app.on('activate', () => {"
+    "startupRegistrationOperation = 'snapshot-tag settings IPC registration';"
+  );
+  const firstRunSelection = sourceSection(
+    '  // First run: show language picker before creating the main window.',
+    '  // macOS behavior: recreate a window when clicking the dock icon and none are open.'
+  );
+  const languageSelectionHandler = sourceSection(
+    '    languageSelectionHandler = () => {',
+    "    ipcMain.once('language-selected', languageSelectionHandler);"
   );
 
-  assert.match(bootstrap, /shouldRebuildAppMenu: \(\) => languageResolved/);
-  assert.match(bootstrap, /resolveLanguage\('selected'\)/);
+  assert.match(
+    settingsRegistration,
+    /settingsState\.registerIpc\(ipcMain, \{\s*buildAppMenu,\s*shouldRebuildAppMenu: \(\) => languageResolved,\s*\}\);/
+  );
+  assert.match(
+    firstRunSelection,
+    /ipcMain\.once\('language-selected', languageSelectionHandler\);/
+  );
+  assert.match(languageSelectionHandler, /resolveLanguage\('selected'\)/);
+  assert.doesNotMatch(languageSelectionHandler, /\bbuildAppMenu\s*\(/);
 });
 
 test('main startup terminates an initial main-document failure after resolving initial current-text processing', () => {
