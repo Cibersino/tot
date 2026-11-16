@@ -1124,7 +1124,7 @@ function createEditorWindow(options = {}) {
 function createTaskEditorWindow() {
   const taskEditorPreloadPath = path.join(__dirname, 'task_editor_preload.js');
   const taskEditorHtmlPath = path.join(__dirname, '../public/task_editor.html');
-  const state = taskEditorState.loadInitialState(loadJson);
+  const state = taskEditorState.loadInitialState();
   const hasReduced =
     state &&
     state.reduced &&
@@ -1225,7 +1225,7 @@ function createTaskEditorWindow() {
   });
 
   // Persist geometry and maximized state.
-  taskEditorState.attachTo(createdTaskEditorWin, loadJson, saveJson);
+  taskEditorState.attachTo(createdTaskEditorWin);
 
   // Close guard: delegate to renderer for unsaved-changes confirmation.
   createdTaskEditorWin.on('close', (event) => {

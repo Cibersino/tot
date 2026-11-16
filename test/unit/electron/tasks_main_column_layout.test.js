@@ -4,14 +4,11 @@ process.env.TOT_LOG_LEVEL = 'silent';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
-const { createTestTempDir } = require('../../helpers/test_temp_paths');
 const { installElectronModuleMock } = require('../../helpers/electron_module_mock');
 
 const DEFAULT_RECORD = Object.freeze({
-  version: 1,
   widths: Object.freeze({
     comentario: 82,
     tiempo: 88,
@@ -48,25 +45,20 @@ function createWindow() {
   return win;
 }
 
-function writeJson(targetPath, value) {
-  fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-  fs.writeFileSync(targetPath, JSON.stringify(value, null, 2), 'utf8');
-}
-
-function loadFreshTasksMain({ tempDir, saveJsonStrictImpl } = {}) {
+function loadFreshTasksMain(taskEditorState) {
   const modulePath = path.resolve(__dirname, '../../../electron/tasks_main.js');
   const menuBuilderPath = path.resolve(__dirname, '../../../electron/menu_builder.js');
   const settingsPath = path.resolve(__dirname, '../../../electron/settings.js');
   const snapshotsPath = path.resolve(__dirname, '../../../electron/current_text_snapshots_main.js');
   const fsStoragePath = path.resolve(__dirname, '../../../electron/fs_storage.js');
+  const taskEditorStatePath = path.resolve(__dirname, '../../../electron/task_editor_state.js');
   const cachedModules = new Map([
     [menuBuilderPath, require.cache[menuBuilderPath]],
     [settingsPath, require.cache[settingsPath]],
     [snapshotsPath, require.cache[snapshotsPath]],
     [fsStoragePath, require.cache[fsStoragePath]],
+    [taskEditorStatePath, require.cache[taskEditorStatePath]],
   ]);
-  const columnFile = path.join(tempDir, 'column_widths.json');
-
   const restoreElectron = installElectronModuleMock({
     dialog: {
       async showOpenDialog() { return { canceled: true, filePaths: [] }; },
@@ -107,18 +99,22 @@ function loadFreshTasksMain({ tempDir, saveJsonStrictImpl } = {}) {
     filename: fsStoragePath,
     loaded: true,
     exports: {
-      ensureTasksDirs() { fs.mkdirSync(tempDir, { recursive: true }); },
-      getTasksListsDir() { return path.join(tempDir, 'lists'); },
-      getTasksLibraryFile() { return path.join(tempDir, 'library.json'); },
-      getTasksAllowedHostsFile() { return path.join(tempDir, 'allowed_hosts.json'); },
-      getTasksColumnWidthsFile() { return columnFile; },
+      ensureTasksDirs() {},
+      getTasksListsDir() { return ''; },
+      getTasksLibraryFile() { return ''; },
+      getTasksAllowedHostsFile() { return ''; },
+      getTaskFilePickerStateFile() { return ''; },
+      loadJson(_file, fallback) { return fallback; },
       saveJson() {},
-      saveJsonStrict(targetPath, value) {
-        if (saveJsonStrictImpl) return saveJsonStrictImpl(targetPath, value);
-        writeJson(targetPath, value);
-        return undefined;
-      },
+      saveJsonStrict() {},
+      createJsonStrict() {},
     },
+  };
+  require.cache[taskEditorStatePath] = {
+    id: taskEditorStatePath,
+    filename: taskEditorStatePath,
+    loaded: true,
+    exports: taskEditorState,
   };
 
   delete require.cache[require.resolve(modulePath)];
@@ -133,97 +129,55 @@ function loadFreshTasksMain({ tempDir, saveJsonStrictImpl } = {}) {
     });
   }
 
-  return { tasksMain, columnFile, restore };
+  return { tasksMain, restore };
 }
 
-function createRegisteredHarness(t, options = {}) {
-  const tempDir = createTestTempDir('tasks-main-columns');
-  const loaded = loadFreshTasksMain({ tempDir, ...options });
+function createRegisteredHarness(t, taskEditorState) {
+  const loaded = loadFreshTasksMain(taskEditorState);
   const ipcMain = createIpcMainMock();
   const taskEditorWin = createWindow();
   loaded.tasksMain.registerIpc(ipcMain, {
     getWindows: () => ({ taskEditorWin }),
   });
-  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   t.after(loaded.restore);
   return {
-    ...loaded,
     invoke(channel, payload) {
       return ipcMain.invoke(channel, { sender: taskEditorWin.webContents }, payload);
+    },
+    invokeUnauthorized(channel, payload) {
+      return ipcMain.invoke(channel, { sender: {} }, payload);
     },
   };
 }
 
-test('task column layout load returns an exact valid version-1 record', async (t) => {
-  const harness = createRegisteredHarness(t);
-  writeJson(harness.columnFile, DEFAULT_RECORD);
+test('task column layout load returns the Main-owned presentation snapshot', async (t) => {
+  let loadCalls = 0;
+  const harness = createRegisteredHarness(t, {
+    getColumnLayout() {
+      loadCalls += 1;
+      return DEFAULT_RECORD;
+    },
+    saveColumnLayout() {
+      throw new Error('Unexpected save');
+    },
+  });
 
   assert.deepEqual(await harness.invoke('task-columns-load'), {
     ok: true,
     record: DEFAULT_RECORD,
   });
+  assert.equal(loadCalls, 1);
 });
 
-test('task column layout load signals fresh defaults for missing, malformed, and invalid data', async (t) => {
-  const harness = createRegisteredHarness(t);
-  assert.deepEqual(await harness.invoke('task-columns-load'), { ok: true, record: null });
-
-  fs.writeFileSync(harness.columnFile, '{broken', 'utf8');
-  assert.deepEqual(await harness.invoke('task-columns-load'), { ok: true, record: null });
-
-  const invalidRecords = [
-    DEFAULT_RECORD.widths,
-    { ...DEFAULT_RECORD, extra: true },
-    { version: 0, widths: DEFAULT_RECORD.widths },
-    { version: 1, widths: { ...DEFAULT_RECORD.widths, texto: 200 } },
-    { version: 1, widths: { ...DEFAULT_RECORD.widths, tiempo: '88' } },
-    { version: 1, widths: { ...DEFAULT_RECORD.widths, comentario: 81 } },
-    { version: 1, widths: { ...DEFAULT_RECORD.widths, acciones: 100_001 } },
-  ];
-  for (const record of invalidRecords) {
-    writeJson(harness.columnFile, record);
-    assert.deepEqual(await harness.invoke('task-columns-load'), { ok: true, record: null });
-  }
-});
-
-test('task column layout read failure is reported without overwriting the target', async (t) => {
-  const harness = createRegisteredHarness(t);
-  fs.mkdirSync(harness.columnFile, { recursive: true });
-
-  assert.deepEqual(await harness.invoke('task-columns-load'), {
-    ok: false,
-    code: 'READ_FAILED',
-  });
-  assert.equal(fs.statSync(harness.columnFile).isDirectory(), true);
-});
-
-test('task column layout save validates the complete record and uses strict persistence', async (t) => {
-  const writes = [];
+test('task column layout save delegates the complete record and preserves owner failure results', async (t) => {
+  const received = [];
   const harness = createRegisteredHarness(t, {
-    saveJsonStrictImpl(targetPath, value) {
-      writes.push({ targetPath, value });
+    getColumnLayout() {
+      return DEFAULT_RECORD;
     },
-  });
-
-  assert.deepEqual(
-    await harness.invoke('task-columns-save', { record: DEFAULT_RECORD }),
-    { ok: true }
-  );
-  assert.deepEqual(writes, [{ targetPath: harness.columnFile, value: DEFAULT_RECORD }]);
-
-  assert.deepEqual(
-    await harness.invoke('task-columns-save', {
-      record: { version: 1, widths: { ...DEFAULT_RECORD.widths, tiempo: 87 } },
-    }),
-    { ok: false, code: 'INVALID_SCHEMA' }
-  );
-  assert.equal(writes.length, 1);
-});
-
-test('task column layout strict write failures return WRITE_FAILED', async (t) => {
-  const harness = createRegisteredHarness(t, {
-    saveJsonStrictImpl() {
-      throw new Error('disk full');
+    saveColumnLayout(record) {
+      received.push(record);
+      return { ok: false, code: 'WRITE_FAILED' };
     },
   });
 
@@ -231,4 +185,29 @@ test('task column layout strict write failures return WRITE_FAILED', async (t) =
     await harness.invoke('task-columns-save', { record: DEFAULT_RECORD }),
     { ok: false, code: 'WRITE_FAILED' }
   );
+  assert.deepEqual(received, [DEFAULT_RECORD]);
+});
+
+test('task column layout handlers reject non-Task-Editor senders before consulting presentation state', async (t) => {
+  let ownerCalls = 0;
+  const harness = createRegisteredHarness(t, {
+    getColumnLayout() {
+      ownerCalls += 1;
+      return DEFAULT_RECORD;
+    },
+    saveColumnLayout() {
+      ownerCalls += 1;
+      return { ok: true };
+    },
+  });
+
+  assert.deepEqual(
+    await harness.invokeUnauthorized('task-columns-load'),
+    { ok: false, code: 'UNAUTHORIZED' }
+  );
+  assert.deepEqual(
+    await harness.invokeUnauthorized('task-columns-save', { record: DEFAULT_RECORD }),
+    { ok: false, code: 'UNAUTHORIZED' }
+  );
+  assert.equal(ownerCalls, 0);
 });

@@ -131,7 +131,6 @@ test('task editor preload sends an exact library-entry payload', () => {
 test('task editor preload forwards the complete column layout record', () => {
   const { exposedApi, invoked } = loadTaskEditorPreload();
   const record = {
-    version: 1,
     widths: {
       comentario: 82,
       tiempo: 88,

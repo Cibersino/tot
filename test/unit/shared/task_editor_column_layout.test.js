@@ -7,7 +7,6 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const DEFAULT_RECORD = {
-  version: 1,
   widths: {
     comentario: 82,
     tiempo: 88,
@@ -204,13 +203,12 @@ function createHarness({ wrapperWidth = 1093, loadResult, saveColumnLayout } = {
   };
 }
 
-test('fresh layout uses the conservative fitted budget and persists only the utility defaults', async () => {
+test('fresh layout uses the conservative fitted budget without persisting defaults', async () => {
   const harness = createHarness({
     wrapperWidth: 1093,
-    loadResult: { ok: true, record: null },
+    loadResult: { ok: true, record: DEFAULT_RECORD },
   });
   await harness.controller.initialize();
-  await waitFor(() => harness.saveCalls.length === 1);
 
   assert.equal(harness.columns.texto.style.width, '420px');
   assert.equal(harness.columns.tiempo.style.width, '88px');
@@ -218,11 +216,7 @@ test('fresh layout uses the conservative fitted budget and persists only the uti
   assert.equal(harness.columns.acciones.style.width, '124px');
   assert.equal(harness.table.style.width, '1092px');
   assert.equal(harness.table.style.minWidth, '');
-  assert.deepEqual(JSON.parse(JSON.stringify(harness.saveCalls[0])), DEFAULT_RECORD);
-  assert.deepEqual(Object.keys(harness.saveCalls[0].widths), [
-    'comentario', 'tiempo', 'percent', 'falta', 'enlace', 'acciones',
-  ]);
-  assert.equal(Object.hasOwn(harness.saveCalls[0].widths, 'texto'), false);
+  assert.equal(harness.saveCalls.length, 0);
 
   assert.equal(Object.values(harness.headers).reduce((sum, header) => sum + header.children.length, 0), 6);
   const divider = harness.getDivider('tiempo');

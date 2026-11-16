@@ -129,12 +129,8 @@ function getTasksAllowedHostsFile() {
   return path.join(getTasksDir(), 'allowed_hosts.json');
 }
 
-function getTasksColumnWidthsFile() {
-  return path.join(getTasksDir(), 'column_widths.json');
-}
-
 function getTaskEditorStateFile() {
-  return path.join(getTasksDir(), 'task_editor_state.json');
+  return path.join(getConfigDir(), 'task_editor_state.json');
 }
 
 function getTaskFilePickerStateFile() {
@@ -439,7 +435,6 @@ module.exports = {
   getTasksListsDir,
   getTasksLibraryFile,
   getTasksAllowedHostsFile,
-  getTasksColumnWidthsFile,
   getTaskEditorStateFile,
   getTaskFilePickerStateFile,
 

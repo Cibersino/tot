@@ -271,7 +271,7 @@ Current automated coverage maps back to this manual suite roughly as follows:
   * supports parts of `REG-TASKS-04`
   * supports parts of `REG-PERSIST-04`
 * `test/unit/electron/tasks_main_column_layout.test.js`
-  * covers the strict versioned Task Editor column-layout persistence contract
+  * covers the strict Task Editor column-layout persistence contract
   * supports parts of `REG-TASKS-05`
   * supports parts of `REG-PERSIST-04`
 * `test/unit/shared/task_editor_column_layout.test.js`
@@ -345,6 +345,7 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
 - `snapshot_tags.json` (editable snapshot-tag catalog preferences: custom tags, hidden defaults, visible order)
 - `current_text.json`
 - `editor_state.json` (window geometry/maximization plus `spellcheckEnabled` and `editorFontSizePx`)
+- `task_editor_state.json` (Task Editor geometry/maximization and utility column widths)
 - `text_extraction_state.json` (last picker directory)
 - `presets_defaults/*.json` (runtime defaults copies)
 - `saved_current_texts/*.json` (saved text snapshots)
@@ -358,8 +359,6 @@ Config is stored under Electron `app.getPath('userData')/config` and includes:
   - `tasks/lists/*.json` (saved task lists)
   - `tasks/library.json` (task row library)
   - `tasks/allowed_hosts.json` (allowlist for https link opening)
-  - `tasks/column_widths.json` (task editor column widths)
-  - `tasks/task_editor_state.json` (task editor window geometry/maximized state)
 
 **Windows example (typical):**
 `%APPDATA%\@cibersino\tot\config\...`
@@ -1640,7 +1639,7 @@ accessibility stack) with the run evidence.
 
 #### REG-TASKS-05 Column widths persistence
 **Goal:** Verify exact responsive widths, accessible resizing, and persistence.
-1. Open a fresh Task Editor layout with no `column_widths.json`.
+1. Open a fresh Task Editor layout with no `task_editor_state.json`.
 2. With no vertical scrollbar, inspect the table at a wrapper `clientWidth` of 1093 px.
 3. Add enough rows to create a vertical scrollbar and verify the wrapper changes to 1077 px on the reviewed Windows environment.
 4. Resize at least two utility columns with pointer input; verify only the target utility column and Reading column change.
@@ -1659,7 +1658,7 @@ accessibility stack) with the run evidence.
 - A narrow wrapper shows horizontal scrolling and disables all six dividers; widening re-enables them.
 - The Comment and Actions controls remain on one row without clipping or intrinsic column expansion.
 - The table order is Text, Comment, Time, %, Left, Link, Actions; the Text width is recalculated from the current wrapper width.
-- The six utility widths restore on reopen; `column_widths.json` contains only `{ "version": 1, "widths": { comentario, tiempo, percent, falta, enlace, acciones } }` in that canonical order.
+- The six utility widths restore on reopen. After a presentation change, `task_editor_state.json` contains `maximized`, `reduced`, and `columnWidths`; `columnWidths` contains exactly `comentario`, `tiempo`, `percent`, `falta`, `enlace`, and `acciones`, in that canonical order, and no Text width.
 
 #### REG-TASKS-06 Link opening
 **Goal:** link opening respects https + allowlist rules.
@@ -2051,8 +2050,8 @@ nonconforming persisted data without migration or repair.
 - The saved visible order for each touched category is preserved after relaunch.
 - `snapshot_tags.json`, when inspected, stores the snapshot-tag preferences separately from `user_settings.json`, snapshot files, and i18n bundles.
 
-#### REG-PERSIST-04 Tasks: config/tasks persistence (lists, library, allowlist, widths, window position)
-**Goal:** task feature state persists under config/tasks and reloads correctly after restart.
+#### REG-PERSIST-04 Tasks: task persistence and Task Editor presentation state
+**Goal:** task feature state and Task Editor presentation preferences reload correctly after restart.
 1. Click **New task** (`task-new` SVG icon) to open Tasks editor.
 2. Resize at least two columns to non-default widths.
 3. Add a row with a distinctive Text + Time and an optional Comment.
@@ -2060,13 +2059,12 @@ nonconforming persisted data without migration or repair.
 5. Save the same row into Library (choose Include comment = Yes).
 6. Open an https link to a new host and choose "Trust this host from now on".
 7. Move the Tasks editor window to a distinctive position; close the editor; quit the app.
-8. Inspect `config/tasks/` on disk:
+8. Inspect `config/tasks/` and `config/` on disk:
    - `lists/persist_demo.json` exists
    - `library.json` exists
    - `allowed_hosts.json` exists
-   - `column_widths.json` exists
-   - `task_editor_state.json` exists
-   - `column_widths.json` is a version-1 record containing exactly `comentario`, `tiempo`, `percent`, `falta`, `enlace`, and `acciones`, in that order, and no Text width
+   - `task_editor_state.json` exists under `config/`
+   - `task_editor_state.json` contains `maximized`, `reduced`, and `columnWidths`; `columnWidths` contains exactly `comentario`, `tiempo`, `percent`, `falta`, `enlace`, and `acciones`, in that order, and no Text width
 9. Relaunch the app.
 10. Open Tasks editor and verify:
     - Window size/position restored and fully visible.

@@ -27,15 +27,14 @@ tot/
 │ │ └── reading_speed_test_pool/   # {pool local del reading speed test; sincronizado al arranque, contenido sin state inline}
 │ ├── tasks/
 │ │ ├── allowed_hosts.json
-│ │ ├── column_widths.json
 │ │ ├── library.json
 │ │ ├── lists/
-│ │ └── task_editor_state.json
 │ ├── current_text.json
 │ ├── editor_state.json
 │ ├── reading_test_pool_import_state.json
 │ ├── reading_test_pool_state.json
 │ ├── text_extraction_state.json
+│ ├── task_editor_state.json
 │ └── user_settings.json
 ├── docs/
 │ ├── releases/                    # {con subcarpetas por release con docs de chequeo}
@@ -336,8 +335,8 @@ tot/
 - `electron/reading_test_session_windows.js` — Helpers de ventanas del reading speed test: espera visibilidad/carga del Editor de Texto y el Cronómetro Flotante, abre la sesión guiada en modo diferido, sincroniza la visibilidad del overlay prestart del editor y crea los modales de resultado y de preguntas.
 - `electron/reading_test_session_flow.js` — Helpers del flujo guiado del reading speed test: ownership de las etapas `arming/running/result/questions/preset`, cómputo autoritativo de WPM, payload prellenado del preset, cancel/finish semantics, ruta `pool` vs `current_text` y reinterpretación de comandos/cierres del Cronómetro Flotante y el Editor de Texto.
 - `electron/presets_main.js` — Sistema de presets en main: defaults por scope, CRUD, diálogos nativos y handlers IPC.
-- `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/anchos/enlaces).
-- `electron/task_editor_state.js` — Persistencia/estado de la ventana del Editor de Tareas (tamaño, posición y maximizado).
+- `electron/tasks_main.js` — Backend de tareas (persistencia + validación + IPC de listas/biblioteca/enlaces y transporte autorizado de preferencias de presentación).
+- `electron/task_editor_state.js` — Owner main de las preferencias de presentación del Editor de Tareas: tamaño, posición, maximizado y anchos de columnas de utilidad.
 - `electron/task_editor_window_lifecycle.js` — Controlador main-owned del ciclo de vida del Editor de Tareas: conserva la identidad de la ventana, coordina su inicialización y estado dirty, autentica el transporte renderer→Main sin asumir ownership del borrador y serializa la disposición terminal/cierre nativo, incluido el cierre de la ventana principal.
 - `electron/app_temp_paths.js` — Helper main-owned/importable de temporales de runtime: centraliza el root `os.tmpdir()/tot-temp/`, crea subdirectorios/paths temporales app-owned y expone helpers de contención y cleanup best-effort.
 - `electron/text_extraction_platform/text_extraction_file_picker_ipc.js` — File picker nativo del flujo text extraction; resuelve carpeta por defecto/persistida, permite selección múltiple, guarda la última carpeta usada cuando la selección es válida y deriva la lista de extensiones soportadas desde el contrato compartido de formatos.
@@ -413,7 +412,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `public/js/menu_actions.js` — Router de acciones recibidas desde el menú (`menu-click`) hacia handlers de UI; expone `window.menuActions` (register/unregister/list/stopListening).
 - `public/js/current_text_snapshots.js` — Helper de snapshots del texto actual: expone `saveSnapshot()` / `loadSnapshot()`, invoca el modal previo de tags al guardar, normaliza metadata opcional de snapshot vía `snapshot_tag_catalog`, llama `electronAPI.saveCurrentTextSnapshot` / `electronAPI.loadCurrentTextSnapshot` y mapea `{ ok, code }` a `Notify` (sin DOM wiring; el binding de botones vive en `public/renderer.js`).
 - `public/js/snapshot_save_tags_modal.js` — Modal renderer previo al save nativo de snapshots: usa tres comboboxes editables para `language` / `type` / `difficulty`, conserva el filtrado, clear e inline-create del catálogo, admite copy overrides compartidos con batch planning, aplica i18n y devuelve tags normalizados o cancelación.
-- `public/js/task_editor_column_layout.js` — Owner renderer del layout exacto de columnas del Editor de Tareas: calcula `texto` desde el ancho útil del wrapper, aplica el ancho explícito de tabla/`colgroup`, coordina los seis dividers accesibles y persiste de forma serializada solo los anchos de utilidad versionados.
+- `public/js/task_editor_column_layout.js` — Owner renderer del layout exacto de columnas del Editor de Tareas: calcula `texto` desde el ancho útil del wrapper, aplica el ancho explícito de tabla/`colgroup`, coordina los seis dividers accesibles y persiste de forma serializada solo los anchos de utilidad.
 - `public/js/reading_speed_test.js` — Módulo renderer del reading speed test: gestiona el modal de entrada/configuración, refleja combinaciones reales del pool, ejecuta reset/start IPC, muestra warnings inline y sincroniza el lock state.
 - `public/js/info_modal_links.js` — Binding de enlaces en info modals: evita doble-bind (`dataset.externalLinksBound`); rutea `#` (scroll interno), `appdoc:` (api.openAppDoc) y externos (api.openExternalUrl); usa `CSS.escape` con fallback; logger `window.getLogger('info-modal-links')`.
 - `public/js/main_logo_links.js` — Binding de enlaces fijos del header principal: conecta los logos clickeables de Cibersino y Ko-fi a `electronAPI.openExternalUrl(...)`, aplica tooltips/labels i18n y mantiene este wiring fuera de `public/renderer.js`.
@@ -461,6 +460,7 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/user_settings.json` — Preferencias globales del usuario (idioma, modo de conteo, presets personalizados, etc.).
 - `config/current_text.json` — Texto actual persistido.
 - `config/editor_state.json` — Estado persistido específico del Editor de Texto (geometría/maximizado, `maximizedTextWidthPx`, `spellcheckEnabled` y `editorFontSizePx`).
+- `config/task_editor_state.json` — Estado de presentación persistido del Editor de Tareas (geometría/maximizado y anchos de columnas de utilidad).
 - `config/text_extraction_state.json` — Estado local del picker de text extraction (por ejemplo, última carpeta utilizada).
 - `config/reading_test_pool_state.json` — Estado externo del pool del reading speed test; guarda la preferencia `showBundledEntries`, el `used` por `snapshotRelPath` y, para starter files actualmente gestionados por la app, el `managedBundledHash` de su contenido instalado. Si el contenido runtime ya no coincide, la entrada deja de ser gestionada; el hash no conserva procedencia histórica.
 - `config/reading_test_pool_import_state.json` — Estado local del picker del importador del pool del reading speed test (última carpeta utilizada).
@@ -471,8 +471,6 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 - `config/tasks/lists/*.json` — Listas de tareas guardadas por el usuario.
 - `config/tasks/library.json` — Biblioteca de filas (por `texto` normalizado).
 - `config/tasks/allowed_hosts.json` — Allowlist de hosts confiables para enlaces remotos.
-- `config/tasks/column_widths.json` — Persistencia de anchos de columnas del Editor de Tareas.
-- `config/tasks/task_editor_state.json` — Estado persistido de la ventana del Editor de Tareas (geometría/maximizado).
 
 ### 5.1) Material OCR empaquetado
 

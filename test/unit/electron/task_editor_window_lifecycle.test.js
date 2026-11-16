@@ -105,6 +105,36 @@ function issueInitialization(controller, win, payload = {}) {
   return correlated;
 }
 
+test('Task lifecycle resets after destruction so a recreated window starts independently', () => {
+  const dialog = createDialogDouble();
+  const controller = createController(dialog);
+  const first = createWindowDouble();
+  controller.attachWindow(first.win);
+  const firstInit = issueInitialization(controller, first.win);
+  controller.acceptDirtyState(
+    { sender: first.webContents },
+    { dirty: true, initId: firstInit.initId }
+  );
+
+  first.win.close();
+  controller.handleWindowClosed(first.win);
+
+  const second = createWindowDouble();
+  controller.attachWindow(second.win);
+  const secondInit = issueInitialization(controller, second.win);
+
+  assert.equal(secondInit.initId, 1);
+  assert.equal(
+    controller.handleCloseResponse({ sender: first.webContents }, { kind: 'normal', allow: true }),
+    false
+  );
+  assert.equal(
+    controller.handleCloseResponse({ sender: second.webContents }, { kind: 'normal', allow: true }),
+    true
+  );
+  assert.deepEqual(second.calls, ['close']);
+});
+
 test('Task lifecycle accepts dirty evidence only for the latest issued initialization', async () => {
   const dialog = createDialogDouble();
   const controller = createController(dialog);

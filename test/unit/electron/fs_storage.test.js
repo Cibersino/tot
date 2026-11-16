@@ -265,3 +265,24 @@ test('getTaskFilePickerStateFile keeps Task Editor picker state under the task c
     path.join(tempDir, 'config', 'tasks', 'task_file_picker_state.json')
   );
 });
+
+test('getTaskEditorStateFile keeps combined Task Editor presentation state at the config root', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  fsStorage.initStorage({
+    getPath(key) {
+      return key === 'userData' ? tempDir : '';
+    },
+    getAppPath() {
+      return tempDir;
+    },
+    isReady() {
+      return true;
+    },
+  });
+
+  assert.equal(
+    fsStorage.getTaskEditorStateFile(),
+    path.join(tempDir, 'config', 'task_editor_state.json')
+  );
+});

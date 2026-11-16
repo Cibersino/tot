@@ -229,9 +229,6 @@ function loadFreshTasksMainForSave({
       getTasksAllowedHostsFile() {
         return path.join(tasksRoot, '..', 'allowed_hosts.json');
       },
-      getTasksColumnWidthsFile() {
-        return path.join(tasksRoot, '..', 'column_widths.json');
-      },
       getTaskFilePickerStateFile() {
         return taskFilePickerStatePath;
       },
