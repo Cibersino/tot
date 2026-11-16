@@ -87,6 +87,13 @@
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  function getCatalogFailure(defaults) {
+    const catalogFailure = defaults && defaults.catalogFailure;
+    return catalogFailure === 'partial' || catalogFailure === 'complete'
+      ? catalogFailure
+      : 'none';
+  }
+
   function setPresetOptions(list = [], combobox) {
     if (!combobox) return;
     combobox.update({
@@ -126,21 +133,31 @@
   }) {
     const settingsSnapshot = normalizeSettings(settings, language);
     let defaults = { general: [], defaultPresetsByScope: {} };
+    let catalogFailure = 'none';
     if (!electronAPI || typeof electronAPI.getDefaultPresets !== 'function') {
       log.warn(
         '[presets] electronAPI.getDefaultPresets unavailable; using settings-only presets'
       );
+      catalogFailure = 'complete';
     } else {
       try {
-        defaults = await electronAPI.getDefaultPresets();
+        const catalog = await electronAPI.getDefaultPresets();
+        if (!catalog || typeof catalog !== 'object' || Array.isArray(catalog)) {
+          log.warn('Default presets delivery returned an invalid catalog; using settings-only presets.');
+          catalogFailure = 'complete';
+        } else {
+          defaults = catalog;
+          catalogFailure = getCatalogFailure(catalog);
+        }
       } catch (error) {
         log.warn('Default presets fetch failed; using settings-only presets.', error);
+        catalogFailure = 'complete';
       }
     }
 
     const finalList = combinePresets({ settings: settingsSnapshot, defaults });
     setPresetOptions(finalList, combobox);
-    return { list: finalList };
+    return { catalogFailure, list: finalList };
   }
 
   async function resolvePresetSelection({

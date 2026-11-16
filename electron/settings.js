@@ -20,9 +20,6 @@
 const Log = require('./log');
 const {
   DEFAULT_LANG,
-  EDITOR_FONT_SIZE_MIN_PX,
-  EDITOR_FONT_SIZE_MAX_PX,
-  EDITOR_FONT_SIZE_DEFAULT_PX,
 } = require('./constants_main');
 
 const log = Log.get('settings');
@@ -55,24 +52,12 @@ function getPreferenceScope(languageId = DEFAULT_LANG) {
 // =============================================================================
 const createDefaultSettings = (language = '') => ({
   language,
-  spellcheckEnabled: true,
   previewSpoilerEnabled: true,
-  editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
   presetsByScope: {},
   selectedPresetByScope: {},
   disabledDefaultPresetsByScope: {},
   numberFormattingByScope: {},
 });
-
-function normalizeEditorFontSizePx(value) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return EDITOR_FONT_SIZE_DEFAULT_PX;
-  const rounded = Math.round(parsed);
-  return Math.min(
-    EDITOR_FONT_SIZE_MAX_PX,
-    Math.max(EDITOR_FONT_SIZE_MIN_PX, rounded)
-  );
-}
 
 function isNonArrayObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -247,20 +232,6 @@ function normalizeSettings(settings) {
     settings.modeConteo = 'preciso';
   }
 
-  // spellcheckEnabled:
-  // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
-  if (typeof settings.spellcheckEnabled === 'undefined') {
-    settings.spellcheckEnabled = true;
-  } else if (typeof settings.spellcheckEnabled !== 'boolean') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidSpellcheckEnabled',
-      'Invalid spellcheckEnabled; forcing default:',
-      { type: typeof settings.spellcheckEnabled }
-    );
-    settings.spellcheckEnabled = true;
-  }
-
   // previewSpoilerEnabled:
   // - missing -> default (silent)
   // - present but invalid -> warnOnce + default
@@ -273,33 +244,6 @@ function normalizeSettings(settings) {
       { type: typeof settings.previewSpoilerEnabled }
     );
     settings.previewSpoilerEnabled = true;
-  }
-
-  // editorFontSizePx:
-  // - missing -> default (silent)
-  // - invalid/out of range -> warnOnce + normalized value
-  if (typeof settings.editorFontSizePx === 'undefined') {
-    settings.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
-  } else {
-    const nextEditorFontSizePx = normalizeEditorFontSizePx(settings.editorFontSizePx);
-    if (!Number.isFinite(Number(settings.editorFontSizePx))) {
-      log.warnOnce(
-        'settings.normalizeSettings.invalidEditorFontSizePx',
-        'Invalid editorFontSizePx; forcing default:',
-        { value: settings.editorFontSizePx }
-      );
-    } else if (nextEditorFontSizePx !== Math.round(Number(settings.editorFontSizePx))) {
-      log.warnOnce(
-        'settings.normalizeSettings.outOfRangeEditorFontSizePx',
-        'Out-of-range editorFontSizePx; clamping:',
-        {
-          value: settings.editorFontSizePx,
-          min: EDITOR_FONT_SIZE_MIN_PX,
-          max: EDITOR_FONT_SIZE_MAX_PX,
-        }
-      );
-    }
-    settings.editorFontSizePx = nextEditorFontSizePx;
   }
 
   const languageId = getValidLanguageId(settings.language);
@@ -364,6 +308,49 @@ function cloneSettingsForMutation(settings) {
   };
 }
 
+function createStartupInitializationError(code, message, cause = null) {
+  const error = new Error(message);
+  error.code = code;
+  if (cause) error.cause = cause;
+  return error;
+}
+
+function getStartupAdmissionError(initialLoad) {
+  if (initialLoad.status === 'missing') return null;
+
+  if (initialLoad.status === 'loaded') {
+    const settings = initialLoad.value;
+    if (!isNonArrayObject(settings)) {
+      return createStartupInitializationError(
+        'SETTINGS_STARTUP_ADMISSION_FAILED',
+        '[settings] startup settings root must be a non-array object'
+      );
+    }
+    if (!Object.prototype.hasOwnProperty.call(settings, 'presetsByScope')) return null;
+    if (!isNonArrayObject(settings.presetsByScope)) {
+      return createStartupInitializationError(
+        'SETTINGS_STARTUP_ADMISSION_FAILED',
+        '[settings] startup presetsByScope must be a non-array object when present'
+      );
+    }
+    for (const [preferenceScopeId, presets] of Object.entries(settings.presetsByScope)) {
+      if (!Array.isArray(presets)) {
+        return createStartupInitializationError(
+          'SETTINGS_STARTUP_ADMISSION_FAILED',
+          `[settings] startup presetsByScope entry must be an array: ${preferenceScopeId}`
+        );
+      }
+    }
+    return null;
+  }
+
+  return createStartupInitializationError(
+    'SETTINGS_STARTUP_ADMISSION_FAILED',
+    `[settings] startup settings file is ${initialLoad.status}`,
+    initialLoad.error || null
+  );
+}
+
 // =============================================================================
 // State API: init / getSettings / saveSettings / saveSettingsStrict
 // =============================================================================
@@ -372,13 +359,25 @@ function cloneSettingsForMutation(settings) {
  * - Stores injected dependencies and settings file path.
  * - Loads, normalizes, caches, and attempts to persist settings once on startup.
  */
-function init({ loadJson, saveJson, saveJsonStrict, settingsFile, languageResources: injectedLanguageResources } = {}) {
+function init({
+  loadJson,
+  loadJsonWithStatus,
+  saveJson,
+  saveJsonStrict,
+  createJsonStrict,
+  createSettingsStartupBackup,
+  settingsFile,
+  languageResources: injectedLanguageResources,
+} = {}) {
   if (
     typeof loadJson !== 'function'
+    || typeof loadJsonWithStatus !== 'function'
     || typeof saveJson !== 'function'
     || typeof saveJsonStrict !== 'function'
+    || typeof createJsonStrict !== 'function'
+    || typeof createSettingsStartupBackup !== 'function'
   ) {
-    throw new Error('[settings] init requires loadJson, saveJson, and saveJsonStrict');
+    throw new Error('[settings] init requires startup admission and persistence dependencies');
   }
   if (!settingsFile) {
     throw new Error('[settings] init requires settingsFile');
@@ -388,23 +387,49 @@ function init({ loadJson, saveJson, saveJsonStrict, settingsFile, languageResour
     throw new Error('[settings] init requires initialized languageResources');
   }
 
+  const initialLoad = loadJsonWithStatus(
+    settingsFile,
+    createDefaultSettings(),
+    { includeRawBytes: true }
+  );
+  const admissionError = getStartupAdmissionError(initialLoad);
+  if (admissionError) throw admissionError;
+
+  const rawSettings = initialLoad.value;
+
+  if (initialLoad.status === 'loaded') {
+    try {
+      createSettingsStartupBackup(settingsFile, initialLoad.rawBytes);
+    } catch (error) {
+      throw createStartupInitializationError(
+        'SETTINGS_STARTUP_BACKUP_FAILED',
+        '[settings] startup settings backup failed',
+        error
+      );
+    }
+  }
+
+  languageResources = resolvedLanguageResources;
+  const normalizedSettings = normalizeSettings(rawSettings);
+  try {
+    if (initialLoad.status === 'missing') {
+      createJsonStrict(settingsFile, normalizedSettings, { ensureParent: true });
+    } else {
+      saveJsonStrict(settingsFile, normalizedSettings);
+    }
+  } catch (error) {
+    throw createStartupInitializationError(
+      'SETTINGS_STARTUP_INITIAL_WRITE_FAILED',
+      '[settings] startup settings persistence failed',
+      error
+    );
+  }
+
   _loadJson = loadJson;
   _saveJson = saveJson;
   _saveJsonStrict = saveJsonStrict;
   _settingsFile = settingsFile;
-  languageResources = resolvedLanguageResources;
-
-  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
-
-  const normalizedSettings = normalizeSettings(rawSettings);
   _currentSettings = normalizedSettings;
-
-  try {
-    _saveJson(_settingsFile, _currentSettings);
-  } catch (error) {
-    log.error('init failed to persist settings:', _settingsFile, error);
-  }
-
   return _currentSettings;
 }
 
@@ -702,25 +727,22 @@ function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
 /**
  * If the language modal closes without selecting anything, apply a fallback language.
  * Used by main.js startup flow when language resolution must continue.
- * This is intentionally not silent: it updates settings.language and attempts a best-effort save.
+ * The initial fallback must be persisted before startup can continue.
  */
 function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
-  try {
-    let settings = getSettings();
-    if (!settings.language) {
-      const languageId = getValidLanguageId(fallbackLang);
-      if (!languageId) throw new Error(`[settings] fallback language is not declared: ${String(fallbackLang)}`);
-      settings.language = languageId;
+  const settings = getSettings();
+  if (settings.language) return settings;
 
-      log.warn(
-        'BOOTSTRAP: language was unset; applying fallback language:',
-        languageId
-      );
-      saveSettings(settings);
-    }
-  } catch (error) {
-    log.error('applyFallbackLanguageIfUnset failed:', error);
-  }
+  const languageId = getValidLanguageId(fallbackLang);
+  if (!languageId) throw new Error(`[settings] fallback language is not declared: ${String(fallbackLang)}`);
+
+  const nextSettings = cloneSettingsForMutation(settings);
+  nextSettings.language = languageId;
+  log.warn(
+    'BOOTSTRAP: language was unset; applying fallback language:',
+    languageId
+  );
+  return saveSettingsStrict(nextSettings);
 }
 
 // =============================================================================
@@ -734,9 +756,8 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-mode-conteo
  * - set-selected-preset
  * - set-preview-spoiler-enabled
- * - set-spellcheck-enabled
  */
-function registerIpc(ipcMain, { buildAppMenu } = {}) {
+function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
   }
@@ -776,7 +797,7 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     }
   });
 
-  // set-language: applies a nonempty selection, rebuilds the menu, updates secondary windows, broadcasts
+  // set-language: applies a nonempty selection, rebuilds the menu when runtime owns it, updates secondary windows, broadcasts
   ipcMain.handle('set-language', async (_event, lang) => {
     try {
       const chosenRaw = typeof lang === 'string' ? lang : '';
@@ -793,21 +814,25 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
         settings = saveSettingsStrict(nextSettings);
       }
 
-      const menuLang = settings.language || DEFAULT_LANG;
-
       const windows = resolvePublicationWindows();
 
-      // Rebuild the app menu using the effective language (best-effort).
-      if (typeof buildAppMenu !== 'function') {
-        log.warn(
-          'buildAppMenu unavailable; menu rebuild skipped.',
-          { type: typeof buildAppMenu }
-        );
-      } else {
-        try {
-          buildAppMenu(menuLang);
-        } catch (error) {
-          log.warn('menu rebuild failed (ignored):', menuLang, error);
+      // The first-run picker persists the selection before startup owns its one
+      // initial menu installation. Later user-initiated changes rebuild here.
+      const rebuildAppMenu = typeof shouldRebuildAppMenu !== 'function'
+        || shouldRebuildAppMenu() !== false;
+      if (rebuildAppMenu) {
+        const menuLang = settings.language || DEFAULT_LANG;
+        if (typeof buildAppMenu !== 'function') {
+          log.warn(
+            'buildAppMenu unavailable; menu rebuild skipped.',
+            { type: typeof buildAppMenu }
+          );
+        } else {
+          try {
+            buildAppMenu(menuLang);
+          } catch (error) {
+            log.warn('menu rebuild failed (ignored):', menuLang, error);
+          }
         }
       }
 
@@ -913,32 +938,6 @@ function registerIpc(ipcMain, { buildAppMenu } = {}) {
     }
   });
 
-  // set-spellcheck-enabled: persists spellcheck preference and broadcasts
-  ipcMain.handle('set-spellcheck-enabled', async (_event, enabled) => {
-    try {
-      if (typeof enabled !== 'boolean') {
-        log.warn(
-          'set-spellcheck-enabled called with non-boolean value (ignored).',
-          { type: typeof enabled }
-        );
-        return { ok: false, error: 'invalid' };
-      }
-
-      const settings = getSettings();
-      if (settings.spellcheckEnabled === enabled) {
-        return { ok: true, enabled };
-      }
-      const nextSettings = cloneSettingsForMutation(settings);
-      nextSettings.spellcheckEnabled = enabled;
-      const savedSettings = saveAndPublishSettingsStrict(nextSettings);
-
-      return { ok: true, enabled: savedSettings.spellcheckEnabled };
-    } catch (error) {
-      log.error('IPC set-spellcheck-enabled failed:', error);
-      throw error;
-    }
-  });
-
 }
 
 // =============================================================================
@@ -948,7 +947,6 @@ module.exports = {
   getLanguageDescriptor,
   getPreferenceScope,
   getValidLanguageId,
-  normalizeEditorFontSizePx,
   init,
   registerIpc,
   getSettings,

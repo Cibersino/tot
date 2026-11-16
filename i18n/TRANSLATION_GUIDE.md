@@ -604,12 +604,12 @@ Estados de revisión recomendados:
         // [CONCEPTO_APP] preset de velocidad de lectura
       },
       "update_title": {
-        "es": "Actualización disponible",
-        "en": "Update available"
+        "es": "Actualización",
+        "en": "Update"
       },
       "update_message": {
-        "es": "Hay una versión nueva {remote}. Actual: {local}. ¿Descargar ahora?",
-        "en": "A new version {remote} is available. Current: {local}. Download now?"
+        "es": "Hay una nueva versión de toT ({remote}). Versión actual: {local}. ¿Deseas descargarla ahora?",
+        "en": "A new version of toT ({remote}) is available. Current version: {local}. Download now?"
         // [PROPÓSITO] Diálogo de actualización: compara versión remota disponible con versión local instalada antes de abrir la descarga.
       },
       "update_download": {
@@ -620,55 +620,37 @@ Estados de revisión recomendados:
         "es": "Más tarde",
         "en": "Later"
       },
-      "update_up_to_date_title": {
-        "es": "Estás al día.",
-        "en": "You are up to date."
-      },
       "update_up_to_date_message": {
-        "es": "Ya tienes la última versión ({local}).",
-        "en": "You already have the latest version ({local})."
-      },
-      "update_failed_title": {
-        "es": "La comprobación de actualizaciones falló.",
-        "en": "Update check failed."
+        "es": "toT está actualizado (versión {local}).",
+        "en": "toT is up to date (version {local})."
       },
       "update_failed_message": {
-        "es": "Revisa tu conexión y vuelve a intentar.",
-        "en": "Check your connection and try again."
+        "es": "toT no pudo buscar actualizaciones. Comprueba tu conexión e inténtalo de nuevo.",
+        "en": "toT could not check for updates. Check your connection and try again."
       },
-      "renderer_i18n_failure_title": {
-        "es": "No se pudo iniciar la interfaz",
-        "en": "The interface could not start"
-        // [PROPÓSITO] Título del diálogo nativo cuando un renderer no puede establecer los recursos de idioma requeridos.
+      "interface_problem_title": {
+        "es": "Problema con la interfaz",
+        "en": "Interface problem"
+        // [PROPÓSITO] Título contextual compartido por los diálogos nativos de fallo de recursos requeridos o sincronización de la interfaz.
       },
       "renderer_i18n_failure_message": {
         "es": "La interfaz no pudo cargar sus recursos de idioma necesarios. La ventana se cerrará.",
         "en": "The interface could not load its required language resources. The window will close."
         // [PROPÓSITO] Mensaje nativo de cierre para un fallo terminal de recursos de idioma del renderer.
       },
-      "renderer_settings_listener_failure_title": {
-        "es": "No se pudo iniciar la interfaz",
-        "en": "The interface could not start"
-      },
       "renderer_settings_listener_failure_message": {
         "es": "La interfaz no pudo establecer la sincronización necesaria con la configuración. La ventana se cerrará.",
         "en": "The interface could not establish the required settings synchronization. The window will close."
       },
-      "text_time_calculator_initial_document_failure_title": {
-        "es": "No se pudo abrir la calculadora rápida",
-        "en": "The quick calculator could not open"
-        // [CONCEPTO_APP] calculadora rápida
+      "window_problem_title": {
+        "es": "Problema con la ventana",
+        "en": "Window problem"
+        // [PROPÓSITO] Título contextual compartido por los diálogos nativos cuando una ventana secundaria no puede cargar su documento inicial.
       },
       "text_time_calculator_initial_document_failure_message": {
         "es": "La calculadora rápida no pudo cargarse y se cerrará.",
         "en": "The quick calculator could not load and will close."
         // [CONCEPTO_APP] calculadora rápida
-      },
-      "preset_modal_initial_document_failure_title": {
-        "es": "No se pudo abrir la ventana de presets",
-        "en": "The preset window could not open"
-        // [PROPÓSITO] Título del diálogo nativo para el fallo de carga del documento inicial requerido de la ventana modal de presets.
-        // [CONCEPTO_APP] preset de velocidad de lectura
       },
       "preset_modal_initial_document_failure_message": {
         "es": "La ventana de presets no pudo cargarse y se cerrará.",
@@ -682,10 +664,10 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Mensaje del fallo de carga inicial durante el primer inicio; informa que el inicio continuará mediante el idioma predeterminado.
         // [CONCEPTO_APP] ventana de idioma
       },
-      "language_chooser_initial_document_failure_title": {
-        "es": "No se pudo abrir la ventana de idioma",
-        "en": "The language chooser could not open"
-        // [PROPÓSITO] Título compartido del diálogo nativo cuando falla la carga del documento inicial requerido de la ventana de idioma, tanto durante el primer inicio como en una apertura posterior.
+      "language_selection_problem_title": {
+        "es": "Problema con la selección de idioma",
+        "en": "Language selection problem"
+        // [PROPÓSITO] Título contextual compartido por los avisos nativos de carga o bootstrap del selector de idioma.
         // [CONCEPTO_APP] ventana de idioma
       },
       "language_chooser_initial_document_failure_message": {
@@ -694,11 +676,28 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Mensaje del fallo de carga inicial al abrir posteriormente la ventana de idioma; no implica fallback ni cambio del idioma ya resuelto.
         // [CONCEPTO_APP] ventana de idioma
       },
-      "floating_stopwatch_initial_document_failure_title": {
-        "es": "No se pudo abrir el Cronómetro Flotante",
-        "en": "The Floating Stopwatch could not open"
-        // [PROPÓSITO] Título del diálogo nativo cuando falla la carga del documento inicial requerido del Cronómetro Flotante en una apertura ordinaria.
-        // [CONCEPTO_APP] Cronómetro Flotante
+      "language_chooser_first_run_bootstrap_failure_message": {
+        "es": "toT no pudo completar la selección de idioma. Se intentará continuar con el idioma predeterminado.",
+        "en": "toT could not complete language selection. It will try to continue with the fallback language."
+        // [PROPÓSITO] Aviso nativo no terminal por un fallo técnico reportado por el selector inicial; la continuación depende de persistir el idioma predeterminado.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "application_problem_title": {
+        "es": "Problema de la aplicación",
+        "en": "Application problem"
+        // [PROPÓSITO] Título contextual compartido por los diálogos nativos de terminación administrada, tanto durante el inicio como al recrear la ventana principal.
+      },
+      "startup_language_fallback_persistence_failure_message": {
+        "es": "toT no pudo guardar el idioma predeterminado necesario para iniciar. La aplicación se cerrará.",
+        "en": "toT could not save the fallback language needed to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo de persistencia del fallback del selector inicial, incluso cuando el cierre fue causado por un fallo técnico del selector.
+        // [CONCEPTO_APP] ventana de idioma
+      },
+      "startup_language_chooser_setup_failure_message": {
+        "es": "toT no pudo preparar la selección de idioma necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not prepare the language selection needed to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal del fallo estructural de Main antes de que el selector inicial pueda establecer su ciclo de cierre/fallback.
+        // [CONCEPTO_APP] ventana de idioma
       },
       "floating_stopwatch_initial_document_failure_message": {
         "es": "El Cronómetro Flotante no pudo cargarse y se cerrará.",
@@ -706,33 +705,87 @@ Estados de revisión recomendados:
         // [PROPÓSITO] Mensaje del fallo de carga inicial del Cronómetro Flotante en una apertura ordinaria; informa que la ventana afectada se cerrará.
         // [CONCEPTO_APP] Cronómetro Flotante
       },
-      "editor_find_initial_document_failure_title": {
-        "es": "No se pudo abrir la barra de búsqueda",
-        "en": "The find bar could not open"
-        // [PROPÓSITO] Título del diálogo nativo cuando falla la carga del documento inicial requerido de la barra de búsqueda del Editor de Texto.
-        // [CONCEPTO_APP] barra de búsqueda; Editor de Texto
-      },
       "editor_find_initial_document_failure_message": {
         "es": "La barra de búsqueda no pudo cargarse y se cerrará.",
         "en": "The find bar could not load and will close."
         // [PROPÓSITO] Mensaje del fallo de carga inicial de la barra de búsqueda; informa que la ventana afectada se cerrará.
         // [CONCEPTO_APP] barra de búsqueda; Editor de Texto
       },
-      "editor_startup_failed_title": {
-        "es": "No se pudo iniciar el Editor de Texto",
-        "en": "The Text Editor could not start"
-        // [PROPÓSITO] Título del diálogo nativo para el fallo reportable de inicio del Editor de Texto.
+      "startup_menu_installation_failure_message": {
+        "es": "El menú de la aplicación no pudo instalarse y la aplicación se cerrará.",
+        "en": "The application menu could not be installed and the application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo de instalación inicial del menú; informa que la aplicación se cerrará sin crear la ventana principal.
+      },
+      "startup_main_window_failure_message": {
+        "es": "La ventana principal no pudo crearse y la aplicación se cerrará.",
+        "en": "The main window could not be created and the application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo de construcción de la ventana principal requerida.
+      },
+      "startup_main_document_failure_message": {
+        "es": "La ventana principal no pudo cargar el documento inicial y la aplicación se cerrará.",
+        "en": "The main window could not load its initial document and the application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo de carga del documento inicial; la resolución fallida del procesamiento inicial del texto permite el cierre administrado.
+      },
+      "startup_main_preload_failure_message": {
+        "es": "La ventana principal no pudo completar la configuración necesaria para iniciar y la aplicación se cerrará.",
+        "en": "The main window could not complete the setup it needs to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo del preload inicial requerido; la resolución fallida del procesamiento inicial del texto permite el cierre administrado.
+      },
+      "startup_renderer_i18n_failure_message": {
+        "es": "toT no pudo completar la configuración de idioma necesaria para iniciar la interfaz. La aplicación se cerrará.",
+        "en": "toT could not complete the language setup needed to start the interface. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal para el fallo requerido de i18n del renderer principal antes de READY; informa que la aplicación se cerrará tras resolver el procesamiento inicial del texto.
+      },
+      "startup_registration_failure_message": {
+        "es": "toT no pudo completar la preparación necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not complete the setup needed to start. The application will close."
+        // [PROPÓSITO] Mensaje nativo terminal previo a la inicialización del texto actual; no identifica al servicio técnico concreto, que queda en el diagnóstico de desarrollo.
+      },
+      "startup_settings_admission_failure_message": {
+        "es": "toT no puede iniciar porque no puede usar la configuración guardada sin modificarla. La aplicación se cerrará.",
+        "en": "toT cannot start because it cannot use the saved settings without changing them. The application will close."
+        // [PROPÓSITO] Mensaje terminal de admisión; explica que la configuración guardada no puede usarse sin modificarla y que la aplicación se cerrará sin sustituir el archivo rechazado por defaults.
+      },
+      "startup_settings_backup_failure_message": {
+        "es": "toT no pudo crear el respaldo necesario antes de iniciar. La aplicación se cerrará.",
+        "en": "toT could not create the backup needed before starting. The application will close."
+        // [PROPÓSITO] Mensaje terminal de respaldo; comunica el cierre antes de la escritura inicial sin afirmar que se creó una copia recuperable.
+      },
+      "startup_settings_initial_write_failure_message": {
+        "es": "toT no pudo guardar la configuración necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not save the settings needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal de fallo de escritura inicial; no afirma que el archivo existente permanezca intacto.
+      },
+      "startup_settings_initialization_failure_message": {
+        "es": "toT no pudo completar la configuración necesaria para iniciar. La aplicación se cerrará.",
+        "en": "toT could not complete the settings needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal genérico de inicialización de preferencias; no atribuye una causa de almacenamiento que no esté demostrada.
+      },
+      "startup_snapshot_tags_admission_failure_message": {
+        "es": "toT no puede recuperar de forma segura las preferencias de etiquetas de snapshots guardadas. La aplicación se cerrará sin modificarlas.",
+        "en": "toT cannot safely recover the saved snapshot-tag preferences. The application will close without changing them."
+        // [PROPÓSITO] Mensaje terminal de admisión; informa que no se sustituye ni modifica el archivo rechazado.
+      },
+      "startup_snapshot_tags_initial_write_failure_message": {
+        "es": "toT no pudo guardar las preferencias de etiquetas de snapshots necesarias para iniciar. La aplicación se cerrará.",
+        "en": "toT could not save the snapshot-tag preferences needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal de escritura; comunica el cierre sin afirmar que el archivo original permanece intacto.
+      },
+      "startup_snapshot_tags_initialization_failure_message": {
+        "es": "toT no pudo completar las preferencias de etiquetas de snapshots necesarias para iniciar. La aplicación se cerrará.",
+        "en": "toT could not complete the snapshot-tag preferences needed to start. The application will close."
+        // [PROPÓSITO] Mensaje terminal para una excepción no clasificada de inicialización de etiquetas antes de READY.
+      },
+      "text_editor_problem_title": {
+        "es": "Problema con el Editor de Texto",
+        "en": "Text Editor problem"
+        // [PROPÓSITO] Título contextual compartido por los diálogos nativos de fallo de inicio del Editor de Texto.
         // [CONCEPTO_APP] Editor de Texto
       },
       "editor_startup_failed_message": {
         "es": "El Editor de Texto no pudo completar su inicio y se cerrará.",
         "en": "The Text Editor could not complete startup and will close."
         // [PROPÓSITO] Mensaje nativo del fallo reportable de inicio; no sustituye la copia de errores recurrentes del renderer.
-        // [CONCEPTO_APP] Editor de Texto
-      },
-      "editor_startup_timeout_title": {
-        "es": "El Editor de Texto tardó demasiado en iniciar",
-        "en": "The Text Editor took too long to start"
         // [CONCEPTO_APP] Editor de Texto
       },
       "editor_startup_timeout_message": {
@@ -1183,6 +1236,13 @@ Estados de revisión recomendados:
           "es": "Ocurrió un error al vaciar el texto actual.",
           "en": "An error occurred while clearing the current text."
           // [CONCEPTO_APP] texto actual
+        },
+        "settings_payload_unavailable": {
+          "es": "No se pudieron entregar a esta ventana tus preferencias guardadas, por lo que no se pudieron aplicar. El idioma, modo de conteo, preset seleccionado o WPM efectivos pueden diferir de tu configuración guardada. Revisa estos ajustes antes de continuar.",
+          "en": "Your saved preferences could not be delivered to this window, so they could not be applied. The effective language, counting mode, selected preset, or WPM may differ from your saved configuration. Review these settings before continuing."
+          // [PROPÓSITO] Aviso de continuación recuperable cuando el renderer principal no recibe el payload de preferencias decorado. Declara que la configuración efectiva de esta ventana puede diferir de la guardada, sin afirmar corrupción, pérdida, restauración automática ni disponibilidad de respaldos.
+          // [CONCEPTO_APP] modo de conteo; preset de velocidad de lectura; palabras por minuto (WPM)
+          // [PROTEGIDO] `WPM`
         },
         "current_text_processing_locked": {
           "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
@@ -3906,6 +3966,20 @@ Estados de revisión recomendados:
           "es": "No se pudo abrir la carpeta de presets por defecto.",
           "en": "Could not open the default presets folder."
           // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "catalog_load_partial": {
+          "es": "No se pudieron cargar uno o más archivos del catálogo de presets por defecto. toT continuará con los presets por defecto disponibles y con cualquier preset personalizado que se haya podido recibir. El preset seleccionado o el WPM pueden diferir de la configuración.",
+          "en": "One or more default preset catalog files could not be loaded. toT will continue with the available default presets and any custom presets that were delivered. The selected preset or WPM may differ from the configuration."
+          // [PROPÓSITO] Aviso recuperable de fallo parcial de recursos configurados del catálogo de presets por defecto. Distingue que siguen utilizándose los presets disponibles y los personalizados entregados, sin afirmar corrupción, pérdida, restauración ni respaldo de archivos de configuración independientes.
+          // [CONCEPTO_APP] preset de velocidad de lectura
+          // [PROTEGIDO] `WPM`
+        },
+        "catalog_load_complete": {
+          "es": "No se pudo cargar el catálogo de presets por defecto. toT continuará con cualquier preset personalizado que se haya podido recibir. El preset seleccionado o el WPM pueden diferir de la configuración.",
+          "en": "The default preset catalog could not be loaded. toT will continue with any custom presets that were delivered. The selected preset or WPM may differ from the configuration."
+          // [PROPÓSITO] Aviso recuperable de fallo completo de recursos configurados del catálogo de presets por defecto. No afirma corrupción, pérdida, restauración ni respaldo de archivos de configuración independientes.
+          // [CONCEPTO_APP] preset de velocidad de lectura
+          // [PROTEGIDO] `WPM`
         },
         "unavailable": {
           "es": "La ventana de preset no está disponible en esta build de la app.",

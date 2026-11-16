@@ -396,6 +396,114 @@ test('handlePresetCreated reports the selection cleared by a catalog reload fail
   });
 });
 
+test('catalog delivery failure retains custom presets and normal selection persistence', async () => {
+  const harness = createHarness({
+    getDefaultPresets() {
+      throw new Error('get-default-presets delivery failed');
+    },
+  });
+
+  const result = await harness.controller.loadPresets({
+    settingsSnapshot: {
+      language: 'en',
+      selectedPresetByScope: {},
+      presetsByScope: {
+        en: [{ name: 'Custom', wpm: 333, description: 'custom preset' }],
+      },
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.equal(result.catalogFailure, 'complete');
+  assert.deepEqual(toPlainObject(result.presets), [
+    { name: 'Custom', wpm: 333, description: 'custom preset' },
+  ]);
+  assert.equal(harness.dom.presetsCombobox.getValue(), 'Custom');
+  assert.equal(harness.controller.getWpm(), 333);
+  assert.deepEqual(harness.selectionPersists, ['Custom']);
+});
+
+test('partial catalog failure retains usable defaults and custom presets', async () => {
+  const harness = createHarness({
+    getDefaultPresets() {
+      return {
+        catalogFailure: 'partial',
+        general: [{ name: 'Available default', wpm: 220, description: 'default preset' }],
+        defaultPresetsByScope: {},
+      };
+    },
+  });
+
+  const result = await harness.controller.loadPresets({
+    settingsSnapshot: {
+      language: 'en',
+      selectedPresetByScope: { en: 'Custom' },
+      presetsByScope: {
+        en: [{ name: 'Custom', wpm: 333, description: 'custom preset' }],
+      },
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.equal(result.catalogFailure, 'partial');
+  assert.equal(
+    result.presets.map((preset) => preset.name).join(','),
+    'Available default,Custom'
+  );
+  assert.equal(harness.dom.presetsCombobox.getValue(), 'Custom');
+  assert.equal(harness.controller.getWpm(), 333);
+  assert.deepEqual(harness.selectionPersists, []);
+});
+
+test('valid empty and intentionally disabled default catalogs do not report a catalog failure', async () => {
+  const harness = createHarness({
+    getDefaultPresets() {
+      return {
+        catalogFailure: 'none',
+        general: [{ name: 'Disabled default', wpm: 220, description: 'default preset' }],
+        defaultPresetsByScope: {},
+      };
+    },
+  });
+
+  const disabledResult = await harness.controller.loadPresets({
+    settingsSnapshot: {
+      language: 'en',
+      selectedPresetByScope: {},
+      presetsByScope: {
+        en: [{ name: 'Custom', wpm: 333, description: 'custom preset' }],
+      },
+      disabledDefaultPresetsByScope: { en: ['Disabled default'] },
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.equal(disabledResult.catalogFailure, 'none');
+  assert.equal(disabledResult.presets.map((preset) => preset.name).join(','), 'Custom');
+
+  harness.electronAPI.getDefaultPresets = async () => ({
+    catalogFailure: 'none',
+    general: [],
+    defaultPresetsByScope: {},
+  });
+  const emptyResult = await harness.controller.loadPresets({
+    settingsSnapshot: {
+      language: 'en',
+      selectedPresetByScope: {},
+      presetsByScope: {},
+      disabledDefaultPresetsByScope: {},
+    },
+    language: 'en',
+    electronAPI: harness.electronAPI,
+  });
+
+  assert.equal(emptyResult.catalogFailure, 'none');
+  assert.equal(emptyResult.presets.length, 0);
+});
+
 test('handlePresetCreated reports effective post-resolution selection and WPM outcome', async () => {
   const harness = createHarness();
 

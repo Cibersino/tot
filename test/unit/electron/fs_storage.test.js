@@ -41,7 +41,7 @@ test('saveJsonStrict creates parent directories and persists JSON content', (t) 
   );
 });
 
-test('loadJsonWithStatus distinguishes recoverable absence from unusable stored content', (t) => {
+test('loadJsonWithStatus preserves status, fallback, and BOM behavior across startup-relevant reads', (t) => {
   const tempDir = createTempDir(t);
   const fsStorage = loadFreshFsStorage();
   const fallback = { language: 'es' };
@@ -51,6 +51,19 @@ test('loadJsonWithStatus distinguishes recoverable absence from unusable stored 
     fsStorage.loadJsonWithStatus(targetPath, fallback),
     { status: 'missing', value: fallback }
   );
+
+  fs.writeFileSync(targetPath, '\uFEFF{"language":"en"}', 'utf8');
+  assert.deepEqual(
+    fsStorage.loadJsonWithStatus(targetPath, fallback),
+    { status: 'loaded', value: { language: 'en' } }
+  );
+  const loadedWithRawBytes = fsStorage.loadJsonWithStatus(
+    targetPath,
+    fallback,
+    { includeRawBytes: true }
+  );
+  assert.deepEqual(loadedWithRawBytes.value, { language: 'en' });
+  assert.deepEqual(loadedWithRawBytes.rawBytes, Buffer.from('\uFEFF{"language":"en"}', 'utf8'));
 
   fs.writeFileSync(targetPath, '   ', 'utf8');
   assert.deepEqual(
@@ -70,6 +83,25 @@ test('loadJsonWithStatus distinguishes recoverable absence from unusable stored 
   );
 });
 
+test('loadJsonWithStatus treats only ENOENT as missing and preserves non-ENOENT failures as failed', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'user_settings.json');
+  const fallback = { language: 'es' };
+  const originalReadFileSync = fs.readFileSync;
+  const inaccessible = new Error('access denied');
+  inaccessible.code = 'EACCES';
+
+  t.mock.method(fs, 'readFileSync', (filePath, ...args) => {
+    if (filePath === targetPath) throw inaccessible;
+    return originalReadFileSync.call(fs, filePath, ...args);
+  });
+
+  const result = fsStorage.loadJsonWithStatus(targetPath, fallback);
+  assert.deepEqual(result, { status: 'failed', value: fallback });
+  assert.equal(fsStorage.loadJson(targetPath, fallback), fallback);
+});
+
 test('createJsonStrict creates only a new file in an existing parent directory', (t) => {
   const tempDir = createTempDir(t);
   const fsStorage = loadFreshFsStorage();
@@ -84,6 +116,109 @@ test('createJsonStrict creates only a new file in an existing parent directory',
     () => fsStorage.createJsonStrict(path.join(tempDir, 'missing', 'state.json'), payload),
     { code: 'ENOENT' }
   );
+});
+
+test('createJsonStrict can prepare a missing parent without replacing an appearing file', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'new-parent', 'user_settings.json');
+  const payload = { language: 'en' };
+
+  fsStorage.createJsonStrict(targetPath, payload, { ensureParent: true });
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), JSON.stringify(payload, null, 2));
+
+  fs.writeFileSync(targetPath, '{"language":"es"}', 'utf8');
+  assert.throws(
+    () => fsStorage.createJsonStrict(targetPath, payload, { ensureParent: true }),
+    { code: 'EEXIST' }
+  );
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), '{"language":"es"}');
+});
+
+test('createSettingsStartupBackup preserves raw bytes, advances arbitrary-size generations, and retains three files', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const settingsFile = path.join(tempDir, 'user_settings.json');
+  const initialBytes = Buffer.from('\uFEFF{"language":"es"}\r\n', 'utf8');
+
+  fsStorage.createSettingsStartupBackup(settingsFile, initialBytes);
+  fsStorage.createSettingsStartupBackup(settingsFile, Buffer.from('{"language":"en"}', 'utf8'));
+  fsStorage.createSettingsStartupBackup(settingsFile, Buffer.from('{"modeConteo":"simple"}', 'utf8'));
+  fsStorage.createSettingsStartupBackup(settingsFile, Buffer.from('{"previewSpoilerEnabled":false}', 'utf8'));
+
+  assert.deepEqual(
+    fs.readdirSync(tempDir).sort(),
+    [
+      'user_settings.json.backup.2',
+      'user_settings.json.backup.3',
+      'user_settings.json.backup.4',
+    ]
+  );
+  assert.deepEqual(
+    fs.readFileSync(path.join(tempDir, 'user_settings.json.backup.2')),
+    Buffer.from('{"language":"en"}', 'utf8')
+  );
+
+  const largeGeneration = '900719925474099312345678901234567890';
+  fs.writeFileSync(path.join(tempDir, `user_settings.json.backup.${largeGeneration}`), initialBytes);
+  fsStorage.createSettingsStartupBackup(settingsFile, initialBytes);
+  assert.equal(
+    fs.existsSync(path.join(tempDir, `user_settings.json.backup.${BigInt(largeGeneration) + 1n}`)),
+    true
+  );
+});
+
+test('createSettingsStartupBackup never replaces a colliding backup and exposes pruning failures', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const settingsFile = path.join(tempDir, 'user_settings.json');
+  const originalBytes = Buffer.from('{"language":"es"}', 'utf8');
+  const originalWriteFileSync = fs.writeFileSync;
+  let writeOptions = null;
+
+  t.mock.method(fs, 'writeFileSync', (filePath, data, options) => {
+    if (filePath === path.join(tempDir, 'user_settings.json.backup.1')) {
+      writeOptions = options;
+      originalWriteFileSync.call(fs, filePath, Buffer.from('concurrent backup', 'utf8'), {
+        flag: 'wx',
+      });
+      const error = new Error('backup appeared concurrently');
+      error.code = 'EEXIST';
+      throw error;
+    }
+    return originalWriteFileSync.call(fs, filePath, data, options);
+  });
+  assert.throws(
+    () => fsStorage.createSettingsStartupBackup(settingsFile, originalBytes),
+    { code: 'EEXIST' }
+  );
+  assert.deepEqual(writeOptions, { flag: 'wx' });
+  assert.deepEqual(
+    fs.readFileSync(path.join(tempDir, 'user_settings.json.backup.1')),
+    Buffer.from('concurrent backup', 'utf8')
+  );
+  t.mock.restoreAll();
+
+  for (const generation of ['1', '2', '3']) {
+    fs.writeFileSync(
+      path.join(tempDir, `user_settings.json.backup.${generation}`),
+      originalBytes
+    );
+  }
+  const originalUnlinkSync = fs.unlinkSync;
+  t.mock.method(fs, 'unlinkSync', (filePath, ...args) => {
+    if (filePath === path.join(tempDir, 'user_settings.json.backup.1')) {
+      const error = new Error('backup pruning denied');
+      error.code = 'EACCES';
+      throw error;
+    }
+    return originalUnlinkSync.call(fs, filePath, ...args);
+  });
+  assert.throws(
+    () => fsStorage.createSettingsStartupBackup(settingsFile, originalBytes),
+    { code: 'EACCES' }
+  );
+  assert.equal(fs.existsSync(path.join(tempDir, 'user_settings.json.backup.4')), true);
 });
 
 test('saveJson swallows write/setup failures while saveJsonStrict throws them', (t) => {

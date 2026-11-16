@@ -70,8 +70,7 @@ function createSettings({ language = 'es', thousands = '.', decimal = ',' } = {}
       es: { separadorMiles: thousands, separadorDecimal: decimal },
       en: { separadorMiles: ',', separadorDecimal: '.' },
     },
-    spellcheckEnabled: true,
-    editorFontSizePx: 20,
+    previewSpoilerEnabled: true,
     presetsByScope: {},
     selectedPresetByScope: {},
   };
@@ -195,8 +194,7 @@ test('settings change classifier ignores unrelated settings and keeps preset WPM
     previousSettings: createSettings({ language: 'es' }),
     nextSettings: {
       ...createSettings({ language: 'es' }),
-      spellcheckEnabled: false,
-      editorFontSizePx: 24,
+      previewSpoilerEnabled: false,
     },
     previousCountContext: { modoConteo: 'simple', idioma: 'es' },
     nextCountContext: { modoConteo: 'simple', idioma: 'es' },

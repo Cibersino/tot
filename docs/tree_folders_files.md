@@ -115,7 +115,6 @@ tot/
 │ ├── editor_find_shortcuts.js
 │ ├── editor_preload.js
 │ ├── editor_state.js
-│ ├── editor_text_size.js
 │ ├── editor_window_lifecycle.js
 │ ├── flotante_preload.js
 │ ├── fs_storage.js
@@ -123,6 +122,7 @@ tot/
 │ ├── language_resources.js
 │ ├── link_openers.js
 │ ├── log.js
+│ ├── main_entry.js
 │ ├── main.js
 │ ├── menu_builder.js
 │ ├── preset_preload.js
@@ -318,19 +318,18 @@ tot/
 
 - `electron/fs_storage.js`: Persistencia JSON sincrónica del main; resuelve rutas bajo `app.getPath('userData')/config` (requiere `initStorage(app)`); ensure dirs + loadJson/saveJson + getters de `settings/current_text/editor_state`, estado del picker text extraction, estado externo del pool del reading speed test, credenciales/tokens OCR runtime y ruta de credenciales OCR empaquetadas en `electron/assets/ocr_google_drive/credentials.json`.
 - `electron/language_resources.js` — Owner main del catálogo `i18n/languages.json`: lo carga y valida una vez, y expone descriptores y opciones seleccionables a los consumidores main.
-- `electron/settings.js`: estado de settings: valida IDs declarados, persiste preferencias por `preferenceScopeId` (`presetsByScope`, `selectedPresetByScope`, `disabledDefaultPresetsByScope`, `numberFormattingByScope`) y resuelve defaults numéricos completos mediante la cadena declarada de recursos; registra IPC de settings y difunde `settings-updated`.
-- `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: recibe el `localeTag` declarado del idioma activo, resuelve el diccionario compatible y aplica la configuración sobre `session.defaultSession` respetando `spellcheckEnabled`.
+- `electron/settings.js`: estado de settings globales: valida IDs declarados, persiste preferencias por `preferenceScopeId` (`presetsByScope`, `selectedPresetByScope`, `disabledDefaultPresetsByScope`, `numberFormattingByScope`) y resuelve defaults numéricos completos mediante la cadena declarada de recursos; registra IPC de settings y difunde `settings-updated`.
+- `electron/spellcheck.js` — Política/controlador del spellcheck de Electron: recibe el `localeTag` declarado del idioma activo, resuelve el diccionario compatible y configura la capacidad/diccionario de `session.defaultSession`; la preferencia de habilitación pertenece al Editor de Texto y se aplica localmente en su renderer.
 - `electron/text_state.js` — Estado del texto actual: carga/guardado, límites (texto + payload IPC), lectura de portapapeles en main, y broadcast best-effort hacia ventanas (main/editor).
 - `electron/current_text_snapshot_schema.js` — Owner compartido del schema canónico de snapshots del texto actual: valida `type`, `meta`, `text` y `tags`, permite únicamente el campo opcional `readingTest` y normaliza tags/preguntas antes de que los consumers apliquen el documento.
 - `electron/current_text_snapshots_main.js` — Snapshots del texto actual (save/load): valida payloads del flujo save, abre diálogos nativos o resuelve paths determinísticos no interactivos para callers gestionados, persiste/lee JSON canónico bajo `config/saved_current_texts/` (incluye subcarpetas), expone además la apertura de la carpeta de snapshots, confirma overwrite al cargar y mantiene chequeo de contención (realpath/relative) para evitar escapes fuera del árbol; la carga normal sigue aplicando solo `text` al current text.
 - `electron/current_text_processing_state_ipc.js` — Controlador main-owned y superficie IPC del estado pendiente del current text: mantiene el lifecycle autoritativo de settle con `lockId`/`requestId`, sanea metadata de contexto, ignora resoluciones stale y expone lectura/broadcast del estado hacia la ventana principal autorizada.
 - `electron/current_text_processing_main_bridge.js` — Bridge main→renderer del estado autoritativo de procesamiento del current text: difunde `current-text-processing-state-changed` hacia la ventana principal cuando existe un `webContents` vivo y siembra el estado inicial al cargar el renderer, tolerando como no-op normal la fase de bootstrap previa a la creación de la ventana principal.
-- `electron/editor_state.js` — Persistencia/estado de la ventana del Editor de Texto (tamaño/posición/maximizado y `maximizedTextWidthPx`), su integración con el `BrowserWindow` y el bridge IPC/notificaciones del estado de ventana hacia el renderer del editor.
+- `electron/editor_state.js` — Owner persistente del estado específico del Editor de Texto: geometría/maximizado, `maximizedTextWidthPx`, `spellcheckEnabled` y `editorFontSizePx`; integra el `BrowserWindow`, expone los setters/atajos de tamaño de texto y entrega el bridge IPC/notificaciones al renderer del editor.
 - `electron/editor_window_lifecycle.js` — Controlador main-owned del ciclo de vida visible/oculto del Editor de Texto: centraliza hidden startup con generación de first-show, timeout de producto, coordinación de `base presentation ready`, conflictos de owner (`ordinary` vs `reading-test`), reveal/focus/maximize de la ventana y manejo consistente de cierre temprano o fallback tardío.
 - `electron/editor_find_main.js` — Coordinador main-owned del find/replace del Editor de Texto: conserva el ciclo de vida de la ventana dedicada, el wiring Electron-specific de listeners/IPC autorizado, los atajos (`Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Shift+F3`, `Esc`, `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0`) y la orquestación de alto nivel entre ventana editor y ventana find.
 - `electron/editor_find_session.js` — Sesión/state machine main-owned del find/replace del Editor de Texto: encapsula el estado mutable del query, navegación `findInPage`, re-sync al refocar la ventana Find, waits/pending request scoped, y la tubería main↔editor de `Replace` / `Replace All` con sincronización de estado basada en `found-in-page`.
 - `electron/editor_find_shortcuts.js` — Helpers puros/importables de shortcuts del find del Editor de Texto: detección de `Ctrl/Cmd+F`, `Ctrl+H` / `Cmd+Option+F`, `F3`, `Esc` y shortcuts de tamaño de texto; se mantiene sin estado para reducir ruido en `editor_find_main.js`.
-- `electron/editor_text_size.js` — Controlador main-owned del tamaño de texto del Editor de Texto: encapsula `set/increase/decrease/reset`, persiste `editorFontSizePx` vía `settings`, difunde `settings-updated` y entrega acciones reutilizables para los atajos del editor/find sin seguir inflando `electron/main.js`.
 - `electron/reading_test_pool.js` — Helpers del pool del reading speed test: asegura el subárbol runtime bajo snapshots, sincroniza al arranque los starter files versionados mediante hashes de contenido bundled, poda estado obsoleto y starter files retirados, escanea/valida JSON del pool y mezcla contenido + estado externo (`config/reading_test_pool_state.json`) para serializar metadata usable por la UI, incluyendo la preferencia persistida `showBundledEntries`.
 - `electron/reading_test_pool_import.js` — Follow-up main-owned de adquisición/import del pool: abre el picker nativo para `.json`/`.zip`, recuerda la última carpeta usada, valida candidatos contra el contrato del pool, resuelve duplicados por nombre de destino y escribe solo snapshots válidos dentro de `config/saved_current_texts/reading_speed_test_pool/`.
 - `electron/reading_test_session.js` — Orquestador/controlador main-owned del reading speed test: valida precondiciones, mantiene el estado compartido de la sesión, expone el surface público consumido por `main.js`, registra el IPC (`reading-test-get-entry-data`, `reading-test-reset-pool`, `reading-test-set-show-bundled-entries`, `reading-test-start`, `reading-test-get-state`) y delega la plomería de ventanas y el flujo guiado a módulos auxiliares, ampliando de forma compatible el contrato externo del reading-test entry flow.
@@ -380,7 +379,7 @@ tot/
 - `electron/link_openers.js` — Registro de IPC para abrir enlaces externos y documentos de la app: `open-external-url` (solo `https` + whitelist de hosts, incluyendo `totapp.org` y `ko-fi.com` para superficies fijas de la app) y `open-app-doc` (mapea docKey→archivo; gating en dev; verifica existencia; en algunos casos copia a temp y abre vía `shell.openExternal/openPath`).
 - `electron/constants_main.js` — Constantes del proceso principal (IDs, rutas/keys comunes, flags, etc. según aplique), incluyendo límites/default/step del tamaño de fuente y del ancho de texto maximizado del Editor de Texto.
 - `electron/log.js` — Logger del proceso principal (política de logs/fallbacks).
-- `electron/main.js` — Además del arranque normal, contiene un hook de smoke test local controlado por env vars (`TOT_SMOKE_TEST`, `TOT_SMOKE_USER_DATA_DIR`) para validar el startup mínimo con perfil aislado; la lógica específica de tamaño de texto del Editor de Texto queda delegada a `electron/editor_text_size.js`.
+- `electron/main.js` — Además del arranque normal, contiene un hook de smoke test local controlado por env vars (`TOT_SMOKE_TEST`, `TOT_SMOKE_USER_DATA_DIR`) para validar el startup mínimo con perfil aislado; conecta los atajos de tamaño de texto del Editor de Texto con su owner `editor_state`.
 
 ### 3) Módulos del renderer (public/js)
 
@@ -459,9 +458,9 @@ Estos módulos encapsulan lógica compartida del lado UI; `public/renderer.js` s
 
 **Nota:** `config/` se crea y usa en runtime. Estos archivos representan **estado local del usuario** y se ignoran por git para no commitear estado de ejecución.
 
-- `config/user_settings.json` — Preferencias del usuario (idioma, modo de conteo, `spellcheckEnabled`, `editorFontSizePx`, presets personalizados, etc.).
+- `config/user_settings.json` — Preferencias globales del usuario (idioma, modo de conteo, presets personalizados, etc.).
 - `config/current_text.json` — Texto actual persistido.
-- `config/editor_state.json` — Estado persistido del Editor de Texto (geometría/maximizado y `maximizedTextWidthPx`).
+- `config/editor_state.json` — Estado persistido específico del Editor de Texto (geometría/maximizado, `maximizedTextWidthPx`, `spellcheckEnabled` y `editorFontSizePx`).
 - `config/text_extraction_state.json` — Estado local del picker de text extraction (por ejemplo, última carpeta utilizada).
 - `config/reading_test_pool_state.json` — Estado externo del pool del reading speed test; guarda la preferencia `showBundledEntries`, el `used` por `snapshotRelPath` y, para starter files actualmente gestionados por la app, el `managedBundledHash` de su contenido instalado. Si el contenido runtime ya no coincide, la entrada deja de ser gestionada; el hash no conserva procedencia histórica.
 - `config/reading_test_pool_import_state.json` — Estado local del picker del importador del pool del reading speed test (última carpeta utilizada).

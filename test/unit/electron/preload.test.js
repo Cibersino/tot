@@ -10,13 +10,16 @@ function loadMainPreload() {
   const subscriptions = [];
   const removed = [];
   const invoked = [];
+  const sent = [];
   let exposedApi = null;
 
   const ipcRenderer = {
     invoke(channel, payload) {
       invoked.push({ channel, payload });
     },
-    send() {},
+    send(channel, payload) {
+      sent.push({ channel, payload });
+    },
     on(channel, listener) {
       subscriptions.push({ channel, listener });
     },
@@ -59,6 +62,7 @@ function loadMainPreload() {
   return {
     exposedApi,
     invoked,
+    sent,
     subscriptions,
     removed,
   };
@@ -136,6 +140,18 @@ test('main preload forwards preview Spoiler preference updates unchanged', () =>
       payload: false,
     },
   ]);
+});
+
+test('main preload reports required renderer startup failures through the dedicated startup channel', () => {
+  const { exposedApi, sent } = loadMainPreload();
+  const payload = { kind: 'renderer-core-ready' };
+
+  exposedApi.api.reportRendererStartupFailure(payload);
+
+  assert.deepEqual(sent, [{
+    channel: 'startup:renderer-failed',
+    payload,
+  }]);
 });
 
 test('main preload forwards Precise-counting failures and exposes an unsubscribe listener for the fallback notice', () => {

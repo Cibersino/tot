@@ -117,13 +117,18 @@ function createPresetHarness(t, {
   });
   const settings = require(modulePaths[1]);
   const handlers = new Map();
+  let initialSettingsPersistence = true;
   settings.init({
     loadJson: storage.loadJson,
+    loadJsonWithStatus: storage.loadJsonWithStatus,
     saveJson: storage.saveJson,
     saveJsonStrict(file, value) {
-      if (failWrite) throw new Error('disk full');
+      if (!initialSettingsPersistence && failWrite) throw new Error('disk full');
       storage.saveJsonStrict(file, value);
+      initialSettingsPersistence = false;
     },
+    createJsonStrict: storage.createJsonStrict,
+    createSettingsStartupBackup: storage.createSettingsStartupBackup,
     settingsFile,
   });
   settings.configurePublication({ getWindows: () => ({ mainWin, presetWin }), decorateSettings: (value) => value, onSettingsUpdated: () => {} });
@@ -317,6 +322,7 @@ test('get-default-presets omits invalid configured entries and retains valid ent
     { name: 'Valid', wpm: 210, description: 'Configured default' },
   ]);
   assert.deepEqual(defaults.defaultPresetsByScope.en, []);
+  assert.equal(defaults.catalogFailure, 'none');
 });
 
 test('registerIpc seeds missing configured default-preset files from bundled sources', (t) => {
@@ -348,7 +354,7 @@ test('registerIpc does not overwrite an existing configured default-preset file'
   );
 });
 
-test('get-default-presets keeps an existing catalog empty when no configured entry is valid', async (t) => {
+test('get-default-presets keeps a successfully read catalog empty when no configured entry is valid', async (t) => {
   const harness = createPresetHarness(t);
   const configDefaults = path.join(
     harness.configPresetsDir,
@@ -359,24 +365,66 @@ test('get-default-presets keeps an existing catalog empty when no configured ent
   const defaults = await harness.invoke('get-default-presets');
 
   assert.deepEqual(defaults.general, []);
+  assert.equal(defaults.catalogFailure, 'none');
 });
 
-test('get-default-presets keeps explicit empty, malformed, and non-array configured catalogs empty', async (t) => {
+test('get-default-presets distinguishes valid empty catalogs from malformed catalog resources', async (t) => {
   const harness = createPresetHarness(t);
   const configDefaults = path.join(harness.configPresetsDir, 'defaults_presets.json');
   const englishDefaults = path.join(harness.configPresetsDir, 'defaults_presets_en.json');
+  const spanishDefaults = path.join(harness.configPresetsDir, 'defaults_presets_es.json');
 
   fs.writeFileSync(configDefaults, '[]');
-  fs.writeFileSync(englishDefaults, '{');
+  fs.writeFileSync(englishDefaults, '[]');
+  fs.writeFileSync(spanishDefaults, '[]');
   let defaults = await harness.invoke('get-default-presets');
   assert.deepEqual(defaults.general, []);
   assert.deepEqual(defaults.defaultPresetsByScope.en, []);
+  assert.deepEqual(defaults.defaultPresetsByScope.es, []);
+  assert.equal(defaults.catalogFailure, 'none');
+
+  fs.writeFileSync(englishDefaults, '{');
+  defaults = await harness.invoke('get-default-presets');
+  assert.deepEqual(defaults.general, []);
+  assert.deepEqual(defaults.defaultPresetsByScope.en, []);
+  assert.equal(defaults.catalogFailure, 'partial');
 
   fs.writeFileSync(configDefaults, '{}');
   fs.writeFileSync(englishDefaults, '[]');
   defaults = await harness.invoke('get-default-presets');
   assert.deepEqual(defaults.general, []);
   assert.deepEqual(defaults.defaultPresetsByScope.en, []);
+  assert.equal(defaults.catalogFailure, 'partial');
+});
+
+test('get-default-presets identifies a complete catalog resource failure', async (t) => {
+  const harness = createPresetHarness(t);
+  ['defaults_presets.json', 'defaults_presets_en.json', 'defaults_presets_es.json'].forEach((name) => {
+    fs.writeFileSync(path.join(harness.configPresetsDir, name), '{');
+  });
+
+  const defaults = await harness.invoke('get-default-presets');
+
+  assert.deepEqual(defaults.general, []);
+  assert.deepEqual(defaults.defaultPresetsByScope, { en: [], es: [] });
+  assert.equal(defaults.catalogFailure, 'complete');
+});
+
+test('get-default-presets retains readable resources when one configured resource cannot be read', async (t) => {
+  const harness = createPresetHarness(t);
+  const englishDefaults = path.join(harness.configPresetsDir, 'defaults_presets_en.json');
+  fs.rmSync(englishDefaults);
+  fs.mkdirSync(englishDefaults);
+
+  const defaults = await harness.invoke('get-default-presets');
+
+  assert.deepEqual(defaults.general, [
+    { name: 'Default', wpm: 210, description: '' },
+    { name: 'Default2', wpm: 220, description: '' },
+    { name: 'Default3', wpm: 230, description: '' },
+  ]);
+  assert.deepEqual(defaults.defaultPresetsByScope.en, []);
+  assert.equal(defaults.catalogFailure, 'partial');
 });
 
 test('get-default-presets logs unusable configured files distinctly from valid empty catalogs', async (t) => {
@@ -420,19 +468,20 @@ test('get-default-presets reads the complete catalog, including malformed unrela
     { name: 'Default', wpm: 240, description: 'English default' },
   ]);
   assert.deepEqual(defaults.defaultPresetsByScope.es, []);
+  assert.equal(defaults.catalogFailure, 'partial');
   assert.equal(
     warnings.some((args) => args.includes(otherLanguagePath)),
     true
   );
 });
 
-test('get-default-presets preserves its empty public result when the catalog is unavailable', async (t) => {
+test('get-default-presets identifies an unavailable catalog while preserving its empty lists', async (t) => {
   const harness = createPresetHarness(t);
   makeDefaultPresetCatalogUnavailable(harness);
 
   assert.deepEqual(
     await harness.invoke('get-default-presets'),
-    { general: [], defaultPresetsByScope: {} }
+    { catalogFailure: 'complete', general: [], defaultPresetsByScope: {} }
   );
 });
 
@@ -632,7 +681,7 @@ for (const scenario of [
 
     await harness.waitForConfirmation();
     assert.deepEqual(
-      await harness.invoke('set-spellcheck-enabled', false),
+      await harness.invoke('set-preview-spoiler-enabled', false),
       { ok: true, enabled: false }
     );
     harness.confirm();
@@ -641,7 +690,7 @@ for (const scenario of [
     const saved = JSON.parse(harness.getDisk());
 
     assert.equal(result.ok, true);
-    assert.equal(saved.spellcheckEnabled, false);
+    assert.equal(saved.previewSpoilerEnabled, false);
     scenario.assertMutation(result, saved);
   });
 }

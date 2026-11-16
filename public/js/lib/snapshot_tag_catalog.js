@@ -458,12 +458,14 @@
       const labelInfo = validateCustomLabel(entry.label);
       if (!labelInfo.ok) return;
 
+      // Recover missing or invalid custom IDs from the label before normal deduplication.
       const rawValue = normalizeCustomTagValue(entry.value, normalizedCategory);
       const value = rawValue || buildCustomTagValueFromNormalizedLabel(
         normalizedCategory,
         labelInfo.normalizedLabel
       );
       if (!value) return;
+      // Keep the first valid custom entry on ID or label collisions for simplicity.
       if (seenCustomValues.has(value) || seenCustomLabels.has(labelInfo.normalizedLabel)) return;
       seenCustomValues.add(value);
       seenCustomLabels.add(labelInfo.normalizedLabel);
@@ -555,6 +557,7 @@
       hidden: false,
     }));
 
+    // Preserve distinct IDs despite rare translated-label collisions; accept UI ambiguity for simplicity.
     const visibleByValue = new Map();
     defaultOptions.forEach((option) => {
       if (!option.hidden) {
@@ -691,6 +694,7 @@
       };
     }
 
+    // Keep creation unambiguous: reject names matching defaults (even hidden) or custom tags.
     const existingOption = findKnownOptionByNormalizedLabel(
       normalizedCategory,
       rawPreferences,

@@ -43,6 +43,8 @@ const {
   loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
+  createJsonStrict,
+  createSettingsStartupBackup,
 } = require('./fs_storage');
 
 const settingsState = require('./settings');
@@ -60,7 +62,6 @@ const { registerLinkIpc } = require('./link_openers');
 const tasksMain = require('./tasks_main');
 const taskEditorState = require('./task_editor_state');
 const editorFindMain = require('./editor_find_main');
-const editorTextSize = require('./editor_text_size');
 const spellcheck = require('./spellcheck');
 const readingTestSession = require('./reading_test_session');
 const readingTestPoolImport = require('./reading_test_pool_import');
@@ -99,9 +100,6 @@ const editorWindowLifecycleController = editorWindowLifecycle.createController({
 const taskEditorWindowLifecycleController = taskEditorWindowLifecycle.createController({
   dialog,
   getDialogTexts: () => menuBuilder.getDialogTexts(getSelectedLanguage()),
-});
-const editorTextSizeController = editorTextSize.createController({
-  settingsState,
 });
 
 // =============================================================================
@@ -220,6 +218,40 @@ function resolveMainWindow() {
   return isAliveWindow(mainWin) ? mainWin : null;
 }
 
+function isActiveInitialStartupMainWindow(win) {
+  return !!win
+    && win === initialStartupMainWin
+    && win === mainWin
+    && isAliveWindow(win);
+}
+
+function resolveInitialStartupMainWindowSender(event, channelName) {
+  const sourceContents = event && event.sender;
+  const sourceWindow = sourceContents && typeof BrowserWindow.fromWebContents === 'function'
+    ? BrowserWindow.fromWebContents(sourceContents)
+    : null;
+  if (isActiveInitialStartupMainWindow(sourceWindow)) {
+    return sourceWindow;
+  }
+
+  log.warn(`${channelName} unauthorized or outside the initial Main Window startup lifecycle (ignored).`);
+  return null;
+}
+
+function isPreReadyStartupAdmission() {
+  return mainReadyState === 'PRE_READY'
+    && !startupReadySent
+    && !splashRemoved
+    && !menuEnabled;
+}
+
+function isAwaitingStartupSplashRemovalAcknowledgment() {
+  return mainReadyState === 'READY'
+    && startupReadySent
+    && !splashRemoved
+    && !menuEnabled;
+}
+
 function showEditorWindow(options = {}) {
   return editorWindowLifecycleController.showEditorWindow(editorWin, options);
 }
@@ -307,7 +339,7 @@ function showFlotanteInitialDocumentFailureDisclosure() {
     log.error('Floating Stopwatch initial document load native dialog translations unavailable:', error);
   }
 
-  const title = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_title;
+  const title = dialogTexts && dialogTexts.window_problem_title;
   const message = dialogTexts && dialogTexts.floating_stopwatch_initial_document_failure_message;
   const ok = dialogTexts && dialogTexts.ok;
   if (typeof title === 'string' && title.trim()
@@ -372,6 +404,7 @@ let langWin = null;     // Language selection window (first launch)
 let flotanteWin = null; // Floating Stopwatch (flotante.html)
 let taskEditorWin = null; // Task Editor window (task_editor.html)
 let textTimeCalculatorWin = null; // Quick text/time calculator window
+let initialStartupMainWin = null;
 let pendingMainWindowCloseAfterProcessingAbort = false;
 let pendingMainWindowCloseAfterTaskResolution = false;
 let currentTextProcessingStateMainBridge = null;
@@ -392,6 +425,7 @@ let languageResolved = false;
 let menuInstalled = false;
 let mainWindowCreated = false;
 let languageSelectionHandler = null;
+let startupTerminalFailure = false;
 
 // =============================================================================
 // Text extraction orchestration (shared controller)
@@ -508,6 +542,195 @@ function buildAppMenu(lang) {
   menuInstalled = true;
 }
 
+function settleInitialCurrentTextProcessingForStartupFailure() {
+  let processingState;
+  try {
+    processingState = currentTextProcessingStateController.getState();
+  } catch (error) {
+    log.error('Startup current-text processing state read failed:', error);
+    return;
+  }
+
+  if (!processingState
+    || processingState.active !== true
+    || processingState.action !== 'initial_load'
+    || !Number.isInteger(processingState.requestId)) {
+    return;
+  }
+
+  try {
+    const result = currentTextProcessingStateController.resolve({
+      requestId: processingState.requestId,
+      ok: false,
+    });
+    if (!result || result.ok !== true) {
+      log.error('Startup initial current-text processing could not be resolved as failed:', result);
+    }
+  } catch (error) {
+    log.error('Startup initial current-text processing resolution failed:', error);
+  }
+}
+
+function showEarlyRequiredStartupFailureNotice() {
+  // Approved bootstrap exception: these failures occur before required language resources exist, so this fixed Spanish notice must remain independent of i18n.
+  try {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      title: 'Problema de la aplicación',
+      message: 'No se pudo iniciar toT. La aplicación se cerrará.',
+      buttons: ['Aceptar'],
+      defaultId: 0,
+      noLink: true,
+    });
+  } catch (error) {
+    log.error('Early required startup failure native notice failed:', error);
+  }
+}
+
+function terminateAfterEarlyRequiredStartupFailure({ error, logMessage } = {}) {
+  if (startupTerminalFailure) return;
+  startupTerminalFailure = true;
+
+  log.error(logMessage, error);
+  try {
+    showEarlyRequiredStartupFailureNotice();
+  } finally {
+    try {
+      app.quit();
+    } catch (quitError) {
+      log.error('Early required startup failure managed quit failed:', quitError);
+    }
+  }
+}
+
+function showStartupFailureDisclosure({ titleKey, messageKey, sourceWindow = null, language = null } = {}) {
+  let dialogTexts = null;
+  try {
+    const dialogLanguage = typeof language === 'string' && language.trim()
+      ? language.trim()
+      : getSelectedLanguage();
+    dialogTexts = menuBuilder.getDialogTexts(dialogLanguage);
+  } catch (error) {
+    log.error('Startup failure native dialog translations unavailable:', error);
+  }
+
+  const title = dialogTexts && dialogTexts[titleKey];
+  const message = dialogTexts && dialogTexts[messageKey];
+  const ok = dialogTexts && dialogTexts.ok;
+  if (typeof title !== 'string' || !title.trim()
+    || typeof message !== 'string' || !message.trim()
+    || typeof ok !== 'string' || !ok.trim()) {
+    log.error('Startup failure native dialog copy unavailable:', { titleKey, messageKey });
+    return;
+  }
+
+  const options = {
+    type: 'error',
+    title,
+    message,
+    buttons: [ok],
+    defaultId: 0,
+    noLink: true,
+  };
+  try {
+    if (isAliveWindow(sourceWindow)) {
+      dialog.showMessageBoxSync(sourceWindow, options);
+    } else {
+      dialog.showMessageBoxSync(options);
+    }
+  } catch (error) {
+    log.error('Startup failure native dialog failed:', { titleKey, messageKey }, error);
+  }
+}
+
+function terminateAfterRequiredStartupFailure({
+  error,
+  logContext,
+  messageKey,
+  sourceWindow = null,
+  language = null,
+} = {}) {
+  if (startupTerminalFailure) return;
+  startupTerminalFailure = true;
+
+  log.error(`${logContext} failed:`, error);
+  try {
+    showStartupFailureDisclosure({
+      titleKey: 'application_problem_title',
+      messageKey,
+      sourceWindow,
+      language,
+    });
+  } finally {
+    settleInitialCurrentTextProcessingForStartupFailure();
+    try {
+      app.quit();
+    } catch (quitError) {
+      log.error('Startup failure managed quit failed:', quitError);
+    }
+  }
+}
+
+function terminateAfterInitialSettingsFailure(error) {
+  let logContext = 'Initial global settings initialization';
+  let messageKey = 'startup_settings_initialization_failure_message';
+
+  if (error && error.code === 'SETTINGS_STARTUP_ADMISSION_FAILED') {
+    logContext = 'Initial global settings admission';
+    messageKey = 'startup_settings_admission_failure_message';
+  } else if (error && error.code === 'SETTINGS_STARTUP_INITIAL_WRITE_FAILED') {
+    logContext = 'Initial global settings persistence';
+    messageKey = 'startup_settings_initial_write_failure_message';
+  } else if (error && error.code === 'SETTINGS_STARTUP_BACKUP_FAILED') {
+    logContext = 'Initial global settings backup';
+    messageKey = 'startup_settings_backup_failure_message';
+  }
+
+  terminateAfterRequiredStartupFailure({
+    error,
+    logContext,
+    messageKey,
+    language: DEFAULT_LANG,
+  });
+}
+
+function terminateAfterInitialSnapshotTagFailure(error, admittedLanguage) {
+  let logContext = 'Initial snapshot-tag settings initialization';
+  let messageKey = 'startup_snapshot_tags_initialization_failure_message';
+
+  if (error && error.code === 'SNAPSHOT_TAGS_STARTUP_ADMISSION_FAILED') {
+    logContext = 'Initial snapshot-tag settings admission';
+    messageKey = 'startup_snapshot_tags_admission_failure_message';
+  } else if (error && error.code === 'SNAPSHOT_TAGS_STARTUP_INITIAL_WRITE_FAILED') {
+    logContext = 'Initial snapshot-tag settings persistence';
+    messageKey = 'startup_snapshot_tags_initial_write_failure_message';
+  }
+
+  terminateAfterRequiredStartupFailure({
+    error,
+    logContext,
+    messageKey,
+    language: typeof admittedLanguage === 'string' && admittedLanguage.trim()
+      ? admittedLanguage
+      : DEFAULT_LANG,
+  });
+}
+
+function terminateAfterStartupRegistrationFailure(error, operation, admittedLanguage) {
+  const operationLabel = typeof operation === 'string' && operation.trim()
+    ? operation.trim()
+    : 'required startup setup';
+
+  terminateAfterRequiredStartupFailure({
+    error,
+    logContext: `Startup structural setup (${operationLabel})`,
+    messageKey: 'startup_registration_failure_message',
+    language: typeof admittedLanguage === 'string' && admittedLanguage.trim()
+      ? admittedLanguage
+      : DEFAULT_LANG,
+  });
+}
+
 /**
  * Developer-only global shortcuts (disabled in packaged builds).
  * Used for quick inspection and reload during development.
@@ -571,6 +794,7 @@ function unregisterShortcuts() {
  */
 function createMainWindow() {
   // NOTE: useContentSize:true => width/height apply to the content area (exclude window borders).
+  const mainPreloadPath = path.join(__dirname, 'preload.js');
   mainWin = new BrowserWindow({
     width: 828,
     height: 450,
@@ -579,7 +803,7 @@ function createMainWindow() {
     maximizable: false, // Prevent maximize button from changing size
     fullscreenable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: mainPreloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -588,16 +812,70 @@ function createMainWindow() {
     },
   });
 
-  mainWin.loadFile(path.join(__dirname, '../public/index.html'));
+  const createdMainWin = mainWin;
+  if (!initialStartupMainWin) {
+    initialStartupMainWin = createdMainWin;
+  }
 
-  mainWin.webContents.on('did-finish-load', () => {
+  let observingInitialMainPreload = true;
+  function removeInitialMainPreloadObserver() {
+    if (!observingInitialMainPreload) return;
+    observingInitialMainPreload = false;
     try {
-      if (!hasLiveWebContents(mainWin)) {
+      createdMainWin.webContents.removeListener('preload-error', onInitialMainPreloadError);
+    } catch (error) {
+      log.warn('Main initial preload listener removal failed (ignored):', error);
+    }
+  }
+
+  function onInitialMainPreloadError(_event, preloadPath, preloadError) {
+    if (!observingInitialMainPreload
+      || preloadPath !== mainPreloadPath
+      || mainReadyState !== 'PRE_READY'
+      || createdMainWin !== mainWin
+      || !isAliveWindow(createdMainWin)) {
+      return;
+    }
+
+    removeInitialMainPreloadObserver();
+    terminateAfterRequiredStartupFailure({
+      error: preloadError,
+      logContext: 'Main initial preload',
+      messageKey: 'startup_main_preload_failure_message',
+      sourceWindow: createdMainWin,
+    });
+  }
+
+  // An unhandled error from this exact preload prevents the renderer from reliably reporting its own startup failure.
+  createdMainWin.webContents.on('preload-error', onInitialMainPreloadError);
+  const initialMainDocumentLoad = createdMainWin.loadFile(path.join(__dirname, '../public/index.html'));
+  void initialMainDocumentLoad.then(
+    () => {
+      removeInitialMainPreloadObserver();
+    },
+    () => {
+      removeInitialMainPreloadObserver();
+    }
+  );
+  void initialMainDocumentLoad.catch((error) => {
+    // A rejected required initial load for its still-live window is terminal.
+    if (!isAliveWindow(createdMainWin)) return;
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Main initial document load',
+      messageKey: 'startup_main_document_failure_message',
+      sourceWindow: createdMainWin,
+    });
+  });
+
+  createdMainWin.webContents.on('did-finish-load', () => {
+    try {
+      if (!hasLiveWebContents(createdMainWin)) {
         log.warn('Main did-finish-load state seed skipped (ignored): main window unavailable.');
         return;
       }
       if (readingTestSessionController) {
-        mainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
+        createdMainWin.webContents.send('reading-test-state-changed', readingTestSessionController.getState());
       } else {
         log.warn(
           'reading-test-state-changed seed skipped (ignored): readingTestSessionController unavailable.'
@@ -610,14 +888,6 @@ function createMainWindow() {
 
   // Dev-only shortcuts for inspection/reload.
   registerDevShortcuts();
-
-  if (!menuInstalled) {
-    try {
-      buildAppMenu();
-    } catch (error) {
-      log.error('Error building app menu during main window creation:', error);
-    }
-  }
 
   mainWindowCreated = true;
   maybeMarkMainInvariantsReady();
@@ -699,8 +969,7 @@ function createMainWindow() {
     mainWin = null;
     mainWindowCreated = false;
 
-    // Force an orderly application exit.
-    // (If something goes wrong here, we still want to see it as an error.)
+    // Force an orderly application exit. (If something goes wrong here, we still want to see it as an error.)
     try {
       app.quit();
     } catch (error) {
@@ -784,8 +1053,7 @@ function createEditorWindow(options = {}) {
   );
   if (waitForBasePresentationReady && firstShowGeneration) {
     editorDocumentLoad.catch((loadError) => {
-      // A close can abort loadFile(). That close is already owned by the
-      // established closed-window lifecycle path, not F07/F08.
+      // A close can abort loadFile(). That close is already owned by the established closed-window lifecycle path, not F07/F08.
       if (createdEditorWindowClosing || createdEditorWin.isDestroyed()) return;
 
       try {
@@ -807,7 +1075,9 @@ function createEditorWindow(options = {}) {
 
   try {
     editorFindMain.attachEditorWindow(editorWin, {
-      shortcutActions: editorTextSizeController.getShortcutActions(),
+      shortcutActions: editorState.getTextSizeShortcutActions({
+        getEditorWindow: () => editorWin,
+      }),
       showInitialDocumentFailureDisclosure: showEditorFindInitialDocumentFailureDisclosure,
     });
   } catch (error) {
@@ -916,9 +1186,7 @@ function createTaskEditorWindow() {
     }
   }
 
-  // Observe only the configured initial preload. Its final source statement is
-  // the taskEditorAPI exposure, so an unhandled error here is the approved F13
-  // pre-exposure boundary rather than a renderer-reported terminal path.
+  // Observe only the configured initial preload. Its final source statement is the taskEditorAPI exposure, so an unhandled error here is the approved pre-exposure boundary rather than a renderer-reported terminal path.
   createdTaskEditorWin.webContents.on('preload-error', onInitialTaskPreloadError);
 
   const initialTaskDocumentLoad = createdTaskEditorWin.loadFile(taskEditorHtmlPath);
@@ -1031,7 +1299,7 @@ function createTextTimeCalculatorWindow() {
       log.error('Text-time calculator initial document load native dialog translations unavailable:', error);
     }
 
-    const title = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_title;
+    const title = dialogTexts && dialogTexts.window_problem_title;
     const message = dialogTexts && dialogTexts.text_time_calculator_initial_document_failure_message;
     const ok = dialogTexts && dialogTexts.ok;
     if (typeof title === 'string' && title.trim()
@@ -1136,7 +1404,7 @@ function createPresetWindow(initialData) {
       log.error('Preset modal initial document load native dialog translations unavailable:', error);
     }
 
-    const title = dialogTexts && dialogTexts.preset_modal_initial_document_failure_title;
+    const title = dialogTexts && dialogTexts.window_problem_title;
     const message = dialogTexts && dialogTexts.preset_modal_initial_document_failure_message;
     const ok = dialogTexts && dialogTexts.ok;
     if (typeof title === 'string' && title.trim()
@@ -1204,115 +1472,134 @@ function createLanguageWindow() {
     return;
   }
 
-  langWin = new BrowserWindow({
-    width: 420,
-    height: 360,
-    resizable: false,
-    minimizable: false,
-    maximizable: false,
-    parent: null,
-    modal: false,
-    show: false,
-    frame: true,
-    alwaysOnTop: true,
-    webPreferences: {
-      preload: LANGUAGE_PRELOAD,
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-    },
-  });
-
-  langWin.setMenu(null);
-  const createdLanguageWin = langWin;
   const isFirstRunLanguageChooser = !languageResolved;
-  let createdLanguageWindowClosing = false;
-  createdLanguageWin.on('close', () => {
-    createdLanguageWindowClosing = true;
-  });
+  try {
+    langWin = new BrowserWindow({
+      width: 420,
+      height: 360,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      parent: null,
+      modal: false,
+      show: false,
+      frame: true,
+      alwaysOnTop: true,
+      webPreferences: {
+        preload: LANGUAGE_PRELOAD,
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      },
+    });
 
-  const initialLanguageDocumentLoad = createdLanguageWin.loadFile(
-    LANGUAGE_WINDOW_HTML,
-    isFirstRunLanguageChooser
-      ? { query: { languageChooserFirstRun: '1' } }
-      : undefined
-  );
-  void initialLanguageDocumentLoad.catch((error) => {
-    // A close can abort loadFile(). Ordinary chooser closure owns that disposition and is not an F26/F27 required-initial-document failure.
-    if (createdLanguageWindowClosing || !isAliveWindow(createdLanguageWin)) return;
+    langWin.setMenu(null);
+    const createdLanguageWin = langWin;
+    let createdLanguageWindowClosing = false;
+    createdLanguageWin.on('close', () => {
+      createdLanguageWindowClosing = true;
+    });
 
-    log.error('Language chooser initial document load failed:', error);
+    const initialLanguageDocumentLoad = createdLanguageWin.loadFile(
+      LANGUAGE_WINDOW_HTML,
+      isFirstRunLanguageChooser
+        ? { query: { languageChooserFirstRun: '1' } }
+        : undefined
+    );
+    void initialLanguageDocumentLoad.catch((error) => {
+      // A close can abort loadFile(). Ordinary chooser closure owns that disposition and is not an F26/F27 required-initial-document failure.
+      if (createdLanguageWindowClosing || !isAliveWindow(createdLanguageWin)) return;
 
-    let dialogTexts = null;
-    try {
-      dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
-    } catch (error) {
-      log.error('Language chooser initial document load native dialog translations unavailable:', error);
-    }
+      log.error('Language chooser initial document load failed:', error);
 
-    const title = dialogTexts && dialogTexts.language_chooser_initial_document_failure_title;
-    const message = dialogTexts && (isFirstRunLanguageChooser
-      ? dialogTexts.language_chooser_first_run_initial_document_failure_message
-      : dialogTexts.language_chooser_initial_document_failure_message);
-    const ok = dialogTexts && dialogTexts.ok;
-    if (typeof title === 'string' && title.trim()
-      && typeof message === 'string' && message.trim()
-      && typeof ok === 'string' && ok.trim()) {
+      let dialogTexts = null;
       try {
-        const dialogOptions = {
-          type: 'error',
-          title,
-          message,
-          buttons: [ok],
-          defaultId: 0,
-          noLink: true,
-        };
-        if (isFirstRunLanguageChooser) {
-          dialog.showMessageBoxSync(dialogOptions);
-        } else {
-          dialog.showMessageBoxSync(mainWin, dialogOptions);
+        dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+      } catch (error) {
+        log.error('Language chooser initial document load native dialog translations unavailable:', error);
+      }
+
+      const title = dialogTexts && dialogTexts.language_selection_problem_title;
+      const message = dialogTexts && (isFirstRunLanguageChooser
+        ? dialogTexts.language_chooser_first_run_initial_document_failure_message
+        : dialogTexts.language_chooser_initial_document_failure_message);
+      const ok = dialogTexts && dialogTexts.ok;
+      if (typeof title === 'string' && title.trim()
+        && typeof message === 'string' && message.trim()
+        && typeof ok === 'string' && ok.trim()) {
+        try {
+          const dialogOptions = {
+            type: 'error',
+            title,
+            message,
+            buttons: [ok],
+            defaultId: 0,
+            noLink: true,
+          };
+          if (isFirstRunLanguageChooser) {
+            dialog.showMessageBoxSync(dialogOptions);
+          } else {
+            dialog.showMessageBoxSync(mainWin, dialogOptions);
+          }
+        } catch (error) {
+          log.error('Language chooser initial document load native dialog failed:', error);
+        }
+      } else {
+        log.error('Language chooser initial document load native dialog copy unavailable.');
+      }
+
+      try {
+        if (isAliveWindow(createdLanguageWin)) {
+          createdLanguageWin.close();
         }
       } catch (error) {
-        log.error('Language chooser initial document load native dialog failed:', error);
+        log.error('Language chooser initial document load window close failed:', error);
       }
-    } else {
-      log.error('Language chooser initial document load native dialog copy unavailable.');
-    }
+    });
 
-    try {
-      if (isAliveWindow(createdLanguageWin)) {
-        createdLanguageWin.close();
-      }
-    } catch (error) {
-      log.error('Language chooser initial document load window close failed:', error);
-    }
-  });
+    langWin.once('ready-to-show', () => {
+      langWin.show();
+    });
 
-  langWin.once('ready-to-show', () => {
-    langWin.show();
-  });
-
-  // Before startup language resolution, closing this window persists the safe fallback and continues startup.
-  langWin.on('closed', () => {
-    try {
-      if (!languageResolved) {
-        settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
-        if (languageSelectionHandler) {
-          try {
-            ipcMain.removeListener('language-selected', languageSelectionHandler);
-          } catch (error) {
-            log.warn('Error removing language-selected handler after fallback:', error);
+    // Before startup language resolution, closing this window persists the safe fallback and continues startup.
+    langWin.on('closed', () => {
+      try {
+        if (!languageResolved && !startupTerminalFailure) {
+          if (languageSelectionHandler) {
+            try {
+              ipcMain.removeListener('language-selected', languageSelectionHandler);
+            } catch (error) {
+              log.warn('Error removing language-selected handler after fallback:', error);
+            }
+            languageSelectionHandler = null;
           }
-          languageSelectionHandler = null;
+          try {
+            settingsState.applyFallbackLanguageIfUnset(DEFAULT_LANG);
+          } catch (error) {
+            terminateAfterRequiredStartupFailure({
+              error,
+              logContext: 'Initial fallback-language persistence',
+              messageKey: 'startup_language_fallback_persistence_failure_message',
+            });
+            return;
+          }
+          resolveLanguage('fallback');
         }
-        resolveLanguage('fallback');
+      } finally {
+        langWin = null;
       }
-    } catch (error) {
-      log.error('Error applying fallback language:', error);
-    } finally {
-      langWin = null;
-    }
-  });
+    });
+
+    return createdLanguageWin;
+  } catch (error) {
+    if (!isFirstRunLanguageChooser) throw error;
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Initial Language Window structural setup',
+      messageKey: 'startup_language_chooser_setup_failure_message',
+    });
+    return null;
+  }
 }
 
 // =============================================================================
@@ -1331,6 +1618,7 @@ function maybeMarkMainInvariantsReady() {
 }
 
 function maybeAuthorizeStartupReady() {
+  if (startupTerminalFailure) return;
   if (startupReadySent) return;
   if (!mainInvariantsReady || !rendererCoreReady) return;
 
@@ -1339,19 +1627,73 @@ function maybeAuthorizeStartupReady() {
     log.error('startup:ready emit failed: main window unavailable.');
     return;
   }
+  if (!isActiveInitialStartupMainWindow(targetWin)) {
+    log.error('startup:ready emit failed: initial Main Window unavailable.');
+    return;
+  }
 
   try {
     targetWin.webContents.send('startup:ready');
     startupReadySent = true;
     mainReadyState = 'READY';
   } catch (error) {
-    log.error('Error emitting startup:ready to renderer:', error);
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Main startup:ready emission',
+      messageKey: 'startup_registration_failure_message',
+      sourceWindow: targetWin,
+    });
   }
 }
 
-function handleSplashRemoved() {
+function handleRendererStartupFailure(event, payload) {
+  const failureKind = payload && typeof payload.kind === 'string' ? payload.kind : '';
+  const sourceWindow = resolveInitialStartupMainWindowSender(event, 'startup:renderer-failed');
+  if (!sourceWindow) return;
+  if (startupTerminalFailure) {
+    log.warn('Renderer startup failure report ignored after terminal shutdown began.', { failureKind });
+    return;
+  }
+
+  const acceptedPreReady = (failureKind === 'required-initialization' || failureKind === 'renderer-core-ready')
+    && isPreReadyStartupAdmission();
+  const acceptedBeforeSplashAcknowledgment = (
+    failureKind === 'renderer-core-ready'
+    || failureKind === 'splash-removal'
+    || failureKind === 'splash-removed-send'
+  ) && isAwaitingStartupSplashRemovalAcknowledgment();
+  if (!acceptedPreReady && !acceptedBeforeSplashAcknowledgment) {
+    // Once Main has processed the splash acknowledgment, a later renderer report cannot revoke admission.
+    log.warn('Renderer startup failure report ignored outside the startup admission window.', {
+      failureKind,
+      mainReadyState,
+      startupReadySent,
+      splashRemoved,
+    });
+    return;
+  }
+
+  terminateAfterRequiredStartupFailure({
+    error: new Error(`Main renderer reported a required startup failure: ${failureKind || 'unknown'}.`),
+    logContext: 'Main renderer required startup',
+    messageKey: 'startup_registration_failure_message',
+    sourceWindow,
+  });
+}
+
+function handleSplashRemoved(event) {
+  const sourceWindow = resolveInitialStartupMainWindowSender(event, 'startup:splash-removed');
+  if (!sourceWindow) return;
+  if (startupTerminalFailure) {
+    log.warn('startup:splash-removed ignored after terminal shutdown began.');
+    return;
+  }
   if (splashRemoved) {
     log.warn('startup:splash-removed already handled (ignored).');
+    return;
+  }
+  if (!isAwaitingStartupSplashRemovalAcknowledgment()) {
+    log.warn('startup:splash-removed ignored outside the startup acknowledgment window.');
     return;
   }
   splashRemoved = true;
@@ -1393,9 +1735,7 @@ function showEditorStartupFailureDisclosure(details = {}) {
     log.error('Text Editor startup failure native dialog translations unavailable:', error);
   }
 
-  const title = dialogTexts && dialogTexts[
-    isTimeout ? 'editor_startup_timeout_title' : 'editor_startup_failed_title'
-  ];
+  const title = dialogTexts && dialogTexts.text_editor_problem_title;
   const message = dialogTexts && dialogTexts[
     isTimeout ? 'editor_startup_timeout_message' : 'editor_startup_failed_message'
   ];
@@ -1429,7 +1769,7 @@ function showEditorFindInitialDocumentFailureDisclosure(findWindow) {
     log.error('Text Editor find initial document load native dialog translations unavailable:', error);
   }
 
-  const title = dialogTexts && dialogTexts.editor_find_initial_document_failure_title;
+  const title = dialogTexts && dialogTexts.window_problem_title;
   const message = dialogTexts && dialogTexts.editor_find_initial_document_failure_message;
   const ok = dialogTexts && dialogTexts.ok;
   if (typeof title !== 'string' || !title.trim()
@@ -1470,6 +1810,20 @@ function closeRendererAfterI18nFailure(event, payload) {
     return;
   }
 
+  // The main renderer cannot enter READY until its required RendererI18n API, translation state, and translated semantics have been established.
+  // Its initial failure is a required startup failure, not an ordinary affected-window close: initial_load is still active and would veto a direct close until it is settled.
+  if (sourceWindow === mainWin
+    && (failureKind === 'startup' || failureKind === 'startup-api')
+    && mainReadyState === 'PRE_READY') {
+    terminateAfterRequiredStartupFailure({
+      error: new Error('Main renderer reported a required startup translation-state failure.'),
+      logContext: 'Main renderer startup translation state',
+      messageKey: 'startup_renderer_i18n_failure_message',
+      sourceWindow,
+    });
+    return;
+  }
+
   const selectedLanguage = getSelectedLanguage();
   let dialogTexts = null;
   try {
@@ -1479,9 +1833,7 @@ function closeRendererAfterI18nFailure(event, payload) {
   }
 
   const isSettingsListenerFailure = failureKind === 'settings-listener';
-  const title = dialogTexts && (isSettingsListenerFailure
-    ? dialogTexts.renderer_settings_listener_failure_title
-    : dialogTexts.renderer_i18n_failure_title);
+  const title = dialogTexts && dialogTexts.interface_problem_title;
   const message = dialogTexts && (isSettingsListenerFailure
     ? dialogTexts.renderer_settings_listener_failure_message
     : dialogTexts.renderer_i18n_failure_message);
@@ -1516,6 +1868,26 @@ function closeRendererAfterI18nFailure(event, payload) {
   }
 }
 
+function handleInitialLanguageChooserBootstrapFailure(event) {
+  const sourceContents = event && event.sender;
+  const sourceWindow = sourceContents && typeof BrowserWindow.fromWebContents === 'function'
+    ? BrowserWindow.fromWebContents(sourceContents)
+    : null;
+  if (startupTerminalFailure || languageResolved || sourceWindow !== langWin) {
+    log.warn('First-run Language Window bootstrap failure report ignored outside its startup window.');
+    return { ok: false };
+  }
+
+  log.error('First-run Language Window reported a bootstrap failure; language selection is unavailable.');
+  showStartupFailureDisclosure({
+    titleKey: 'language_selection_problem_title',
+    messageKey: 'language_chooser_first_run_bootstrap_failure_message',
+    sourceWindow,
+    language: DEFAULT_LANG,
+  });
+  return { ok: true };
+}
+
 function resolveLanguage(reason) {
   if (languageResolved) {
     log.warn('Language already resolved (ignored):', reason);
@@ -1534,24 +1906,29 @@ function resolveLanguage(reason) {
   try {
     buildAppMenu();
   } catch (error) {
-    log.error('Error building menu after language resolution:', error);
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Initial application-menu installation',
+      messageKey: 'startup_menu_installation_failure_message',
+    });
+    return;
   }
 
   try {
     if (!mainWin) createMainWindow();
   } catch (error) {
-    log.error('Error creating mainWin after language resolution:', error);
+    terminateAfterRequiredStartupFailure({
+      error,
+      logContext: 'Main BrowserWindow construction',
+      messageKey: 'startup_main_window_failure_message',
+    });
   }
-
-  maybeMarkMainInvariantsReady();
 }
 
 // =============================================================================
 // Floating Stopwatch - window placement safety
 // =============================================================================
-// The Floating Stopwatch is a small always-on-top stopwatch window.
-// We keep it fully visible by clamping its bounds to the display "work area"
-// (the usable desktop area excluding taskbar/dock).
+// The Floating Stopwatch is a small always-on-top stopwatch window. We keep it fully visible by clamping its bounds to the display "work area" (the usable desktop area excluding taskbar/dock).
 
 const FLOTANTE_PRELOAD = path.join(__dirname, 'flotante_preload.js');
 const FLOTANTE_HTML = path.join(__dirname, '../public/flotante.html');
@@ -1815,8 +2192,7 @@ async function createFlotanteWindow(options = {}) {
 // =============================================================================
 // Stopwatch (crono)
 // =============================================================================
-// The stopwatch lives in the main process so it keeps working even if the UI windows
-// are hidden/reloaded, and so the flotante window can stay consistent.
+// The stopwatch lives in the main process so it keeps working even if the UI windows are hidden/reloaded, and so the flotante window can stay consistent.
 
 let crono = {
   running: false,
@@ -2259,7 +2635,8 @@ ipcMain.handle('get-app-runtime-info', () => {
   }
 });
 
-ipcMain.on('startup:renderer-core-ready', () => {
+ipcMain.on('startup:renderer-core-ready', (event) => {
+  if (!resolveInitialStartupMainWindowSender(event, 'startup:renderer-core-ready')) return;
   if (rendererCoreReady) {
     log.warnOnce('startup.rendererCoreReady.duplicate', 'startup:renderer-core-ready already handled (ignored).');
     return;
@@ -2271,16 +2648,17 @@ ipcMain.on('startup:renderer-core-ready', () => {
 // =============================================================================
 // Bootstrap bridge wiring
 // =============================================================================
-// Keep these top-level registrations in place before app.whenReady() work starts,
-// so early renderer signals and shell-opening requests have a stable main-process entrypoint.
+// Keep these top-level registrations in place before app.whenReady() work starts, so early renderer signals and shell-opening requests have a stable main-process entrypoint.
 
 registerLinkIpc({ ipcMain, app, shell });
 
-ipcMain.on('startup:splash-removed', () => {
-  handleSplashRemoved();
+ipcMain.on('startup:splash-removed', (event) => {
+  handleSplashRemoved(event);
 });
 
 ipcMain.on('renderer-i18n-failed', closeRendererAfterI18nFailure);
+ipcMain.on('startup:renderer-failed', handleRendererStartupFailure);
+ipcMain.handle('language-chooser-bootstrap-failure', handleInitialLanguageChooserBootstrapFailure);
 
 // =============================================================================
 // App lifecycle and startup bootstrap
@@ -2290,25 +2668,81 @@ app.whenReady().then(() => {
   try {
     initStorage(app);
   } catch (error) {
-    log.error('Storage init failed:', error);
-    throw error;
+    terminateAfterEarlyRequiredStartupFailure({
+      error,
+      logMessage: 'Storage init failed:',
+    });
+    return;
   }
 
-  // Ensure config directory exists before any module tries to read/write JSON.
+  // Best-effort directory preparation; required settings operations determine whether startup can continue.
   ensureConfigDir();
 
   try {
     languageResources.initialize({ appPath: app.getAppPath() });
   } catch (error) {
-    log.error('Required language catalog initialization failed:', error);
-    throw error;
+    terminateAfterEarlyRequiredStartupFailure({
+      error,
+      logMessage: 'Required language catalog initialization failed:',
+    });
+    return;
   }
 
   try {
     menuBuilder.initializeDefaultMainTranslations();
   } catch (error) {
-    log.error('Required default main translations unavailable; startup terminated:', error);
-    app.quit();
+    terminateAfterEarlyRequiredStartupFailure({
+      error,
+      logMessage: 'Required default main translations unavailable; startup terminated:',
+    });
+    return;
+  }
+
+  const settingsFile = getSettingsFile();
+  const snapshotTagsFile = getSnapshotTagsFile();
+  const currentTextFile = getCurrentTextFile();
+
+  // Load settings (admitted, normalized, and persisted) via settingsState.
+  let settings;
+  try {
+    settings = settingsState.init({
+      loadJson,
+      loadJsonWithStatus,
+      saveJson,
+      saveJsonStrict,
+      createJsonStrict,
+      createSettingsStartupBackup,
+      settingsFile,
+      languageResources,
+    });
+  } catch (error) {
+    terminateAfterInitialSettingsFailure(error);
+    return;
+  }
+
+  try {
+    snapshotTagSettings.init({
+      loadJsonWithStatus,
+      saveJsonStrict,
+      snapshotTagsFile,
+    });
+  } catch (error) {
+    terminateAfterInitialSnapshotTagFailure(error, settings.language);
+    return;
+  }
+
+  spellcheckController.apply(settings);
+
+  try {
+    settingsState.configurePublication({
+      getWindows: () => getSettingsBroadcastWindows(),
+      onSettingsUpdated: (nextSettings) => {
+        spellcheckController.apply(nextSettings);
+      },
+      decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
+    });
+  } catch (error) {
+    terminateAfterStartupRegistrationFailure(error, 'settings publication setup', settings.language);
     return;
   }
 
@@ -2317,12 +2751,193 @@ app.whenReady().then(() => {
     log.warn('Reading-test bundled pool startup sync failed (ignored):', readingTestPoolSync);
   }
 
-  const settingsFile = getSettingsFile();
-  const snapshotTagsFile = getSnapshotTagsFile();
-  const currentTextFile = getCurrentTextFile();
+  // Delegated IPC registration (feature modules). main.js owns windows; feature modules own their IPC contract and internal logic.
+  let startupRegistrationOperation = 'Text Editor state IPC registration';
+  try {
+    editorState.registerIpc(ipcMain, {
+      getEditorWindow: () => editorWin,
+    });
 
-  // Initialize shared text state early (current text file).
-  // This module owns loading/saving current text and its IPC surface.
+    startupRegistrationOperation = 'Text Editor Find IPC registration';
+    editorFindMain.registerIpc(ipcMain);
+
+    startupRegistrationOperation = 'global settings IPC registration';
+    settingsState.registerIpc(ipcMain, {
+      buildAppMenu,
+      shouldRebuildAppMenu: () => languageResolved,
+    });
+
+    startupRegistrationOperation = 'snapshot-tag settings IPC registration';
+    snapshotTagSettings.registerIpc(ipcMain, {
+      publishSettingsUpdate: () => settingsState.publishCurrentSettings(),
+    });
+
+    startupRegistrationOperation = 'preset IPC registration';
+    presetsMain.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+        editorWin,
+        editorFindWin: editorFindMain.getFindWindow(),
+        presetWin,
+        langWin,
+        flotanteWin,
+        taskEditorWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'current-text snapshot IPC registration';
+    snapshotsMain.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'task IPC registration';
+    tasksMain.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+        taskEditorWin,
+      }),
+      ensureTaskEditorWindow: () => {
+        if (!isAliveWindow(taskEditorWin)) {
+          createTaskEditorWindow();
+        } else {
+          taskEditorWin.show();
+        }
+      },
+      taskEditorLifecycle: taskEditorWindowLifecycleController,
+    });
+
+    startupRegistrationOperation = 'updater IPC registration';
+    updater.registerIpc(ipcMain, {
+      mainWinRef: () => mainWin,
+      currentLanguageRef: () => getSelectedLanguage(),
+    });
+
+    // Text extraction + OCR integration points.
+    startupRegistrationOperation = 'text-extraction processing-mode IPC registration';
+    textExtractionProcessingModeIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      controller: textExtractionProcessingModeController,
+    });
+
+    startupRegistrationOperation = 'text-extraction file-picker IPC registration';
+    textExtractionFilePickerIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'text-extraction preconditions IPC registration';
+    textExtractionPreconditionsIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      getPreconditionContext,
+    });
+
+    startupRegistrationOperation = 'text-extraction OCR activation IPC registration';
+    textExtractionOcrActivationIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+    });
+
+    startupRegistrationOperation = 'text-extraction OCR disconnect IPC registration';
+    textExtractionOcrDisconnectIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+    });
+
+    startupRegistrationOperation = 'text-extraction PDF inspection IPC registration';
+    textExtractionPdfInspectIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+    });
+
+    startupRegistrationOperation = 'text-extraction preparation IPC registration';
+    textExtractionPrepareIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+    });
+
+    startupRegistrationOperation = 'text-extraction execution IPC registration';
+    textExtractionExecutePreparedIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+      controller: textExtractionProcessingModeController,
+    });
+
+    startupRegistrationOperation = 'text-extraction generated-PDF reveal IPC registration';
+    textExtractionGeneratedPdfRevealIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      resolvePaths: () => resolveTextExtractionRuntimePaths(),
+      shellApi: shell,
+    });
+
+    startupRegistrationOperation = 'Reading Test session controller setup';
+    readingTestSessionController = readingTestSession.createController({
+      resolveMainWindow: () => resolveMainWindow(),
+      getPreconditionContext,
+      isProcessingModeActive: () => textExtractionProcessingModeController.isActive(),
+      ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
+      showEditorWindow: (options) => showEditorWindow(options),
+      ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
+      closeEditorWindow: () => requestCloseEditorWindow(),
+      closeFlotanteWindow: () => requestCloseFlotanteWindow(),
+      startCrono: () => startCrono(),
+      resetCrono: () => resetCrono(),
+      stopCrono: () => stopCrono(),
+      getCronoState: () => getCronoState(),
+      getCurrentText: () => textState.getCurrentText(),
+      applyCurrentText: (text, meta) => textState.applyCurrentText(text, meta),
+      openPresetWindow: (initialData) => createPresetWindow(initialData),
+    });
+
+    startupRegistrationOperation = 'Reading Test session IPC registration';
+    readingTestSessionController.registerIpc(ipcMain);
+
+    startupRegistrationOperation = 'Reading Test pool import IPC registration';
+    readingTestPoolImport.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      isReadingTestInteractionLocked: () => (
+        !!(readingTestSessionController && readingTestSessionController.isInteractionLocked())
+      ),
+    });
+
+    startupRegistrationOperation = 'current-text IPC registration';
+    textState.registerIpc(ipcMain, () => ({
+      mainWin,
+      editorWin,
+    }));
+
+    startupRegistrationOperation = 'current-text processing-state IPC registration';
+    currentTextProcessingStateIpc.registerIpc(ipcMain, {
+      getWindows: () => ({
+        mainWin,
+      }),
+      controller: currentTextProcessingStateController,
+    });
+  } catch (error) {
+    terminateAfterStartupRegistrationFailure(error, startupRegistrationOperation, settings.language);
+    return;
+  }
+
+  // Initialize current-text state only after the other main-process services and IPC surfaces are ready, but before any window can be created. This module owns loading/saving current text and its IPC surface.
   textState.init({
     loadJson,
     saveJson,
@@ -2333,192 +2948,10 @@ app.whenReady().then(() => {
     currentTextProcessingController: currentTextProcessingStateController,
   });
 
-  // Load settings (normalized and persisted) via settingsState.
-  const settings = settingsState.init({
-    loadJson,
-    saveJson,
-    saveJsonStrict,
-    settingsFile,
-    languageResources,
-  });
-
-  snapshotTagSettings.init({
-    loadJsonWithStatus,
-    saveJson,
-    saveJsonStrict,
-    snapshotTagsFile,
-  });
-
-  spellcheckController.apply(settings);
-
-  settingsState.configurePublication({
-    getWindows: () => getSettingsBroadcastWindows(),
-    onSettingsUpdated: (nextSettings) => {
-      spellcheckController.apply(nextSettings);
-    },
-    decorateSettings: (nextSettings) => decorateRendererSettings(nextSettings),
-  });
-
-  // Delegated IPC registration (feature modules).
-  // main.js owns windows; feature modules own their IPC contract and internal logic.
-  textState.registerIpc(ipcMain, () => ({
-    mainWin,
-    editorWin,
-  }));
-
-  currentTextProcessingStateIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    controller: currentTextProcessingStateController,
-  });
-
-  editorState.registerIpc(ipcMain, {
-    getEditorWindow: () => editorWin,
-  });
-
-  editorFindMain.registerIpc(ipcMain);
-
-  settingsState.registerIpc(ipcMain, { buildAppMenu });
-  editorTextSizeController.registerIpc(ipcMain);
-
-  snapshotTagSettings.registerIpc(ipcMain, {
-    publishSettingsUpdate: () => settingsState.publishCurrentSettings(),
-  });
-
-  presetsMain.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-      editorWin,
-      editorFindWin: editorFindMain.getFindWindow(),
-      presetWin,
-      langWin,
-      flotanteWin,
-      taskEditorWin,
-    }),
-  });
-
-  snapshotsMain.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-  });
-
-  tasksMain.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-      taskEditorWin,
-    }),
-    ensureTaskEditorWindow: () => {
-      if (!isAliveWindow(taskEditorWin)) {
-        createTaskEditorWindow();
-      } else {
-        taskEditorWin.show();
-      }
-    },
-    taskEditorLifecycle: taskEditorWindowLifecycleController,
-  });
-
-  updater.registerIpc(ipcMain, {
-    mainWinRef: () => mainWin,
-    currentLanguageRef: () => getSelectedLanguage(),
-  });
-
-  // Text extraction + OCR integration points.
-  textExtractionProcessingModeIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    controller: textExtractionProcessingModeController,
-  });
-
-  textExtractionFilePickerIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-  });
-
-  textExtractionPreconditionsIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    getPreconditionContext,
-  });
-
-  textExtractionOcrActivationIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-  });
-
-  textExtractionOcrDisconnectIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-  });
-
-  textExtractionPdfInspectIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-  });
-
-  textExtractionPrepareIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-  });
-
-  textExtractionExecutePreparedIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-    controller: textExtractionProcessingModeController,
-  });
-
-  textExtractionGeneratedPdfRevealIpc.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    resolvePaths: () => resolveTextExtractionRuntimePaths(),
-    shellApi: shell,
-  });
-
-  readingTestSessionController = readingTestSession.createController({
-    resolveMainWindow: () => resolveMainWindow(),
-    getPreconditionContext,
-    isProcessingModeActive: () => textExtractionProcessingModeController.isActive(),
-    ensureEditorWindow: (options) => ensureEditorWindowOpen(options),
-    showEditorWindow: (options) => showEditorWindow(options),
-    ensureFlotanteWindow: () => ensureFlotanteWindowOpen(),
-    closeEditorWindow: () => requestCloseEditorWindow(),
-    closeFlotanteWindow: () => requestCloseFlotanteWindow(),
-    startCrono: () => startCrono(),
-    resetCrono: () => resetCrono(),
-    stopCrono: () => stopCrono(),
-    getCronoState: () => getCronoState(),
-    getCurrentText: () => textState.getCurrentText(),
-    applyCurrentText: (text, meta) => textState.applyCurrentText(text, meta),
-    openPresetWindow: (initialData) => createPresetWindow(initialData),
-  });
-  readingTestSessionController.registerIpc(ipcMain);
-
-  readingTestPoolImport.registerIpc(ipcMain, {
-    getWindows: () => ({
-      mainWin,
-    }),
-    isReadingTestInteractionLocked: () => (
-      !!(readingTestSessionController && readingTestSessionController.isInteractionLocked())
-    ),
-  });
-
   // First run: show language picker before creating the main window.
   if (!settings.language || settings.language === '') {
-    createLanguageWindow();
+    const initialLanguageChooser = createLanguageWindow();
+    if (startupTerminalFailure || !initialLanguageChooser) return;
 
     // The language window notifies the main process via IPC once the user picks a language.
     languageSelectionHandler = () => {
@@ -2544,7 +2977,16 @@ app.whenReady().then(() => {
 
   // macOS behavior: recreate a window when clicking the dock icon and none are open.
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    if (startupTerminalFailure || !languageResolved || BrowserWindow.getAllWindows().length !== 0) return;
+    try {
+      createMainWindow();
+    } catch (error) {
+      terminateAfterRequiredStartupFailure({
+        error,
+        logContext: 'Main BrowserWindow construction during activation',
+        messageKey: 'startup_main_window_failure_message',
+      });
+    }
   });
 });
 

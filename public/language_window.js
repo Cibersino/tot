@@ -19,10 +19,17 @@ const locationSearch = window.location && typeof window.location.search === 'str
   : '';
 const isFirstRunLanguageChooser = /(?:^|[?&])languageChooserFirstRun=1(?:&|$)/.test(locationSearch);
 
-// First-run bootstrap failure attempts to close this window so main can finish language resolution.
-// See createLanguageWindow() in electron/main.js.
-const closeFirstRunChooserAfterBootstrapFailure = () => {
+// First-run bootstrap failure reports through the narrow chooser bridge before closing so main can
+// distinguish it from voluntary closure. Main owns the subsequent fallback and startup resolution.
+const closeFirstRunChooserAfterBootstrapFailure = async () => {
   if (!isFirstRunLanguageChooser) return;
+  try {
+    if (window.languageAPI && typeof window.languageAPI.reportBootstrapFailure === 'function') {
+      await window.languageAPI.reportBootstrapFailure();
+    }
+  } catch (error) {
+    console.error('[language] failed to report first-run chooser bootstrap failure:', error);
+  }
   try {
     window.close();
   } catch (error) {

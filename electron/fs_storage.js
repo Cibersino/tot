@@ -32,6 +32,8 @@ let CONFIG_DIR = null;
 let APP_ROOT_DIR = null;
 
 const ENSURE_DIR_OPTIONS = { recursive: true };
+const SETTINGS_BACKUP_FILE_PREFIX = 'user_settings.json.backup.';
+const MAX_SETTINGS_BACKUPS = 3;
 
 // =============================================================================
 // Storage initialization
@@ -273,39 +275,53 @@ function getLoadJsonMissingNote(filePath) {
   return metadata ? metadata.missingNote : '';
 }
 
-function loadJsonWithStatus(filePath, fallback = {}) {
+function withRawJsonBytes(result, rawBytes, includeRawBytes) {
+  if (!includeRawBytes || !rawBytes) return result;
+  return { ...result, rawBytes };
+}
+
+function loadJsonWithStatus(filePath, fallback = {}, { includeRawBytes = false } = {}) {
+  let rawBytes;
   try {
+    rawBytes = fs.readFileSync(filePath);
+  } catch (error) {
     // Missing file is recoverable: callers decide what the fallback should be.
-    if (!fs.existsSync(filePath)) {
+    if (error && error.code === 'ENOENT') {
       log.warn(
         `loadJson missing (using fallback):${getLoadJsonMissingNote(filePath)}`,
         filePath
       );
       return { status: 'missing', value: fallback };
     }
-
-    let raw = fs.readFileSync(filePath, 'utf8');
-
-    // Remove UTF-8 BOM if present (some editors add it and JSON.parse may fail).
-    raw = raw.replace(/^\uFEFF/, '');
-
-    // Empty/whitespace-only file is treated as invalid JSON (recoverable).
-    if (raw.trim() === '') {
-      log.warn(
-        'loadJson empty file (using fallback):',
-        filePath
-      );
-      return { status: 'empty', value: fallback };
-    }
-
-    return { status: 'loaded', value: JSON.parse(raw) };
-  } catch (error) {
     log.warn(
       'loadJson failed (using fallback):',
       filePath,
       error
     );
     return { status: 'failed', value: fallback };
+  }
+
+  // Remove UTF-8 BOM if present (some editors add it and JSON.parse may fail).
+  const raw = rawBytes.toString('utf8').replace(/^\uFEFF/, '');
+
+  // Empty/whitespace-only file is treated as invalid JSON (recoverable).
+  if (raw.trim() === '') {
+    log.warn(
+      'loadJson empty file (using fallback):',
+      filePath
+    );
+    return withRawJsonBytes({ status: 'empty', value: fallback }, rawBytes, includeRawBytes);
+  }
+
+  try {
+    return withRawJsonBytes({ status: 'loaded', value: JSON.parse(raw) }, rawBytes, includeRawBytes);
+  } catch (error) {
+    log.warn(
+      'loadJson failed (using fallback):',
+      filePath,
+      error
+    );
+    return withRawJsonBytes({ status: 'failed', value: fallback }, rawBytes, includeRawBytes);
   }
 }
 
@@ -339,14 +355,68 @@ function saveJsonStrict(filePath, obj) {
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
 }
 
-// Strict JSON creation for flows that must never replace an entry that appeared
-// after their preflight. Unlike saveJsonStrict(...), this does not create the
-// parent directory and requests exclusive filesystem creation.
-function createJsonStrict(filePath, obj) {
+// Strict JSON creation for flows that must never replace an entry that appeared after their preflight. By default, unlike saveJsonStrict(...), this does not create the parent directory and requests exclusive filesystem creation.
+function createJsonStrict(filePath, obj, { ensureParent = false } = {}) {
+  if (ensureParent) {
+    ensureDirExists(path.dirname(filePath));
+  }
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), {
     encoding: 'utf8',
     flag: 'wx',
   });
+}
+
+function getSettingsBackupGeneration(fileName) {
+  if (!fileName.startsWith(SETTINGS_BACKUP_FILE_PREFIX)) return null;
+  const rawGeneration = fileName.slice(SETTINGS_BACKUP_FILE_PREFIX.length);
+  if (!/^(?:0|[1-9]\d*)$/.test(rawGeneration)) return null;
+  return BigInt(rawGeneration);
+}
+
+function getSettingsBackupEntries(settingsFile) {
+  const backupDir = path.dirname(settingsFile);
+  const reservedGenerations = [];
+  const backupEntries = [];
+  for (const entry of fs.readdirSync(backupDir, { withFileTypes: true })) {
+    const generation = getSettingsBackupGeneration(entry.name);
+    if (generation === null) continue;
+    reservedGenerations.push(generation);
+    if (entry.isFile()) {
+      backupEntries.push({
+        generation,
+        filePath: path.join(backupDir, entry.name),
+      });
+    }
+  }
+  return { reservedGenerations, backupEntries };
+}
+
+// Creates a byte-exact startup backup before settings normalization can rewrite an admitted file.
+// Direct exclusive creation intentionally accepts that an abrupt interruption can leave an incomplete generation.
+function createSettingsStartupBackup(settingsFile, originalBytes) {
+  if (!Buffer.isBuffer(originalBytes)) {
+    throw new TypeError('createSettingsStartupBackup requires original settings bytes');
+  }
+
+  const backupDir = path.dirname(settingsFile);
+  const { reservedGenerations } = getSettingsBackupEntries(settingsFile);
+  const highestGeneration = reservedGenerations.reduce(
+    (highest, generation) => (highest === null || generation > highest ? generation : highest),
+    null
+  );
+  const nextGeneration = highestGeneration === null ? 1n : highestGeneration + 1n;
+  const backupPath = path.join(backupDir, `${SETTINGS_BACKUP_FILE_PREFIX}${nextGeneration}`);
+
+  fs.writeFileSync(backupPath, originalBytes, { flag: 'wx' });
+
+  const { backupEntries } = getSettingsBackupEntries(settingsFile);
+  backupEntries.sort((left, right) => (left.generation < right.generation ? -1 : 1));
+  const obsoleteEntries = backupEntries.slice(0, Math.max(0, backupEntries.length - MAX_SETTINGS_BACKUPS));
+  for (const entry of obsoleteEntries) {
+    fs.unlinkSync(entry.filePath);
+  }
+
+  return backupPath;
 }
 
 // =============================================================================
@@ -392,6 +462,7 @@ module.exports = {
   saveJson,
   saveJsonStrict,
   createJsonStrict,
+  createSettingsStartupBackup,
 };
 
 // =============================================================================

@@ -814,3 +814,77 @@ test('loadInitialCurrentText recovers a noncanonical root string and reports it'
     'BOOTSTRAP: Current text file uses noncanonical root-string form; recovering text.',
   ]]);
 });
+
+test('loadInitialCurrentText preserves a canonical string text property', (t) => {
+  const warnCalls = [];
+  const { textState, restore } = loadTextState({
+    loadJson() {
+      return { text: 'recovered text' };
+    },
+    logDouble: {
+      debug() {},
+      warn(...args) {
+        warnCalls.push(args);
+      },
+      warnOnce() {},
+      error() {},
+    },
+  });
+  t.after(restore);
+
+  assert.equal(textState.getCurrentText(), 'recovered text');
+  assert.deepEqual(warnCalls, []);
+});
+
+test('loadInitialCurrentText replaces a non-string text property with empty text and persists it on quit', (t) => {
+  const warnCalls = [];
+  const saveCalls = [];
+  const processingBegins = [];
+  let beforeQuit = null;
+  const { textState, restore } = loadTextState({
+    app: {
+      on(event, handler) {
+        assert.equal(event, 'before-quit');
+        beforeQuit = handler;
+      },
+    },
+    settingsFile: null,
+    loadJson() {
+      return { text: 42 };
+    },
+    saveJson(filePath, value) {
+      saveCalls.push({ filePath, value });
+    },
+    currentTextProcessingController: {
+      begin(meta) {
+        processingBegins.push(meta);
+        return { requestId: 1 };
+      },
+    },
+    logDouble: {
+      debug() {},
+      warn(...args) {
+        warnCalls.push(args);
+      },
+      warnOnce() {},
+      error() {},
+    },
+  });
+  t.after(restore);
+
+  assert.equal(textState.getCurrentText(), '');
+  assert.deepEqual(warnCalls, [[
+    'BOOTSTRAP: Current text file has non-string text property; using empty string.',
+  ]]);
+  assert.deepEqual(saveCalls, []);
+  assert.deepEqual(processingBegins, [
+    { source: 'main', action: 'initial_load' },
+  ]);
+
+  assert.equal(typeof beforeQuit, 'function');
+  beforeQuit();
+  assert.deepEqual(saveCalls, [{
+    filePath: 'current_text.json',
+    value: { text: '' },
+  }]);
+});

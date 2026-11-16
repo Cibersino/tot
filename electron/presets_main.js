@@ -154,17 +154,23 @@ function readConfiguredPresetArray(filePath) {
         '[presets_main] Preset JSON is not an array; no usable presets from configured file:',
         filePath
       );
-      return [];
+      return { presets: [], failed: true };
     }
-    return sanitizePresetArray(arr, filePath);
+    return { presets: sanitizePresetArray(arr, filePath), failed: false };
   } catch (error) {
     log.warn(
       '[presets_main] Preset JSON load failed; no usable presets from configured file:',
       filePath,
       error
     );
-    return [];
+    return { presets: [], failed: true };
   }
+}
+
+function getCatalogFailure(resources) {
+  const failedResourceCount = resources.filter((resource) => resource.failed).length;
+  if (!failedResourceCount) return 'none';
+  return failedResourceCount === resources.length ? 'complete' : 'partial';
 }
 
 /**
@@ -176,6 +182,7 @@ function readConfiguredPresetArray(filePath) {
 function loadConfiguredDefaultPresetCatalog(lang) {
   const unavailableCatalog = {
     available: false,
+    catalogFailure: 'complete',
     general: [],
     defaultPresetsByScope: {},
   };
@@ -197,9 +204,11 @@ function loadConfiguredDefaultPresetCatalog(lang) {
   const generalFile = entries.find(
     (name) => name.toLowerCase() === 'defaults_presets.json'
   );
-  const general = generalFile
+  const generalResource = generalFile
     ? readConfiguredPresetArray(path.join(presetsDir, generalFile))
-    : [];
+    : null;
+  const general = generalResource ? generalResource.presets : [];
+  const catalogResources = generalResource ? [generalResource] : [];
   const defaultPresetsByScope = {};
   const preferenceScopeId = typeof lang === 'undefined'
     ? null
@@ -212,12 +221,19 @@ function loadConfiguredDefaultPresetCatalog(lang) {
       if (!match || !match[1]) return;
       const fileScopeId = match[1];
       if (preferenceScopeId && fileScopeId !== preferenceScopeId) return;
-      defaultPresetsByScope[fileScopeId] = readConfiguredPresetArray(
+      const scopeResource = readConfiguredPresetArray(
         path.join(presetsDir, name)
       );
+      defaultPresetsByScope[fileScopeId] = scopeResource.presets;
+      catalogResources.push(scopeResource);
     });
 
-  return { available: true, general, defaultPresetsByScope };
+  return {
+    available: true,
+    catalogFailure: getCatalogFailure(catalogResources),
+    general,
+    defaultPresetsByScope,
+  };
 }
 
 /**
@@ -434,18 +450,18 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     };
   }
 
-  // IPC contract: an unavailable configured-default catalog and a valid empty catalog both produce empty lists.
-  // The renderer combines these lists with user presets and may persist a replacement for a missing saved selection.
+  // The renderer combines default lists with user presets and may persist a replacement for a missing saved selection.
+  // catalogFailure distinguishes resource failures from a valid empty or intentionally disabled catalog.
   ipcMain.handle('get-default-presets', () => {
     try {
-      const { general, defaultPresetsByScope } = loadConfiguredDefaultPresetCatalog();
-      return { general, defaultPresetsByScope };
+      const { catalogFailure, general, defaultPresetsByScope } = loadConfiguredDefaultPresetCatalog();
+      return { catalogFailure, general, defaultPresetsByScope };
     } catch (error) {
       log.error(
         '[presets_main] Error providing default presets (get-default-presets):',
         error
       );
-      return { general: [], defaultPresetsByScope: {} };
+      return { catalogFailure: 'complete', general: [], defaultPresetsByScope: {} };
     }
   });
 

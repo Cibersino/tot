@@ -132,8 +132,12 @@ async function createHarness({
   availableLanguagesError = null,
   currentLanguageError = null,
   setLanguageError = null,
+  setLanguageErrors = [],
   currentLanguageApiAvailable = true,
   setLanguageApiAvailable = true,
+  firstRun = false,
+  reportBootstrapFailure = null,
+  onClose = null,
 } = {}) {
   const document = { activeElement: null };
   const elements = new Map();
@@ -162,6 +166,9 @@ async function createHarness({
   const warnings = [];
   const errors = [];
   const selectedLanguages = [];
+  const pendingSetLanguageErrors = Array.isArray(setLanguageErrors)
+    ? setLanguageErrors.slice()
+    : [];
   let closeCount = 0;
   const logger = {
     debug() {},
@@ -190,18 +197,26 @@ async function createHarness({
   if (setLanguageApiAvailable) {
     languageAPI.setLanguage = async (language) => {
       selectedLanguages.push(language);
+      if (pendingSetLanguageErrors.length) throw pendingSetLanguageErrors.shift();
       if (setLanguageError) throw setLanguageError;
       return { ok: true, language };
     };
   }
+  if (typeof reportBootstrapFailure === 'function') {
+    languageAPI.reportBootstrapFailure = reportBootstrapFailure;
+  }
 
   const window = {
+    location: {
+      search: firstRun ? '?languageChooserFirstRun=1' : '',
+    },
     getLogger() {
       return logger;
     },
     languageAPI,
     close() {
       closeCount += 1;
+      if (typeof onClose === 'function') onClose();
     },
   };
 
@@ -325,6 +340,35 @@ test('first-run bootstrap guards close locally without changing later chooser be
   });
 });
 
+test('first-run catalog bootstrap failure reports before closing without changing later chooser behavior', async () => {
+  const firstRunEvents = [];
+  const firstRun = await createHarness({
+    firstRun: true,
+    availableLanguagesError: new Error('required catalog unavailable'),
+    reportBootstrapFailure: async () => {
+      await Promise.resolve();
+      firstRunEvents.push('reported');
+    },
+    onClose() { firstRunEvents.push('closed'); },
+  });
+
+  assert.deepEqual(firstRunEvents, ['reported', 'closed']);
+  assert.equal(firstRun.getCloseCount(), 1);
+  assert.equal(firstRun.errors.length, 2);
+
+  let laterReportCalls = 0;
+  const laterOpen = await createHarness({
+    availableLanguagesError: new Error('required catalog unavailable'),
+    reportBootstrapFailure: async () => {
+      laterReportCalls += 1;
+    },
+  });
+
+  assert.equal(laterReportCalls, 0);
+  assert.equal(laterOpen.getCloseCount(), 0);
+  assert.equal(laterOpen.errors.length, 2);
+});
+
 test('current language selection remains separate from roving keyboard focus', async () => {
   const harness = await createHarness();
   const items = harness.langList.children;
@@ -362,6 +406,33 @@ test('current language selection remains separate from roving keyboard focus', a
   assert.equal(harness.statusApplying.hidden, false);
   await harness.settle();
   assert.deepEqual(harness.selectedLanguages, ['es']);
+  assert.equal(harness.getCloseCount(), 1);
+});
+
+test('first-run selection failure keeps the chooser usable and permits a successful retry', async () => {
+  const harness = await createHarness({
+    firstRun: true,
+    currentLanguage: '',
+    setLanguageErrors: [new Error('transient language save failure')],
+  });
+
+  harness.langFilter.dispatch('keydown', { key: 'ArrowDown' });
+  const selectedItem = harness.document.activeElement;
+  harness.langList.dispatch('keydown', { key: 'Enter', target: selectedItem });
+  await harness.settle();
+
+  assert.deepEqual(harness.selectedLanguages, ['ar']);
+  assert.equal(harness.getCloseCount(), 0);
+  assert.equal(harness.statusSelectionError.hidden, false);
+  assert.equal(harness.statusLine.classList.contains('is-error'), true);
+  assert.equal(harness.langFilter.disabled, false);
+  assert.equal(harness.langList.classList.contains('is-disabled'), false);
+  assert.equal(harness.langList.getAttribute('aria-disabled'), 'false');
+
+  harness.langList.dispatch('keydown', { key: 'Enter', target: selectedItem });
+  await harness.settle();
+
+  assert.deepEqual(harness.selectedLanguages, ['ar', 'ar']);
   assert.equal(harness.getCloseCount(), 1);
 });
 

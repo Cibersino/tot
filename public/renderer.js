@@ -31,6 +31,7 @@ const {
   DEFAULT_LANG,
   MAX_CLIPBOARD_REPEAT,
 } = AppConstants;
+const SETTINGS_PAYLOAD_UNAVAILABLE_ERROR_MESSAGE = '[settings] renderer settings payload unavailable';
 if (typeof DEFAULT_LANG !== 'string' || !DEFAULT_LANG.trim()) {
   throw new Error('[renderer] AppConstants.DEFAULT_LANG unavailable; cannot continue');
 }
@@ -249,6 +250,8 @@ let rendererCoreReadySent = false;
 let splashRemovedSent = false;
 let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
+let pendingStartupSettingsPayloadNotice = false;
+let pendingStartupDefaultPresetCatalogFailure = 'none';
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
 let textExtractionPrepareAttemptId = 0;
@@ -603,6 +606,26 @@ function sendRendererCoreReady() {
   rendererCoreReadySent = true;
 }
 
+function reportRequiredRendererStartupFailure(failureKind, error) {
+  const api = window.electronAPI;
+  if (!api || typeof api.reportRendererStartupFailure !== 'function') {
+    log.error('Required renderer startup failure could not be reported: reporter unavailable.', {
+      failureKind,
+      error,
+    });
+    return;
+  }
+
+  try {
+    api.reportRendererStartupFailure({ kind: failureKind });
+  } catch (reportError) {
+    log.error('Required renderer startup failure could not be reported:', {
+      failureKind,
+      error,
+    }, reportError);
+  }
+}
+
 function sendSplashRemoved() {
   if (splashRemovedSent) return;
   if (!window.electronAPI || typeof window.electronAPI.sendStartupSplashRemoved !== 'function') {
@@ -641,13 +664,34 @@ function maybeUnblockReady() {
   rendererReadyState = 'READY';
 
   if (startupSplash && typeof startupSplash.remove === 'function') {
-    startupSplash.remove();
+    try {
+      startupSplash.remove();
+    } catch (error) {
+      log.error('Error removing startup splash:', error);
+      reportRequiredRendererStartupFailure('splash-removal', error);
+      return;
+    }
   } else {
     log.warn('BOOTSTRAP: Startup splash element missing; proceeding to READY.');
   }
 
-  sendSplashRemoved();
+  try {
+    sendSplashRemoved();
+  } catch (error) {
+    log.error('Error confirming startup splash removal:', error);
+    reportRequiredRendererStartupFailure('splash-removed-send', error);
+    return;
+  }
   syncMainInteractionLockUi();
+  if (pendingStartupSettingsPayloadNotice) {
+    pendingStartupSettingsPayloadNotice = false;
+    window.Notify.notifyMain('renderer.main.alerts.settings_payload_unavailable');
+  }
+  if (pendingStartupDefaultPresetCatalogFailure !== 'none') {
+    const catalogFailure = pendingStartupDefaultPresetCatalogFailure;
+    pendingStartupDefaultPresetCatalogFailure = 'none';
+    reportDefaultPresetCatalogFailure(catalogFailure);
+  }
   // Keep the bootstrap current-text settle behind the READY/splash unlock because its synchronous recount work can delay the first useful paint.
   // Current-text derived results may remain pending at READY and settle immediately afterward.
   // Main intentionally has no programmatic initial DOM focus.
@@ -687,6 +731,25 @@ function getRequiredElectronMethod(methodName) {
     throw new Error(`[renderer] electronAPI.${methodName} unavailable; cannot continue bootstrap`);
   }
   return api[methodName].bind(api);
+}
+
+function isSettingsPayloadUnavailableError(error) {
+  return !!(error
+    && typeof error.message === 'string'
+    && error.message.includes(SETTINGS_PAYLOAD_UNAVAILABLE_ERROR_MESSAGE));
+}
+
+function reportDefaultPresetCatalogFailure(catalogFailure) {
+  if (catalogFailure !== 'partial' && catalogFailure !== 'complete') return;
+  if (!isRendererReady()) {
+    pendingStartupDefaultPresetCatalogFailure = catalogFailure;
+    return;
+  }
+  window.Notify.notifyMain(
+    catalogFailure === 'partial'
+      ? 'renderer.presets.alerts.catalog_load_partial'
+      : 'renderer.presets.alerts.catalog_load_complete'
+  );
 }
 
 // =============================================================================
@@ -998,6 +1061,7 @@ const loadPresets = async ({ settingsSnapshot } = {}) => {
     electronAPI: window.electronAPI,
   });
   syncPresetActionButtons();
+  reportDefaultPresetCatalogFailure(result && result.catalogFailure);
   return result;
 };
 
@@ -1104,6 +1168,9 @@ function enqueuePresetReconciliation({ preset, settingsSnapshot, preferenceScope
         electronAPI: window.electronAPI,
       })
       : await loadPresets({ settingsSnapshot });
+    if (preset) {
+      reportDefaultPresetCatalogFailure(result && result.catalogFailure);
+    }
     currentTextRefreshPolicy.dispatchPresetOutcome(
       result && result.selectionOutcome ? result.selectionOutcome : null,
       reason
@@ -1293,6 +1360,7 @@ function setupToggleModoPreciso() {
 }
 
 async function runMainStartup() {
+  let requiredRendererStartupActive = false;
   try {
     const getAppConfig = getOptionalElectronMethod('getAppConfig', {
       unavailableMessage: 'BOOTSTRAP: getAppConfig unavailable; bootstrap will use default limits.'
@@ -1329,6 +1397,7 @@ async function runMainStartup() {
         if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
       } catch (error) {
         log.warn('BOOTSTRAP: getSettings failed; using defaults:', error);
+        pendingStartupSettingsPayloadNotice = isSettingsPayloadUnavailableError(error);
         settingsCache = {};
         settingsSnapshot = settingsCache;
       }
@@ -1346,6 +1415,7 @@ async function runMainStartup() {
       return;
     }
 
+    requiredRendererStartupActive = true;
     const getCurrentText = getRequiredElectronMethod('getCurrentText');
     let initialText = await getCurrentText();
     if (typeof initialText !== 'string') {
@@ -1401,9 +1471,17 @@ async function runMainStartup() {
       }
     }
 
-    markRendererInvariantsReady();
+    try {
+      markRendererInvariantsReady();
+    } catch (error) {
+      log.error('Error completing renderer READY handshake:', error);
+      reportRequiredRendererStartupFailure('renderer-core-ready', error);
+    }
   } catch (error) {
     log.error('Error initializing renderer:', error);
+    if (requiredRendererStartupActive) {
+      reportRequiredRendererStartupFailure('required-initialization', error);
+    }
   }
 }
 

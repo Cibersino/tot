@@ -7,6 +7,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('path');
 const Log = require('../../../electron/log');
+const {
+  createTestTempDir,
+} = require('../../helpers/test_temp_paths');
 
 function loadFreshSettingsModule() {
   const modulePath = path.resolve(__dirname, '../../../electron/settings.js');
@@ -14,9 +17,18 @@ function loadFreshSettingsModule() {
   return require(modulePath);
 }
 
-function createSettingsHarness(initialStoredValue, { saveJsonStrictImpl = null } = {}) {
+function createSettingsHarness(initialStoredValue, {
+  saveJsonStrictImpl = null,
+  initialLoadResult = null,
+  createJsonStrictImpl = null,
+  createSettingsStartupBackupImpl = null,
+  initialSaveJsonStrictImpl = null,
+} = {}) {
   let storedValue = initialStoredValue;
+  let initialPersistencePending = true;
   const writes = [];
+  const createOptions = [];
+  const backupCalls = [];
 
   return {
     loadJson(_filePath, fallbackValue) {
@@ -27,11 +39,54 @@ function createSettingsHarness(initialStoredValue, { saveJsonStrictImpl = null }
       writes.push({ filePath, value: nextValue });
     },
     saveJsonStrict(filePath, nextValue) {
+      if (initialPersistencePending) {
+        initialPersistencePending = false;
+        if (typeof initialSaveJsonStrictImpl === 'function') {
+          return initialSaveJsonStrictImpl(filePath, nextValue);
+        }
+        storedValue = nextValue;
+        writes.push({ filePath, value: nextValue });
+        return undefined;
+      }
       if (typeof saveJsonStrictImpl === 'function') {
         return saveJsonStrictImpl(filePath, nextValue);
       }
       storedValue = nextValue;
       writes.push({ filePath, value: nextValue });
+    },
+    loadJsonWithStatus(filePath, fallbackValue) {
+      const result = typeof initialLoadResult === 'function'
+        ? initialLoadResult(filePath)
+        : initialLoadResult
+        || (typeof storedValue === 'undefined'
+          ? { status: 'missing', value: fallbackValue }
+          : { status: 'loaded', value: storedValue });
+      if (result.status !== 'loaded' || Buffer.isBuffer(result.rawBytes)) return result;
+      return {
+        ...result,
+        rawBytes: Buffer.from(JSON.stringify(result.value), 'utf8'),
+      };
+    },
+    createJsonStrict(filePath, nextValue, options) {
+      initialPersistencePending = false;
+      createOptions.push(options);
+      if (typeof createJsonStrictImpl === 'function') {
+        return createJsonStrictImpl(filePath, nextValue, options);
+      }
+      if (typeof storedValue !== 'undefined') {
+        const error = new Error('settings file appeared after the initial read');
+        error.code = 'EEXIST';
+        throw error;
+      }
+      storedValue = nextValue;
+      writes.push({ filePath, value: nextValue, created: true });
+    },
+    createSettingsStartupBackup(filePath, originalBytes) {
+      backupCalls.push({ filePath, originalBytes });
+      if (typeof createSettingsStartupBackupImpl === 'function') {
+        return createSettingsStartupBackupImpl(filePath, originalBytes);
+      }
+      return `${filePath}.backup.1`;
     },
     getStoredValue() {
       return storedValue;
@@ -42,7 +97,26 @@ function createSettingsHarness(initialStoredValue, { saveJsonStrictImpl = null }
     getWrites() {
       return writes.slice();
     },
+    getCreateOptions() {
+      return createOptions.slice();
+    },
+    getBackupCalls() {
+      return backupCalls.slice();
+    },
   };
+}
+
+function initializeSettings(settings, harness, extraDependencies = {}) {
+  return settings.init({
+    loadJson: harness.loadJson,
+    loadJsonWithStatus: harness.loadJsonWithStatus,
+    saveJson: harness.saveJson,
+    saveJsonStrict: harness.saveJsonStrict,
+    createJsonStrict: harness.createJsonStrict,
+    createSettingsStartupBackup: harness.createSettingsStartupBackup,
+    settingsFile: 'C:\\fake\\settings.json',
+    ...extraDependencies,
+  });
 }
 
 function createIpcMainDouble() {
@@ -77,13 +151,9 @@ function captureWarnings(action) {
 
 test('language helpers accept exact declared IDs and expose independent scopes', () => {
   const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({});
 
-  settings.init({
-    loadJson: () => ({}),
-    saveJson() {},
-    saveJsonStrict() {},
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   assert.equal(settings.getValidLanguageId('zh-Hans'), 'zh-Hans');
   assert.equal(settings.getValidLanguageId('zh-hans'), '');
   assert.equal(settings.getValidLanguageId('zh-Hans-CN'), '');
@@ -91,22 +161,182 @@ test('language helpers accept exact declared IDs and expose independent scopes',
   assert.equal(settings.getPreferenceScope('zh-Hant'), 'zh-Hant');
 });
 
-test('init normalizes invalid stored settings and persists safe defaults', () => {
+test('init rejects an invalid stored root before caching or persistence', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness(null);
 
-  const normalized = settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
+  assert.throws(
+    () => initializeSettings(settings, harness),
+    { code: 'SETTINGS_STARTUP_ADMISSION_FAILED' }
+  );
+  assert.equal(harness.getStoredValue(), null);
+  assert.deepEqual(harness.getWrites(), []);
+  assert.deepEqual(harness.getBackupCalls(), []);
+  assert.throws(() => settings.getSettings(), /called before init/);
+});
+
+test('startup admission rejects unreadable, empty, malformed, and incompatible existing settings without writes', () => {
+  const cases = [
+    { name: 'read failure', result: { status: 'failed', value: {} } },
+    { name: 'empty', result: { status: 'empty' } },
+    { name: 'malformed JSON', result: { status: 'failed', value: {} } },
+    { name: 'array root', result: { status: 'loaded', value: [] } },
+    { name: 'invalid presets map', result: { status: 'loaded', value: { presetsByScope: [] } } },
+    { name: 'invalid inactive scope collection', result: { status: 'loaded', value: { presetsByScope: { es: [], en: {} } } } },
+  ];
+
+  for (const scenario of cases) {
+    const settings = loadFreshSettingsModule();
+    const originalValue = { preserved: scenario.name };
+    const harness = createSettingsHarness(originalValue, { initialLoadResult: scenario.result });
+
+    assert.throws(
+      () => initializeSettings(settings, harness),
+      { code: 'SETTINGS_STARTUP_ADMISSION_FAILED' },
+      scenario.name
+    );
+    assert.equal(harness.getStoredValue(), originalValue, scenario.name);
+    assert.deepEqual(harness.getWrites(), [], scenario.name);
+    assert.deepEqual(harness.getBackupCalls(), [], scenario.name);
+  }
+});
+
+test('startup admission leaves an actual malformed settings file byte-for-byte intact', (t) => {
+  const tempDir = createTestTempDir('settings-startup-admission');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const settingsFile = path.join(tempDir, 'user_settings.json');
+  const originalBytes = Buffer.from('\uFEFF{"presetsByScope":', 'utf8');
+  fs.writeFileSync(settingsFile, originalBytes);
+
+  const fsStorage = require('../../../electron/fs_storage');
+  const settings = loadFreshSettingsModule();
+  assert.throws(
+    () => settings.init({
+      loadJson: fsStorage.loadJson,
+      loadJsonWithStatus: fsStorage.loadJsonWithStatus,
+      saveJson: fsStorage.saveJson,
+      saveJsonStrict: fsStorage.saveJsonStrict,
+      createJsonStrict: fsStorage.createJsonStrict,
+      createSettingsStartupBackup: fsStorage.createSettingsStartupBackup,
+      settingsFile,
+    }),
+    { code: 'SETTINGS_STARTUP_ADMISSION_FAILED' }
+  );
+  assert.deepEqual(fs.readFileSync(settingsFile), originalBytes);
+});
+
+test('startup admission accepts all existing array scope collections, including inactive scopes', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'es',
+    presetsByScope: {
+      es: [],
+      en: [{ name: 'saved in inactive scope' }],
+    },
   });
+
+  const normalized = initializeSettings(settings, harness);
+
+  assert.equal(normalized.presetsByScope.en[0].name, 'saved in inactive scope');
+  assert.equal(harness.getWrites().length, 1);
+  assert.equal(harness.getBackupCalls().length, 1);
+});
+
+test('startup backup receives the exact bytes returned by the admitted initial read', () => {
+  const settings = loadFreshSettingsModule();
+  const originalBytes = Buffer.from('\uFEFF{\r\n  "language": "es",\r\n  "presetsByScope": {}\r\n}\r\n', 'utf8');
+  const harness = createSettingsHarness(undefined, {
+    initialLoadResult: {
+      status: 'loaded',
+      value: {
+        language: 'es',
+        presetsByScope: {},
+      },
+      rawBytes: originalBytes,
+    },
+  });
+
+  initializeSettings(settings, harness);
+
+  assert.deepEqual(harness.getBackupCalls(), [{
+    filePath: 'C:\\fake\\settings.json',
+    originalBytes,
+  }]);
+});
+
+test('missing settings are created exclusively and an appearing file fails initial persistence', () => {
+  const missingSettings = loadFreshSettingsModule();
+  const missingHarness = createSettingsHarness();
+
+  initializeSettings(missingSettings, missingHarness);
+  assert.equal(missingHarness.getWrites().length, 1);
+  assert.equal(missingHarness.getWrites()[0].created, true);
+  assert.deepEqual(missingHarness.getCreateOptions(), [{ ensureParent: true }]);
+  assert.deepEqual(missingHarness.getBackupCalls(), []);
+
+  const racingSettings = loadFreshSettingsModule();
+  const racingHarness = createSettingsHarness(undefined, {
+    createJsonStrictImpl() {
+      const error = new Error('settings file appeared');
+      error.code = 'EEXIST';
+      throw error;
+    },
+  });
+
+  assert.throws(
+    () => initializeSettings(racingSettings, racingHarness),
+    (error) => error.code === 'SETTINGS_STARTUP_INITIAL_WRITE_FAILED' && error.cause.code === 'EEXIST'
+  );
+  assert.deepEqual(racingHarness.getWrites(), []);
+});
+
+test('an admitted existing settings file stops initialization when its required backup fails', () => {
+  const settings = loadFreshSettingsModule();
+  const originalValue = { language: 'es', presetsByScope: {} };
+  const backupFailure = new Error('backup disk full');
+  backupFailure.code = 'ENOSPC';
+  const harness = createSettingsHarness(originalValue, {
+    createSettingsStartupBackupImpl() {
+      throw backupFailure;
+    },
+  });
+
+  assert.throws(
+    () => initializeSettings(settings, harness),
+    (error) => error.code === 'SETTINGS_STARTUP_BACKUP_FAILED' && error.cause === backupFailure
+  );
+  assert.equal(harness.getBackupCalls().length, 1);
+  assert.deepEqual(harness.getWrites(), []);
+});
+
+test('an admitted existing settings file fails startup when its initial strict write fails', () => {
+  const settings = loadFreshSettingsModule();
+  const originalValue = { language: 'es', presetsByScope: {} };
+  const harness = createSettingsHarness(originalValue, {
+    initialSaveJsonStrictImpl() {
+      const error = new Error('disk full');
+      error.code = 'ENOSPC';
+      throw error;
+    },
+  });
+
+  assert.throws(
+    () => initializeSettings(settings, harness),
+    (error) => error.code === 'SETTINGS_STARTUP_INITIAL_WRITE_FAILED' && error.cause.code === 'ENOSPC'
+  );
+  assert.equal(harness.getStoredValue(), originalValue);
+  assert.deepEqual(harness.getWrites(), []);
+});
+
+test('init normalizes an admissible settings object and persists safe defaults', () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({});
+
+  const normalized = initializeSettings(settings, harness);
 
   assert.equal(normalized.language, '');
   assert.equal(normalized.modeConteo, 'preciso');
-  assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.previewSpoilerEnabled, true);
-  assert.equal(normalized.editorFontSizePx, 20);
   assert.deepEqual(normalized.presetsByScope.es, []);
   assert.equal(Object.prototype.hasOwnProperty.call(normalized, 'snapshotTags'), false);
   assert.deepEqual(normalized.numberFormattingByScope.es, {
@@ -122,30 +352,30 @@ test('init normalizes invalid stored settings and persists safe defaults', () =>
 test('normalization keeps absent language-scoped preferences quiet and diagnoses destructive repairs', () => {
   const settings = loadFreshSettingsModule();
   const missingHarness = createSettingsHarness({ language: 'en' });
-  const missingResult = captureWarnings(() => settings.init({
-    loadJson: missingHarness.loadJson,
-    saveJson: missingHarness.saveJson,
-    saveJsonStrict: missingHarness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  }));
+  const missingResult = captureWarnings(() => initializeSettings(settings, missingHarness));
 
   assert.deepEqual(missingResult.warnings, []);
   assert.deepEqual(missingResult.result.presetsByScope.en, []);
 
-  const invalidHarness = createSettingsHarness({
+  const invalidStartupHarness = createSettingsHarness({
     language: 'en',
     presetsByScope: [],
+  });
+  assert.throws(
+    () => initializeSettings(settings, invalidStartupHarness),
+    { code: 'SETTINGS_STARTUP_ADMISSION_FAILED' }
+  );
+  assert.deepEqual(invalidStartupHarness.getWrites(), []);
+
+  const invalidHarness = createSettingsHarness({
+    language: 'en',
+    presetsByScope: { en: [] },
     selectedPresetByScope: null,
     disabledDefaultPresetsByScope: 'invalid',
     numberFormattingByScope: false,
   });
   const invalidResult = captureWarnings(() => {
-    const normalized = settings.init({
-      loadJson: invalidHarness.loadJson,
-      saveJson: invalidHarness.saveJson,
-      saveJsonStrict: invalidHarness.saveJsonStrict,
-      settingsFile: 'C:\\fake\\settings.json',
-    });
+    const normalized = initializeSettings(settings, invalidHarness);
     return settings.saveSettings({
       ...normalized,
       presetsByScope: { en: {} },
@@ -158,7 +388,6 @@ test('normalization keeps absent language-scoped preferences quiet and diagnoses
 
   const warningMessages = invalidResult.warnings.map(([, message]) => message);
   assert.deepEqual(warningMessages, [
-    'Invalid language-scoped settings map; resetting to empty object:',
     'Invalid language-scoped settings map; resetting to empty object:',
     'Invalid language-scoped settings map; resetting to empty object:',
     'Invalid language-scoped settings map; resetting to empty object:',
@@ -200,12 +429,7 @@ test('a missing non-default root number format persists the default resource thr
     return originalReadFileSync.call(fs, filePath, ...args);
   });
 
-  const normalized = settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  const normalized = initializeSettings(settings, harness);
 
   assert.deepEqual(normalized.numberFormattingByScope.en, expectedNumberFormatting);
   assert.deepEqual(harness.getStoredValue().numberFormattingByScope.en, expectedNumberFormatting);
@@ -215,12 +439,7 @@ test('fresh settings include an enabled preview Spoiler preference', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness();
 
-  const normalized = settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  const normalized = initializeSettings(settings, harness);
 
   assert.equal(normalized.previewSpoilerEnabled, true);
   assert.equal(harness.getStoredValue().previewSpoilerEnabled, true);
@@ -230,12 +449,7 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({});
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
 
   const normalized = settings.saveSettings({
     language: 'zh-Hans-CN',
@@ -244,16 +458,12 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
     numberFormattingByScope: null,
     disabledDefaultPresetsByScope: null,
     modeConteo: 'invalid-mode',
-    spellcheckEnabled: 'invalid-flag',
     previewSpoilerEnabled: 'invalid-flag',
-    editorFontSizePx: 200,
   });
 
   assert.equal(normalized.language, '');
   assert.equal(normalized.modeConteo, 'preciso');
-  assert.equal(normalized.spellcheckEnabled, true);
   assert.equal(normalized.previewSpoilerEnabled, true);
-  assert.equal(normalized.editorFontSizePx, 36);
   assert.deepEqual(normalized.presetsByScope.es, []);
   assert.equal(normalized.selectedPresetByScope.es, 'my preset');
   assert.deepEqual(normalized.numberFormattingByScope.es, {
@@ -267,12 +477,7 @@ test('getSettings reloads from the backing store and re-normalizes external edit
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({ language: 'es' });
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
 
   harness.setStoredValue({
     language: 'zh-Hans-CN',
@@ -281,24 +486,20 @@ test('getSettings reloads from the backing store and re-normalizes external edit
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
     modeConteo: 'simple',
-    spellcheckEnabled: false,
     previewSpoilerEnabled: false,
-    editorFontSizePx: 11,
   });
 
   const reloaded = settings.getSettings();
   assert.equal(reloaded.language, '');
   assert.equal(reloaded.modeConteo, 'simple');
-  assert.equal(reloaded.spellcheckEnabled, false);
   assert.equal(reloaded.previewSpoilerEnabled, false);
-  assert.equal(reloaded.editorFontSizePx, 12);
   assert.deepEqual(reloaded.numberFormattingByScope.es, {
     separadorMiles: '.',
     separadorDecimal: ',',
   });
 });
 
-test('applyFallbackLanguageIfUnset persists a normalized fallback language', () => {
+test('applyFallbackLanguageIfUnset strictly persists a normalized fallback language', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
     language: '',
@@ -308,12 +509,7 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
     numberFormattingByScope: {},
   });
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
 
   settings.applyFallbackLanguageIfUnset('en');
 
@@ -327,6 +523,31 @@ test('applyFallbackLanguageIfUnset persists a normalized fallback language', () 
   });
 });
 
+test('applyFallbackLanguageIfUnset leaves the cached language unset when strict persistence fails', () => {
+  const settings = loadFreshSettingsModule();
+  const persistenceError = new Error('forced fallback-language persistence failure');
+  const harness = createSettingsHarness({
+    language: '',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
+  }, {
+    saveJsonStrictImpl() {
+      throw persistenceError;
+    },
+  });
+
+  initializeSettings(settings, harness);
+
+  assert.throws(
+    () => settings.applyFallbackLanguageIfUnset('en'),
+    persistenceError
+  );
+  assert.equal(settings.getSettings().language, '');
+  assert.equal(harness.getStoredValue().language, '');
+});
+
 test('registerIpc decorates get-settings and published payloads without mutating persisted settings', async () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({
@@ -335,18 +556,12 @@ test('registerIpc decorates get-settings and published payloads without mutating
     selectedPresetByScope: {},
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
-    spellcheckEnabled: true,
   });
   const ipcMain = createIpcMainDouble();
   const sentPayloads = [];
   const onSettingsUpdatedCalls = [];
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
 
   settings.configurePublication({
     getWindows: () => ({
@@ -375,22 +590,19 @@ test('registerIpc decorates get-settings and published payloads without mutating
 
   const initialSettings = await ipcMain.invoke('get-settings');
   assert.equal(initialSettings.language, 'ar');
-  assert.equal(initialSettings.spellcheckEnabled, true);
   assert.equal(initialSettings.spellcheckAvailable, false);
 
   const currentLanguage = await ipcMain.invoke('get-current-language');
   assert.equal(currentLanguage, 'ar');
 
-  const result = await ipcMain.invoke('set-spellcheck-enabled', false);
-  assert.deepEqual(result, { ok: true, enabled: false });
+  settings.publishCurrentSettings();
   assert.equal(onSettingsUpdatedCalls.length, 1);
-  assert.equal(onSettingsUpdatedCalls[0].spellcheckEnabled, false);
+  assert.equal(onSettingsUpdatedCalls[0].language, 'ar');
   assert.equal(Object.hasOwn(onSettingsUpdatedCalls[0], 'spellcheckAvailable'), false);
   assert.equal(sentPayloads.length, 1);
   assert.equal(sentPayloads[0].channel, 'settings-updated');
-  assert.equal(sentPayloads[0].payload.spellcheckEnabled, false);
   assert.equal(sentPayloads[0].payload.spellcheckAvailable, false);
-  assert.equal(settings.getSettings().spellcheckEnabled, false);
+  assert.equal(settings.getSettings().language, 'ar');
   assert.equal(Object.hasOwn(settings.getSettings(), 'spellcheckAvailable'), false);
   assert.equal(typeof settings.publishCurrentSettings, 'function');
 
@@ -399,12 +611,10 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(onSettingsUpdatedCalls.length, 2);
   assert.equal(sentPayloads.length, 2);
   assert.equal(sentPayloads[1].channel, 'settings-updated');
-  assert.equal(sentPayloads[1].payload.spellcheckEnabled, false);
   assert.equal(sentPayloads[1].payload.spellcheckAvailable, false);
 
   const externallyProducedSettings = {
     language: 'ar',
-    spellcheckEnabled: true,
   };
   settings.publishSettingsUpdated(externallyProducedSettings);
 
@@ -412,6 +622,55 @@ test('registerIpc decorates get-settings and published payloads without mutating
   assert.equal(sentPayloads.length, 3);
   assert.equal(sentPayloads[2].payload.spellcheckAvailable, false);
   assert.equal(Object.hasOwn(externallyProducedSettings, 'spellcheckAvailable'), false);
+});
+
+test('set-language defers only first-run menu installation to startup and retains runtime rebuilding', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: '',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
+  });
+  const ipcMain = createIpcMainDouble();
+  const menuBuilds = [];
+  const publishedLanguages = [];
+  let startupLanguageResolved = false;
+
+  initializeSettings(settings, harness);
+  settings.configurePublication({
+    getWindows: () => ({}),
+    onSettingsUpdated(nextSettings) {
+      publishedLanguages.push(nextSettings.language);
+    },
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.registerIpc(ipcMain, {
+    buildAppMenu(language) {
+      menuBuilds.push(language);
+    },
+    shouldRebuildAppMenu() {
+      return startupLanguageResolved;
+    },
+  });
+
+  const firstRunResult = await ipcMain.invoke('set-language', 'en');
+
+  assert.deepEqual(firstRunResult, { ok: true, language: 'en' });
+  assert.equal(harness.getStoredValue().language, 'en');
+  assert.deepEqual(menuBuilds, []);
+  assert.deepEqual(publishedLanguages, ['en']);
+
+  startupLanguageResolved = true;
+  const runtimeResult = await ipcMain.invoke('set-language', 'es');
+
+  assert.deepEqual(runtimeResult, { ok: true, language: 'es' });
+  assert.equal(harness.getStoredValue().language, 'es');
+  assert.deepEqual(menuBuilds, ['es']);
+  assert.deepEqual(publishedLanguages, ['en', 'es']);
 });
 
 test('publishSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
@@ -489,12 +748,7 @@ test('invalid renderer decoration drops live updates and rejects get-settings', 
   const ipcMain = createIpcMainDouble();
   const sentPayloads = [];
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   settings.configurePublication({
     getWindows: () => ({
       mainWin: {
@@ -514,7 +768,7 @@ test('invalid renderer decoration drops live updates and rejects get-settings', 
   });
   settings.registerIpc(ipcMain);
 
-  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+  settings.publishSettingsUpdated({ language: 'en' });
 
   assert.deepEqual(sentPayloads, []);
   await assert.rejects(
@@ -545,7 +799,7 @@ test('throwing renderer decoration drops live updates', () => {
     },
   });
 
-  settings.publishSettingsUpdated({ language: 'en', spellcheckEnabled: true });
+  settings.publishSettingsUpdated({ language: 'en' });
 
   assert.deepEqual(sentPayloads, []);
 });
@@ -556,12 +810,7 @@ test('set-preview-spoiler-enabled strictly saves the main-window preference with
   const ipcMain = createIpcMainDouble();
   const sentPayloads = [];
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   settings.configurePublication({
     getWindows: () => ({
       mainWin: {
@@ -601,8 +850,6 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
     selectedPresetByScope: {},
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
-    spellcheckEnabled: true,
-    editorFontSizePx: 20,
     modeConteo: 'preciso',
   };
   const harness = createSettingsHarness(initialStoredValue, {
@@ -614,12 +861,7 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
   const sentPayloads = [];
   const onSettingsUpdatedCalls = [];
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
 
   settings.configurePublication({
     getWindows: () => ({
@@ -644,14 +886,14 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
   settings.registerIpc(ipcMain);
 
   await assert.rejects(
-    ipcMain.invoke('set-spellcheck-enabled', false),
+    ipcMain.invoke('set-mode-conteo', 'simple'),
     /disk full/i
   );
 
   assert.equal(onSettingsUpdatedCalls.length, 0);
   assert.equal(sentPayloads.length, 0);
-  assert.equal(harness.getStoredValue().spellcheckEnabled, true);
-  assert.equal(settings.getSettings().spellcheckEnabled, true);
+  assert.equal(harness.getStoredValue().modeConteo, 'preciso');
+  assert.equal(settings.getSettings().modeConteo, 'preciso');
 });
 
 test('Precise-counting fallback strictly persists Simple once, then publishes and notifies the main window', async () => {
@@ -667,12 +909,7 @@ test('Precise-counting fallback strictly persists Simple once, then publishes an
   const ipcMain = createIpcMainDouble();
   const sent = [];
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   settings.configurePublication({
     getWindows: () => ({
       mainWin: {
@@ -721,12 +958,7 @@ test('Precise-counting fallback accepts a Unicode-property capability failure re
   });
   const ipcMain = createIpcMainDouble();
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   settings.configurePublication({
     getWindows: () => ({ mainWin: null }),
     decorateSettings: (nextSettings) => nextSettings,
@@ -751,12 +983,7 @@ test('Precise-counting fallback does not publish or notify when strict persisten
   });
   const sent = [];
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   settings.configurePublication({
     getWindows: () => ({
       mainWin: {
@@ -782,12 +1009,7 @@ test('Precise-counting fallback remains committed when settings or notice delive
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({ modeConteo: 'preciso' });
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   settings.configurePublication({
     getWindows: () => ({
       mainWin: {
@@ -820,8 +1042,6 @@ test('set-selected-preset rejects on strict save failure and keeps persisted sel
     selectedPresetByScope: { en: 'default' },
     disabledDefaultPresetsByScope: {},
     numberFormattingByScope: {},
-    spellcheckEnabled: true,
-    editorFontSizePx: 20,
     modeConteo: 'preciso',
   }, {
     saveJsonStrictImpl() {
@@ -830,12 +1050,7 @@ test('set-selected-preset rejects on strict save failure and keeps persisted sel
   });
   const ipcMain = createIpcMainDouble();
 
-  settings.init({
-    loadJson: harness.loadJson,
-    saveJson: harness.saveJson,
-    saveJsonStrict: harness.saveJsonStrict,
-    settingsFile: 'C:\\fake\\settings.json',
-  });
+  initializeSettings(settings, harness);
   settings.registerIpc(ipcMain);
 
   await assert.rejects(

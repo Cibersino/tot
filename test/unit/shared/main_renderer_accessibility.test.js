@@ -115,11 +115,13 @@ async function createRendererHarness({
   mainLogoLinksAvailable = true,
   mainLogoLinksOverride = null,
   statusUiOverrides = {},
+  startupSplashOverrides = {},
   getOcrLocaleTag = (language) => String(language || 'en'),
   transitionFailureLanguage = '',
   transitionFailure = null,
   transitionWait = null,
   useReadingSpeedTestUi = false,
+  wpmControlsOverrides = {},
 } = {}) {
   const absentElectronMethodSet = new Set(absentElectronMethods);
   const createElement = Array.isArray(focusCalls)
@@ -128,6 +130,7 @@ async function createRendererHarness({
   let activeLanguage = 'en';
   const errors = [];
   const notifications = [];
+  const notificationCalls = [];
   const pendingStates = [];
   const subscriptions = {};
   const textExtractionDragDropConfigs = [];
@@ -202,6 +205,7 @@ async function createRendererHarness({
   const infoModal = getElement('infoModal');
   const infoModalContent = getElement('infoModalContent');
   const infoModalClose = getElement('infoModalClose');
+  Object.assign(getElement('startupSplash'), startupSplashOverrides);
   const infoModalPanel = createElement('infoModalPanel');
   const infoContentFocusTarget = createElement('infoContentFocusTarget');
   infoModalPanel.scrollTop = 0;
@@ -279,6 +283,7 @@ async function createRendererHarness({
       presetLoadCalls.push(options);
       return { selectionOutcome: null };
     },
+    ...wpmControlsOverrides,
   });
   const currentTextRuntime = createNoopSurface({
     applyCurrentTextProcessingState(state, options) {
@@ -358,6 +363,7 @@ async function createRendererHarness({
     onStartupReady(callback) { subscriptions.startupReady = callback; },
     async openEditor() { return { ok: true, launchDisposition: 'first-show-pending' }; },
     resolveCurrentTextProcessing() {},
+    reportRendererStartupFailure() {},
     reportRendererI18nFailure() {},
     sendStartupRendererCoreReady() {
       currentTextRuntimeCalls.currentTextSubscriptionArmedAtRendererCoreReady = (
@@ -435,8 +441,14 @@ async function createRendererHarness({
         initialFocus.focus({ preventScroll: true });
       },
       deactivateModalFocus() {},
-      notifyMain(key) { notifications.push(key); },
-      toastMain(key) { notifications.push(key); },
+      notifyMain(key) {
+        notifications.push(key);
+        notificationCalls.push({ key, method: 'notifyMain' });
+      },
+      toastMain(key) {
+        notifications.push(key);
+        notificationCalls.push({ key, method: 'toastMain' });
+      },
       ...notifyOverrides,
     }),
     ReadingSpeedTestUi: readingSpeedTestUi,
@@ -581,6 +593,7 @@ async function createRendererHarness({
       assert.ok(handler, `main renderer did not register ${actionId}`);
       return handler();
     },
+    notificationCalls,
     pendingStates,
     presetComboboxUpdates,
     getTextExtractionDragDropConfig() {
@@ -621,6 +634,95 @@ test('Main startup has no programmatic initial DOM focus', async () => {
   await createRendererHarness({ focusCalls });
 
   assert.deepEqual(focusCalls, []);
+});
+
+test('main startup discloses an unavailable settings payload after READY and retains empty-settings continuation', async () => {
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    electronMethodOverrides: {
+      async getSettings() {
+        throw new Error('[settings] renderer settings payload unavailable');
+      },
+    },
+  });
+
+  for (let index = 0; index < 4; index += 1) await flushAsyncWork();
+
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(harness.presetLoadCalls.length, 1);
+  assert.equal(Object.keys(harness.presetLoadCalls[0].settingsSnapshot).length, 0);
+  assert.deepEqual(harness.errors, []);
+
+  await harness.completeStartupReady();
+
+  assert.equal(harness.getElement('startupSplash').removed, true);
+  assert.deepEqual(harness.notifications, ['renderer.main.alerts.settings_payload_unavailable']);
+  assert.deepEqual(harness.notificationCalls, [{
+    key: 'renderer.main.alerts.settings_payload_unavailable',
+    method: 'notifyMain',
+  }]);
+});
+
+test('main startup does not attribute other settings-access failures to an unavailable payload', async () => {
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      async getSettings() {
+        throw new Error('settings IPC temporarily unavailable');
+      },
+    },
+  });
+
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.presetLoadCalls.length, 1);
+  assert.equal(Object.keys(harness.presetLoadCalls[0].settingsSnapshot).length, 0);
+  assert.deepEqual(harness.errors, []);
+});
+
+test('main startup discloses a default-preset catalog failure only after READY', async () => {
+  const catalogLoadCalls = [];
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    wpmControlsOverrides: {
+      async loadPresets(options) {
+        catalogLoadCalls.push(options);
+        return { catalogFailure: 'partial', selectionOutcome: null };
+      },
+    },
+  });
+
+  for (let index = 0; index < 4; index += 1) await flushAsyncWork();
+
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(catalogLoadCalls.length, 1);
+  assert.deepEqual(harness.errors, []);
+
+  await harness.completeStartupReady();
+
+  assert.equal(harness.getElement('startupSplash').removed, true);
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.catalog_load_partial']);
+  assert.deepEqual(harness.notificationCalls, [{
+    key: 'renderer.presets.alerts.catalog_load_partial',
+    method: 'notifyMain',
+  }]);
+});
+
+test('main startup distinguishes a complete default-preset catalog failure', async () => {
+  const harness = await createRendererHarness({
+    wpmControlsOverrides: {
+      async loadPresets() {
+        return { catalogFailure: 'complete', selectionOutcome: null };
+      },
+    },
+  });
+
+  assert.deepEqual(harness.notifications, ['renderer.presets.alerts.catalog_load_complete']);
+  assert.deepEqual(harness.notificationCalls, [{
+    key: 'renderer.presets.alerts.catalog_load_complete',
+    method: 'notifyMain',
+  }]);
+  assert.deepEqual(harness.errors, []);
 });
 
 test('main renderer keeps stopwatch controls named without visual tooltips across language changes', async () => {
@@ -1792,18 +1894,106 @@ test('main renderer aborts bootstrap instead of synthesizing current-text or pro
 
   for (const testCase of cases) {
     await t.test(testCase.name, async () => {
+      const startupFailureReports = [];
       const harness = await createRendererHarness({
         ...testCase,
+        electronMethodOverrides: {
+          ...testCase.electronMethodOverrides,
+          reportRendererStartupFailure(payload) {
+            startupFailureReports.push(payload);
+          },
+        },
         expectStartupError: true,
       });
 
       assert.equal(harness.currentTextRuntimeCalls.bootstrapStates.length, 0);
       assert.equal(harness.errors.length > 0, true);
+      assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['required-initialization']);
       if (testCase.expectedDiagnostic) {
         assert.equal(harness.errors[0][1].message, testCase.expectedDiagnostic);
       }
     });
   }
+});
+
+test('main renderer reports a core READY send failure when the startup reporter remains usable', async () => {
+  const startupFailureReports = [];
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      sendStartupRendererCoreReady() {
+        throw new Error('core READY transport failed');
+      },
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
+    },
+    expectStartupError: true,
+  });
+
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['renderer-core-ready']);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(harness.errors[0][1].message, '[renderer] sendStartupRendererCoreReady failed; cannot complete renderer READY handshake: Error: core READY transport failed');
+});
+
+test('main renderer does not claim a core READY failure was reported when its reporter is unavailable', async () => {
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      sendStartupRendererCoreReady() {
+        throw new Error('core READY transport failed');
+      },
+      reportRendererStartupFailure: undefined,
+    },
+    expectStartupError: true,
+  });
+
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.equal(harness.errors.some((entry) => entry[0] === 'Required renderer startup failure could not be reported: reporter unavailable.'), true);
+});
+
+test('main renderer reports a startup-splash removal failure before acknowledgment', async () => {
+  const startupFailureReports = [];
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    startupSplashOverrides: {
+      remove() {
+        throw new Error('splash removal failed');
+      },
+    },
+    electronMethodOverrides: {
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
+    },
+  });
+
+  await harness.completeStartupReady();
+
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['splash-removal']);
+  assert.equal(harness.getElement('startupSplash').removed, false);
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.errors[0][1].message, 'splash removal failed');
+});
+
+test('main renderer reports a startup-splash acknowledgment send failure without presenting deferred notices', async () => {
+  const startupFailureReports = [];
+  const harness = await createRendererHarness({
+    deferStartupReady: true,
+    electronMethodOverrides: {
+      sendStartupSplashRemoved() {
+        throw new Error('splash acknowledgment transport failed');
+      },
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
+    },
+  });
+
+  await harness.completeStartupReady();
+
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['splash-removed-send']);
+  assert.equal(harness.getElement('startupSplash').removed, true);
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(harness.errors[0][1].message, '[renderer] sendStartupSplashRemoved failed; cannot complete renderer READY handshake: Error: splash acknowledgment transport failed');
 });
 
 test('main renderer accepts clipboard text only from an explicit successful envelope', async () => {

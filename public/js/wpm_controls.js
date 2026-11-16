@@ -283,8 +283,9 @@
       };
     }
 
-    function buildPresetFlowResult(previousState, presets) {
+    function buildPresetFlowResult(previousState, presets, catalogFailure = 'none') {
       return {
+        catalogFailure,
         presets,
         selectionOutcome: buildPresetResolutionOutcome(previousState),
       };
@@ -320,6 +321,7 @@
         });
         allPresetsCache = loadResult && loadResult.list ? loadResult.list.slice() : [];
         return {
+          catalogFailure: loadResult && loadResult.catalogFailure,
           presets: allPresetsCache,
           stateBeforeReset: null,
         };
@@ -364,7 +366,11 @@
         });
         const previousState = stateBeforeReloadReset || capturePresetState();
         applyPresetSelection(selected);
-        return buildPresetFlowResult(previousState, allPresetsCache);
+        return buildPresetFlowResult(
+          previousState,
+          allPresetsCache,
+          reloadResult.catalogFailure
+        );
       } catch (error) {
         log.error('Preset loading failed:', error);
         const previousState = stateBeforeReloadReset || capturePresetState();
@@ -389,15 +395,27 @@
           log.warn(
             'Preset-created selection sync skipped because RendererPresets.resolvePresetSelection is unavailable.'
           );
-          return buildPresetFlowResult(stateBeforeReloadReset || capturePresetState(), updated);
+          return buildPresetFlowResult(
+            stateBeforeReloadReset || capturePresetState(),
+            updated,
+            reloadResult.catalogFailure
+          );
         }
         const { resolvePresetSelection } = getRendererPresetsBridge();
         if (!preset || !preset.name) {
-          return buildPresetFlowResult(stateBeforeReloadReset || capturePresetState(), updated);
+          return buildPresetFlowResult(
+            stateBeforeReloadReset || capturePresetState(),
+            updated,
+            reloadResult.catalogFailure
+          );
         }
         const found = updated.find(item => item.name === preset.name);
         if (!found) {
-          return buildPresetFlowResult(stateBeforeReloadReset || capturePresetState(), updated);
+          return buildPresetFlowResult(
+            stateBeforeReloadReset || capturePresetState(),
+            updated,
+            reloadResult.catalogFailure
+          );
         }
         const neutralSettings = createPresetSelectionSettings(settingsSnapshot);
         const selected = await resolvePresetSelection({
@@ -412,7 +430,7 @@
         });
         const previousState = stateBeforeReloadReset || capturePresetState();
         applyPresetSelection(selected);
-        return buildPresetFlowResult(previousState, updated);
+        return buildPresetFlowResult(previousState, updated, reloadResult.catalogFailure);
       } catch (error) {
         log.error('Preset-created reconciliation failed:', error);
         return buildPresetFlowResult(

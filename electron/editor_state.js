@@ -4,12 +4,12 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Persist and restore Text Editor window geometry and maximized state.
+// Persist and restore Text Editor geometry and editor-specific presentation preferences.
 // - Reads/writes editor_state.json via fs_storage.
-// - Normalizes persisted state and validates reduced bounds.
+// - Normalizes persisted state, reduced bounds, and local preferences.
 // - Attaches window event handlers to persist changes.
 // - Restores reduced bounds or applies a fallback placement on unmaximize.
-// - Exposes editor-window state to the renderer via explicit IPC and notifications.
+// - Exposes editor state to the renderer via explicit IPC and notifications.
 // - Logs recoverable anomalies and fallbacks.
 
 // =============================================================================
@@ -19,6 +19,10 @@
 const { screen } = require('electron');
 const { getEditorStateFile, loadJson, saveJson, saveJsonStrict } = require('./fs_storage');
 const {
+  EDITOR_FONT_SIZE_DEFAULT_PX,
+  EDITOR_FONT_SIZE_MAX_PX,
+  EDITOR_FONT_SIZE_MIN_PX,
+  EDITOR_FONT_SIZE_STEP_PX,
   EDITOR_MAXIMIZED_TEXT_WIDTH_MIN_PX,
   EDITOR_MAXIMIZED_TEXT_WIDTH_MAX_PX,
   EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
@@ -35,6 +39,8 @@ log.debug('Text Editor state starting...');
 const DEFAULT_STATE = {
   maximized: true,
   reduced: null,
+  spellcheckEnabled: true,
+  editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
   maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
 };
 
@@ -86,6 +92,16 @@ function normalizeMaximizedTextWidthPx(value) {
   );
 }
 
+function normalizeEditorFontSizePx(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return EDITOR_FONT_SIZE_DEFAULT_PX;
+  const rounded = Math.round(parsed);
+  return Math.min(
+    EDITOR_FONT_SIZE_MAX_PX,
+    Math.max(EDITOR_FONT_SIZE_MIN_PX, rounded)
+  );
+}
+
 function normalizeState(raw) {
   const base = { ...DEFAULT_STATE };
   if (!raw || typeof raw !== 'object') {
@@ -127,6 +143,43 @@ function normalizeState(raw) {
     st.reduced = null;
   }
 
+  if (typeof raw.spellcheckEnabled === 'undefined') {
+    st.spellcheckEnabled = true;
+  } else if (typeof raw.spellcheckEnabled !== 'boolean') {
+    log.warnOnce(
+      'editor-state.normalize.invalid-spellcheck-enabled',
+      'normalizeState: invalid spellcheckEnabled; using default (ignored).',
+      { type: typeof raw.spellcheckEnabled }
+    );
+    st.spellcheckEnabled = true;
+  } else {
+    st.spellcheckEnabled = raw.spellcheckEnabled;
+  }
+
+  if (typeof raw.editorFontSizePx === 'undefined') {
+    st.editorFontSizePx = EDITOR_FONT_SIZE_DEFAULT_PX;
+  } else {
+    const nextEditorFontSizePx = normalizeEditorFontSizePx(raw.editorFontSizePx);
+    if (!Number.isFinite(Number(raw.editorFontSizePx))) {
+      log.warnOnce(
+        'editor-state.normalize.invalid-editor-font-size',
+        'normalizeState: invalid editorFontSizePx; using default (ignored).',
+        { value: raw.editorFontSizePx }
+      );
+    } else if (nextEditorFontSizePx !== Math.round(Number(raw.editorFontSizePx))) {
+      log.warnOnce(
+        'editor-state.normalize.out-of-range-editor-font-size',
+        'normalizeState: out-of-range editorFontSizePx; clamping.',
+        {
+          value: raw.editorFontSizePx,
+          min: EDITOR_FONT_SIZE_MIN_PX,
+          max: EDITOR_FONT_SIZE_MAX_PX,
+        }
+      );
+    }
+    st.editorFontSizePx = nextEditorFontSizePx;
+  }
+
   if (typeof raw.maximizedTextWidthPx === 'undefined') {
     st.maximizedTextWidthPx = EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX;
   } else {
@@ -154,34 +207,127 @@ function normalizeState(raw) {
   return st;
 }
 
-function getWindowState(editorWin) {
+function getEditorState(editorWin) {
   const persistedState = loadInitialState();
   if (!isLiveWindow(editorWin) || typeof editorWin.isMaximized !== 'function') {
     return {
       maximized: false,
+      spellcheckEnabled: persistedState.spellcheckEnabled,
+      editorFontSizePx: persistedState.editorFontSizePx,
       maximizedTextWidthPx: persistedState.maximizedTextWidthPx,
     };
   }
 
   return {
     maximized: !!editorWin.isMaximized(),
+    spellcheckEnabled: persistedState.spellcheckEnabled,
+    editorFontSizePx: persistedState.editorFontSizePx,
     maximizedTextWidthPx: persistedState.maximizedTextWidthPx,
   };
 }
 
-function notifyWindowState(editorWin, logContext = 'editorState.notifyWindowState') {
+function notifyEditorState(editorWin, logContext = 'editorState.notifyEditorState') {
   if (!hasLiveWebContents(editorWin)) {
-    log.warn('editor-window-state notification failed (ignored): Text Editor window unavailable.', logContext);
+    log.warn('editor-state notification failed (ignored): Text Editor window unavailable.', logContext);
     return false;
   }
 
   try {
-    editorWin.webContents.send('editor-window-state-changed', getWindowState(editorWin));
+    editorWin.webContents.send('editor-state-changed', getEditorState(editorWin));
     return true;
   } catch (error) {
-    log.warn(`editor-window-state notification failed (ignored) from ${logContext}:`, error);
+    log.warn(`editor-state notification failed (ignored) from ${logContext}:`, error);
     return false;
   }
+}
+
+function persistEditorStateUpdate(updateState) {
+  const editorStateFile = getEditorStateFile();
+  const state = normalizeState(loadJson(editorStateFile, DEFAULT_STATE));
+  return updateState(state, editorStateFile);
+}
+
+function setEditorSpellcheckEnabled(enabled, { editorWin = null } = {}) {
+  if (typeof enabled !== 'boolean') {
+    log.warnOnce(
+      'editor-state.set-spellcheck-enabled.invalid',
+      'set-editor-spellcheck-enabled called with non-boolean value (ignored).',
+      { type: typeof enabled }
+    );
+    return { ok: false, error: 'invalid' };
+  }
+
+  try {
+    const result = persistEditorStateUpdate((state, editorStateFile) => {
+      if (state.spellcheckEnabled === enabled) {
+        return { changed: false, state };
+      }
+      state.spellcheckEnabled = enabled;
+      saveJsonStrict(editorStateFile, state);
+      return { changed: true, state };
+    });
+
+    if (result.changed) {
+      notifyEditorState(editorWin, 'editorState.setSpellcheckEnabled');
+    }
+    return { ok: true, enabled: result.state.spellcheckEnabled };
+  } catch (error) {
+    log.error('Error saving Text Editor spellcheck preference:', error);
+    return { ok: false, error: String(error) };
+  }
+}
+
+function setEditorFontSizePx(fontSizePx, { editorWin = null } = {}) {
+  const parsed = Number(fontSizePx);
+  if (!Number.isFinite(parsed)) {
+    log.warnOnce(
+      'editor-state.set-editor-font-size.invalid',
+      'set-editor-font-size-px called with non-finite value (ignored).',
+      { value: fontSizePx }
+    );
+    return { ok: false, error: 'invalid' };
+  }
+
+  try {
+    const nextEditorFontSizePx = normalizeEditorFontSizePx(parsed);
+    const result = persistEditorStateUpdate((state, editorStateFile) => {
+      if (state.editorFontSizePx === nextEditorFontSizePx) {
+        return { changed: false, state };
+      }
+      state.editorFontSizePx = nextEditorFontSizePx;
+      saveJsonStrict(editorStateFile, state);
+      return { changed: true, state };
+    });
+
+    if (result.changed) {
+      notifyEditorState(editorWin, 'editorState.setEditorFontSizePx');
+    }
+    return { ok: true, editorFontSizePx: result.state.editorFontSizePx };
+  } catch (error) {
+    log.error('Error saving Text Editor font-size preference:', error);
+    return { ok: false, error: String(error) };
+  }
+}
+
+function getTextSizeShortcutActions({ getEditorWindow } = {}) {
+  if (typeof getEditorWindow !== 'function') {
+    throw new Error('[editor_state] getTextSizeShortcutActions requires getEditorWindow');
+  }
+
+  function adjustEditorFontSizePx(stepDeltaPx) {
+    const state = loadInitialState();
+    return setEditorFontSizePx(state.editorFontSizePx + stepDeltaPx, {
+      editorWin: getEditorWindow(),
+    });
+  }
+
+  return {
+    onIncreaseTextSize: () => adjustEditorFontSizePx(EDITOR_FONT_SIZE_STEP_PX),
+    onDecreaseTextSize: () => adjustEditorFontSizePx(-EDITOR_FONT_SIZE_STEP_PX),
+    onResetTextSize: () => setEditorFontSizePx(EDITOR_FONT_SIZE_DEFAULT_PX, {
+      editorWin: getEditorWindow(),
+    }),
+  };
 }
 
 // =============================================================================
@@ -251,7 +397,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       const state = normalizeState(current);
       state.maximized = true;
       saver(editorStateFile, state);
-      notifyWindowState(editorWin, 'editorWin.maximize');
+      notifyEditorState(editorWin, 'editorWin.maximize');
     } catch (error) {
       log.error('[editor_state] Error updating state in maximize:', error);
     }
@@ -299,7 +445,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       }
 
       saver(editorStateFile, state);
-      notifyWindowState(editorWin, 'editorWin.unmaximize');
+      notifyEditorState(editorWin, 'editorWin.unmaximize');
     } catch (error) {
       log.error('[editor_state] Error handling Text Editor unmaximize:', error);
     }
@@ -323,17 +469,19 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
     throw new Error('[editor_state] registerIpc requires ipcMain');
   }
 
-  ipcMain.handle('get-editor-window-state', async (event) => {
+  ipcMain.handle('get-editor-state', async (event) => {
     try {
       if (typeof getEditorWindow !== 'function') {
         log.warnOnce(
-          'editor-state.getEditorWindow.unavailable',
-          'getEditorWindow unavailable; Text Editor window-state IPC skipped.'
+          'editor-state.get-editor-state.getEditorWindow.unavailable',
+          'getEditorWindow unavailable; Text Editor state IPC skipped.'
         );
         return {
           ok: false,
           error: 'unavailable',
           maximized: false,
+          spellcheckEnabled: true,
+          editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
           maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
         };
       }
@@ -344,27 +492,33 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
           ok: false,
           error: 'editor-window-unavailable',
           maximized: false,
+          spellcheckEnabled: true,
+          editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
           maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
         };
       }
 
       if (!event || event.sender !== editorWin.webContents) {
-        log.warn('get-editor-window-state unauthorized (ignored).');
+        log.warn('get-editor-state unauthorized (ignored).');
         return {
           ok: false,
           error: 'unauthorized',
           maximized: false,
+          spellcheckEnabled: true,
+          editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
           maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
         };
       }
 
-      return { ok: true, ...getWindowState(editorWin) };
+      return { ok: true, ...getEditorState(editorWin) };
     } catch (error) {
-      log.error('Error processing get-editor-window-state:', error);
+      log.error('Error processing get-editor-state:', error);
       return {
         ok: false,
         error: String(error),
         maximized: false,
+        spellcheckEnabled: true,
+        editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
         maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
       };
     }
@@ -410,11 +564,65 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
 
       state.maximizedTextWidthPx = nextMaximizedTextWidthPx;
       saveJsonStrict(editorStateFile, state);
-      notifyWindowState(editorWin, 'editorState.setMaximizedTextWidthPx');
+      notifyEditorState(editorWin, 'editorState.setMaximizedTextWidthPx');
 
       return { ok: true, maximizedTextWidthPx: state.maximizedTextWidthPx };
     } catch (error) {
       log.error('Error processing set-editor-maximized-text-width-px:', error);
+      return { ok: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('set-editor-spellcheck-enabled', async (event, enabled) => {
+    try {
+      if (typeof getEditorWindow !== 'function') {
+        log.warnOnce(
+          'editor-state.set-spellcheck-enabled.getEditorWindow.unavailable',
+          'getEditorWindow unavailable; Text Editor spellcheck preference IPC skipped.'
+        );
+        return { ok: false, error: 'unavailable' };
+      }
+
+      const editorWin = getEditorWindow();
+      if (!hasLiveWebContents(editorWin)) {
+        return { ok: false, error: 'editor-window-unavailable' };
+      }
+
+      if (!event || event.sender !== editorWin.webContents) {
+        log.warn('set-editor-spellcheck-enabled unauthorized (ignored).');
+        return { ok: false, error: 'unauthorized' };
+      }
+
+      return setEditorSpellcheckEnabled(enabled, { editorWin });
+    } catch (error) {
+      log.error('Error processing set-editor-spellcheck-enabled:', error);
+      return { ok: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('set-editor-font-size-px', async (event, fontSizePx) => {
+    try {
+      if (typeof getEditorWindow !== 'function') {
+        log.warnOnce(
+          'editor-state.set-editor-font-size.getEditorWindow.unavailable',
+          'getEditorWindow unavailable; Text Editor font-size preference IPC skipped.'
+        );
+        return { ok: false, error: 'unavailable' };
+      }
+
+      const editorWin = getEditorWindow();
+      if (!hasLiveWebContents(editorWin)) {
+        return { ok: false, error: 'editor-window-unavailable' };
+      }
+
+      if (!event || event.sender !== editorWin.webContents) {
+        log.warn('set-editor-font-size-px unauthorized (ignored).');
+        return { ok: false, error: 'unauthorized' };
+      }
+
+      return setEditorFontSizePx(fontSizePx, { editorWin });
+    } catch (error) {
+      log.error('Error processing set-editor-font-size-px:', error);
       return { ok: false, error: String(error) };
     }
   });
@@ -427,8 +635,11 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
 module.exports = {
   loadInitialState,
   attachTo,
-  getWindowState,
-  notifyWindowState,
+  getEditorState,
+  notifyEditorState,
+  setEditorSpellcheckEnabled,
+  setEditorFontSizePx,
+  getTextSizeShortcutActions,
   registerIpc,
 };
 

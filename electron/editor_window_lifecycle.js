@@ -62,8 +62,8 @@ function requireCreateEditorWindow(createEditorWindow, logContext) {
 // Controller factory / lifecycle coordination
 // =============================================================================
 function createController({ editorState, showStartupFailureDisclosure = null }) {
-  if (!editorState || typeof editorState.notifyWindowState !== 'function') {
-    throw new Error('[editor_window_lifecycle] createController requires editorState.notifyWindowState');
+  if (!editorState || typeof editorState.notifyEditorState !== 'function') {
+    throw new Error('[editor_window_lifecycle] createController requires editorState.notifyEditorState');
   }
 
   let nextFirstShowGeneration = 1;
@@ -234,7 +234,7 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
     }
 
     focusEditorWindow(editorWin);
-    editorState.notifyWindowState(editorWin, 'showEditorWindow');
+    editorState.notifyEditorState(editorWin, 'showEditorWindow');
     return editorWin;
   }
 
@@ -249,7 +249,7 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
         editorWin.show();
       }
       focusEditorWindow(editorWin);
-      editorState.notifyWindowState(editorWin, logContext);
+      editorState.notifyEditorState(editorWin, logContext);
       return true;
     } catch (error) {
       log.warn(`Late ordinary editor fallback failed from ${logContext} (ignored):`, error);

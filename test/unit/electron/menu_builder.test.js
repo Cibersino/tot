@@ -92,6 +92,8 @@ test('getDialogTexts provides distinct terminal copy for settings-listener failu
 
   const dialogTexts = menuBuilder.getDialogTexts('en');
 
+  assert.equal(dialogTexts.interface_problem_title, 'Interface problem');
+
   assert.equal(
     dialogTexts.renderer_settings_listener_failure_message,
     'The interface could not establish the required settings synchronization. The window will close.'
@@ -102,15 +104,29 @@ test('getDialogTexts provides distinct terminal copy for settings-listener failu
   );
 });
 
+test('getDialogTexts provides generic context titles with self-contained update and editor messages', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(dialogTexts.update_title, 'Update');
+  assert.equal(
+    dialogTexts.update_failed_message,
+    'toT could not check for updates. Check your connection and try again.'
+  );
+  assert.equal(dialogTexts.text_editor_problem_title, 'Text Editor problem');
+  assert.equal(
+    dialogTexts.editor_startup_timeout_message,
+    'The Text Editor did not complete startup in time and will close.'
+  );
+  assert.equal(dialogTexts.window_problem_title, 'Window problem');
+});
+
 test('getDialogTexts provides Calculator initial-document failure copy', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 
   const dialogTexts = menuBuilder.getDialogTexts('en');
 
-  assert.equal(
-    dialogTexts.text_time_calculator_initial_document_failure_title,
-    'The quick calculator could not open'
-  );
   assert.equal(
     dialogTexts.text_time_calculator_initial_document_failure_message,
     'The quick calculator could not load and will close.'
@@ -123,16 +139,12 @@ test('getDialogTexts provides Preset modal initial-document failure copy', (t) =
   const dialogTexts = menuBuilder.getDialogTexts('en');
 
   assert.equal(
-    dialogTexts.preset_modal_initial_document_failure_title,
-    'The preset window could not open'
-  );
-  assert.equal(
     dialogTexts.preset_modal_initial_document_failure_message,
     'The preset window could not load and will close.'
   );
 });
 
-test('getDialogTexts provides first-run and later Language chooser load-failure copy', (t) => {
+test('getDialogTexts provides first-run Language chooser failure copy', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 
   const dialogTexts = menuBuilder.getDialogTexts('en');
@@ -142,12 +154,25 @@ test('getDialogTexts provides first-run and later Language chooser load-failure 
     'The language chooser could not load. Startup will continue with the fallback language.'
   );
   assert.equal(
-    dialogTexts.language_chooser_initial_document_failure_title,
-    'The language chooser could not open'
+    dialogTexts.language_selection_problem_title,
+    'Language selection problem'
   );
   assert.equal(
     dialogTexts.language_chooser_initial_document_failure_message,
     'The language chooser could not load.'
+  );
+  assert.equal(
+    dialogTexts.language_chooser_first_run_bootstrap_failure_message,
+    'toT could not complete language selection. It will try to continue with the fallback language.'
+  );
+  assert.equal(
+    dialogTexts.startup_language_fallback_persistence_failure_message,
+    'toT could not save the fallback language needed to start. The application will close.'
+  );
+  assert.equal(dialogTexts.application_problem_title, 'Application problem');
+  assert.equal(
+    dialogTexts.startup_language_chooser_setup_failure_message,
+    'toT could not prepare the language selection needed to start. The application will close.'
   );
 });
 
@@ -156,10 +181,6 @@ test('getDialogTexts provides Floating Stopwatch initial-document failure copy',
 
   const dialogTexts = menuBuilder.getDialogTexts('en');
 
-  assert.equal(
-    dialogTexts.floating_stopwatch_initial_document_failure_title,
-    'The Floating Stopwatch could not open'
-  );
   assert.equal(
     dialogTexts.floating_stopwatch_initial_document_failure_message,
     'The Floating Stopwatch could not load and will close.'
@@ -172,12 +193,74 @@ test('getDialogTexts provides Editor Find initial-document failure copy', (t) =>
   const dialogTexts = menuBuilder.getDialogTexts('en');
 
   assert.equal(
-    dialogTexts.editor_find_initial_document_failure_title,
-    'The find bar could not open'
-  );
-  assert.equal(
     dialogTexts.editor_find_initial_document_failure_message,
     'The find bar could not load and will close.'
+  );
+});
+
+test('getDialogTexts provides terminal startup copy for required main-startup failures', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(dialogTexts.application_problem_title, 'Application problem');
+
+  assert.equal(
+    dialogTexts.startup_menu_installation_failure_message,
+    'The application menu could not be installed and the application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_main_window_failure_message,
+    'The main window could not be created and the application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_settings_admission_failure_message,
+    'toT cannot start because it cannot use the saved settings without changing them. The application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_main_document_failure_message,
+    'The main window could not load its initial document and the application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_renderer_i18n_failure_message,
+    'toT could not complete the language setup needed to start the interface. The application will close.'
+  );
+  assert.equal(
+    dialogTexts.startup_registration_failure_message,
+    'toT could not complete the setup needed to start. The application will close.'
+  );
+
+  for (const language of ['es', 'en']) {
+    const localizedDialogTexts = menuBuilder.getDialogTexts(language);
+    for (const key of [
+      'application_problem_title',
+      'startup_menu_installation_failure_message',
+      'startup_main_window_failure_message',
+      'startup_main_document_failure_message',
+      'startup_renderer_i18n_failure_message',
+      'startup_registration_failure_message',
+    ]) {
+      assert.equal(typeof localizedDialogTexts[key], 'string', `${language} ${key}`);
+      assert.ok(localizedDialogTexts[key].trim(), `${language} ${key}`);
+    }
+  }
+});
+
+test('getDialogTexts resolves F-09 startup notices through the selected language or DEFAULT_LANG', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const englishDialogTexts = menuBuilder.getDialogTexts('en');
+  assert.equal(englishDialogTexts.application_problem_title, 'Application problem');
+  assert.equal(
+    englishDialogTexts.startup_snapshot_tags_initial_write_failure_message,
+    'toT could not save the snapshot-tag preferences needed to start. The application will close.'
+  );
+
+  const defaultDialogTexts = menuBuilder.getDialogTexts('');
+  assert.equal(defaultDialogTexts.application_problem_title, 'Problema de la aplicación');
+  assert.equal(
+    defaultDialogTexts.startup_snapshot_tags_admission_failure_message,
+    'toT no puede recuperar de forma segura las preferencias de etiquetas de snapshots guardadas. La aplicación se cerrará sin modificarlas.'
   );
 });
 

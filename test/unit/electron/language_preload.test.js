@@ -81,3 +81,13 @@ test('language preload forwards an exact trimmed application-language ID', async
     { channel: 'language-selected', payload: 'zh-Hans' },
   ]);
 });
+
+test('language preload exposes only the chooser bootstrap-failure report channel', async () => {
+  const { exposedApi, invoked } = loadLanguagePreload();
+
+  await exposedApi.api.reportBootstrapFailure();
+
+  assert.deepEqual(invoked, [
+    { channel: 'language-chooser-bootstrap-failure', payload: undefined },
+  ]);
+});
