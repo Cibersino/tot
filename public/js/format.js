@@ -28,6 +28,5 @@
   window.FormatUtils = formatCore.createFormatUtils({
     DEFAULT_LANG: appConstants.DEFAULT_LANG,
     getPreferenceScope: rendererI18n.getPreferenceScope,
-    log
   });
 })();

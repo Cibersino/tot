@@ -85,7 +85,6 @@
   const formatUtils = formatCore.createFormatUtils({
     DEFAULT_LANG,
     getPreferenceScope,
-    log,
   });
   const stopwatchUtils = stopwatchTimeCore.createStopwatchTimeUtils();
   const integerFormatState = {
