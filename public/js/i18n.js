@@ -228,6 +228,11 @@
     return !!transition && (!transition.hadEstablishedState || transition.restorationFailed);
   }
 
+  function reportRendererTranslationRestorationFailure(restoreError, candidate, previousState) {
+    log.error('Renderer translation transition restoration failed:', { requestedLanguage: candidate.language, previousLanguage: previousState.language }, restoreError);
+    return markRendererTransitionError(restoreError, { hadEstablishedState: !!previousState.translations, restorationFailed: true });
+  }
+
   function transitionRendererTranslations(languageId, { applyTranslations } = {}) {
     if (typeof applyTranslations !== 'function') return Promise.reject(new Error('[i18n] transitionRendererTranslations requires applyTranslations'));
     const runTransition = async () => {
@@ -250,8 +255,7 @@
         try {
           await restoreRendererTranslationState(previousState, applyTranslations, { restoreConsumerSemantics: false });
         } catch (restoreError) {
-          log.error('Renderer translation transition restoration failed:', { requestedLanguage: candidate.language, previousLanguage: previousState.language }, restoreError);
-          throw markRendererTransitionError(restoreError, { hadEstablishedState: !!previousState.translations, restorationFailed: true });
+          throw reportRendererTranslationRestorationFailure(restoreError, candidate, previousState);
         }
         throw markRendererTransitionError(error, { hadEstablishedState: !!previousState.translations });
       }
@@ -261,8 +265,7 @@
         try {
           await restoreRendererTranslationState(previousState, applyTranslations);
         } catch (restoreError) {
-          log.error('Renderer translation transition restoration failed:', { requestedLanguage: candidate.language, previousLanguage: previousState.language }, restoreError);
-          throw markRendererTransitionError(restoreError, { hadEstablishedState: !!previousState.translations, restorationFailed: true });
+          throw reportRendererTranslationRestorationFailure(restoreError, candidate, previousState);
         }
         throw markRendererTransitionError(error, { hadEstablishedState: !!previousState.translations });
       }
