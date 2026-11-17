@@ -17,8 +17,6 @@
     throw new Error('[text-extraction-ocr-activation] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-ocr-activation');
-  log.debug('Text extraction OCR activation helper starting...');
-
   // =============================================================================
   // Shared state
   // =============================================================================

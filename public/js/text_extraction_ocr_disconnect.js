@@ -17,8 +17,6 @@
     throw new Error('[text-extraction-ocr-disconnect] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-ocr-disconnect');
-  log.debug('Text extraction OCR disconnect helper starting...');
-
   // =============================================================================
   // Shared state
   // =============================================================================

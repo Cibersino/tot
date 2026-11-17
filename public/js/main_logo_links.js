@@ -17,8 +17,6 @@
     throw new Error('[main-logo-links] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('main-logo-links');
-  log.debug('Main logo links starting...');
-
   // =============================================================================
   // Constants
   // =============================================================================

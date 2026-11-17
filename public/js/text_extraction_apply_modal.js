@@ -18,7 +18,6 @@
     throw new Error('[text-extraction-apply-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-apply-modal');
-  log.debug('Text extraction apply modal starting...');
   if (!window.RendererI18n
     || typeof window.RendererI18n.tRenderer !== 'function'
     || typeof window.RendererI18n.renderLocalizedLabelWithInvariantValue !== 'function') {

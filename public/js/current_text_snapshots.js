@@ -19,7 +19,6 @@
     throw new Error('[current-text-snapshots] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('current-text-snapshots');
-  log.debug('Current text snapshots starting...');
   const snapshotTagCatalog = window.SnapshotTagCatalog || null;
   if (!snapshotTagCatalog || typeof snapshotTagCatalog.normalizeTags !== 'function') {
     throw new Error('[current-text-snapshots] SnapshotTagCatalog unavailable; cannot continue');

@@ -18,8 +18,6 @@
     throw new Error('[text-apply-canonical] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-apply-canonical');
-  log.debug('Text apply canonical helpers starting...');
-
   // =============================================================================
   // Helpers
   // =============================================================================

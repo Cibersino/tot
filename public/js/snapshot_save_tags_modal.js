@@ -19,8 +19,6 @@
     throw new Error('[snapshot-save-tags-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('snapshot-save-tags-modal');
-  log.debug('Snapshot save tags modal starting...');
-
   if (!window.RendererI18n
     || typeof window.RendererI18n.tRenderer !== 'function'
     || typeof window.RendererI18n.msgRenderer !== 'function') {

@@ -19,8 +19,6 @@
     throw new Error('[info-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('info-modal');
-  log.debug('Info modal starting...');
-
   const { AppConstants, RendererI18n } = window;
   if (!AppConstants || typeof AppConstants.DEFAULT_LANG !== 'string' || !AppConstants.DEFAULT_LANG.trim()) {
     throw new Error('[info-modal] AppConstants.DEFAULT_LANG unavailable; cannot continue');

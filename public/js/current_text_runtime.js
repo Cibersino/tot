@@ -21,8 +21,6 @@
     throw new Error('[current-text-runtime] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('current-text-runtime');
-  log.debug('Current text runtime starting...');
-
   const {
     obtenerSeparadoresDeNumeros,
     formatearNumero,

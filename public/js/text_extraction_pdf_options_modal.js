@@ -13,14 +13,9 @@
 
 (() => {
   // =============================================================================
-  // Runtime dependencies / logger
+  // Runtime dependencies
   // =============================================================================
 
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[text-extraction-pdf-options-modal] window.getLogger unavailable; cannot continue');
-  }
-  const log = window.getLogger('text-extraction-pdf-options-modal');
-  log.debug('Text extraction PDF options modal starting...');
   if (!window.RendererI18n
     || typeof window.RendererI18n.renderLocalizedLabelWithInvariantValue !== 'function'
     || typeof window.RendererI18n.tRenderer !== 'function') {

@@ -20,8 +20,6 @@ if (typeof window.getLogger !== 'function') {
 }
 const log = window.getLogger('renderer');
 
-log.debug('Renderer main starting...');
-
 const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[renderer] AppConstants unavailable; verify constants.js load order');
@@ -682,6 +680,7 @@ function maybeUnblockReady() {
     reportRequiredRendererStartupFailure('splash-removed-send', error);
     return;
   }
+  log.info('Main Window renderer startup: READY received; splash-removal acknowledgment sent to Main.');
   syncMainInteractionLockUi();
   if (pendingStartupSettingsPayloadNotice) {
     pendingStartupSettingsPayloadNotice = false;
@@ -708,6 +707,7 @@ function markRendererInvariantsReady() {
   }
   rendererInvariantsReady = true;
   sendRendererCoreReady();
+  log.info('Main Window renderer startup: core-ready signal sent to Main.');
   maybeUnblockReady();
 }
 
@@ -2422,6 +2422,7 @@ function startRendererBootstrap() {
   initCronoController();
   uiListenersArmed = true;
   syncMainInteractionLockUi();
+  log.info('Main Window renderer startup: initial IPC subscriptions and UI listeners registered.');
   runStartupOrchestrator();
 }
 

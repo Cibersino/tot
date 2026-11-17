@@ -18,7 +18,6 @@
     throw new Error('[text-extraction-single-file-heavy-pdf-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-single-file-heavy-pdf-modal');
-  log.debug('Text extraction single-file heavy PDF modal starting...');
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-single-file-heavy-pdf-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }

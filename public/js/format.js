@@ -2,13 +2,6 @@
 'use strict';
 
 (() => {
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[format] window.getLogger unavailable; cannot continue');
-  }
-
-  const log = window.getLogger('format');
-  log.debug('Format utilities starting...');
-
   const appConstants = window.AppConstants;
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || appConstants.DEFAULT_LANG.trim() === '') {
     throw new Error('[format] window.AppConstants.DEFAULT_LANG unavailable; cannot continue');

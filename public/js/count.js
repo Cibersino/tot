@@ -7,8 +7,6 @@
   }
 
   const log = window.getLogger('count');
-  log.debug('Count utilities starting...');
-
   const appConstants = window.AppConstants;
   if (!appConstants || typeof appConstants.DEFAULT_LANG !== 'string' || appConstants.DEFAULT_LANG.trim() === '') {
     throw new Error('[count] window.AppConstants.DEFAULT_LANG unavailable; cannot continue');

@@ -20,7 +20,6 @@
     throw new Error('[presets] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('presets');
-  log.debug('Presets starting...');
   const { AppConstants } = window;
   if (!AppConstants) {
     throw new Error('[presets] AppConstants unavailable; verify constants.js load order');

@@ -129,6 +129,7 @@ async function createRendererHarness({
     : createMockElement;
   let activeLanguage = 'en';
   const errors = [];
+  const infos = [];
   const notifications = [];
   const notificationCalls = [];
   const pendingStates = [];
@@ -229,6 +230,7 @@ async function createRendererHarness({
     debug() {},
     error(...args) { errors.push(args); },
     errorOnce(...args) { errors.push(args); },
+    info(...args) { infos.push(args); },
     warn(...args) { warnings.push(args); },
     warnOnce(key, ...args) {
       if (warningOnceKeys.has(key)) return;
@@ -578,6 +580,7 @@ async function createRendererHarness({
     statusUiCalls,
     elements,
     errors,
+    infos,
     getActiveCustomPromptTranslationRefreshCounts() {
       return Object.fromEntries(activeCustomPromptTranslationRefreshCounts);
     },
@@ -634,6 +637,31 @@ test('Main startup has no programmatic initial DOM focus', async () => {
   await createRendererHarness({ focusCalls });
 
   assert.deepEqual(focusCalls, []);
+});
+
+test('main renderer logs initial listener, core-ready, and READY acknowledgment milestones', async () => {
+  const startupSignals = [];
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      sendStartupRendererCoreReady() {
+        startupSignals.push('renderer-core-ready');
+      },
+      sendStartupSplashRemoved() {
+        startupSignals.push('splash-removed');
+      },
+    },
+  });
+
+  assert.deepEqual(startupSignals, ['renderer-core-ready', 'splash-removed']);
+  assert.equal(harness.getElement('startupSplash').removed, true);
+  assert.deepEqual(
+    harness.infos.map(([message]) => message),
+    [
+      'Main Window renderer startup: initial IPC subscriptions and UI listeners registered.',
+      'Main Window renderer startup: core-ready signal sent to Main.',
+      'Main Window renderer startup: READY received; splash-removal acknowledgment sent to Main.',
+    ]
+  );
 });
 
 test('main startup discloses an unavailable settings payload after READY and retains empty-settings continuation', async () => {
