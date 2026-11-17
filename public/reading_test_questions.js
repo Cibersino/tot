@@ -34,7 +34,6 @@
   }
   try {
     log = window.getLogger('reading-test-questions');
-    log.debug('Reading-test questions window starting...');
   } catch (error) {
     failClosedQuestionsBootstrap(error);
   }

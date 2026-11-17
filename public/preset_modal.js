@@ -28,8 +28,6 @@
     throw error;
   }
 
-  log.debug('Preset modal starting...');
-
   const presetApi = window.presetAPI;
   if (!presetApi
     || typeof presetApi.onInit !== 'function'

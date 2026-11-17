@@ -50,7 +50,6 @@ try {
   );
 }
 
-log.debug('Flotante starting...');
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
   terminateFlotanteBootstrap(

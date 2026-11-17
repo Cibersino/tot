@@ -153,8 +153,6 @@ try {
   throw error;
 }
 try {
-  log.debug('Text Editor starting...');
-
   appConstants = window.AppConstants;
   if (!appConstants) {
     throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
@@ -812,7 +810,9 @@ Promise.resolve()
     if (editorBootstrapPresentationOutcome !== 'pending') return;
     ctx.ui.setNormalInteractionAvailable(true);
     ctx.ui.focusEditorAtTop();
-    reportBasePresentationState({ status: 'ready' });
+    if (reportBasePresentationState({ status: 'ready' })) {
+      log.info('Text Editor startup: base presentation readiness reported to Main.');
+    }
   })
   .catch((error) => {
     if (log) {

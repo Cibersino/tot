@@ -35,8 +35,6 @@ try {
 } catch (error) {
   failClosedFindBootstrap(error);
 }
-log.debug('Editor find window starting...');
-
 function reportEarlyTerminalFindI18nFailure(kind) {
   // The static shell already disables normal Find controls while the required translation surface is being established.
   // At this boundary, the dynamic DOM references below do not exist yet, so report directly through the stable preload surface rather than entering the regular terminal helper.

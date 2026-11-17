@@ -638,18 +638,10 @@ test('Reading Test renderer scripts fail-close direct pre-wiring bootstrap abort
     assert.equal(missingLoggerCloseCalls, 1);
 
     let loggerFailureCloseCalls = 0;
-    const loggerErrors = [];
     assert.throws(
       runBootstrap(file, {
         getLogger() {
-          return {
-            debug() {
-              throw new Error('logger startup failed');
-            },
-            error(...args) {
-              loggerErrors.push(args);
-            },
-          };
+          throw new Error('logger startup failed');
         },
         close() {
           loggerFailureCloseCalls += 1;
@@ -658,7 +650,6 @@ test('Reading Test renderer scripts fail-close direct pre-wiring bootstrap abort
       /logger startup failed/u
     );
     assert.equal(loggerFailureCloseCalls, 1);
-    assert.equal(loggerErrors.length, 1);
 
     let incompleteApiCloseCalls = 0;
     const apiErrors = [];

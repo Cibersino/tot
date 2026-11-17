@@ -34,7 +34,6 @@
   }
   try {
     log = window.getLogger('reading-test-result');
-    log.debug('Reading-test result window starting...');
   } catch (error) {
     failClosedResultBootstrap(error);
   }

@@ -116,6 +116,7 @@ function createEditorUiHarness({ resolveDirection = () => 'ltr' } = {}) {
     window: {
       getLogger() {
         return {
+          info() {},
           warn() {},
           warnOnce() {},
           error() {},
@@ -284,6 +285,7 @@ function createEditorScriptHarness({
   const bootstrapApplyCalls = [];
   const sendCurrentTextCalls = [];
   const errorLogs = [];
+  const infoLogs = [];
   const warnLogs = [];
   const consoleErrors = [];
   const spellcheckStateCalls = [];
@@ -366,6 +368,9 @@ function createEditorScriptHarness({
         if (getLoggerError) throw getLoggerError;
         return {
           debug() {},
+          info(...args) {
+            infoLogs.push(args);
+          },
           warn(...args) {
             warnLogs.push(args);
           },
@@ -677,6 +682,7 @@ function createEditorScriptHarness({
     bootstrapApplyCalls,
     sendCurrentTextCalls,
     errorLogs,
+    infoLogs,
     warnLogs,
     consoleErrors,
     evaluationError,
@@ -833,6 +839,9 @@ test('editor script focuses after normal interaction becomes available and befor
 
   assert.deepEqual(JSON.parse(JSON.stringify(harness.basePresentationReports)), [
     { generation: 1, status: 'ready' },
+  ]);
+  assert.deepEqual(harness.infoLogs, [
+    ['Text Editor startup: base presentation readiness reported to Main.'],
   ]);
   assert.deepEqual(harness.errorLogs, []);
   assert.ok(normalInteractionReady > harness.startupEvents.indexOf('initial-text'));

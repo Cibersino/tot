@@ -47,7 +47,6 @@ try {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw error;
 }
-log.debug('Task Editor starting...');
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons
   || typeof rendererIcons.applyIconToElement !== 'function'
