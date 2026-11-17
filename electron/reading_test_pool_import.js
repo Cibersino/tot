@@ -32,7 +32,6 @@ const {
 const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
 const log = Log.get('reading-test-pool-import');
-log.debug('Reading test pool import starting...');
 
 // =============================================================================
 // Constants / config

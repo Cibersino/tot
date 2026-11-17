@@ -28,7 +28,6 @@ const readingTestSessionWindows = require('./reading_test_session_windows');
 const readingTestSessionFlow = require('./reading_test_session_flow');
 
 const log = Log.get('reading-test-session');
-log.debug('Reading test session starting...');
 
 // =============================================================================
 // Constants / config

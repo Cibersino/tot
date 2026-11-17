@@ -46,7 +46,6 @@ const taskEditorState = require('./task_editor_state');
 const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
 const log = Log.get('tasks-main');
-log.debug('Tasks main starting...');
 
 // =============================================================================
 // Constants / shared state

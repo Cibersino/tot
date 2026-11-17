@@ -23,7 +23,6 @@ const {
 } = require('./constants_main');
 
 const log = Log.get('settings');
-log.debug('Settings starting...');
 
 // =============================================================================
 // Language helpers

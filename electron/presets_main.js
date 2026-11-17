@@ -21,7 +21,6 @@ const { dialog, shell } = require('electron');
 const Log = require('./log');
 
 const log = Log.get('presets-main');
-log.debug('Presets main starting...');
 const {
   DEFAULT_LANG,
   PRESET_NAME_MAX,

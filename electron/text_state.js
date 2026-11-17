@@ -27,7 +27,6 @@ const {
 } = require('./constants_main');
 
 const log = Log.get('text-state');
-log.debug('Text state starting...');
 
 // =============================================================================
 // Validation / normalization helpers and action policy

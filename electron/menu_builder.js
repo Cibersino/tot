@@ -42,7 +42,6 @@ const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
 // =============================================================================
 
 const log = Log.get('menu');
-log.debug('Menu builder starting...');
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 let defaultMainTranslations = null;

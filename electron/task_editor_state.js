@@ -21,7 +21,6 @@ const { getTaskEditorStateFile, loadJson, saveJsonStrict } = require('./fs_stora
 const Log = require('./log');
 
 const log = Log.get('task-editor-state');
-log.debug('Task Editor state starting...');
 
 // =============================================================================
 // Constants / defaults

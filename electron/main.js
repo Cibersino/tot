@@ -47,27 +47,36 @@ const {
   createSettingsStartupBackup,
 } = require('./fs_storage');
 
-const settingsState = require('./settings');
+// Startup foundations and shared state
 const languageResources = require('./language_resources');
+const menuBuilder = require('./menu_builder');
+const settingsState = require('./settings');
 const snapshotTagSettings = require('./snapshot_tag_settings');
 const textState = require('./text_state');
-const editorState = require('./editor_state');
-const editorWindowLifecycle = require('./editor_window_lifecycle');
-const taskEditorWindowLifecycle = require('./task_editor_window_lifecycle');
-const menuBuilder = require('./menu_builder');
-const presetsMain = require('./presets_main');
-const snapshotsMain = require('./current_text_snapshots_main');
-const updater = require('./updater');
-const { registerLinkIpc } = require('./link_openers');
-const tasksMain = require('./tasks_main');
-const taskEditorState = require('./task_editor_state');
-const editorFindMain = require('./editor_find_main');
-const spellcheck = require('./spellcheck');
-const readingTestSession = require('./reading_test_session');
-const readingTestPoolImport = require('./reading_test_pool_import');
-const readingTestPool = require('./reading_test_pool');
 const currentTextProcessingStateIpc = require('./current_text_processing_state_ipc');
 const currentTextProcessingMainBridge = require('./current_text_processing_main_bridge');
+
+// Window state and lifecycle owners
+const editorState = require('./editor_state');
+const editorWindowLifecycle = require('./editor_window_lifecycle');
+const editorFindMain = require('./editor_find_main');
+const taskEditorState = require('./task_editor_state');
+const taskEditorWindowLifecycle = require('./task_editor_window_lifecycle');
+
+// Feature IPC owners and services
+const presetsMain = require('./presets_main');
+const snapshotsMain = require('./current_text_snapshots_main');
+const tasksMain = require('./tasks_main');
+const readingTestPool = require('./reading_test_pool');
+const readingTestSession = require('./reading_test_session');
+const readingTestPoolImport = require('./reading_test_pool_import');
+const spellcheck = require('./spellcheck');
+const updater = require('./updater');
+
+// Pre-ready bootstrap IPC owner
+const { registerLinkIpc } = require('./link_openers');
+
+// Text extraction platform
 const textExtractionFilePickerIpc = require('./text_extraction_platform/text_extraction_file_picker_ipc');
 const textExtractionPreconditionsIpc = require('./text_extraction_platform/text_extraction_preconditions_ipc');
 const textExtractionProcessingModeIpc = require('./text_extraction_platform/text_extraction_processing_mode_ipc');
@@ -77,7 +86,11 @@ const textExtractionPdfInspectIpc = require('./text_extraction_platform/text_ext
 const textExtractionPrepareIpc = require('./text_extraction_platform/text_extraction_prepare_ipc');
 const textExtractionExecutePreparedIpc = require('./text_extraction_platform/text_extraction_execute_prepared_ipc');
 const textExtractionGeneratedPdfRevealIpc = require('./text_extraction_platform/text_extraction_generated_pdf_reveal_ipc');
+
+// Shared utilities
 const stopwatchTimeCore = require('../public/js/lib/stopwatch_time_core');
+
+// OCR Google Drive bundled credentials
 const {
   materializeBundledCredentials,
 } = require('./text_extraction_platform/ocr_google_drive_bundled_credentials');
@@ -87,7 +100,6 @@ const {
 // =============================================================================
 
 const log = Log.get('main');
-log.debug('Main process starting...');
 const { formatStopwatchMs } = stopwatchTimeCore.createStopwatchTimeUtils();
 
 const spellcheckController = spellcheck.createController({
@@ -1636,6 +1648,7 @@ function maybeAuthorizeStartupReady() {
     targetWin.webContents.send('startup:ready');
     startupReadySent = true;
     mainReadyState = 'READY';
+    log.info('Main startup: READY granted to initial renderer; awaiting splash acknowledgment.');
   } catch (error) {
     terminateAfterRequiredStartupFailure({
       error,
@@ -1698,6 +1711,7 @@ function handleSplashRemoved(event) {
   }
   splashRemoved = true;
   menuEnabled = true;
+  log.info('Main startup: initial splash acknowledged; main interaction enabled.');
 
   if (isSmokeTest) {
     try {
@@ -2665,6 +2679,8 @@ ipcMain.handle('language-chooser-bootstrap-failure', handleInitialLanguageChoose
 // =============================================================================
 
 app.whenReady().then(() => {
+  log.info('Main startup: Electron ready; initializing required services.');
+
   try {
     initStorage(app);
   } catch (error) {
@@ -2947,6 +2963,7 @@ app.whenReady().then(() => {
     maxTextChars: MAX_TEXT_CHARS,
     currentTextProcessingController: currentTextProcessingStateController,
   });
+  log.info('Main startup: required services initialized and IPC registration complete.');
 
   // First run: show language picker before creating the main window.
   if (!settings.language || settings.language === '') {

@@ -10,6 +10,12 @@ const {
 } = require('../helpers/test_temp_paths');
 
 const electronBinary = require('electron');
+const STARTUP_LIFECYCLE_MESSAGES = [
+  'Main startup: Electron ready; initializing required services.',
+  'Main startup: required services initialized and IPC registration complete.',
+  'Main startup: READY granted to initial renderer; awaiting splash acknowledgment.',
+  'Main startup: initial splash acknowledged; main interaction enabled.',
+];
 
 function makeTempDir() {
   return createTestTempDir('electron-smoke');
@@ -42,7 +48,7 @@ test('Electron app reaches READY state in isolated smoke mode and exits cleanly'
     ...process.env,
     TOT_SMOKE_TEST: '1',
     TOT_SMOKE_USER_DATA_DIR: userDataDir,
-    TOT_LOG_LEVEL: 'silent',
+    TOT_LOG_LEVEL: 'info',
   };
   delete childEnv.ELECTRON_RUN_AS_NODE;
 
@@ -96,4 +102,11 @@ test('Electron app reaches READY state in isolated smoke mode and exits cleanly'
   assert.equal(readySeen, true, `Smoke ready marker not observed.\nSTDOUT:\n${stdout}\nSTDERR:\n${stderr}`);
   assert.equal(result.signal, null, `Electron exited via signal.\nSTDOUT:\n${stdout}\nSTDERR:\n${stderr}`);
   assert.equal(result.code, 0, `Electron exited with non-zero code.\nSTDOUT:\n${stdout}\nSTDERR:\n${stderr}`);
+
+  let priorIndex = -1;
+  for (const message of STARTUP_LIFECYCLE_MESSAGES) {
+    const currentIndex = stdout.indexOf(message);
+    assert.ok(currentIndex > priorIndex, `Missing or out-of-order startup lifecycle message: ${message}\nSTDOUT:\n${stdout}\nSTDERR:\n${stderr}`);
+    priorIndex = currentIndex;
+  }
 });

@@ -21,7 +21,6 @@ const Log = require('./log');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 
 const log = Log.get('snapshot-tag-settings');
-log.debug('Snapshot tag settings starting...');
 
 // =============================================================================
 // Shared state

@@ -77,6 +77,35 @@ test('required pre-i18n startup failures disclose in fixed Spanish and quit befo
   );
 });
 
+test('main startup lifecycle diagnostics follow the ready and interaction boundaries', () => {
+  const readyAuthorization = sourceSection(
+    'function maybeAuthorizeStartupReady() {',
+    'function handleRendererStartupFailure('
+  );
+  const splashAcknowledgment = sourceSection(
+    'function handleSplashRemoved(event) {',
+    'function showEditorStartupFailureDisclosure('
+  );
+  const bootstrap = sourceSection(
+    'app.whenReady().then(() => {',
+    "app.on('window-all-closed', () => {"
+  );
+
+  const electronReadyLog = "log.info('Main startup: Electron ready; initializing required services.');";
+  const servicesReadyLog = "log.info('Main startup: required services initialized and IPC registration complete.');";
+  const rendererReadyLog = "log.info('Main startup: READY granted to initial renderer; awaiting splash acknowledgment.');";
+  const interactiveLog = "log.info('Main startup: initial splash acknowledged; main interaction enabled.');";
+
+  assert.notEqual(bootstrap.indexOf(electronReadyLog), -1);
+  assert.notEqual(bootstrap.indexOf(servicesReadyLog), -1);
+  assert.notEqual(readyAuthorization.indexOf(rendererReadyLog), -1);
+  assert.notEqual(splashAcknowledgment.indexOf(interactiveLog), -1);
+  assert.ok(bootstrap.indexOf(electronReadyLog) < bootstrap.indexOf('initStorage(app)'));
+  assert.ok(bootstrap.indexOf('textState.init({') < bootstrap.indexOf(servicesReadyLog));
+  assert.ok(readyAuthorization.indexOf('mainReadyState = \'READY\';') < readyAuthorization.indexOf(rendererReadyLog));
+  assert.ok(splashAcknowledgment.indexOf('menuEnabled = true;') < splashAcknowledgment.indexOf(interactiveLog));
+});
+
 test('first-run selection defers settings-side menu rebuilding to the startup resolver', () => {
   const settingsRegistration = sourceSection(
     'settingsState.registerIpc(ipcMain, {',

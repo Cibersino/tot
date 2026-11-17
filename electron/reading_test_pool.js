@@ -30,7 +30,6 @@ const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 const currentTextSnapshotSchema = require('./current_text_snapshot_schema');
 
 const log = Log.get('reading-test-pool');
-log.debug('Reading test pool starting...');
 
 // =============================================================================
 // Constants / config
