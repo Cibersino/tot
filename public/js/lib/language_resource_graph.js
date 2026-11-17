@@ -67,7 +67,12 @@
       const preferenceScopeId = requireString(rawNode.preferenceScopeId, `languages[${index}].preferenceScopeId`);
       if (typeof rawNode.selectable !== 'boolean') throw new Error(`[language-resource-graph] selectable must be boolean for ${id}`);
       const label = requireString(rawNode.label, `languages[${index}].label`);
-      if (!Array.isArray(rawNode.aliases) || rawNode.aliases.some((alias) => typeof alias !== 'string' || !alias.trim())) throw new Error(`[language-resource-graph] aliases must be an array of non-empty strings for ${id}`);
+      if (
+        !Array.isArray(rawNode.aliases)
+        || rawNode.aliases.some((alias) => typeof alias !== 'string' || !alias.trim())
+      ) {
+        throw new Error(`[language-resource-graph] aliases must be an array of non-empty strings for ${id}`);
+      }
       rawNode.aliases.forEach((rawAlias) => {
         const alias = rawAlias.trim();
         if (alias === id || nodesById.has(alias) || aliasesToId.has(alias)) throw new Error(`[language-resource-graph] duplicate language alias: ${alias}`);
@@ -75,7 +80,18 @@
       });
       resourceDirectories.add(resourceDirectory);
       localeTags.add(localeTag);
-      nodesById.set(id, Object.freeze({ id, kind, parentId, resourceDirectory, localeTag, ocrLocaleTag, preferenceScopeId, selectable: rawNode.selectable, label, aliases: Object.freeze(rawNode.aliases.map((alias) => alias.trim())) }));
+      nodesById.set(id, Object.freeze({
+        id,
+        kind,
+        parentId,
+        resourceDirectory,
+        localeTag,
+        ocrLocaleTag,
+        preferenceScopeId,
+        selectable: rawNode.selectable,
+        label,
+        aliases: Object.freeze(rawNode.aliases.map((alias) => alias.trim())),
+      }));
     });
 
     nodesById.forEach((node) => {
@@ -93,7 +109,12 @@
         current = nodesById.get(current.parentId);
       }
     });
-    return Object.freeze({ defaultId, nodesById, aliasesToId, languages: Object.freeze(Array.from(nodesById.values())) });
+    return Object.freeze({
+      defaultId,
+      nodesById,
+      aliasesToId,
+      languages: Object.freeze(Array.from(nodesById.values())),
+    });
   }
 
   function resolveLanguageId(graph, input) {
@@ -145,5 +166,14 @@
     return new Set(['ar', 'fa', 'he', 'ur']).has(String(localeTag || '').split('-')[0].toLowerCase()) ? 'rtl' : 'ltr';
   }
 
-  return { getCompleteResourceCandidates, getDescriptor, getLocaleDirection, getMergeChain, getParentChain, getSelectableLanguages, resolveLanguageId, validateCatalog };
+  return {
+    getCompleteResourceCandidates,
+    getDescriptor,
+    getLocaleDirection,
+    getMergeChain,
+    getParentChain,
+    getSelectableLanguages,
+    resolveLanguageId,
+    validateCatalog,
+  };
 });
