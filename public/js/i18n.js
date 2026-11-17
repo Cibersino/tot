@@ -132,10 +132,7 @@
     if (!normalizedValue) return fallbackDirection;
     ensureUserTextDirectionProbe();
     if (!userTextDirectionProbeHost || !userTextDirectionProbe) {
-      log.warnOnce(
-        'i18n.resolveUserTextDirection.probeUnavailable',
-        'resolveUserTextDirection probe unavailable; using UI fallback direction.'
-      );
+      log.warn('resolveUserTextDirection probe unavailable; using UI fallback direction.');
       return fallbackDirection;
     }
     if (typeof window.getComputedStyle !== 'function') {
