@@ -301,8 +301,7 @@ try {
 
 function enqueueFlotanteSemanticWork(work) {
   const run = async () => {
-    // Main-process closure is asynchronous. Do not admit queued semantic
-    // work after this window has entered a terminal failure state.
+    // Main-process closure is asynchronous. Do not admit queued semantic work after this window has entered a terminal failure state.
     if (flotanteTerminal) return;
     return work();
   };
