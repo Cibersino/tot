@@ -42,8 +42,9 @@
     }
 
     function formatearNumero(numero, separadorMiles, separadorDecimal, fractionDigits = 0) {
-      const normalizedFractionDigits = Number.isInteger(Number(fractionDigits)) && Number(fractionDigits) >= 0
-        ? Number(fractionDigits)
+      const numericFractionDigits = Number(fractionDigits);
+      const normalizedFractionDigits = Number.isInteger(numericFractionDigits) && numericFractionDigits >= 0
+        ? numericFractionDigits
         : 0;
       let [entero, decimal] = numero.toFixed(normalizedFractionDigits).split('.');
       entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, separadorMiles);

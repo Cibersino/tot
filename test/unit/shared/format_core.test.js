@@ -96,6 +96,23 @@ test('createFormatUtils formats integers with grouping separators', () => {
   assert.equal(utils.formatearNumero(1234567, '.', ','), '1.234.567');
 });
 
+test('createFormatUtils normalizes fraction digits once', () => {
+  const utils = createFormatUtils({
+    DEFAULT_LANG: TEST_DEFAULT_LANG,
+    getPreferenceScope,
+  });
+  let conversionCount = 0;
+  const fractionDigits = {
+    valueOf() {
+      conversionCount += 1;
+      return 2;
+    },
+  };
+
+  assert.equal(utils.formatearNumero(1234, ',', '.', fractionDigits), '1,234.00');
+  assert.equal(conversionCount, 1);
+});
+
 test('createFormatUtils requires DEFAULT_LANG to be injected', () => {
   assert.throws(
     () => createFormatUtils({ log: createWarnOnceLogDouble() }),
