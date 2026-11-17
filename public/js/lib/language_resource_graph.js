@@ -1,14 +1,31 @@
 // public/js/lib/language_resource_graph.js
 'use strict';
 
-// Shared application-language graph. Application IDs, resource directories,
-// preference scopes, and standards-facing locale tags are deliberately
-// separate values; no relationship is inferred from ID spelling or paths.
+// =============================================================================
+// Overview
+// =============================================================================
+// Shared application-language graph.
+// Responsibilities:
+// - Expose the same graph API to CommonJS consumers and root.LanguageResourceGraph.
+// - Validate the declared language catalog and produce immutable descriptors.
+// - Resolve declared language IDs and aliases.
+// - Build the catalog-defined inheritance and resource-candidate chains.
+//
+// Application IDs, resource directories, preference scopes, and standards-facing locale tags are deliberately separate values; no relationship is inferred from ID spelling or paths.
+
+// =============================================================================
+// Module registration
+// =============================================================================
+
 (function initLanguageResourceGraph(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root && typeof root === 'object') root.LanguageResourceGraph = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Constants / catalog validation
+  // =============================================================================
+
   const RESOURCE_DIRECTORY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
   function isPlainObject(value) {
@@ -38,6 +55,10 @@
     }
     return localeTag;
   }
+
+  // =============================================================================
+  // Catalog graph construction
+  // =============================================================================
 
   function validateCatalog(rawCatalog, { defaultLanguage } = {}) {
     if (!isPlainObject(rawCatalog) || rawCatalog.schemaVersion !== 1 || !Array.isArray(rawCatalog.languages)) {
@@ -117,6 +138,10 @@
     });
   }
 
+  // =============================================================================
+  // Graph queries
+  // =============================================================================
+
   function resolveLanguageId(graph, input) {
     if (!graph || typeof input !== 'string') return null;
     if (graph.nodesById.has(input)) return input;
@@ -166,6 +191,10 @@
     return new Set(['ar', 'fa', 'he', 'ur']).has(String(localeTag || '').split('-')[0].toLowerCase()) ? 'rtl' : 'ltr';
   }
 
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
+
   return {
     getCompleteResourceCandidates,
     getDescriptor,
@@ -177,3 +206,7 @@
     validateCatalog,
   };
 });
+
+// =============================================================================
+// End of public/js/lib/language_resource_graph.js
+// =============================================================================
