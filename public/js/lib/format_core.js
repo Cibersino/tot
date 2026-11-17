@@ -6,8 +6,14 @@
 // =============================================================================
 // Shared number-formatting core for renderer-facing FormatUtils.
 // Responsibilities:
-// - Resolve number-format separators from explicit preference scopes.
-// - Support both browser-script and CommonJS consumers.
+// - Publish the same API to browser-script and CommonJS consumers.
+// - Require DEFAULT_LANG and getPreferenceScope before creating a formatter.
+// - Resolve required number-format separators using declared preference scopes and caller-supplied settings.
+// - Format supplied numbers with explicit grouping and decimal separators.
+
+// =============================================================================
+// Module registration
+// =============================================================================
 
 (function initFormatCore(root, factory) {
   const api = factory();
@@ -18,6 +24,10 @@
     root.FormatCore = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Formatter factory and utilities
+  // =============================================================================
+
   function createFormatUtils({
     DEFAULT_LANG,
     getPreferenceScope,
@@ -56,6 +66,10 @@
       formatearNumero,
     };
   }
+
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
 
   return {
     createFormatUtils,
