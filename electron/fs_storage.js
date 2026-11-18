@@ -372,7 +372,7 @@ function getSettingsBackupGeneration(fileName) {
   return BigInt(rawGeneration);
 }
 
-function getSettingsBackupEntries(settingsFile) {
+function getSettingsBackupInventory(settingsFile) {
   const backupDir = path.dirname(settingsFile);
   const reservedGenerations = [];
   const backupEntries = [];
@@ -398,17 +398,17 @@ function createSettingsStartupBackup(settingsFile, originalBytes) {
   }
 
   const backupDir = path.dirname(settingsFile);
-  const { reservedGenerations } = getSettingsBackupEntries(settingsFile);
-  const highestGeneration = reservedGenerations.reduce(
+  const { reservedGenerations } = getSettingsBackupInventory(settingsFile);
+  const highestReservedGeneration = reservedGenerations.reduce(
     (highest, generation) => (highest === null || generation > highest ? generation : highest),
     null
   );
-  const nextGeneration = highestGeneration === null ? 1n : highestGeneration + 1n;
-  const backupPath = path.join(backupDir, `${SETTINGS_BACKUP_FILE_PREFIX}${nextGeneration}`);
+  const nextReservedGeneration = highestReservedGeneration === null ? 1n : highestReservedGeneration + 1n;
+  const backupPath = path.join(backupDir, `${SETTINGS_BACKUP_FILE_PREFIX}${nextReservedGeneration}`);
 
   fs.writeFileSync(backupPath, originalBytes, { flag: 'wx' });
 
-  const { backupEntries } = getSettingsBackupEntries(settingsFile);
+  const { backupEntries } = getSettingsBackupInventory(settingsFile);
   backupEntries.sort((left, right) => (left.generation < right.generation ? -1 : 1));
   const obsoleteEntries = backupEntries.slice(0, Math.max(0, backupEntries.length - MAX_SETTINGS_BACKUPS));
   for (const entry of obsoleteEntries) {
