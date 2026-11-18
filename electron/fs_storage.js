@@ -24,15 +24,19 @@ const Log = require('./log');
 const log = Log.get('fs-storage');
 
 // =============================================================================
-// Shared state
+// Constants / configuration
 // =============================================================================
-
-let CONFIG_DIR = null;
-let APP_ROOT_DIR = null;
 
 const ENSURE_DIR_OPTIONS = { recursive: true };
 const SETTINGS_BACKUP_FILE_PREFIX = 'user_settings.json.backup.';
 const MAX_SETTINGS_BACKUPS = 3;
+
+// =============================================================================
+// Shared state
+// =============================================================================
+
+let configDir = null;
+let appRootDir = null;
 
 // =============================================================================
 // Storage initialization
@@ -57,27 +61,27 @@ function initStorage(app) {
     throw new Error("[fs_storage] initStorage app.getPath('userData') returned invalid path");
   }
 
-  const appRootDir = app.getAppPath();
-  if (typeof appRootDir !== 'string' || appRootDir.length === 0) {
+  const resolvedAppRootDir = app.getAppPath();
+  if (typeof resolvedAppRootDir !== 'string' || resolvedAppRootDir.length === 0) {
     throw new Error('[fs_storage] initStorage app.getAppPath() returned invalid path');
   }
 
-  CONFIG_DIR = path.join(userDataPath, 'config');
-  APP_ROOT_DIR = appRootDir;
+  configDir = path.join(userDataPath, 'config');
+  appRootDir = resolvedAppRootDir;
 }
 
 function getConfigDir() {
-  if (!CONFIG_DIR) {
+  if (!configDir) {
     throw new Error('[fs_storage] CONFIG_DIR is not initialized');
   }
-  return CONFIG_DIR;
+  return configDir;
 }
 
 function getAppRootDir() {
-  if (!APP_ROOT_DIR) {
+  if (!appRootDir) {
     throw new Error('[fs_storage] APP_ROOT_DIR is not initialized');
   }
-  return APP_ROOT_DIR;
+  return appRootDir;
 }
 
 // =============================================================================
@@ -183,7 +187,7 @@ function ensureConfigDir() {
     const dir = getConfigDir();
     ensureDirExists(dir);
   } catch (error) {
-    log.error('ensureConfigDir failed:', CONFIG_DIR || '(uninitialized)', error);
+    log.error('ensureConfigDir failed:', configDir || '(uninitialized)', error);
   }
 }
 
