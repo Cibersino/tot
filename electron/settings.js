@@ -121,9 +121,9 @@ function loadNumberFormatDefaults(lang) {
     } catch (error) {
       const details = { languageId: descriptor.id, resourceDirectory: descriptor.resourceDirectory, filePath };
       if (descriptor.id === DEFAULT_LANG) {
-        log.errorOnce(`settings.loadNumberFormatDefaults.required:${descriptor.id}`, 'Required default numberFormat.json unavailable:', details, error);
+        log.error('Required default numberFormat.json unavailable:', details, error);
       } else {
-        log.warnOnce(`settings.loadNumberFormatDefaults.failed:${descriptor.id}`, 'numberFormat.json unavailable; continuing through declared graph chain:', details, error);
+        log.warn('numberFormat.json unavailable; continuing through declared graph chain:', details, error);
       }
     }
   }
@@ -146,8 +146,7 @@ function ensureNumberFormattingForScope(settings, languageId) {
   if (typeof currentEntry !== 'undefined') {
     if (isValidNumberFormattingEntry(currentEntry)) return;
 
-    log.warnOnce(
-      `settings.ensureNumberFormattingForScope.invalidEntry:${preferenceScopeId}`,
+    log.warn(
       'Invalid numberFormattingByScope entry; rebuilding from defaults:',
       {
         preferenceScopeId,
@@ -178,8 +177,7 @@ function ensureNumberFormattingForScope(settings, languageId) {
  */
 function normalizeSettings(settings) {
   if (!isNonArrayObject(settings)) {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidRoot',
+    log.warn(
       'Settings root is invalid; using empty object:',
       {
         type: typeof settings,
@@ -192,8 +190,7 @@ function normalizeSettings(settings) {
 
   // language must be a string; empty string means "unset".
   if (typeof settings.language !== 'string') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidLanguage',
+    log.warn(
       'Invalid settings.language; forcing empty string:',
       { type: typeof settings.language }
     );
@@ -206,8 +203,7 @@ function normalizeSettings(settings) {
       return;
     }
     if (!isNonArrayObject(settings[field])) {
-      log.warnOnce(
-        `settings.normalizeSettings.invalidScopeMap:${field}`,
+      log.warn(
         'Invalid language-scoped settings map; resetting to empty object:',
         {
           field,
@@ -222,12 +218,11 @@ function normalizeSettings(settings) {
 
   // modeConteo:
   // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
+  // - present but invalid -> warn + default
   if (typeof settings.modeConteo === 'undefined') {
     settings.modeConteo = 'preciso';
   } else if (settings.modeConteo !== 'preciso' && settings.modeConteo !== 'simple') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidModeConteo',
+    log.warn(
       'Invalid modeConteo; forcing default:',
       { value: settings.modeConteo }
     );
@@ -236,12 +231,11 @@ function normalizeSettings(settings) {
 
   // previewSpoilerEnabled:
   // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
+  // - present but invalid -> warn + default
   if (typeof settings.previewSpoilerEnabled === 'undefined') {
     settings.previewSpoilerEnabled = true;
   } else if (typeof settings.previewSpoilerEnabled !== 'boolean') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidPreviewSpoilerEnabled',
+    log.warn(
       'Invalid previewSpoilerEnabled; forcing default:',
       { type: typeof settings.previewSpoilerEnabled }
     );
@@ -250,7 +244,7 @@ function normalizeSettings(settings) {
 
   const languageId = getValidLanguageId(settings.language);
   if (settings.language && !languageId) {
-    log.warnOnce('settings.normalizeSettings.undeclaredLanguage', 'Discarded undeclared application language ID:', settings.language);
+    log.warn('Discarded undeclared application language ID:', settings.language);
   }
   settings.language = languageId;
   const effectiveLanguageId = languageId || DEFAULT_LANG;
@@ -258,8 +252,7 @@ function normalizeSettings(settings) {
   if (typeof settings.presetsByScope[preferenceScopeId] === 'undefined') {
     settings.presetsByScope[preferenceScopeId] = [];
   } else if (!Array.isArray(settings.presetsByScope[preferenceScopeId])) {
-    log.warnOnce(
-      `settings.normalizeSettings.invalidPresetsByScopeEntry:${preferenceScopeId}`,
+    log.warn(
       'Invalid presetsByScope entry; resetting to empty array:',
       {
         preferenceScopeId,
@@ -272,8 +265,7 @@ function normalizeSettings(settings) {
   const selectedPreset = settings.selectedPresetByScope[preferenceScopeId];
   if (typeof selectedPreset !== 'undefined') {
     if (typeof selectedPreset !== 'string') {
-      log.warnOnce(
-        `settings.normalizeSettings.invalidSelectedPresetByScopeEntry:${preferenceScopeId}`,
+      log.warn(
         'Invalid selectedPresetByScope entry; removing:',
         { preferenceScopeId, type: typeof selectedPreset }
       );
@@ -518,8 +510,7 @@ function configurePublication({ getWindows, onSettingsUpdated, decorateSettings 
 function decorateSettingsPayload(settings) {
   const decorateSettings = publicationConfig && publicationConfig.decorateSettings;
   if (typeof decorateSettings !== 'function') {
-    log.errorOnce(
-      'settings.decorateSettings.unavailable',
+    log.error(
       'Renderer settings decorator unavailable; settings payload dropped.'
     );
     return null;
@@ -532,16 +523,14 @@ function decorateSettingsPayload(settings) {
       || typeof decoratedSettings !== 'object'
       || Array.isArray(decoratedSettings)
     ) {
-      log.errorOnce(
-        'settings.decorateSettings.invalid',
+      log.error(
         'Renderer settings decorator returned an invalid payload; settings payload dropped.'
       );
       return null;
     }
     return decoratedSettings;
   } catch (error) {
-    log.errorOnce(
-      'settings.decorateSettings.failed',
+    log.error(
       'Renderer settings decorator failed; settings payload dropped:',
       error
     );
@@ -560,8 +549,7 @@ function requireDecoratedSettingsPayload(settings) {
 function resolvePublicationWindows() {
   const getWindows = publicationConfig && publicationConfig.getWindows;
   if (typeof getWindows !== 'function') {
-    log.warnOnce(
-      'settings.getWindows.unavailable',
+    log.warn(
       'getWindows unavailable; window-targeted updates skipped.'
     );
     return {};
@@ -570,16 +558,14 @@ function resolvePublicationWindows() {
   try {
     const windows = getWindows();
     if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
-      log.warnOnce(
-        'settings.getWindows.invalid',
+      log.warn(
         'getWindows returned no windows object; window-targeted updates skipped.'
       );
       return {};
     }
     return windows;
   } catch (error) {
-    log.warnOnce(
-      'settings.getWindows.failed',
+    log.warn(
       'getWindows failed (window-targeted updates skipped):',
       error
     );
@@ -590,8 +576,7 @@ function resolvePublicationWindows() {
 function notifySettingsUpdated(settings) {
   const onSettingsUpdated = publicationConfig && publicationConfig.onSettingsUpdated;
   if (typeof onSettingsUpdated !== 'function') {
-    log.warnOnce(
-      'settings.onSettingsUpdated.unavailable',
+    log.warn(
       'onSettingsUpdated callback unavailable; settings callback publish skipped.'
     );
     return;
@@ -606,12 +591,11 @@ function notifySettingsUpdated(settings) {
 
 /**
  * Sends a prepared 'settings-updated' payload to open windows (best-effort).
- * This may fail during shutdown/races; failures are logged once and ignored.
+ * This may fail during shutdown/races; failures are logged and ignored.
  */
 function sendSettingsUpdated(settingsPayload, windows) {
   if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
-    log.warnOnce(
-      'settings.broadcastSettingsUpdated.windows.invalid',
+    log.warn(
       'settings-updated broadcast failed (ignored): windows object unavailable.'
     );
     return;
@@ -633,8 +617,7 @@ function sendSettingsUpdated(settingsPayload, windows) {
       if (!win || win.isDestroyed()) return;
       win.webContents.send('settings-updated', settingsPayload);
     } catch (error) {
-      log.warnOnce(
-        `settings.broadcastSettingsUpdated.${name}`,
+      log.warn(
         'settings-updated notify failed (ignored):',
         name,
         error
