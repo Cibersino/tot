@@ -70,19 +70,6 @@ function isValidNumberFormattingEntry(value) {
     && !!value.separadorDecimal;
 }
 
-// =============================================================================
-// Shared state
-// =============================================================================
-// Dependencies injected from main.js (centralized file I/O).
-let _loadJson = null;
-let _saveJson = null;
-let _saveJsonStrict = null;
-let _settingsFile = null;
-let publicationConfig = null;
-
-// Last normalized settings kept in memory.
-let _currentSettings = null;
-
 const PRECISE_FAILURE_CODES = new Set([
   'PRECISE_SEGMENTER_UNAVAILABLE',
   'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE',
@@ -96,6 +83,19 @@ const PRECISE_FAILURE_STAGES = new Set([
   'word-construction',
   'word-segmentation',
 ]);
+
+// =============================================================================
+// Shared state
+// =============================================================================
+// Dependencies injected from main.js (centralized file I/O).
+let loadJsonDependency = null;
+let saveJsonDependency = null;
+let saveJsonStrictDependency = null;
+let settingsFilePath = null;
+let publicationConfig = null;
+
+// Last normalized settings kept in memory.
+let currentSettings = null;
 
 // =============================================================================
 // Number format defaults loader
@@ -250,7 +250,8 @@ function normalizeSettings(settings) {
     log.warnOnce('settings.normalizeSettings.undeclaredLanguage', 'Discarded undeclared application language ID:', settings.language);
   }
   settings.language = languageId;
-  const scopeId = getPreferenceScope(languageId || DEFAULT_LANG);
+  const effectiveLanguageId = languageId || DEFAULT_LANG;
+  const scopeId = getPreferenceScope(effectiveLanguageId);
   if (typeof settings.presetsByScope[scopeId] === 'undefined') {
     settings.presetsByScope[scopeId] = [];
   } else if (!Array.isArray(settings.presetsByScope[scopeId])) {
@@ -280,7 +281,7 @@ function normalizeSettings(settings) {
       settings.selectedPresetByScope[scopeId] = selectedPreset.trim();
     }
   }
-  ensureNumberFormattingForScope(settings, languageId || DEFAULT_LANG);
+  ensureNumberFormattingForScope(settings, effectiveLanguageId);
 
   return settings;
 }
@@ -317,37 +318,37 @@ function createStartupInitializationError(code, message, cause = null) {
 function getStartupAdmissionError(initialLoad) {
   if (initialLoad.status === 'missing') return null;
 
-  if (initialLoad.status === 'loaded') {
-    const settings = initialLoad.value;
-    if (!isNonArrayObject(settings)) {
-      return createStartupInitializationError(
-        'SETTINGS_STARTUP_ADMISSION_FAILED',
-        '[settings] startup settings root must be a non-array object'
-      );
-    }
-    if (!Object.prototype.hasOwnProperty.call(settings, 'presetsByScope')) return null;
-    if (!isNonArrayObject(settings.presetsByScope)) {
-      return createStartupInitializationError(
-        'SETTINGS_STARTUP_ADMISSION_FAILED',
-        '[settings] startup presetsByScope must be a non-array object when present'
-      );
-    }
-    for (const [preferenceScopeId, presets] of Object.entries(settings.presetsByScope)) {
-      if (!Array.isArray(presets)) {
-        return createStartupInitializationError(
-          'SETTINGS_STARTUP_ADMISSION_FAILED',
-          `[settings] startup presetsByScope entry must be an array: ${preferenceScopeId}`
-        );
-      }
-    }
-    return null;
+  if (initialLoad.status !== 'loaded') {
+    return createStartupInitializationError(
+      'SETTINGS_STARTUP_ADMISSION_FAILED',
+      `[settings] startup settings file is ${initialLoad.status}`,
+      initialLoad.error || null
+    );
   }
 
-  return createStartupInitializationError(
-    'SETTINGS_STARTUP_ADMISSION_FAILED',
-    `[settings] startup settings file is ${initialLoad.status}`,
-    initialLoad.error || null
-  );
+  const settings = initialLoad.value;
+  if (!isNonArrayObject(settings)) {
+    return createStartupInitializationError(
+      'SETTINGS_STARTUP_ADMISSION_FAILED',
+      '[settings] startup settings root must be a non-array object'
+    );
+  }
+  if (!Object.prototype.hasOwnProperty.call(settings, 'presetsByScope')) return null;
+  if (!isNonArrayObject(settings.presetsByScope)) {
+    return createStartupInitializationError(
+      'SETTINGS_STARTUP_ADMISSION_FAILED',
+      '[settings] startup presetsByScope must be a non-array object when present'
+    );
+  }
+  for (const [preferenceScopeId, presets] of Object.entries(settings.presetsByScope)) {
+    if (!Array.isArray(presets)) {
+      return createStartupInitializationError(
+        'SETTINGS_STARTUP_ADMISSION_FAILED',
+        `[settings] startup presetsByScope entry must be an array: ${preferenceScopeId}`
+      );
+    }
+  }
+  return null;
 }
 
 // =============================================================================
@@ -424,12 +425,12 @@ function init({
     );
   }
 
-  _loadJson = loadJson;
-  _saveJson = saveJson;
-  _saveJsonStrict = saveJsonStrict;
-  _settingsFile = settingsFile;
-  _currentSettings = normalizedSettings;
-  return _currentSettings;
+  loadJsonDependency = loadJson;
+  saveJsonDependency = saveJson;
+  saveJsonStrictDependency = saveJsonStrict;
+  settingsFilePath = settingsFile;
+  currentSettings = normalizedSettings;
+  return currentSettings;
 }
 
 /**
@@ -437,14 +438,14 @@ function init({
  * This reflects external edits to the settings file.
  */
 function getSettings() {
-  if (!_loadJson || !_settingsFile) {
+  if (!loadJsonDependency || !settingsFilePath) {
     throw new Error('[settings] getSettings called before init');
   }
 
-  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
+  const rawSettings = loadJsonDependency(settingsFilePath, createDefaultSettings());
 
-  _currentSettings = normalizeSettings(rawSettings);
-  return _currentSettings;
+  currentSettings = normalizeSettings(rawSettings);
+  return currentSettings;
 }
 
 /**
@@ -453,24 +454,24 @@ function getSettings() {
  */
 function saveSettings(nextSettings) {
   if (!nextSettings) return getSettings();
-  if (!_saveJson || !_settingsFile) {
+  if (!saveJsonDependency || !settingsFilePath) {
     throw new Error('[settings] saveSettings called before init');
   }
 
   const normalizedSettings = normalizeSettings(cloneSettingsForMutation(nextSettings));
-  _currentSettings = normalizedSettings;
+  currentSettings = normalizedSettings;
 
   try {
-    _saveJson(_settingsFile, normalizedSettings);
+    saveJsonDependency(settingsFilePath, normalizedSettings);
   } catch (error) {
     log.error(
       'saveSettings failed (not persisted):',
-      _settingsFile,
+      settingsFilePath,
       error
     );
   }
 
-  return _currentSettings;
+  return currentSettings;
 }
 
 /**
@@ -479,14 +480,14 @@ function saveSettings(nextSettings) {
  */
 function saveSettingsStrict(nextSettings) {
   if (!nextSettings) return getSettings();
-  if (!_saveJsonStrict || !_settingsFile) {
+  if (!saveJsonStrictDependency || !settingsFilePath) {
     throw new Error('[settings] saveSettingsStrict called before init');
   }
 
   const normalizedSettings = normalizeSettings(cloneSettingsForMutation(nextSettings));
-  _saveJsonStrict(_settingsFile, normalizedSettings);
-  _currentSettings = normalizedSettings;
-  return _currentSettings;
+  saveJsonStrictDependency(settingsFilePath, normalizedSettings);
+  currentSettings = normalizedSettings;
+  return currentSettings;
 }
 
 // =============================================================================
@@ -807,11 +808,9 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
       }
 
       let settings = getSettings();
-      if (chosen) {
-        const nextSettings = cloneSettingsForMutation(settings);
-        nextSettings.language = chosen;
-        settings = saveSettingsStrict(nextSettings);
-      }
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.language = chosen;
+      settings = saveSettingsStrict(nextSettings);
 
       const windows = resolvePublicationWindows();
 
