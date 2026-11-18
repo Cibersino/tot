@@ -35,8 +35,10 @@ function getLanguageDescriptor(languageId) {
 }
 
 function getValidLanguageId(value) {
-  if (typeof value !== 'string' || !value.trim()) return '';
-  const descriptor = getLanguageDescriptor(value.trim());
+  if (typeof value !== 'string') return '';
+  const languageId = value.trim();
+  if (!languageId) return '';
+  const descriptor = getLanguageDescriptor(languageId);
   return descriptor ? descriptor.id : '';
 }
 
@@ -137,7 +139,8 @@ function loadNumberFormatDefaults(lang) {
  */
 function ensureNumberFormattingForScope(settings, languageId) {
   if (!settings || typeof settings !== 'object') return;
-  const preferenceScopeId = getPreferenceScope(languageId || DEFAULT_LANG);
+  const effectiveLanguageId = languageId || DEFAULT_LANG;
+  const preferenceScopeId = getPreferenceScope(effectiveLanguageId);
   const currentEntry = settings.numberFormattingByScope[preferenceScopeId];
 
   if (typeof currentEntry !== 'undefined') {
@@ -155,7 +158,7 @@ function ensureNumberFormattingForScope(settings, languageId) {
     );
   }
 
-  const numberFormatDefaults = loadNumberFormatDefaults(languageId || DEFAULT_LANG);
+  const numberFormatDefaults = loadNumberFormatDefaults(effectiveLanguageId);
   settings.numberFormattingByScope[preferenceScopeId] = {
     separadorMiles: numberFormatDefaults.thousands,
     separadorDecimal: numberFormatDefaults.decimal,
@@ -251,34 +254,34 @@ function normalizeSettings(settings) {
   }
   settings.language = languageId;
   const effectiveLanguageId = languageId || DEFAULT_LANG;
-  const scopeId = getPreferenceScope(effectiveLanguageId);
-  if (typeof settings.presetsByScope[scopeId] === 'undefined') {
-    settings.presetsByScope[scopeId] = [];
-  } else if (!Array.isArray(settings.presetsByScope[scopeId])) {
+  const preferenceScopeId = getPreferenceScope(effectiveLanguageId);
+  if (typeof settings.presetsByScope[preferenceScopeId] === 'undefined') {
+    settings.presetsByScope[preferenceScopeId] = [];
+  } else if (!Array.isArray(settings.presetsByScope[preferenceScopeId])) {
     log.warnOnce(
-      `settings.normalizeSettings.invalidPresetsByScopeEntry:${scopeId}`,
+      `settings.normalizeSettings.invalidPresetsByScopeEntry:${preferenceScopeId}`,
       'Invalid presetsByScope entry; resetting to empty array:',
       {
-        preferenceScopeId: scopeId,
-        type: typeof settings.presetsByScope[scopeId],
-        isArray: Array.isArray(settings.presetsByScope[scopeId]),
+        preferenceScopeId,
+        type: typeof settings.presetsByScope[preferenceScopeId],
+        isArray: Array.isArray(settings.presetsByScope[preferenceScopeId]),
       }
     );
-    settings.presetsByScope[scopeId] = [];
+    settings.presetsByScope[preferenceScopeId] = [];
   }
-  const selectedPreset = settings.selectedPresetByScope[scopeId];
+  const selectedPreset = settings.selectedPresetByScope[preferenceScopeId];
   if (typeof selectedPreset !== 'undefined') {
     if (typeof selectedPreset !== 'string') {
       log.warnOnce(
-        `settings.normalizeSettings.invalidSelectedPresetByScopeEntry:${scopeId}`,
+        `settings.normalizeSettings.invalidSelectedPresetByScopeEntry:${preferenceScopeId}`,
         'Invalid selectedPresetByScope entry; removing:',
-        { preferenceScopeId: scopeId, type: typeof selectedPreset }
+        { preferenceScopeId, type: typeof selectedPreset }
       );
-      delete settings.selectedPresetByScope[scopeId];
+      delete settings.selectedPresetByScope[preferenceScopeId];
     } else if (!selectedPreset.trim()) {
-      delete settings.selectedPresetByScope[scopeId];
+      delete settings.selectedPresetByScope[preferenceScopeId];
     } else {
-      settings.selectedPresetByScope[scopeId] = selectedPreset.trim();
+      settings.selectedPresetByScope[preferenceScopeId] = selectedPreset.trim();
     }
   }
   ensureNumberFormattingForScope(settings, effectiveLanguageId);
