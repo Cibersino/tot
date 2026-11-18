@@ -172,7 +172,7 @@ function ensureNumberFormattingForScope(settings, languageId) {
  *
  * Goals:
  * - Rebuild a safe in-memory shape when the persisted file is missing or edited externally.
- * - Convert invalid shapes to safe defaults (and log once).
+ * - Convert invalid shapes to safe defaults (and log).
  * - Ensure language-dependent buckets exist for the current preference scope.
  */
 function normalizeSettings(settings) {
@@ -740,6 +740,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - get-current-language
  * - set-language
  * - set-mode-conteo
+ * - precise-counting-failed
  * - set-selected-preset
  * - set-preview-spoiler-enabled
  */
@@ -800,8 +801,7 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
 
       const windows = resolvePublicationWindows();
 
-      // The first-run picker persists the selection before startup owns its one
-      // initial menu installation. Later user-initiated changes rebuild here.
+      // The first-run picker persists the selection before startup owns its one initial menu installation. Later user-initiated changes rebuild here.
       const rebuildAppMenu = typeof shouldRebuildAppMenu !== 'function'
         || shouldRebuildAppMenu() !== false;
       if (rebuildAppMenu) {
