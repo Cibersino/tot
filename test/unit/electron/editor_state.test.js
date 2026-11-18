@@ -323,6 +323,38 @@ test('window-state writes preserve editor preferences', (t) => {
   assert.equal(savedState.maximizedTextWidthPx, 960);
 });
 
+test('window geometry writes persist the complete Text Editor state without replacement', (t) => {
+  const { editorState, fsStorage } = createStorageHarness(t, {
+    maximized: false,
+    reduced: null,
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
+    maximizedTextWidthPx: 900,
+  });
+  const editorWin = createEditorWindowDouble({
+    bounds: { width: 1300, height: 820, x: 40, y: 60 },
+  });
+  const originalRenameSync = fs.renameSync;
+  let renameCalls = 0;
+
+  t.mock.method(fs, 'renameSync', (oldPath, newPath) => {
+    renameCalls += 1;
+    return originalRenameSync.call(fs, oldPath, newPath);
+  });
+
+  editorState.attachTo(editorWin);
+  editorWin.emit('move');
+
+  assert.equal(renameCalls, 0);
+  assert.deepEqual(fsStorage.loadJson(fsStorage.getEditorStateFile(), {}), {
+    maximized: false,
+    reduced: { width: 1300, height: 820, x: 40, y: 60 },
+    spellcheckEnabled: false,
+    editorFontSizePx: 24,
+    maximizedTextWidthPx: 900,
+  });
+});
+
 test('shortcut actions persist editor font size without publishing global settings', (t) => {
   const { editorState, fsStorage } = createStorageHarness(t, {
     maximized: true,

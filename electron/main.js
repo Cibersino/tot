@@ -43,6 +43,7 @@ const {
   loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
+  saveJsonDirect,
   createJsonStrict,
   createSettingsStartupBackup,
 } = require('./fs_storage');
@@ -1111,7 +1112,7 @@ function createEditorWindow(options = {}) {
   });
 
   // Delegate persistent window-state management to editor_state.js.
-  editorState.attachTo(editorWin, loadJson, saveJson);
+  editorState.attachTo(editorWin, loadJson, saveJsonDirect);
 
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {

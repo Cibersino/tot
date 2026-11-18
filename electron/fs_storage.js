@@ -19,6 +19,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { randomUUID } = require('crypto');
 const Log = require('./log');
 
 const log = Log.get('fs-storage');
@@ -28,6 +29,8 @@ const log = Log.get('fs-storage');
 // =============================================================================
 
 const ENSURE_DIR_OPTIONS = { recursive: true };
+const FILE_PERMISSION_BITS = 0o777;
+const SPECIAL_PERMISSION_BITS = 0o7000;
 const SETTINGS_BACKUP_FILE_PREFIX = 'user_settings.json.backup.';
 const MAX_SETTINGS_BACKUPS = 3;
 
@@ -328,30 +331,172 @@ function loadJson(filePath, fallback = {}) {
   return loadJsonWithStatus(filePath, fallback).value;
 }
 
+function prepareJsonWrite(filePath, obj) {
+  const parentDir = path.dirname(filePath);
+  ensureDirExists(parentDir);
+  return {
+    parentDir,
+    serialized: JSON.stringify(obj, null, 2),
+  };
+}
+
+function writeSerializedJsonDirect(filePath, serialized) {
+  fs.writeFileSync(filePath, serialized, 'utf8');
+}
+
+function writeJsonDirect(filePath, obj) {
+  const { serialized } = prepareJsonWrite(filePath, obj);
+  writeSerializedJsonDirect(filePath, serialized);
+}
+
+function getReplacementPermissionMode(filePath) {
+  try {
+    const destinationStats = fs.lstatSync(filePath);
+    if (
+      !destinationStats.isFile()
+      || destinationStats.nlink !== 1
+      || (destinationStats.mode & SPECIAL_PERMISSION_BITS) !== 0
+    ) {
+      return undefined;
+    }
+    return destinationStats.mode & FILE_PERMISSION_BITS;
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function canCreateReplacementIn(parentDir) {
+  try {
+    fs.accessSync(parentDir, fs.constants.W_OK | fs.constants.X_OK);
+    return true;
+  } catch (error) {
+    log.warn(
+      'JSON replacement skipped; using direct write after temporary-file creation access check failed:',
+      parentDir,
+      error
+    );
+    return false;
+  }
+}
+
+function verifyExistingFileIsWritable(filePath) {
+  const destinationFileDescriptor = fs.openSync(filePath, 'r+');
+  fs.closeSync(destinationFileDescriptor);
+}
+
+function cleanupTemporaryJsonFile(temporaryFilePath) {
+  try {
+    fs.unlinkSync(temporaryFilePath);
+  } catch (error) {
+    log.warn('JSON replacement temporary-file cleanup failed (ignored):', temporaryFilePath, error);
+  }
+}
+
+function writeTemporaryJsonFile(temporaryFileDescriptor, serialized, temporaryFilePath) {
+  let writeError = null;
+  try {
+    fs.writeFileSync(temporaryFileDescriptor, serialized, 'utf8');
+  } catch (error) {
+    writeError = error;
+  }
+
+  try {
+    fs.closeSync(temporaryFileDescriptor);
+  } catch (error) {
+    if (writeError) {
+      log.warn(
+        'JSON replacement temporary-file close failed after write failure (ignored):',
+        temporaryFilePath,
+        error
+      );
+    } else {
+      throw error;
+    }
+  }
+
+  if (writeError) throw writeError;
+}
+
+// Replaces a regular, single-linked JSON record only after a complete sibling
+// file has been written and closed. Other destination entries retain direct
+// write semantics so their identity, metadata, and access behavior are not
+// silently changed.
+function writeJsonWithReplacement(filePath, obj) {
+  const { parentDir, serialized } = prepareJsonWrite(filePath, obj);
+  const replacementPermissionMode = getReplacementPermissionMode(filePath);
+
+  if (replacementPermissionMode === undefined) {
+    log.warn(
+      'JSON replacement skipped; using direct write for a destination that cannot be safely replaced:',
+      filePath
+    );
+    writeSerializedJsonDirect(filePath, serialized);
+    return;
+  }
+
+  if (replacementPermissionMode !== null) {
+    verifyExistingFileIsWritable(filePath);
+    if (!canCreateReplacementIn(parentDir)) {
+      writeSerializedJsonDirect(filePath, serialized);
+      return;
+    }
+  }
+
+  const temporaryFilePath = path.join(parentDir, `.tot-json-${randomUUID()}.tmp`);
+  let temporaryFileExists = false;
+
+  try {
+    const temporaryFileDescriptor = replacementPermissionMode === null
+      ? fs.openSync(temporaryFilePath, 'wx')
+      : fs.openSync(temporaryFilePath, 'wx', replacementPermissionMode);
+    temporaryFileExists = true;
+    writeTemporaryJsonFile(temporaryFileDescriptor, serialized, temporaryFilePath);
+
+    if (replacementPermissionMode !== null && process.platform !== 'win32') {
+      fs.chmodSync(temporaryFilePath, replacementPermissionMode);
+    }
+    fs.renameSync(temporaryFilePath, filePath);
+    temporaryFileExists = false;
+  } finally {
+    if (temporaryFileExists) {
+      cleanupTemporaryJsonFile(temporaryFilePath);
+    }
+  }
+}
+
 // Best-effort JSON persistence for runtime/config state:
-// - attempts a synchronous write;
+// - attempts a synchronous replacement write where the destination permits it;
 // - logs internally on failure;
 // - does not throw or return a success result.
 function saveJson(filePath, obj) {
   try {
-    // Ensure the parent folder exists so callers do not depend on init ordering.
-    const parentDir = path.dirname(filePath);
-    ensureDirExists(parentDir);
-
-    fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
+    writeJsonWithReplacement(filePath, obj);
   } catch (error) {
     log.warn('saveJson failed (ignored):', filePath, error);
   }
 }
 
 // Strict JSON persistence for explicit save flows:
-// - uses the same parent-dir creation and serialization contract as saveJson(...);
+// - uses the same parent-dir creation and replacement contract as saveJson(...);
 // - does not suppress failures;
 // - callers own catch/log/result mapping at the operation boundary.
 function saveJsonStrict(filePath, obj) {
-  const parentDir = path.dirname(filePath);
-  ensureDirExists(parentDir);
-  fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
+  writeJsonWithReplacement(filePath, obj);
+}
+
+// Direct JSON persistence is reserved for the high-frequency editor-state
+// owners, whose geometry writes deliberately retain the previous mechanism.
+function saveJsonDirect(filePath, obj) {
+  try {
+    writeJsonDirect(filePath, obj);
+  } catch (error) {
+    log.warn('saveJson failed (ignored):', filePath, error);
+  }
+}
+
+function saveJsonDirectStrict(filePath, obj) {
+  writeJsonDirect(filePath, obj);
 }
 
 // Strict JSON creation for flows that must never replace an entry that appeared after their preflight. By default, unlike saveJsonStrict(...), this does not create the parent directory and requests exclusive filesystem creation.
@@ -459,6 +604,8 @@ module.exports = {
   loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
+  saveJsonDirect,
+  saveJsonDirectStrict,
   createJsonStrict,
   createSettingsStartupBackup,
 };

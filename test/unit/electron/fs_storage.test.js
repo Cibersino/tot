@@ -6,6 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const Log = require('../../../electron/log');
 const {
   createTestTempDir,
 } = require('../../helpers/test_temp_paths');
@@ -21,6 +22,21 @@ function createTempDir(t) {
   const tempDir = createTestTempDir('fs-storage');
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   return tempDir;
+}
+
+function captureWarnings(action) {
+  const previousLevel = Log.getLevel();
+  const originalWarn = console.warn;
+  const warnings = [];
+  Log.setLevel('warn');
+  console.warn = (...args) => warnings.push(args);
+  try {
+    action();
+    return warnings;
+  } finally {
+    console.warn = originalWarn;
+    Log.setLevel(previousLevel);
+  }
 }
 
 test('saveJsonStrict creates parent directories and persists JSON content', (t) => {
@@ -39,6 +55,211 @@ test('saveJsonStrict creates parent directories and persists JSON content', (t) 
     fs.readFileSync(targetPath, 'utf8'),
     `${JSON.stringify(payload, null, 2)}`
   );
+});
+
+test('saveJsonDirectStrict retains direct parent creation and JSON persistence', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'nested', 'state.json');
+  const payload = { language: 'en' };
+
+  fsStorage.saveJsonDirectStrict(targetPath, payload);
+
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), JSON.stringify(payload, null, 2));
+});
+
+test('saveJsonStrict removes its staged file and preserves the destination when replacement fails', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+  const originalContents = '{"language":"es"}';
+  const originalRenameSync = fs.renameSync;
+
+  fs.writeFileSync(targetPath, originalContents, 'utf8');
+  t.mock.method(fs, 'renameSync', (oldPath, newPath) => {
+    if (newPath === targetPath) {
+      const error = new Error('replacement denied');
+      error.code = 'EACCES';
+      throw error;
+    }
+    return originalRenameSync.call(fs, oldPath, newPath);
+  });
+
+  assert.throws(() => fsStorage.saveJsonStrict(targetPath, { language: 'en' }), {
+    code: 'EACCES',
+  });
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), originalContents);
+  assert.deepEqual(fs.readdirSync(tempDir), ['state.json']);
+});
+
+test('saveJson suppresses a replacement failure without changing the destination', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+  const originalContents = '{"language":"es"}';
+  const originalRenameSync = fs.renameSync;
+
+  fs.writeFileSync(targetPath, originalContents, 'utf8');
+  t.mock.method(fs, 'renameSync', (oldPath, newPath) => {
+    if (newPath === targetPath) {
+      const error = new Error('replacement denied');
+      error.code = 'EACCES';
+      throw error;
+    }
+    return originalRenameSync.call(fs, oldPath, newPath);
+  });
+
+  assert.doesNotThrow(() => fsStorage.saveJson(targetPath, { language: 'en' }));
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), originalContents);
+  assert.deepEqual(fs.readdirSync(tempDir), ['state.json']);
+});
+
+test('saveJsonStrict preserves a write failure when closing the staged file also fails', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+  const originalContents = '{"language":"es"}';
+  const originalWriteFileSync = fs.writeFileSync;
+  const originalCloseSync = fs.closeSync;
+  let temporaryFileDescriptor = null;
+
+  fs.writeFileSync(targetPath, originalContents, 'utf8');
+  t.mock.method(fs, 'writeFileSync', (filePath, ...args) => {
+    if (typeof filePath === 'number') {
+      temporaryFileDescriptor = filePath;
+      const error = new Error('replacement staging failed');
+      error.code = 'ENOSPC';
+      throw error;
+    }
+    return originalWriteFileSync.call(fs, filePath, ...args);
+  });
+  t.mock.method(fs, 'closeSync', (fileDescriptor, ...args) => {
+    const result = originalCloseSync.call(fs, fileDescriptor, ...args);
+    if (fileDescriptor === temporaryFileDescriptor) {
+      const error = new Error('temporary close failed');
+      error.code = 'EIO';
+      throw error;
+    }
+    return result;
+  });
+
+  assert.throws(() => fsStorage.saveJsonStrict(targetPath, { language: 'en' }), {
+    code: 'ENOSPC',
+  });
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), originalContents);
+  assert.deepEqual(fs.readdirSync(tempDir), ['state.json']);
+});
+
+test('saveJsonStrict preserves ordinary POSIX permission bits on replacement', {
+  skip: process.platform === 'win32',
+}, (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+
+  fs.writeFileSync(targetPath, '{"language":"es"}', 'utf8');
+  fs.chmodSync(targetPath, 0o640);
+  fsStorage.saveJsonStrict(targetPath, { language: 'en' });
+
+  assert.equal(fs.statSync(targetPath).mode & 0o777, 0o640);
+});
+
+test('saveJsonStrict does not bypass ordinary POSIX file write restrictions', {
+  skip: process.platform === 'win32' || process.getuid?.() === 0,
+}, (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+  const originalContents = '{"language":"es"}';
+
+  fs.writeFileSync(targetPath, originalContents, 'utf8');
+  fs.chmodSync(targetPath, 0o444);
+  try {
+    assert.throws(
+      () => fsStorage.saveJsonStrict(targetPath, { language: 'en' }),
+      (error) => error && (error.code === 'EACCES' || error.code === 'EPERM')
+    );
+  } finally {
+    fs.chmodSync(targetPath, 0o600);
+  }
+
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), originalContents);
+});
+
+test('saveJsonStrict keeps symbolic links on their direct-write semantics', {
+  skip: process.platform === 'win32',
+}, (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'target.json');
+  const symlinkPath = path.join(tempDir, 'linked.json');
+
+  fs.writeFileSync(targetPath, '{"language":"es"}', 'utf8');
+  fs.symlinkSync(targetPath, symlinkPath);
+  fsStorage.saveJsonStrict(symlinkPath, { language: 'en' });
+  assert.equal(fs.lstatSync(symlinkPath).isSymbolicLink(), true);
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), JSON.stringify({ language: 'en' }, null, 2));
+});
+
+test('saveJsonStrict keeps hard links on their direct-write semantics', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'target.json');
+  const hardLinkPath = path.join(tempDir, 'hard-linked.json');
+
+  fs.writeFileSync(targetPath, '{"language":"es"}', 'utf8');
+  fs.linkSync(targetPath, hardLinkPath);
+  const warnings = captureWarnings(() => {
+    fsStorage.saveJsonStrict(hardLinkPath, { language: 'fr' });
+  });
+
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), JSON.stringify({ language: 'fr' }, null, 2));
+  assert.equal(fs.readFileSync(hardLinkPath, 'utf8'), JSON.stringify({ language: 'fr' }, null, 2));
+  assert.deepEqual(warnings, [[
+    '[WARN][fs-storage]',
+    'JSON replacement skipped; using direct write for a destination that cannot be safely replaced:',
+    hardLinkPath,
+  ]]);
+});
+
+test('saveJsonStrict reports direct writing when sibling temporary-file access is unavailable', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+  const originalAccessSync = fs.accessSync;
+  const accessError = new Error('temporary-file creation denied');
+  accessError.code = 'EACCES';
+
+  fs.writeFileSync(targetPath, '{"language":"es"}', 'utf8');
+  t.mock.method(fs, 'accessSync', (target, mode) => {
+    if (target === tempDir && mode === (fs.constants.W_OK | fs.constants.X_OK)) {
+      throw accessError;
+    }
+    return originalAccessSync.call(fs, target, mode);
+  });
+
+  const warnings = captureWarnings(() => {
+    fsStorage.saveJsonStrict(targetPath, { language: 'en' });
+  });
+
+  assert.equal(fs.readFileSync(targetPath, 'utf8'), JSON.stringify({ language: 'en' }, null, 2));
+  assert.deepEqual(warnings, [[
+    '[WARN][fs-storage]',
+    'JSON replacement skipped; using direct write after temporary-file creation access check failed:',
+    tempDir,
+    accessError,
+  ]]);
+});
+
+test('saveJsonStrict does not replace a non-file destination', (t) => {
+  const tempDir = createTempDir(t);
+  const fsStorage = loadFreshFsStorage();
+  const targetPath = path.join(tempDir, 'state.json');
+
+  fs.mkdirSync(targetPath);
+  assert.throws(() => fsStorage.saveJsonStrict(targetPath, { language: 'en' }));
+  assert.equal(fs.statSync(targetPath).isDirectory(), true);
+  assert.deepEqual(fs.readdirSync(tempDir), ['state.json']);
 });
 
 test('loadJsonWithStatus preserves status, fallback, and BOM behavior across startup-relevant reads', (t) => {

@@ -166,6 +166,32 @@ test('a geometry update preserves accepted column widths in the complete persist
   }));
 });
 
+test('window geometry writes persist the complete Task Editor state without replacement', (t) => {
+  const { taskEditorState, fsStorage } = createStorageHarness(t, createState({
+    columnWidths: { ...DEFAULT_WIDTHS, tiempo: 118 },
+  }));
+  const taskEditorWin = createWindowDouble({
+    bounds: { x: 80, y: 100, width: 1333, height: 777 },
+  });
+  const originalRenameSync = fs.renameSync;
+  let renameCalls = 0;
+
+  t.mock.method(fs, 'renameSync', (oldPath, newPath) => {
+    renameCalls += 1;
+    return originalRenameSync.call(fs, oldPath, newPath);
+  });
+
+  taskEditorState.loadInitialState();
+  taskEditorState.attachTo(taskEditorWin);
+  taskEditorWin.emit('move');
+
+  assert.equal(renameCalls, 0);
+  assert.deepEqual(fsStorage.loadJson(fsStorage.getTaskEditorStateFile(), {}), createState({
+    reduced: { x: 80, y: 100, width: 1333, height: 777 },
+    columnWidths: { ...DEFAULT_WIDTHS, tiempo: 118 },
+  }));
+});
+
 test('a column update preserves restored maximized geometry state in the complete snapshot', (t) => {
   const reduced = { x: 25, y: 35, width: 1200, height: 720 };
   const { taskEditorState, fsStorage } = createStorageHarness(t, createState({

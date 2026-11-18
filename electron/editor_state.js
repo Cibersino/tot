@@ -5,7 +5,7 @@
 // Overview
 // =============================================================================
 // Persist and restore Text Editor geometry and editor-specific presentation preferences.
-// - Reads/writes editor_state.json via fs_storage.
+// - Reads/writes editor_state.json through the owner-selected fs_storage paths.
 // - Normalizes persisted state, reduced bounds, and local preferences.
 // - Attaches window event handlers to persist changes.
 // - Restores reduced bounds or applies a fallback placement on unmaximize.
@@ -17,7 +17,12 @@
 // =============================================================================
 
 const { screen } = require('electron');
-const { getEditorStateFile, loadJson, saveJson, saveJsonStrict } = require('./fs_storage');
+const {
+  getEditorStateFile,
+  loadJson,
+  saveJsonDirect,
+  saveJsonDirectStrict,
+} = require('./fs_storage');
 const {
   EDITOR_FONT_SIZE_DEFAULT_PX,
   EDITOR_FONT_SIZE_MAX_PX,
@@ -262,7 +267,7 @@ function setEditorSpellcheckEnabled(enabled, { editorWin = null } = {}) {
         return { changed: false, state };
       }
       state.spellcheckEnabled = enabled;
-      saveJsonStrict(editorStateFile, state);
+      saveJsonDirectStrict(editorStateFile, state);
       return { changed: true, state };
     });
 
@@ -294,7 +299,7 @@ function setEditorFontSizePx(fontSizePx, { editorWin = null } = {}) {
         return { changed: false, state };
       }
       state.editorFontSizePx = nextEditorFontSizePx;
-      saveJsonStrict(editorStateFile, state);
+      saveJsonDirectStrict(editorStateFile, state);
       return { changed: true, state };
     });
 
@@ -349,7 +354,7 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   if (!editorWin) return;
 
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
-  const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJson;
+  const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJsonDirect;
   let editorStateFile = null;
 
   try {
@@ -562,7 +567,7 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
       }
 
       state.maximizedTextWidthPx = nextMaximizedTextWidthPx;
-      saveJsonStrict(editorStateFile, state);
+      saveJsonDirectStrict(editorStateFile, state);
       notifyEditorState(editorWin, 'editorState.setMaximizedTextWidthPx');
 
       return { ok: true, maximizedTextWidthPx: state.maximizedTextWidthPx };

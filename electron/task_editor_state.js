@@ -17,7 +17,7 @@
 // Imports / logger
 // =============================================================================
 const { screen } = require('electron');
-const { getTaskEditorStateFile, loadJson, saveJsonStrict } = require('./fs_storage');
+const { getTaskEditorStateFile, loadJson, saveJsonDirectStrict } = require('./fs_storage');
 const Log = require('./log');
 
 const log = Log.get('task-editor-state');
@@ -263,7 +263,7 @@ function getReducedBounds(taskEditorWin) {
 
 function persistActiveState() {
   try {
-    saveJsonStrict(getTaskEditorStateFile(), copyState(activeState));
+    saveJsonDirectStrict(getTaskEditorStateFile(), copyState(activeState));
     return true;
   } catch (error) {
     log.warn('Task Editor presentation state save failed (ignored):', error);
