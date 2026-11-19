@@ -4,13 +4,14 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process file system storage helpers.
+// Main-process file-system storage helpers.
 // Responsibilities:
-// - Initialize the config root under app.getPath('userData') once Electron is ready.
+// - Initialize the config root under app.getPath('userData') and the app root from app.getAppPath() once Electron is ready.
 // - Resolve stable paths for settings, current text, Text Editor state, presets, current-text snapshots, task files, and text extraction + OCR storage.
-// - Ensure required storage directories exist before reads and writes.
-// - Read small JSON files with recoverable fallback handling.
-// - Write small JSON files through either a best-effort or strict contract.
+// - Create storage directories and write parents synchronously.
+// - Read small JSON files with recoverable fallback values and status reporting.
+// - Persist small JSON files through replacement or direct writes under best-effort or strict contracts, and support strict exclusive creation.
+// - Create bounded, byte-exact settings startup backups before normalization can rewrite admitted settings.
 // - Stay synchronous because it is used only from the Electron main process.
 
 // =============================================================================
@@ -238,7 +239,7 @@ function ensureOcrGoogleDriveDir() {
 }
 
 // =============================================================================
-// JSON helpers
+// JSON loading helpers
 // =============================================================================
 
 const LOAD_JSON_FILE_METADATA = Object.freeze({
@@ -330,6 +331,10 @@ function loadJsonWithStatus(filePath, fallback = {}, { includeRawBytes = false }
 function loadJson(filePath, fallback = {}) {
   return loadJsonWithStatus(filePath, fallback).value;
 }
+
+// =============================================================================
+// JSON persistence helpers
+// =============================================================================
 
 function prepareJsonWrite(filePath, obj) {
   const parentDir = path.dirname(filePath);
@@ -509,6 +514,10 @@ function createJsonStrict(filePath, obj, { ensureParent = false } = {}) {
     flag: 'wx',
   });
 }
+
+// =============================================================================
+// Settings startup backup helpers
+// =============================================================================
 
 function getSettingsBackupGeneration(fileName) {
   if (!fileName.startsWith(SETTINGS_BACKUP_FILE_PREFIX)) return null;
