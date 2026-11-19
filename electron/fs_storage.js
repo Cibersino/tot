@@ -190,7 +190,7 @@ function ensureConfigDir() {
     const dir = getConfigDir();
     ensureDirExists(dir);
   } catch (error) {
-    log.error('ensureConfigDir failed:', configDir || '(uninitialized)', error);
+    log.error('ensureConfigDir failed (ignored):', configDir || '(uninitialized)', error);
   }
 }
 
@@ -200,7 +200,7 @@ function ensureConfigPresetsDir() {
     presetsDir = getConfigPresetsDir();
     ensureDirExists(presetsDir);
   } catch (error) {
-    log.error('ensureConfigPresetsDir failed:', presetsDir || '(uninitialized)', error);
+    log.error('ensureConfigPresetsDir failed (ignored):', presetsDir || '(uninitialized)', error);
   }
 }
 
@@ -210,7 +210,7 @@ function ensureCurrentTextSnapshotsDir() {
     snapshotsDir = getCurrentTextSnapshotsDir();
     ensureDirExists(snapshotsDir);
   } catch (error) {
-    log.error('ensureCurrentTextSnapshotsDir failed:', snapshotsDir || '(uninitialized)', error);
+    log.error('ensureCurrentTextSnapshotsDir failed (ignored):', snapshotsDir || '(uninitialized)', error);
   }
 }
 
@@ -223,7 +223,7 @@ function ensureTasksDirs() {
     ensureDirExists(tasksDir);
     ensureDirExists(listsDir);
   } catch (error) {
-    log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', error);
+    log.error('ensureTasksDirs failed (ignored):', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', error);
   }
 }
 
@@ -233,7 +233,7 @@ function ensureOcrGoogleDriveDir() {
     ocrDir = getOcrGoogleDriveDir();
     ensureDirExists(ocrDir);
   } catch (error) {
-    log.error('ensureOcrGoogleDriveDir failed:', ocrDir || '(uninitialized)', error);
+    log.error('ensureOcrGoogleDriveDir failed (ignored):', ocrDir || '(uninitialized)', error);
   }
 }
 
@@ -491,7 +491,7 @@ function saveJsonDirect(filePath, obj) {
   try {
     writeJsonDirect(filePath, obj);
   } catch (error) {
-    log.warn('saveJson failed (ignored):', filePath, error);
+    log.warn('saveJsonDirect failed (ignored):', filePath, error);
   }
 }
 
