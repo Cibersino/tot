@@ -1652,7 +1652,7 @@ accessibility stack) with the run evidence.
 **Expected:**
 - At 1093 px and 1077 px with fresh defaults, Reading is exactly 420 px and 404 px respectively; the utility total is 672 px.
 - The explicit table widths are 1092 px and 1076 px respectively, equal the sum of all seven rendered columns, and leave no horizontal scroll range.
-- Pointer and keyboard resizing respect the 114 px Reading minimum and each utility minimum.
+- Pointer and keyboard resizing respect the 250 px Reading minimum and each utility minimum.
 - An active pointer drag retains sole ownership: Arrow keys and additional pointers do not modify, replace, cancel, or persist its provisional widths.
 - Interrupted pointer resizing restores the pre-drag widths and is not persisted.
 - A narrow wrapper shows horizontal scrolling and disables all six dividers; widening re-enables them.
