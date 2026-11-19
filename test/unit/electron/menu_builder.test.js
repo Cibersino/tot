@@ -405,3 +405,64 @@ test('buildAppMenu keeps the shared top-level menu structure and links submenu o
   );
   assert.equal(capturedTemplate[3].label, '?');
 });
+
+test('development menu actions preserve their target operations', (t) => {
+  const originalShowDevMenu = process.env.SHOW_DEV_MENU;
+  process.env.SHOW_DEV_MENU = '1';
+  t.after(() => {
+    if (originalShowDevMenu === undefined) {
+      delete process.env.SHOW_DEV_MENU;
+      return;
+    }
+    process.env.SHOW_DEV_MENU = originalShowDevMenu;
+  });
+
+  const operations = [];
+  const target = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      reload() {
+        operations.push('reload');
+      },
+      reloadIgnoringCache() {
+        operations.push('forceReload');
+      },
+      toggleDevTools() {
+        operations.push('toggleDevTools');
+      },
+    },
+  };
+  let capturedTemplate = null;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    app: { isPackaged: false },
+    BrowserWindow: {
+      getFocusedWindow() {
+        return target;
+      },
+    },
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return {};
+      },
+    },
+  });
+
+  menuBuilder.buildAppMenu('en');
+
+  const developmentMenu = capturedTemplate.at(-1);
+  assert.deepEqual(
+    developmentMenu.submenu.map(({ accelerator, label }) => ({ accelerator, label })),
+    [
+      { accelerator: 'CommandOrControl+R', label: 'Reload' },
+      { accelerator: 'CommandOrControl+Shift+R', label: 'Force reload' },
+      { accelerator: 'Ctrl+Shift+I', label: 'Toggle DevTools' },
+    ]
+  );
+
+  developmentMenu.submenu.forEach(({ click }) => click());
+
+  assert.deepEqual(operations, ['reload', 'forceReload', 'toggleDevTools']);
+});

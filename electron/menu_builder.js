@@ -47,8 +47,7 @@ const isPlainObject = (value) => value && typeof value === 'object' && !Array.is
 let defaultMainTranslations = null;
 
 const deepMerge = (base, overlay) => {
-    const result = Object.assign({}, base || {});
-    if (!overlay) return result;
+    const result = Object.assign({}, base);
     Object.keys(overlay).forEach((key) => {
         if (isPlainObject(result[key]) && isPlainObject(overlay[key])) {
             result[key] = deepMerge(result[key], overlay[key]);
@@ -144,12 +143,12 @@ function loadMainTranslations(lang) {
         if (descriptor.id === DEFAULT_LANG) return;
         const bundle = loadBundle(descriptor, selectedId, false);
         if (!bundle) return;
-        translations = translations ? deepMerge(translations, bundle) : bundle;
+        translations = deepMerge(translations, bundle);
     });
     return translations;
 }
 
-function loadBundle(descriptor, requestedLanguageId, required) {
+function loadBundle(descriptor, requestedLanguageId, isRequired) {
     const file = path.join(I18N_DIR, descriptor.resourceDirectory, 'main.json');
     try {
         const raw = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '');
@@ -158,7 +157,7 @@ function loadBundle(descriptor, requestedLanguageId, required) {
         return parsed;
     } catch (error) {
         const details = { requestedLanguageId, languageId: descriptor.id, resourceDirectory: descriptor.resourceDirectory, file };
-        if (required) {
+        if (isRequired) {
             log.errorOnce(`menu_builder.loadMainTranslations.requiredMissing:${descriptor.id}`, 'Required default main.json unavailable:', details, error);
         } else {
             log.warnOnce(`menu_builder.loadMainTranslations.failed:${descriptor.id}`, 'main.json unavailable; continuing through declared graph chain:', details, error);
@@ -175,7 +174,7 @@ function loadBundle(descriptor, requestedLanguageId, required) {
 
 function getDialogTexts(lang) {
     const translations = loadMainTranslations(lang);
-    const mainTexts = isPlainObject(translations && translations.main) ? translations.main : {};
+    const mainTexts = isPlainObject(translations.main) ? translations.main : {};
     return isPlainObject(mainTexts.dialog) ? mainTexts.dialog : {};
 }
 
@@ -198,7 +197,7 @@ function getDialogTexts(lang) {
  */
 function buildAppMenu(lang, opts = {}) {
     const effectiveLang = typeof lang === 'string' && lang.trim() ? lang.trim() : DEFAULT_LANG;
-    const translations = loadMainTranslations(effectiveLang) || {};
+    const translations = loadMainTranslations(effectiveLang);
     const mainTexts = isPlainObject(translations.main) ? translations.main : {};
     const menuTexts = isPlainObject(mainTexts.menu) ? mainTexts.menu : {};
     const macMenuTexts = isPlainObject(menuTexts.mac) ? menuTexts.mac : {};
@@ -266,6 +265,26 @@ function buildAppMenu(lang, opts = {}) {
         if (resolvedMain && !resolvedMain.isDestroyed()) return resolvedMain;
         return null;
     };
+
+    const createDevMenuActionItem = (labelKey, actionId, accelerator, actionLabel, runOnTarget) => ({
+        label: resolveMenuLabel(menuTexts, labelKey),
+        accelerator,
+        click: () => {
+            if (!canDispatchMenuAction(actionId)) return;
+
+            const target = resolveDevTarget();
+            if (!target) {
+                log.warn(`${actionLabel} failed (ignored): no target window`);
+                return;
+            }
+
+            try {
+                runOnTarget(target);
+            } catch (error) {
+                log.warn(`${actionLabel} failed (ignored):`, error);
+            }
+        },
+    });
 
     // Optional integration hook supplied by main.js for the language picker.
     const onOpenLanguage =
@@ -408,66 +427,27 @@ function buildAppMenu(lang, opts = {}) {
         menuTemplate.push({
             label: resolveMenuLabel(menuTexts, 'desarrollo'),
             submenu: [
-                {
-                    label: resolveMenuLabel(menuTexts, 'recargar'),
-                    accelerator: 'CommandOrControl+R',
-                    click: () => {
-                        if (!canDispatchMenuAction('dev.reload')) return;
-                        const target = resolveDevTarget();
-                        if (!target) {
-                            log.warn('dev reload failed (ignored): no target window');
-                            return;
-                        }
-                        try {
-                            target.webContents.reload();
-                        } catch (error) {
-                            log.warn(
-                                'dev reload failed (ignored):',
-                                error
-                            );
-                        }
-                    },
-                },
-                {
-                    label: resolveMenuLabel(menuTexts, 'forcereload'),
-                    accelerator: 'CommandOrControl+Shift+R',
-                    click: () => {
-                        if (!canDispatchMenuAction('dev.forceReload')) return;
-                        const target = resolveDevTarget();
-                        if (!target) {
-                            log.warn('dev force reload failed (ignored): no target window');
-                            return;
-                        }
-                        try {
-                            target.webContents.reloadIgnoringCache();
-                        } catch (error) {
-                            log.warn(
-                                'dev force reload failed (ignored):',
-                                error
-                            );
-                        }
-                    },
-                },
-                {
-                    label: resolveMenuLabel(menuTexts, 'toggle_devtools'),
-                    accelerator: 'Ctrl+Shift+I',
-                    click: () => {
-                        if (!canDispatchMenuAction('dev.toggleDevTools')) return;
-                        const target = resolveDevTarget();
-                        if (!target) {
-                            log.warn('toggleDevTools failed (ignored): no target window');
-                            return;
-                        }
-                        try {
-                            target.webContents.toggleDevTools();
-                        } catch (error) {
-                            log.warn(
-                                'toggleDevTools failed (ignored):',
-                                error
-                            );
-                        }
-                    },
-                },
+                createDevMenuActionItem(
+                    'recargar',
+                    'dev.reload',
+                    'CommandOrControl+R',
+                    'dev reload',
+                    (target) => target.webContents.reload()
+                ),
+                createDevMenuActionItem(
+                    'forcereload',
+                    'dev.forceReload',
+                    'CommandOrControl+Shift+R',
+                    'dev force reload',
+                    (target) => target.webContents.reloadIgnoringCache()
+                ),
+                createDevMenuActionItem(
+                    'toggle_devtools',
+                    'dev.toggleDevTools',
+                    'Ctrl+Shift+I',
+                    'toggleDevTools',
+                    (target) => target.webContents.toggleDevTools()
+                ),
             ],
         });
     }
