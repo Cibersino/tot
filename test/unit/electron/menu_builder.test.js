@@ -68,13 +68,13 @@ test('resolveDialogText uses the caller-injected logger for missing dialog keys'
   const menuBuilder = loadFreshMenuBuilder(t);
   const log = createLogDouble();
 
-  const result = menuBuilder.resolveDialogText({}, 'continue_button', 'Continue', {
+  const result = menuBuilder.resolveDialogText({}, 'continue_button', {
     log,
   });
 
-  assert.equal(result, 'Continue');
+  assert.equal(result, 'continue_button');
   assert.deepEqual(log.warnCalls, [
-    ['Missing dialog translation key (using fallback):', 'continue_button'],
+    ['Missing dialog translation key (using key path):', 'continue_button'],
   ]);
 });
 
@@ -82,7 +82,7 @@ test('resolveDialogText requires caller-injected warn logging', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 
   assert.throws(
-    () => menuBuilder.resolveDialogText({}, 'continue_button', 'Continue'),
+    () => menuBuilder.resolveDialogText({}, 'continue_button'),
     /\[menu_builder\] resolveDialogText requires opts\.log\.warn/
   );
 });

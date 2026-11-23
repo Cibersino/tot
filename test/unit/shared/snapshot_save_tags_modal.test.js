@@ -607,38 +607,43 @@ test('snapshot save tags modal keeps snapshot-save wording by default', async ()
   assert.equal(result, null);
 });
 
-test('snapshot tag prompt stays usable with default tags after a non-ok preference read', async () => {
+test('snapshot tag prompt cancels without a mutation baseline after a non-ok preference read', async () => {
   const harness = createHarness({
     getSnapshotTagPreferencesImpl() {
       return { ok: false, error: 'storage unavailable' };
     },
   });
 
-  const promptPromise = harness.promptTags({ initialTags: null });
-  await flushMicrotasks();
-
-  harness.elements.snapshotSaveTagsModalConfirm.dispatch('click');
-  assert.deepEqual(JSON.parse(JSON.stringify(await promptPromise)), { tags: {} });
+  assert.equal(await harness.promptTags({ initialTags: null }), null);
+  assert.equal(await harness.prompt({ initialTags: null }), null);
+  assert.equal(await harness.promptManager({ initialPreferences: null }), null);
+  assert.deepEqual(harness.getSavedPreferences(), []);
+  assert.deepEqual(harness.notifications, [
+    'renderer.snapshots.alerts.catalog_update_error',
+    'renderer.snapshots.alerts.catalog_update_error',
+    'renderer.snapshots.alerts.catalog_update_error',
+  ]);
 });
 
-test('missing snapshot-tag preference bridge warns for each prompt', async () => {
+test('missing snapshot-tag preference bridge cancels each prompt without fabricated preferences', async () => {
   const harness = createHarness({ includeSnapshotTagPreferencesBridge: false });
 
   const firstPrompt = harness.promptTags({ initialTags: null });
-  await flushMicrotasks();
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await firstPrompt;
+  assert.equal(await firstPrompt, null);
 
   const secondPrompt = harness.promptTags({ initialTags: null });
-  await flushMicrotasks();
-  harness.elements.snapshotSaveTagsModalCancel.dispatch('click');
-  await secondPrompt;
+  assert.equal(await secondPrompt, null);
 
   const bridgeWarnings = harness.diagnostics.filter(({ level, args }) => {
     return level === 'warn'
-      && args[0] === 'Snapshot-tag preference bridge unavailable; using empty preferences.';
+      && args[0] === 'Snapshot-tag preference bridge unavailable; snapshot-tag prompt cancelled.';
   });
   assert.equal(bridgeWarnings.length, 2);
+  assert.deepEqual(harness.getSavedPreferences(), []);
+  assert.deepEqual(harness.notifications, [
+    'renderer.snapshots.alerts.catalog_update_error',
+    'renderer.snapshots.alerts.catalog_update_error',
+  ]);
 });
 
 test('snapshot save modal returns optional name and source-comment fields', async () => {

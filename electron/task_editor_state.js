@@ -8,10 +8,8 @@
 // - window geometry and maximized state;
 // - the six user-resizable utility column widths.
 //
-// A single in-memory snapshot is authoritative while a Task Editor BrowserWindow
-// is alive. Every accepted change updates that snapshot before attempting a
-// best-effort write of the complete document. This avoids independent writers
-// accidentally discarding another presentation preference.
+// A single in-memory snapshot is authoritative from its first initialization until process termination, including after Task Editor windows close and later reopen.
+// Every accepted change updates that snapshot before attempting a best-effort write of the complete document. This avoids independent writers accidentally discarding another presentation preference.
 
 // =============================================================================
 // Imports / logger
@@ -280,6 +278,8 @@ function requireActiveState() {
 // API (public entrypoints)
 // =============================================================================
 function loadInitialState() {
+  if (activeState) return copyState(activeState);
+
   try {
     activeState = normalizeState(loadJson(getTaskEditorStateFile(), DEFAULT_STATE));
   } catch (error) {

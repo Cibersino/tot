@@ -391,7 +391,7 @@ test('reading-test result preserves canonical Chinese application IDs during set
   assert.equal(translationRequests.at(-1), 'zh-Hant');
 });
 
-test('reading-test result uses defaults when getSettings is unavailable', async () => {
+test('reading-test result terminates when the required settings aggregate is unavailable', async () => {
   const dom = createDomHarness([
     'readingTestResultTitle',
     'readingTestResultWpmLabel',
@@ -462,19 +462,16 @@ test('reading-test result uses defaults when getSettings is unavailable', async 
   await flushAsyncWork();
 
   assert.equal(typeof onSettingsChanged, 'function');
-  assert.deepEqual(translationRequests, ['en', 'en']);
-  assert.equal(dom.elements.readingTestResultWpmValue.textContent, '237[,.]');
-  assert.match(dom.elements.readingTestResultSummary.textContent, /6543\[,\.\]/u);
-  assert.ok(formatRequests.length >= 4);
-  assert.ok(formatRequests.every(({ language, settingsKeys }) => (
-    language === 'en' && settingsKeys.length === 0
-  )));
+  assert.deepEqual(translationRequests, []);
+  assert.equal(dom.elements.readingTestResultWpmValue.textContent, '');
+  assert.equal(dom.elements.readingTestResultSummary.textContent, '');
+  assert.equal(formatRequests.length, 0);
   assert.equal(closeCalls, 0);
-  assert.equal(reporterCalls, 0);
-  assert.equal(errors.length, 0);
-  assert.equal(warnings.filter(([message]) => (
-    message === 'BOOTSTRAP: readingTestResultAPI.getSettings unavailable; using default renderer settings.'
-  )).length, 1);
+  assert.equal(reporterCalls, 1);
+  assert.ok(errors.some(([message]) => (
+    message === 'BOOTSTRAP: readingTestResultAPI.getSettings unavailable; required settings aggregate cannot be established.'
+  )));
+  assert.equal(warnings.length, 0);
 });
 
 test('reading-test result stops replay work when settings-listener registration throws', async () => {

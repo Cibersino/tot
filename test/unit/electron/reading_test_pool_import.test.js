@@ -622,6 +622,9 @@ test('registerIpc returns partial success when imported files are written but po
       cleanupDestinationNames = destinationNames;
       return { ok: false, code: 'WRITE_FAILED', message: 'disk full' };
     },
+    settingsGet() {
+      return { language: 'en' };
+    },
   });
   t.after(restore);
 
@@ -713,7 +716,7 @@ test('registerIpc resolves reading-test picker and conflict copy from main dialo
   ]);
 });
 
-test('registerIpc resolves reading-test picker copy through DEFAULT_LANG when settings are unavailable', async (t) => {
+test('registerIpc rejects reading-test picker startup when the admitted settings cache is unavailable', async (t) => {
   const tempDir = makeTempDir();
   const senderWin = {
     isDestroyed() {
@@ -745,11 +748,10 @@ test('registerIpc resolves reading-test picker copy through DEFAULT_LANG when se
     { sender: senderWin.webContents }
   );
 
-  assert.deepEqual(result, { ok: true, canceled: true });
-  assert.deepEqual(dialogOptions[0].filters.map((filter) => filter.name), [
-    'Archivos de test de lectura',
-    'JSON',
-    'ZIP',
-    'Todos los archivos',
-  ]);
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'IMPORT_FAILED',
+    guidanceKey: 'renderer.reading_test.alerts.pool_import_failed',
+  });
+  assert.deepEqual(dialogOptions, []);
 });

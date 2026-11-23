@@ -362,6 +362,7 @@ async function createRendererHarness({
     onPresetCreated(callback) { subscriptions.presetCreated = callback; },
     onSettingsChanged(callback) { subscriptions.settingsChanged = callback; },
     onPreciseCountingFallback(callback) { subscriptions.preciseCountingFallback = callback; },
+    onSpellcheckAvailabilityFailed(callback) { subscriptions.spellcheckAvailabilityFailed = callback; },
     onStartupReady(callback) { subscriptions.startupReady = callback; },
     async openEditor() { return { ok: true, launchDisposition: 'first-show-pending' }; },
     resolveCurrentTextProcessing() {},
@@ -664,47 +665,60 @@ test('main renderer logs initial listener, core-ready, and READY acknowledgment 
   );
 });
 
-test('main startup discloses an unavailable settings payload after READY and retains empty-settings continuation', async () => {
+test('main startup reports an unavailable required settings aggregate before READY', async () => {
+  const startupFailureReports = [];
   const harness = await createRendererHarness({
-    deferStartupReady: true,
     electronMethodOverrides: {
       async getSettings() {
         throw new Error('[settings] renderer settings payload unavailable');
       },
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
     },
+    expectStartupError: true,
   });
-
-  for (let index = 0; index < 4; index += 1) await flushAsyncWork();
 
   assert.deepEqual(harness.notifications, []);
   assert.equal(harness.getElement('startupSplash').removed, false);
-  assert.equal(harness.presetLoadCalls.length, 1);
-  assert.equal(Object.keys(harness.presetLoadCalls[0].settingsSnapshot).length, 0);
-  assert.deepEqual(harness.errors, []);
-
-  await harness.completeStartupReady();
-
-  assert.equal(harness.getElement('startupSplash').removed, true);
-  assert.deepEqual(harness.notifications, ['renderer.main.alerts.settings_payload_unavailable']);
-  assert.deepEqual(harness.notificationCalls, [{
-    key: 'renderer.main.alerts.settings_payload_unavailable',
-    method: 'notifyMain',
-  }]);
+  assert.equal(harness.presetLoadCalls.length, 0);
+  assert.equal(harness.currentTextRuntimeCalls.bootstrapStates.length, 0);
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['required-initialization']);
 });
 
-test('main startup does not attribute other settings-access failures to an unavailable payload', async () => {
+test('main startup treats every required settings-aggregate failure as terminal', async () => {
+  const startupFailureReports = [];
   const harness = await createRendererHarness({
     electronMethodOverrides: {
       async getSettings() {
         throw new Error('settings IPC temporarily unavailable');
       },
+      reportRendererStartupFailure(payload) {
+        startupFailureReports.push(payload);
+      },
     },
+    expectStartupError: true,
   });
 
   assert.deepEqual(harness.notifications, []);
-  assert.equal(harness.presetLoadCalls.length, 1);
-  assert.equal(Object.keys(harness.presetLoadCalls[0].settingsSnapshot).length, 0);
-  assert.deepEqual(harness.errors, []);
+  assert.equal(harness.presetLoadCalls.length, 0);
+  assert.equal(harness.currentTextRuntimeCalls.bootstrapStates.length, 0);
+  assert.deepEqual(startupFailureReports.map((payload) => payload.kind), ['required-initialization']);
+});
+
+test('main startup defers an unexpected spellcheck availability failure notice until READY', async () => {
+  const harness = await createRendererHarness({ deferStartupReady: true });
+
+  harness.subscriptions.spellcheckAvailabilityFailed();
+  assert.deepEqual(harness.notifications, []);
+
+  await harness.completeStartupReady();
+
+  assert.deepEqual(harness.notifications, ['renderer.main.alerts.spellcheck_availability_failed']);
+  assert.deepEqual(harness.notificationCalls, [{
+    key: 'renderer.main.alerts.spellcheck_availability_failed',
+    method: 'toastMain',
+  }]);
 });
 
 test('main startup discloses a default-preset catalog failure only after READY', async () => {
@@ -1166,6 +1180,7 @@ test('main renderer disables Precise persistence when its bridge capability is a
 
     assert.equal(toggle.checked, true, `${name} capability should not admit a persistence attempt`);
     assert.equal(toggle.disabled, true, `${name} capability should remain disabled`);
+    assert.deepEqual(harness.notifications, ['renderer.main.alerts.counting_mode_persistence_failed']);
 
     await harness.subscriptions.settingsChanged({ language: 'en', modeConteo: 'simple' });
 
@@ -1195,6 +1210,7 @@ test('main renderer keeps Precise persistence retryable after a present bridge i
   assert.equal(toggle.getAttribute('aria-checked'), 'true');
   assert.equal(toggle.disabled, false);
   assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+  assert.deepEqual(harness.notifications, ['renderer.main.alerts.counting_mode_persistence_failed']);
 
   toggle.checked = false;
   toggle.dispatch('change');
@@ -1205,6 +1221,10 @@ test('main renderer keeps Precise persistence retryable after a present bridge i
   assert.equal(toggle.getAttribute('aria-checked'), 'true');
   assert.equal(toggle.disabled, false);
   assert.equal(toggle.getAttribute('aria-disabled'), 'false');
+  assert.deepEqual(harness.notifications, [
+    'renderer.main.alerts.counting_mode_persistence_failed',
+    'renderer.main.alerts.counting_mode_persistence_failed',
+  ]);
 });
 
 test('main renderer wires unavailable Spoiler persistence as a disabled capability', async () => {

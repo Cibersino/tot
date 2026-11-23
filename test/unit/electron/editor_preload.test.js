@@ -74,6 +74,7 @@ test('editor preload exposes the expected editor API surface', () => {
       'getEditorState',
       'getInitialCurrentTextSnapshot',
       'getSettings',
+      'onEditorFontSizePersistenceFailed',
       'onEditorStateChanged',
       'onExternalUpdate',
       'onReadingTestPrestartStateChanged',
@@ -154,6 +155,26 @@ test('editor preload keeps editor-state-changed as an unsubscribe-based recurren
   unsubscribe();
   assert.equal(removed.length, 1);
   assert.equal(removed[0].channel, 'editor-state-changed');
+  assert.equal(removed[0].listener, subscriptions[0].listener);
+});
+
+test('editor preload keeps the shortcut font-size failure notice payload-free and unsubscribe-based', () => {
+  const { exposedApi, subscriptions, removed } = loadEditorPreload();
+  let calls = 0;
+
+  const unsubscribe = exposedApi.api.onEditorFontSizePersistenceFailed(() => {
+    calls += 1;
+  });
+
+  assert.equal(subscriptions.length, 1);
+  assert.equal(subscriptions[0].channel, 'editor-font-size-persistence-failed');
+
+  subscriptions[0].listener(null);
+  assert.equal(calls, 1);
+
+  unsubscribe();
+  assert.equal(removed.length, 1);
+  assert.equal(removed[0].channel, 'editor-font-size-persistence-failed');
   assert.equal(removed[0].listener, subscriptions[0].listener);
 });
 

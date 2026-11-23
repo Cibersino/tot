@@ -414,22 +414,19 @@ async function createHarness({
 test('text_time_calculator terminates startup when initial settings cannot establish required number formatting', async () => {
   for (const settingsReadMode of ['throw', 'missing']) {
     const harness = await createHarness({ settingsReadMode });
-    const startupWarning = harness.warnings.find(([message]) => (
-      typeof message === 'string' && message.startsWith('BOOTSTRAP: textTimeCalculatorAPI.getSettings')
+    const startupError = harness.errors.find(([message]) => (
+      typeof message === 'string'
+      && message.startsWith('BOOTSTRAP:')
+      && message.includes('required settings aggregate')
     ));
 
-    assert.ok(startupWarning, `${settingsReadMode} settings should produce a startup diagnostic`);
-    assert.match(startupWarning[0], /attempting default-language translations/);
-    assert.match(startupWarning[0], /required number-format settings are unavailable and startup will terminate/);
-    assert.doesNotMatch(startupWarning[0], /using default language and number formatting/);
-    assert.deepEqual(harness.transitionLanguages, ['es']);
+    assert.ok(startupError, `${settingsReadMode} settings should produce a startup diagnostic`);
+    assert.match(startupError[0], /required settings aggregate/);
+    assert.deepEqual(harness.transitionLanguages, []);
     assert.equal(harness.document.title, '');
     assert.equal(harness.comboboxCreateConfigs.length, 0);
     assert.equal(harness.getReporterCalls(), 1);
     assert.equal(harness.getCloseCalls(), 0);
-    assert.ok(harness.errors.some(([message]) => (
-      typeof message === 'string' && message.includes('i18n failure requires window closure')
-    )));
     [
       harness.elements.textTimeCalculatorWordsInput,
       harness.elements.textTimeCalculatorTimeInput,

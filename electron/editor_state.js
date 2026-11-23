@@ -20,7 +20,6 @@ const { screen } = require('electron');
 const {
   getEditorStateFile,
   loadJson,
-  saveJsonDirect,
   saveJsonDirectStrict,
 } = require('./fs_storage');
 const {
@@ -47,6 +46,9 @@ const DEFAULT_STATE = {
   editorFontSizePx: EDITOR_FONT_SIZE_DEFAULT_PX,
   maximizedTextWidthPx: EDITOR_MAXIMIZED_TEXT_WIDTH_DEFAULT_PX,
 };
+
+let activeState = null;
+let editorStateFile = null;
 
 // =============================================================================
 // Helpers
@@ -107,7 +109,7 @@ function normalizeEditorFontSizePx(value) {
 }
 
 function normalizeState(raw) {
-  const base = { ...DEFAULT_STATE };
+  const base = copyState(DEFAULT_STATE);
   if (!raw || typeof raw !== 'object') {
     log.warnOnce(
       'editor-state.normalize.invalid-root',
@@ -211,22 +213,54 @@ function normalizeState(raw) {
   return st;
 }
 
+function copyState(state) {
+  return {
+    maximized: state.maximized,
+    reduced: state.reduced ? { ...state.reduced } : null,
+    spellcheckEnabled: state.spellcheckEnabled,
+    editorFontSizePx: state.editorFontSizePx,
+    maximizedTextWidthPx: state.maximizedTextWidthPx,
+  };
+}
+
+function getEditorStateFilePath() {
+  if (editorStateFile) return editorStateFile;
+  editorStateFile = getEditorStateFile();
+  return editorStateFile;
+}
+
+function requireActiveState() {
+  if (activeState) return activeState;
+  loadInitialState();
+  return activeState;
+}
+
+function persistActiveState(context) {
+  try {
+    saveJsonDirectStrict(getEditorStateFilePath(), copyState(requireActiveState()));
+    return true;
+  } catch (error) {
+    log.warn(`Text Editor presentation state persistence failed from ${context} (ignored):`, error);
+    return false;
+  }
+}
+
 function getEditorState(editorWin) {
-  const persistedState = loadInitialState();
+  const state = requireActiveState();
   if (!isLiveWindow(editorWin) || typeof editorWin.isMaximized !== 'function') {
     return {
       maximized: false,
-      spellcheckEnabled: persistedState.spellcheckEnabled,
-      editorFontSizePx: persistedState.editorFontSizePx,
-      maximizedTextWidthPx: persistedState.maximizedTextWidthPx,
+      spellcheckEnabled: state.spellcheckEnabled,
+      editorFontSizePx: state.editorFontSizePx,
+      maximizedTextWidthPx: state.maximizedTextWidthPx,
     };
   }
 
   return {
     maximized: !!editorWin.isMaximized(),
-    spellcheckEnabled: persistedState.spellcheckEnabled,
-    editorFontSizePx: persistedState.editorFontSizePx,
-    maximizedTextWidthPx: persistedState.maximizedTextWidthPx,
+    spellcheckEnabled: state.spellcheckEnabled,
+    editorFontSizePx: state.editorFontSizePx,
+    maximizedTextWidthPx: state.maximizedTextWidthPx,
   };
 }
 
@@ -245,10 +279,22 @@ function notifyEditorState(editorWin, logContext = 'editorState.notifyEditorStat
   }
 }
 
-function persistEditorStateUpdate(updateState) {
-  const editorStateFile = getEditorStateFile();
-  const state = normalizeState(loadJson(editorStateFile, DEFAULT_STATE));
-  return updateState(state, editorStateFile);
+function notifyEditorFontSizePersistenceFailure(
+  editorWin,
+  logContext = 'editorState.notifyEditorFontSizePersistenceFailure'
+) {
+  if (!hasLiveWebContents(editorWin)) {
+    log.warn('Text Editor font-size failure notification skipped: Text Editor window unavailable.', logContext);
+    return false;
+  }
+
+  try {
+    editorWin.webContents.send('editor-font-size-persistence-failed');
+    return true;
+  } catch (error) {
+    log.warn(`Text Editor font-size failure notification failed (ignored) from ${logContext}:`, error);
+    return false;
+  }
 }
 
 function setEditorSpellcheckEnabled(enabled, { editorWin = null } = {}) {
@@ -262,19 +308,19 @@ function setEditorSpellcheckEnabled(enabled, { editorWin = null } = {}) {
   }
 
   try {
-    const result = persistEditorStateUpdate((state, editorStateFile) => {
-      if (state.spellcheckEnabled === enabled) {
-        return { changed: false, state };
-      }
-      state.spellcheckEnabled = enabled;
-      saveJsonDirectStrict(editorStateFile, state);
-      return { changed: true, state };
-    });
+    const state = requireActiveState();
+    if (state.spellcheckEnabled === enabled) {
+      return { ok: true, enabled: state.spellcheckEnabled };
+    }
 
-    if (result.changed) {
+    const candidate = copyState(state);
+    candidate.spellcheckEnabled = enabled;
+    saveJsonDirectStrict(getEditorStateFilePath(), candidate);
+    activeState = candidate;
+    if (state.spellcheckEnabled !== candidate.spellcheckEnabled) {
       notifyEditorState(editorWin, 'editorState.setSpellcheckEnabled');
     }
-    return { ok: true, enabled: result.state.spellcheckEnabled };
+    return { ok: true, enabled: candidate.spellcheckEnabled };
   } catch (error) {
     log.error('Error saving Text Editor spellcheck preference:', error);
     return { ok: false, error: String(error) };
@@ -294,19 +340,19 @@ function setEditorFontSizePx(fontSizePx, { editorWin = null } = {}) {
 
   try {
     const nextEditorFontSizePx = normalizeEditorFontSizePx(parsed);
-    const result = persistEditorStateUpdate((state, editorStateFile) => {
-      if (state.editorFontSizePx === nextEditorFontSizePx) {
-        return { changed: false, state };
-      }
-      state.editorFontSizePx = nextEditorFontSizePx;
-      saveJsonDirectStrict(editorStateFile, state);
-      return { changed: true, state };
-    });
+    const state = requireActiveState();
+    if (state.editorFontSizePx === nextEditorFontSizePx) {
+      return { ok: true, editorFontSizePx: state.editorFontSizePx };
+    }
 
-    if (result.changed) {
+    const candidate = copyState(state);
+    candidate.editorFontSizePx = nextEditorFontSizePx;
+    saveJsonDirectStrict(getEditorStateFilePath(), candidate);
+    activeState = candidate;
+    if (state.editorFontSizePx !== candidate.editorFontSizePx) {
       notifyEditorState(editorWin, 'editorState.setEditorFontSizePx');
     }
-    return { ok: true, editorFontSizePx: result.state.editorFontSizePx };
+    return { ok: true, editorFontSizePx: candidate.editorFontSizePx };
   } catch (error) {
     log.error('Error saving Text Editor font-size preference:', error);
     return { ok: false, error: String(error) };
@@ -319,18 +365,26 @@ function getTextSizeShortcutActions({ getEditorWindow } = {}) {
   }
 
   function adjustEditorFontSizePx(stepDeltaPx) {
-    const state = loadInitialState();
-    return setEditorFontSizePx(state.editorFontSizePx + stepDeltaPx, {
-      editorWin: getEditorWindow(),
-    });
+    const editorWin = getEditorWindow();
+    const state = requireActiveState();
+    const result = setEditorFontSizePx(state.editorFontSizePx + stepDeltaPx, { editorWin });
+    if (!result.ok) {
+      notifyEditorFontSizePersistenceFailure(editorWin, 'editorState.adjustEditorFontSizePx');
+    }
+    return result;
   }
 
   return {
     onIncreaseTextSize: () => adjustEditorFontSizePx(EDITOR_FONT_SIZE_STEP_PX),
     onDecreaseTextSize: () => adjustEditorFontSizePx(-EDITOR_FONT_SIZE_STEP_PX),
-    onResetTextSize: () => setEditorFontSizePx(EDITOR_FONT_SIZE_DEFAULT_PX, {
-      editorWin: getEditorWindow(),
-    }),
+    onResetTextSize: () => {
+      const editorWin = getEditorWindow();
+      const result = setEditorFontSizePx(EDITOR_FONT_SIZE_DEFAULT_PX, { editorWin });
+      if (!result.ok) {
+        notifyEditorFontSizePersistenceFailure(editorWin, 'editorState.resetEditorFontSizePx');
+      }
+      return result;
+    },
   };
 }
 
@@ -339,30 +393,23 @@ function getTextSizeShortcutActions({ getEditorWindow } = {}) {
 // =============================================================================
 
 function loadInitialState(customLoadJson) {
+  if (activeState) return copyState(activeState);
+
   const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
   try {
-    const filePath = getEditorStateFile();
-    const raw = loader(filePath, DEFAULT_STATE);
-    return normalizeState(raw);
+    const raw = loader(getEditorStateFilePath(), DEFAULT_STATE);
+    activeState = normalizeState(raw);
   } catch (error) {
     log.error('[editor_state] Error reading initial state:', error);
-    return { ...DEFAULT_STATE };
+    activeState = copyState(DEFAULT_STATE);
   }
+  return copyState(activeState);
 }
 
-function attachTo(editorWin, customLoadJson, customSaveJson) {
+function attachTo(editorWin) {
   if (!editorWin) return;
 
-  const loader = typeof customLoadJson === 'function' ? customLoadJson : loadJson;
-  const saver = typeof customSaveJson === 'function' ? customSaveJson : saveJsonDirect;
-  let editorStateFile = null;
-
-  try {
-    editorStateFile = getEditorStateFile();
-  } catch (error) {
-    log.error('[editor_state] getEditorStateFile failed:', error);
-    return;
-  }
+  requireActiveState();
 
   // Save reduced bounds only when the window is not maximized.
   const saveReducedState = () => {
@@ -370,22 +417,19 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
       if (!editorWin || editorWin.isDestroyed()) return;
       if (editorWin.isMaximized()) return;
 
+      const state = requireActiveState();
+      // Before the first unmaximize, maximized defaults without reduced bounds represent an intentional presentation state, not a normal window geometry.
+      if (!state.reduced && state.maximized === true) return;
+
       const bounds = editorWin.getBounds();
-      const current = loader(editorStateFile, { maximized: false, reduced: null });
-      const state = normalizeState(current);
-
-      if (!state.reduced && state.maximized === true) {
-        return;
-      }
-
+      state.maximized = false;
       state.reduced = {
         width: bounds.width,
         height: bounds.height,
         x: bounds.x,
         y: bounds.y
       };
-
-      saver(editorStateFile, state);
+      persistActiveState('editorWin.reducedState');
     } catch (error) {
       log.error('[editor_state] Error saving Text Editor reduced state:', error);
     }
@@ -397,10 +441,9 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   // On maximize, persist the maximized flag only.
   editorWin.on('maximize', () => {
     try {
-      const current = loader(editorStateFile, { maximized: true, reduced: null });
-      const state = normalizeState(current);
+      const state = requireActiveState();
       state.maximized = true;
-      saver(editorStateFile, state);
+      persistActiveState('editorWin.maximize');
       notifyEditorState(editorWin, 'editorWin.maximize');
     } catch (error) {
       log.error('[editor_state] Error updating state in maximize:', error);
@@ -410,17 +453,12 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   // On unmaximize, restore reduced bounds or apply a fallback placement.
   editorWin.on('unmaximize', () => {
     try {
-      const current = loader(editorStateFile, { maximized: false, reduced: null });
-      const state = normalizeState(current);
+      const state = requireActiveState();
       state.maximized = false;
+      let reduced;
 
       if (state.reduced && isValidReduced(state.reduced)) {
-        editorWin.setBounds({
-          width: state.reduced.width,
-          height: state.reduced.height,
-          x: state.reduced.x,
-          y: state.reduced.y
-        });
+        reduced = { ...state.reduced };
       } else {
         log.warn(
           'editor-state.unmaximize.fallback-reduced',
@@ -443,12 +481,13 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
         const x = workArea.x + workArea.width - width - 20;
         const y = workArea.y + 20;
 
-        const reduced = { width, height, x, y };
-        editorWin.setBounds(reduced);
-        state.reduced = reduced;
+        reduced = { width, height, x, y };
       }
 
-      saver(editorStateFile, state);
+      // setBounds() may synchronously emit move/resize.
+      state.reduced = { ...reduced };
+      editorWin.setBounds(reduced);
+      persistActiveState('editorWin.unmaximize');
       notifyEditorState(editorWin, 'editorWin.unmaximize');
     } catch (error) {
       log.error('[editor_state] Error handling Text Editor unmaximize:', error);
@@ -458,10 +497,19 @@ function attachTo(editorWin, customLoadJson, customSaveJson) {
   // On close, persist maximized flag and keep last reduced bounds.
   editorWin.on('close', () => {
     try {
-      const current = loader(editorStateFile, { maximized: false, reduced: null });
-      const state = normalizeState(current);
-      state.maximized = editorWin.isMaximized();
-      saver(editorStateFile, state);
+      if (!isLiveWindow(editorWin)) return;
+      const state = requireActiveState();
+      state.maximized = !!editorWin.isMaximized();
+      if (!state.maximized) {
+        const bounds = editorWin.getBounds();
+        state.reduced = {
+          width: bounds.width,
+          height: bounds.height,
+          x: bounds.x,
+          y: bounds.y,
+        };
+      }
+      persistActiveState('editorWin.close');
     } catch (error) {
       log.error('[editor_state] Error saving Text Editor closed state:', error);
     }
@@ -558,19 +606,28 @@ function registerIpc(ipcMain, { getEditorWindow } = {}) {
         return { ok: false, error: 'invalid' };
       }
 
-      const editorStateFile = getEditorStateFile();
-      const state = normalizeState(loadJson(editorStateFile, DEFAULT_STATE));
+      const state = requireActiveState();
       const nextMaximizedTextWidthPx = normalizeMaximizedTextWidthPx(parsed);
-
-      if (state.maximizedTextWidthPx === nextMaximizedTextWidthPx) {
-        return { ok: true, maximizedTextWidthPx: nextMaximizedTextWidthPx };
+      const widthChanged = state.maximizedTextWidthPx !== nextMaximizedTextWidthPx;
+      if (widthChanged) {
+        state.maximizedTextWidthPx = nextMaximizedTextWidthPx;
+      }
+      let persisted = true;
+      try {
+        saveJsonDirectStrict(getEditorStateFilePath(), copyState(state));
+      } catch (error) {
+        persisted = false;
+        log.error('Text Editor maximized text width persistence failed; retained runtime value:', error);
+      }
+      if (widthChanged) {
+        notifyEditorState(editorWin, 'editorState.setMaximizedTextWidthPx');
       }
 
-      state.maximizedTextWidthPx = nextMaximizedTextWidthPx;
-      saveJsonDirectStrict(editorStateFile, state);
-      notifyEditorState(editorWin, 'editorState.setMaximizedTextWidthPx');
-
-      return { ok: true, maximizedTextWidthPx: state.maximizedTextWidthPx };
+      return {
+        ok: true,
+        maximizedTextWidthPx: state.maximizedTextWidthPx,
+        persisted,
+      };
     } catch (error) {
       log.error('Error processing set-editor-maximized-text-width-px:', error);
       return { ok: false, error: String(error) };

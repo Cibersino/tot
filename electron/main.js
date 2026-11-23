@@ -43,7 +43,6 @@ const {
   loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
-  saveJsonDirect,
   createJsonStrict,
   createSettingsStartupBackup,
 } = require('./fs_storage');
@@ -508,29 +507,45 @@ currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBri
 // =============================================================================
 
 function getSelectedLanguage() {
+  const settings = settingsState.getSettings();
+  const lang = typeof settings.language === 'string' ? settings.language.trim() : '';
+  if (!lang) throw new Error('Selected language is unavailable after settings initialization');
+  return lang;
+}
+
+function notifySpellcheckAvailabilityFailure() {
+  const targetWindow = resolveMainWindow();
+  if (!hasLiveWebContents(targetWindow)) {
+    log.warn('Spellcheck availability failure notice skipped: Main Window unavailable.');
+    return;
+  }
   try {
-    const settings = settingsState.getSettings();
-    const lang = settings && typeof settings.language === 'string' ? settings.language.trim() : '';
-    if (!lang) {
-      log.warnOnce(
-        'main.menu.language.empty',
-        `Settings language is empty; falling back to "${DEFAULT_LANG}".`
-      );
-      return DEFAULT_LANG;
-    }
-    return lang;
+    targetWindow.webContents.send('spellcheck-availability-failed');
   } catch (error) {
-    log.warn(`Settings language read failed; using "${DEFAULT_LANG}".`, error);
-    return DEFAULT_LANG;
+    log.warn('Spellcheck availability failure notice delivery failed (ignored):', error);
   }
 }
 
 function decorateRendererSettings(settingsPayload) {
-  const spellcheckDecorated = spellcheckController.decorateSettings(settingsPayload);
-  return {
+  let spellcheckDecorated;
+  let spellcheckAvailabilityFailed = false;
+  try {
+    spellcheckDecorated = spellcheckController.decorateSettings(settingsPayload);
+  } catch (error) {
+    spellcheckAvailabilityFailed = true;
+    log.error('Spellcheck availability determination failed; disabling spellcheck for this payload:', error);
+    spellcheckDecorated = {
+      ...settingsPayload,
+      spellcheckAvailable: false,
+    };
+  }
+
+  const decoratedSettings = {
     ...spellcheckDecorated,
     snapshotTags: snapshotTagSettings.getSnapshotTagPreferences(),
   };
+  if (spellcheckAvailabilityFailed) notifySpellcheckAvailabilityFailure();
+  return decoratedSettings;
 }
 
 /**
@@ -1112,7 +1127,7 @@ function createEditorWindow(options = {}) {
   });
 
   // Delegate persistent window-state management to editor_state.js.
-  editorState.attachTo(editorWin, loadJson, saveJsonDirect);
+  editorState.attachTo(editorWin);
 
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
@@ -1527,7 +1542,11 @@ function createLanguageWindow() {
 
       let dialogTexts = null;
       try {
-        dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+        // The first-run chooser intentionally runs while settings.language is unset.
+        const dialogLanguage = isFirstRunLanguageChooser
+          ? DEFAULT_LANG
+          : getSelectedLanguage();
+        dialogTexts = menuBuilder.getDialogTexts(dialogLanguage);
       } catch (error) {
         log.error('Language chooser initial document load native dialog translations unavailable:', error);
       }
@@ -1593,6 +1612,7 @@ function createLanguageWindow() {
               error,
               logContext: 'Initial fallback-language persistence',
               messageKey: 'startup_language_fallback_persistence_failure_message',
+              language: DEFAULT_LANG,
             });
             return;
           }
@@ -1610,6 +1630,7 @@ function createLanguageWindow() {
       error,
       logContext: 'Initial Language Window structural setup',
       messageKey: 'startup_language_chooser_setup_failure_message',
+      language: DEFAULT_LANG,
     });
     return null;
   }
@@ -2495,7 +2516,7 @@ ipcMain.handle('open-editor', () => {
       editorWin,
       mainWin,
       createEditorWindow,
-      startupState: editorState.loadInitialState(loadJson),
+      getStartupState: () => editorState.loadInitialState(loadJson),
       logContext: 'open-editor',
     });
   } catch (error) {
@@ -2723,9 +2744,7 @@ app.whenReady().then(() => {
   let settings;
   try {
     settings = settingsState.init({
-      loadJson,
       loadJsonWithStatus,
-      saveJson,
       saveJsonStrict,
       createJsonStrict,
       createSettingsStartupBackup,
@@ -2959,7 +2978,6 @@ app.whenReady().then(() => {
     loadJson,
     saveJson,
     currentTextFile,
-    settingsFile,
     app,
     maxTextChars: MAX_TEXT_CHARS,
     currentTextProcessingController: currentTextProcessingStateController,
@@ -2993,19 +3011,6 @@ app.whenReady().then(() => {
     resolveLanguage('present');
   }
 
-  // macOS behavior: recreate a window when clicking the dock icon and none are open.
-  app.on('activate', () => {
-    if (startupTerminalFailure || !languageResolved || BrowserWindow.getAllWindows().length !== 0) return;
-    try {
-      createMainWindow();
-    } catch (error) {
-      terminateAfterRequiredStartupFailure({
-        error,
-        logContext: 'Main BrowserWindow construction during activation',
-        messageKey: 'startup_main_window_failure_message',
-      });
-    }
-  });
 });
 
 // Windows/Linux behavior: quit when the last window is closed.

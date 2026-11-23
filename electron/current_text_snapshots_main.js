@@ -377,12 +377,7 @@ function sanitizeSnapshotSavePayload(payload) {
 }
 
 function resolveSnapshotCountContext() {
-  let settings = null;
-  try {
-    settings = settingsState.getSettings();
-  } catch (error) {
-    log.warn('Snapshot count settings read failed; using defaults.', error);
-  }
+  const settings = settingsState.getSettings();
 
   const mode = settings && settings.modeConteo === 'simple' ? 'simple' : 'preciso';
   if (mode === 'simple') return { mode };
@@ -392,9 +387,7 @@ function resolveSnapshotCountContext() {
     throw new Error('snapshot default count locale unavailable');
   }
 
-  const languageId = settings && typeof settings.language === 'string'
-    ? settings.language
-    : DEFAULT_LANG;
+  const languageId = settings.language;
   const descriptor = settingsState.getLanguageDescriptor(languageId);
   const requestedLocale = descriptor ? descriptor.localeTag : defaultLocale;
   const normalizedRequestedLocale = normalizeSnapshotPreciseCountLocale(requestedLocale);
@@ -541,21 +534,14 @@ function inspectSnapshotAtRelPath(snapshotRelPath) {
 // =============================================================================
 // Helpers (dialogs + owners)
 // =============================================================================
-function resolveDialogText(dialogTexts, key, fallback) {
-  return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+function resolveDialogText(dialogTexts, key) {
+  return menuBuilder.resolveDialogText(dialogTexts, key, {
     log,
   });
 }
 
 function getDialogTexts() {
-  try {
-    const settings = settingsState.getSettings();
-    const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
-    return menuBuilder.getDialogTexts(lang);
-  } catch (error) {
-    log.warnOnce('current_text_snapshots.dialogTexts', 'Using fallback dialog texts:', error);
-    return {};
-  }
+  return menuBuilder.getDialogTexts(settingsState.getSettings().language);
 }
 
 async function confirmLoadOverwrite(ownerWin, name = '') {

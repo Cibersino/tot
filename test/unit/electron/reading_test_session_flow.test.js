@@ -45,7 +45,7 @@ test('computeCurrentWpm retries only the final count after canonical Precise fal
         code: 'PRECISE_SEGMENTER_UNAVAILABLE',
         stage: 'availability',
       });
-      return { ok: true, changed: true, mode: 'simple' };
+      return { ok: true, changed: true, mode: 'simple', persistenceFailed: false };
     },
     DEFAULT_LANG: 'en',
     PRESET_WPM_MIN: 1,
@@ -62,7 +62,7 @@ test('computeCurrentWpm retries only the final count after canonical Precise fal
   ]);
 });
 
-test('computeCurrentWpm does not retry Simple counting when the global fallback cannot persist', () => {
+test('computeCurrentWpm retries Simple counting when the global fallback persistence fails', () => {
   const preciseFailure = Object.assign(new Error('Segmenter unavailable'), {
     name: 'PreciseCountError',
     code: 'PRECISE_SEGMENTER_UNAVAILABLE',
@@ -76,25 +76,28 @@ test('computeCurrentWpm does not retry Simple counting when the global fallback 
     getSettingsSnapshot: () => ({ language: 'en', modeConteo: 'preciso' }),
     getLocaleTag: (languageId) => languageId,
     countUtils: {
-      contarTexto() {
+      contarTexto(_text, options) {
         countCalls += 1;
-        throw preciseFailure;
+        if (options.modoConteo === 'preciso') throw preciseFailure;
+        return { palabras: 2 };
       },
       isPreciseCountFailure: (error) => error === preciseFailure,
     },
-    fallbackPreciseCountingToSimple: () => ({ ok: false, code: 'PERSIST_FAILED' }),
+    fallbackPreciseCountingToSimple: () => ({
+      ok: true,
+      changed: true,
+      mode: 'simple',
+      persistenceFailed: true,
+    }),
     DEFAULT_LANG: 'en',
     PRESET_WPM_MIN: 1,
     PRESET_WPM_MAX: 1000,
     log: createLoggerDouble(),
   });
 
-  assert.deepEqual(result, {
-    ok: false,
-    guidanceKey: 'renderer.reading_test.alerts.result_invalid',
-    code: 'PRECISE_FALLBACK_FAILED',
-  });
-  assert.equal(countCalls, 1);
+  assert.equal(result.ok, true);
+  assert.equal(result.wordCount, 2);
+  assert.equal(countCalls, 2);
 });
 
 test('computeCurrentWpm converts the selected application ID to its count locale', () => {

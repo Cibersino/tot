@@ -244,7 +244,7 @@ test('init reports a required initial snapshot-tag write failure without caching
   assert.throws(() => snapshotTagSettings.getSnapshotTagPreferences(), /called before init/);
 });
 
-test('snapshot-tag IPC preserves stored preferences after a later shared JSON reader failure', async () => {
+test('snapshot-tag IPC retains admitted preferences without a later shared JSON read', async () => {
   const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
   const existingType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
   const existingPreferences = {
@@ -279,13 +279,11 @@ test('snapshot-tag IPC preserves stored preferences after a later shared JSON re
   });
 
   assert.equal(harness.getWrites().length, 1);
-  const admittedPreferences = harness.getStoredValue();
-
   const readResult = await ipcMain.invoke('get-snapshot-tag-preferences');
-  assert.equal(readResult.ok, false);
+  assert.equal(readResult.ok, true);
   assert.deepEqual(
     readResult.snapshotTags,
-    snapshotTagCatalog.createEmptySnapshotTagPreferences()
+    snapshotTagCatalog.normalizeSnapshotTagPreferences(existingPreferences)
   );
 
   const updatedType = snapshotTagCatalog.buildCustomTagValue('type', 'Essay');
@@ -297,10 +295,10 @@ test('snapshot-tag IPC preserves stored preferences after a later shared JSON re
     },
   });
 
-  assert.equal(saveResult.ok, false);
-  assert.equal(publishCount, 0);
-  assert.deepEqual(harness.getStoredValue(), admittedPreferences);
-  assert.equal(harness.getWrites().length, 1);
+  assert.equal(saveResult.ok, true);
+  assert.equal(publishCount, 1);
+  assert.deepEqual(harness.getStoredValue(), saveResult.snapshotTags);
+  assert.equal(harness.getWrites().length, 2);
 });
 
 test('registerIpc persists snapshot-tag preferences and requests settings publish on success', async () => {
@@ -393,7 +391,7 @@ test('registerIpc does not publish snapshot-tag updates or mutate persisted pref
   );
 });
 
-test('getSnapshotTagPreferences reloads external snapshot-tag file edits from disk', () => {
+test('getSnapshotTagPreferences retains the admitted cache despite external file edits', () => {
   const snapshotTagSettings = loadFreshSnapshotTagSettingsModule();
   const harness = createSnapshotTagSettingsHarness({});
   const customType = snapshotTagCatalog.buildCustomTagValue('type', 'Short story');
@@ -412,14 +410,13 @@ test('getSnapshotTagPreferences reloads external snapshot-tag file edits from di
     },
   });
 
-  const reloaded = snapshotTagSettings.getSnapshotTagPreferences();
+  const cached = snapshotTagSettings.getSnapshotTagPreferences();
 
-  assert.deepEqual(reloaded.type.custom, [{
+  assert.deepEqual(cached, snapshotTagCatalog.createEmptySnapshotTagPreferences());
+  assert.deepEqual(harness.getStoredValue().type.custom, [{
     value: customType,
-    label: 'Short story',
+    label: '  Short   story ',
   }]);
-  assert.deepEqual(reloaded.type.hiddenDefaults, ['fiction']);
-  assert.deepEqual(reloaded.type.order, [customType]);
 });
 
 test('registerIpc logs each invalid snapshot-tag preference request', async (t) => {

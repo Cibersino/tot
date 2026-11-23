@@ -36,6 +36,7 @@ function createPresetHarness(t, {
   writeConfiguredDefaults = true,
   initialConfigFiles = null,
   windowResolver = null,
+  initialLanguage = 'en',
 } = {}) {
   const root = createTestTempDir('preset-persistence');
   const modulePaths = ['presets_main', 'settings', 'fs_storage', 'menu_builder']
@@ -108,7 +109,7 @@ function createPresetHarness(t, {
   storage.initStorage({ isReady: () => true, getPath: () => root, getAppPath: () => root });
   const settingsFile = storage.getSettingsFile();
   storage.saveJsonStrict(settingsFile, {
-    language: 'en',
+    language: initialLanguage,
     presetsByScope: {
       en: [{ name: 'Custom', wpm: 200, description: 'Custom text' }, { name: 'Default', wpm: 250, description: 'Override' }],
       es: [{ name: 'Otro', wpm: 180, description: '' }],
@@ -302,6 +303,22 @@ test('create rejects an unmappable sender before side effects', async (t) => {
   );
 
   assertRejectedPresetMutation(harness, result);
+});
+
+test('preset mutation rejects an unset language rather than writing a default-language scope', async (t) => {
+  const harness = createPresetHarness(t, { initialLanguage: '' });
+  const initialDisk = harness.getDisk();
+
+  const result = await harness.invoke('create-preset', {
+    name: 'New',
+    wpm: 300,
+    description: 'New text',
+  });
+
+  assert.equal(result.ok, false);
+  assert.match(result.error, /requires a selected application language/);
+  assert.equal(harness.getDisk(), initialDisk);
+  assert.deepEqual(harness.sent, []);
 });
 
 test('get-default-presets omits invalid configured entries and retains valid entries', async (t) => {

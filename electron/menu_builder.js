@@ -58,28 +58,27 @@ const deepMerge = (base, overlay) => {
     return result;
 };
 
-function resolveMenuLabel(menuTexts, key, fallback = key) {
+function resolveMenuLabel(menuTexts, key) {
     if (menuTexts && typeof menuTexts[key] === 'string') return menuTexts[key];
     log.warnOnce(
         `menu_builder.missingKey:${key}`,
-        'Missing menu translation key (using fallback):',
+        'Missing menu translation key (using key path):',
         key
     );
-    return fallback;
+    return key;
 }
 
-// Exported helper: callers inject their own logger scope so missing
-// dialog-key diagnostics stay attributed to the feature that requested them.
-function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
+// Exported helper: callers inject their own logger scope so missing dialog-key diagnostics stay attributed to the feature that requested them.
+function resolveDialogText(dialogTexts, key, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
     if (!opts.log || typeof opts.log.warn !== 'function') {
         throw new Error('[menu_builder] resolveDialogText requires opts.log.warn');
     }
     opts.log.warn(
-        'Missing dialog translation key (using fallback):',
+        'Missing dialog translation key (using key path):',
         key
     );
-    return fallback;
+    return key;
 }
 
 function describeMenuBlockReason(reason) {

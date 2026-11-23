@@ -269,8 +269,9 @@ test('a cancelled close attempt preserves the complete presentation snapshot', (
   }));
 });
 
-test('a later Task Editor creation reloads its predecessor complete snapshot', (t) => {
-  const { taskEditorState } = createStorageHarness(t);
+test('Task Editor state initializes once and remains authoritative across close, reopen, and backing-file changes', (t) => {
+  const { taskEditorState, fsStorage } = createStorageHarness(t);
+  const stateFile = fsStorage.getTaskEditorStateFile();
   const firstWindow = createWindowDouble({
     bounds: { x: 60, y: 80, width: 1300, height: 750 },
   });
@@ -283,10 +284,27 @@ test('a later Task Editor creation reloads its predecessor complete snapshot', (
   taskEditorState.attachTo(firstWindow);
   firstWindow.emit('close');
 
-  assert.deepEqual(taskEditorState.loadInitialState(), createState({
+  const expectedState = createState({
     reduced: { x: 60, y: 80, width: 1300, height: 750 },
     columnWidths: { ...DEFAULT_WIDTHS, enlace: 320 },
+  });
+  fsStorage.saveJson(stateFile, createState({
+    maximized: true,
+    reduced: { x: 120, y: 140, width: 1400, height: 820 },
+    columnWidths: { ...DEFAULT_WIDTHS, acciones: 180 },
   }));
+
+  const reopenedWindow = createWindowDouble({
+    bounds: { x: 10, y: 20, width: 1200, height: 720 },
+  });
+  assert.deepEqual(taskEditorState.loadInitialState(), expectedState);
+  taskEditorState.attachTo(reopenedWindow);
+
+  assert.deepEqual(taskEditorState.getColumnLayout(), createRecord({
+    ...DEFAULT_WIDTHS,
+    enlace: 320,
+  }));
+  assert.deepEqual(taskEditorState.loadInitialState(), expectedState);
 });
 
 test('a failed column write reports failure but retains the accepted snapshot for a later geometry write', (t) => {
@@ -310,6 +328,28 @@ test('a failed column write reports failure but retains the accepted snapshot fo
   assert.deepEqual(fsStorage.loadJson(stateFile, {}), createState({
     reduced: { x: 90, y: 110, width: 1340, height: 780 },
     columnWidths: { ...DEFAULT_WIDTHS, acciones: 180 },
+  }));
+});
+
+test('geometry and maximization retain their runtime state when persistence fails', (t) => {
+  const { taskEditorState, fsStorage } = createStorageHarness(t);
+  const stateFile = fsStorage.getTaskEditorStateFile();
+  const reduced = { x: 90, y: 110, width: 1340, height: 780 };
+  const taskEditorWin = createWindowDouble({ bounds: reduced });
+
+  taskEditorState.loadInitialState();
+  fs.mkdirSync(stateFile);
+  taskEditorState.attachTo(taskEditorWin);
+  taskEditorWin.emit('move');
+
+  assert.deepEqual(taskEditorState.loadInitialState(), createState({ reduced }));
+
+  taskEditorWin.setMaximized(true);
+  taskEditorWin.emit('maximize');
+
+  assert.deepEqual(taskEditorState.loadInitialState(), createState({
+    maximized: true,
+    reduced,
   }));
 });
 

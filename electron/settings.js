@@ -7,7 +7,7 @@
 // This module owns persisted user settings.
 //
 // Responsibilities:
-// - Load and normalize settings, refreshing the in-memory cache on reads and saves.
+// - Admit and normalize settings once at startup, then serve the authoritative in-memory cache.
 // - Validate catalog-declared application IDs and maintain explicit preference scopes.
 // - Hydrate numberFormattingByScope defaults when persisted data is missing or invalid.
 // - Expose the state owner API consumed by main-process modules.
@@ -90,8 +90,6 @@ const PRECISE_FAILURE_STAGES = new Set([
 // Shared state
 // =============================================================================
 // Dependencies injected from main.js (centralized file I/O).
-let loadJsonDependency = null;
-let saveJsonDependency = null;
 let saveJsonStrictDependency = null;
 let settingsFilePath = null;
 let publicationConfig = null;
@@ -347,7 +345,7 @@ function getStartupAdmissionError(initialLoad) {
 }
 
 // =============================================================================
-// State API: init / getSettings / saveSettings / saveSettingsStrict
+// State API: init / getSettings / saveSettingsStrict
 // =============================================================================
 /**
  * Initializes the module (called from main.js).
@@ -355,9 +353,7 @@ function getStartupAdmissionError(initialLoad) {
  * - Loads, normalizes, caches, and attempts to persist settings once on startup.
  */
 function init({
-  loadJson,
   loadJsonWithStatus,
-  saveJson,
   saveJsonStrict,
   createJsonStrict,
   createSettingsStartupBackup,
@@ -365,9 +361,7 @@ function init({
   languageResources: injectedLanguageResources,
 } = {}) {
   if (
-    typeof loadJson !== 'function'
-    || typeof loadJsonWithStatus !== 'function'
-    || typeof saveJson !== 'function'
+    typeof loadJsonWithStatus !== 'function'
     || typeof saveJsonStrict !== 'function'
     || typeof createJsonStrict !== 'function'
     || typeof createSettingsStartupBackup !== 'function'
@@ -420,8 +414,6 @@ function init({
     );
   }
 
-  loadJsonDependency = loadJson;
-  saveJsonDependency = saveJson;
   saveJsonStrictDependency = saveJsonStrict;
   settingsFilePath = settingsFile;
   currentSettings = normalizedSettings;
@@ -429,52 +421,22 @@ function init({
 }
 
 /**
- * Reads the current settings from disk and returns a normalized object.
- * This reflects external edits to the settings file.
+ * Returns the admitted authoritative settings cache for this process.
  */
 function getSettings() {
-  if (!loadJsonDependency || !settingsFilePath) {
+  if (!currentSettings || !settingsFilePath) {
     throw new Error('[settings] getSettings called before init');
   }
-
-  const rawSettings = loadJsonDependency(settingsFilePath, createDefaultSettings());
-
-  currentSettings = normalizeSettings(rawSettings);
-  return currentSettings;
-}
-
-/**
- * Normalizes settings, updates the in-memory cache, and attempts best-effort persistence.
- * If nextSettings is falsy, it reloads from disk (getSettings()).
- */
-function saveSettings(nextSettings) {
-  if (!nextSettings) return getSettings();
-  if (!saveJsonDependency || !settingsFilePath) {
-    throw new Error('[settings] saveSettings called before init');
-  }
-
-  const normalizedSettings = normalizeSettings(cloneSettingsForMutation(nextSettings));
-  currentSettings = normalizedSettings;
-
-  try {
-    saveJsonDependency(settingsFilePath, normalizedSettings);
-  } catch (error) {
-    log.error(
-      'saveSettings failed (not persisted):',
-      settingsFilePath,
-      error
-    );
-  }
-
   return currentSettings;
 }
 
 /**
  * Normalizes settings and requires persistence before updating the in-memory cache.
- * If nextSettings is falsy, it reloads from disk (getSettings()).
  */
 function saveSettingsStrict(nextSettings) {
-  if (!nextSettings) return getSettings();
+  if (!nextSettings || typeof nextSettings !== 'object' || Array.isArray(nextSettings)) {
+    throw new Error('[settings] saveSettingsStrict requires candidate settings');
+  }
   if (!saveJsonStrictDependency || !settingsFilePath) {
     throw new Error('[settings] saveSettingsStrict called before init');
   }
@@ -649,7 +611,7 @@ function saveAndPublishSettingsStrict(nextSettings) {
   return savedSettings;
 }
 
-function sendPreciseCountingFallbackNotice() {
+function sendPreciseCountingFallbackNotice({ persistenceFailed = false } = {}) {
   try {
     const windows = resolvePublicationWindows();
     const mainWin = windows && windows.mainWin;
@@ -657,7 +619,9 @@ function sendPreciseCountingFallbackNotice() {
       log.warn('Precise-counting fallback notice could not be delivered (ignored): main window unavailable.');
       return;
     }
-    mainWin.webContents.send('precise-counting-fallback');
+    mainWin.webContents.send('precise-counting-fallback', {
+      persistenceFailed: persistenceFailed === true,
+    });
   } catch (error) {
     log.warn('Precise-counting fallback notice delivery failed (ignored):', error);
   }
@@ -673,28 +637,30 @@ function isValidPreciseCountingFailureReport(payload) {
 
 /**
  * Canonical, idempotent transition after genuine Precise counting fails.
- * Strict persistence is the commit boundary. Publication and notice delivery
- * happen only after that commit and are deliberately best effort.
+ * The usable Simple runtime state survives a later strict-persistence failure.
  */
 function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
   const details = { source, code, stage };
-  let savedSettings;
-  try {
-    const settings = getSettings();
-    if (settings.modeConteo === 'simple') {
-      return { ok: true, changed: false, mode: 'simple' };
-    }
+  const settings = getSettings();
+  if (settings.modeConteo === 'simple') {
+    return { ok: true, changed: false, mode: 'simple', persistenceFailed: false };
+  }
 
-    const nextSettings = cloneSettingsForMutation(settings);
-    nextSettings.modeConteo = 'simple';
-    savedSettings = saveSettingsStrict(nextSettings);
+  const nextSettings = cloneSettingsForMutation(settings);
+  nextSettings.modeConteo = 'simple';
+  const simpleSettings = normalizeSettings(nextSettings);
+  currentSettings = simpleSettings;
+
+  let persistenceFailed = false;
+  try {
+    saveJsonStrictDependency(settingsFilePath, simpleSettings);
   } catch (error) {
+    persistenceFailed = true;
     log.error('Precise-counting fallback persistence failed:', details, error);
-    return { ok: false, code: 'PERSIST_FAILED' };
   }
 
   try {
-    publishSettingsUpdated(savedSettings);
+    publishSettingsUpdated(simpleSettings);
   } catch (error) {
     log.warn('Precise-counting fallback settings publication failed (ignored):', error);
   }
@@ -703,8 +669,8 @@ function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
   } catch {
     // Logging must not change the established fallback state.
   }
-  sendPreciseCountingFallbackNotice();
-  return { ok: true, changed: true, mode: savedSettings.modeConteo };
+  sendPreciseCountingFallbackNotice({ persistenceFailed });
+  return { ok: true, changed: true, mode: simpleSettings.modeConteo, persistenceFailed };
 }
 
 // =============================================================================
@@ -759,19 +725,14 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
     }
   }
 
-  // get-settings: returns the decorated renderer payload; storage failures use safe defaults.
+  // get-settings: returns the required decorated aggregate from admitted owner caches.
   ipcMain.handle('get-settings', async () => {
-    let settings;
     try {
-      settings = getSettings();
+      return requireDecoratedSettingsPayload(getSettings());
     } catch (error) {
-      log.warn(
-        'IPC get-settings failed (using safe fallback):',
-        error
-      );
-      settings = normalizeSettings(createDefaultSettings(DEFAULT_LANG));
+      log.error('IPC get-settings failed:', error);
+      throw error;
     }
-    return requireDecoratedSettingsPayload(settings);
   });
 
   // get-current-language: returns only the persisted language needed by the language window
@@ -805,7 +766,7 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
       const rebuildAppMenu = typeof shouldRebuildAppMenu !== 'function'
         || shouldRebuildAppMenu() !== false;
       if (rebuildAppMenu) {
-        const menuLang = settings.language || DEFAULT_LANG;
+        const menuLang = settings.language;
         if (typeof buildAppMenu !== 'function') {
           log.warn(
             'buildAppMenu unavailable; menu rebuild skipped.',
@@ -883,7 +844,7 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
       }
 
       const settings = getSettings();
-      const preferenceScopeId = getPreferenceScope(settings.language || DEFAULT_LANG);
+      const preferenceScopeId = getPreferenceScope(settings.language);
       if (settings.selectedPresetByScope[preferenceScopeId] === name) {
         return { ok: true, preferenceScopeId, name };
       }
@@ -934,7 +895,6 @@ module.exports = {
   init,
   registerIpc,
   getSettings,
-  saveSettings,
   saveSettingsStrict,
   configurePublication,
   publishSettingsUpdated,

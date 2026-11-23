@@ -40,8 +40,8 @@ let updateCheckDone = false;
 // =============================================================================
 // Helpers (i18n, SemVer, network)
 // =============================================================================
-const resolveDialogText = (dialogTexts, key, fallback) =>
-  menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+const resolveDialogText = (dialogTexts, key) =>
+  menuBuilder.resolveDialogText(dialogTexts, key, {
     log
   });
 

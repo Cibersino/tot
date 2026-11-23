@@ -170,6 +170,7 @@ test('showEditorWindow restores, shows, focuses, and reports editor state for a 
 
 test('handleOpenEditor preserves the failure envelope when the main action guard rejects the request', () => {
   const { controller } = createController();
+  let startupStateReads = 0;
 
   const result = controller.handleOpenEditor({
     guardOpenEditor: () => false,
@@ -178,7 +179,10 @@ test('handleOpenEditor preserves the failure envelope when the main action guard
     createEditorWindow() {
       throw new Error('SHOULD_NOT_CREATE');
     },
-    startupState: { maximized: true },
+    getStartupState() {
+      startupStateReads += 1;
+      return { maximized: true };
+    },
     logContext: 'test.handleOpenEditor',
   });
 
@@ -186,6 +190,63 @@ test('handleOpenEditor preserves the failure envelope when the main action guard
     ok: false,
     error: 'not ready',
   });
+  assert.equal(startupStateReads, 0);
+});
+
+test('handleOpenEditor admits startup state only for a fresh Editor creation', () => {
+  const { controller } = createController();
+  const { mainWin } = createMainWindowDouble();
+  const { editorWin } = createEditorWindowDouble({ visible: false, maximized: false });
+  let startupStateReads = 0;
+  let receivedCreateOptions = null;
+
+  const result = controller.handleOpenEditor({
+    guardOpenEditor: () => true,
+    editorWin: null,
+    mainWin,
+    createEditorWindow(options) {
+      receivedCreateOptions = options;
+      return editorWin;
+    },
+    getStartupState() {
+      startupStateReads += 1;
+      return { maximized: true };
+    },
+    logContext: 'test.handleOpenEditor.fresh',
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(startupStateReads, 1);
+  assert.deepEqual(receivedCreateOptions.startupState, { maximized: true });
+  assert.equal(receivedCreateOptions.initialPresentationMode, 'maximized');
+  controller.handleEditorWindowClosed({
+    editorWin,
+    mainWin,
+    logContext: 'test.handleOpenEditor.fresh.cleanup',
+  });
+});
+
+test('handleOpenEditor does not reacquire startup state when it reuses a live Editor', () => {
+  const { controller } = createController();
+  const { editorWin } = createEditorWindowDouble({ visible: true });
+  let startupStateReads = 0;
+
+  const result = controller.handleOpenEditor({
+    guardOpenEditor: () => true,
+    editorWin,
+    mainWin: null,
+    createEditorWindow() {
+      throw new Error('SHOULD_NOT_CREATE');
+    },
+    getStartupState() {
+      startupStateReads += 1;
+      return { maximized: true };
+    },
+    logContext: 'test.handleOpenEditor.reused',
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(startupStateReads, 0);
 });
 
 test('handleOpenEditor returns reused-visible when the editor is already open and visible', () => {

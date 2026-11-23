@@ -102,9 +102,9 @@ function loadFreshTasksMain({ dialogResponse = 1 } = {}) {
     filename: menuBuilderModulePath,
     loaded: true,
     exports: {
-      resolveDialogText(dialogTexts, key, fallback = key) {
+      resolveDialogText(dialogTexts, key) {
         if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
-        return fallback;
+        return key;
       },
       getDialogTexts() {
         return {

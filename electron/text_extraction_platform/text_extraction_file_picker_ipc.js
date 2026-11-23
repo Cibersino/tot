@@ -20,7 +20,6 @@ const { dialog, app, BrowserWindow } = require('electron');
 const Log = require('../log');
 const menuBuilder = require('../menu_builder');
 const settingsState = require('../settings');
-const { DEFAULT_LANG } = require('../constants_main');
 const { getTextExtractionStateFile, loadJson, saveJson } = require('../fs_storage');
 const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform_adapter');
 const {
@@ -118,20 +117,11 @@ function getSupportedPickerExtensions() {
 }
 
 function getDialogTexts() {
-  let language = DEFAULT_LANG;
-  try {
-    const settings = settingsState.getSettings();
-    if (settings && typeof settings.language === 'string' && settings.language.trim()) {
-      language = settings.language;
-    }
-  } catch (error) {
-    log.warn('Text-extraction picker settings unavailable; using DEFAULT_LANG dialog texts:', error);
-  }
-  return menuBuilder.getDialogTexts(language);
+  return menuBuilder.getDialogTexts(settingsState.getSettings().language);
 }
 
 function resolveDialogText(dialogTexts, key) {
-  return menuBuilder.resolveDialogText(dialogTexts, key, undefined, {
+  return menuBuilder.resolveDialogText(dialogTexts, key, {
     log,
   });
 }

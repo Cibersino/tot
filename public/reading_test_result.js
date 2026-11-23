@@ -310,19 +310,23 @@
       });
     }
 
-    // Bootstrap may start before settings are available; this path applies the persisted language if possible and otherwise keeps the window on DEFAULT_LANG.
     function loadInitialSettings() {
       enqueueUiSync(async () => {
         let nextSettings;
         if (typeof resultApi.getSettings !== 'function') {
-          log.warn('BOOTSTRAP: readingTestResultAPI.getSettings unavailable; using default renderer settings.');
-          nextSettings = {};
+          log.error('BOOTSTRAP: readingTestResultAPI.getSettings unavailable; required settings aggregate cannot be established.');
+          reportTerminalResultI18nFailure('settings-bootstrap');
+          return false;
         } else {
           try {
-            nextSettings = await resultApi.getSettings() || {};
+            nextSettings = await resultApi.getSettings();
+            if (!nextSettings || typeof nextSettings !== 'object' || Array.isArray(nextSettings)) {
+              throw new Error('readingTestResultAPI.getSettings returned an invalid required settings aggregate');
+            }
           } catch (error) {
-            log.warn('BOOTSTRAP: Reading-test result initial settings fetch failed (using default language):', error);
-            nextSettings = {};
+            log.error('BOOTSTRAP: Reading-test result required settings aggregate unavailable:', error);
+            reportTerminalResultI18nFailure('settings-bootstrap');
+            return false;
           }
         }
         return {
@@ -359,6 +363,8 @@
       window.close();
     });
 
+    loadInitialSettings();
+
     try {
       resultApi.onInitData(handleInitData);
     } catch (error) {
@@ -375,7 +381,6 @@
       reportTerminalResultI18nFailure('settings-listener');
       return;
     }
-    loadInitialSettings();
   }
 })();
 

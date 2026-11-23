@@ -98,6 +98,7 @@ function createElement(id, tagName = 'div') {
 
 function createHarness({ languageDirection = 'ltr' } = {}) {
   const resolveCalls = [];
+  const notifications = [];
   const elements = {
     'selector-title': createElement('selector-title'),
     textPreview: createElement('textPreview', 'pre'),
@@ -139,6 +140,11 @@ function createHarness({ languageDirection = 'ltr' } = {}) {
           return normalizedText.startsWith('rtl:') ? 'rtl' : 'ltr';
         },
       },
+      Notify: {
+        toastMain(key) {
+          notifications.push(key);
+        },
+      },
     },
     document: {
       documentElement: {
@@ -177,6 +183,7 @@ function createHarness({ languageDirection = 'ltr' } = {}) {
   return {
     api: sandbox.window.CurrentTextSelectorSection,
     elements,
+    notifications,
     resolveCalls,
   };
 }
@@ -309,6 +316,7 @@ test('Spoiler applies saved state and restores the saved state when persistence 
   assert.equal(harness.elements.textPreview.childNodes.length, 1);
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+  assert.deepEqual(harness.notifications, []);
 
   let persistCalls = 0;
   let rejectSave;
@@ -328,6 +336,9 @@ test('Spoiler applies saved state and restores the saved state when persistence 
   assert.equal(harness.elements.textPreview.childNodes.length, 1);
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+  assert.deepEqual(harness.notifications, [
+    'renderer.main.alerts.preview_spoiler_persistence_failed',
+  ]);
 
   toggle.checked = true;
   const retryChange = toggle.dispatch('change');
@@ -341,6 +352,10 @@ test('Spoiler applies saved state and restores the saved state when persistence 
   assert.equal(harness.elements.textPreview.childNodes.length, 1);
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[0].textContent, 'abcdefg');
   assert.equal(harness.elements.textPreview.childNodes[0].childNodes[2].textContent, '...');
+  assert.deepEqual(harness.notifications, [
+    'renderer.main.alerts.preview_spoiler_persistence_failed',
+    'renderer.main.alerts.preview_spoiler_persistence_failed',
+  ]);
 });
 
 test('Spoiler remains disabled when persistence capability is unavailable', async () => {

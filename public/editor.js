@@ -631,7 +631,7 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
   const nextLang = settings && settings.language
     ? settings.language
     : (startup ? defaultLang : '');
-  const nextSpellcheckAvailable = !settings || settings.spellcheckAvailable !== false;
+  const nextSpellcheckAvailable = !!settings && settings.spellcheckAvailable === true;
   const languageChanged = !!nextLang && (startup || nextLang !== ctx.state.idiomaActual);
   const spellcheckAvailabilityChanged = nextSpellcheckAvailable !== ctx.state.spellcheckAvailable;
 
@@ -754,6 +754,24 @@ function registerEditorBridgeListeners() {
     }
   } else {
     log.warn('BOOTSTRAP: editorAPI.onEditorStateChanged missing; live editor-state updates disabled.');
+  }
+
+  if (typeof ctx.editorAPI.onEditorFontSizePersistenceFailed === 'function') {
+    try {
+      ctx.editorAPI.onEditorFontSizePersistenceFailed(() => {
+        if (editorI18nTerminal) return;
+        window.Notify.notifyEditor('renderer.editor.alerts.font_size_save_failed', { type: 'error' });
+      });
+    } catch (error) {
+      log.warn(
+        'BOOTSTRAP: editorAPI.onEditorFontSizePersistenceFailed registration failed; shortcut persistence failures will not show a renderer toast:',
+        error
+      );
+    }
+  } else {
+    log.warn(
+      'BOOTSTRAP: editorAPI.onEditorFontSizePersistenceFailed missing; shortcut persistence failures will not show a renderer toast.'
+    );
   }
 
   if (typeof ctx.editorAPI.onReadingTestPrestartStateChanged === 'function') {
@@ -1017,6 +1035,7 @@ if (!bootstrapSetupError && spellcheckToggle) {
         preferenceEnabled: previousEnabled,
         available: previousAvailable,
       });
+      window.Notify.notifyEditor('renderer.editor.alerts.spellcheck_save_failed', { type: 'error' });
     }
   });
 }

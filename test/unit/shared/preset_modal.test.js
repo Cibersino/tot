@@ -82,6 +82,7 @@ function createHarness({
   let establishedLanguage = null;
   let reportRendererI18nFailureCalls = 0;
   let closeCalls = 0;
+  let getSettingsCalls = 0;
   let throwRendererCopy = false;
   let releaseSettings;
   let markSettingsRequested;
@@ -231,6 +232,7 @@ function createHarness({
           },
         }),
         async getSettings() {
+          getSettingsCalls += 1;
           if (heldSettings) {
             markSettingsRequested();
             await heldSettings;
@@ -288,6 +290,9 @@ function createHarness({
     },
     getLogs() {
       return logs;
+    },
+    getSettingsCalls() {
+      return getSettingsCalls;
     },
     getBootstrapError() {
       return bootstrapError;
@@ -501,6 +506,25 @@ test('preset modal preserves an established presentation after an invalid later 
     entry.level === 'warn'
     && entry.args[0] === 'Invalid preset-init payload ignored; preserving established modal presentation.'
   )));
+});
+
+test('preset modal does not reacquire settings for a later valid init payload', async () => {
+  const harness = createHarness({ initialLanguage: 'en' });
+
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'First', wpm: 250, description: 'First payload' },
+  });
+  await harness.settleSemanticWork();
+  harness.subscriptions.onInit({
+    mode: 'edit',
+    preset: { name: 'Second', wpm: 300, description: 'Second payload' },
+  });
+  await harness.settleSemanticWork();
+
+  assert.equal(harness.getSettingsCalls(), 1);
+  assert.equal(harness.elements.presetName.value, 'Second');
+  assert.equal(harness.elements.btnSave.focusCount, 2);
 });
 
 test('preset modal logs a bootstrap error when required modal DOM is unavailable', () => {

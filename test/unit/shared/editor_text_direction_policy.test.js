@@ -253,6 +253,7 @@ function createEditorScriptHarness({
     maximizedTextWidthPx: 960,
   }),
   getInitialCurrentTextSnapshotImpl = async () => ({ ok: true, text: '', revision: 1 }),
+  setSpellcheckEnabledImpl = async () => ({ ok: true }),
   includeInitialCurrentTextSnapshot = true,
   includeAppConstants = true,
   appConstantsOverrides = {},
@@ -292,6 +293,7 @@ function createEditorScriptHarness({
   const fontSizeCalls = [];
   const normalInteractionCalls = [];
   const syncCanonicalTextSyncControlCalls = [];
+  const notifyEditorCalls = [];
   const notifyMainCalls = [];
   const startupEvents = [];
   let getInitialCurrentTextSnapshotCallCount = 0;
@@ -566,7 +568,9 @@ function createEditorScriptHarness({
         },
       },
       Notify: {
-        notifyEditor() {},
+        notifyEditor(...args) {
+          notifyEditorCalls.push(args);
+        },
         notifyMain(key) {
           notifyMainCalls.push(key);
           if (notifyMainError) throw notifyMainError;
@@ -624,10 +628,15 @@ function createEditorScriptHarness({
     onEditorStateChanged(cb) {
       subscriptions.editorStateChanged = cb;
     },
+    onEditorFontSizePersistenceFailed(cb) {
+      subscriptions.editorFontSizePersistenceFailed = cb;
+    },
     onReadingTestPrestartStateChanged(cb) {
       subscriptions.prestartChanged = cb;
     },
-    async setSpellcheckEnabled() { return { ok: true }; },
+    async setSpellcheckEnabled(enabled) {
+      return setSpellcheckEnabledImpl(enabled);
+    },
   };
   if (includeInitialCurrentTextSnapshot) {
     sandbox.window.editorAPI.getInitialCurrentTextSnapshot = async () => {
@@ -690,6 +699,7 @@ function createEditorScriptHarness({
     fontSizeCalls,
     normalInteractionCalls,
     syncCanonicalTextSyncControlCalls,
+    notifyEditorCalls,
     notifyMainCalls,
     startupEvents,
     getInitialCurrentTextSnapshotCallCount: () => getInitialCurrentTextSnapshotCallCount,
@@ -1457,6 +1467,36 @@ test('editor applies live editor-state preferences without reconfiguring global 
     { preferenceEnabled: false, available: true },
   ]);
   assert.deepEqual(harness.fontSizeCalls, [24]);
+});
+
+test('editor displays the narrow native-shortcut font persistence failure notice', async () => {
+  const harness = await bootstrapEditorScriptHarness();
+
+  harness.subscriptions.editorFontSizePersistenceFailed();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.notifyEditorCalls)), [[
+    'renderer.editor.alerts.font_size_save_failed',
+    { type: 'error' },
+  ]]);
+});
+
+test('editor restores spellcheck after a strict persistence failure and shows one toast', async () => {
+  const harness = await bootstrapEditorScriptHarness({
+    setSpellcheckEnabledImpl: async () => ({ ok: false, error: 'write failed' }),
+  });
+
+  harness.elements.spellcheckToggle.checked = false;
+  harness.elements.spellcheckToggle.dispatch('change');
+  await tick();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.spellcheckStateCalls)), [
+    { preferenceEnabled: false, available: true },
+    { preferenceEnabled: true, available: true },
+  ]);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.notifyEditorCalls)), [[
+    'renderer.editor.alerts.spellcheck_save_failed',
+    { type: 'error' },
+  ]]);
 });
 
 test('editor script recomputes direction for paste, drop, replace, append updates, and trash clear', async () => {

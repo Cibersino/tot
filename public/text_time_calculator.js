@@ -422,15 +422,22 @@
     }
 
     await enqueueCalculatorSemanticWork(async () => {
-      let initialSettings = null;
-      if (canGetSettings) {
-        try {
-          initialSettings = await textTimeCalculatorApi.getSettings();
-        } catch (error) {
-          log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; attempting default-language translations, but required number-format settings are unavailable and startup will terminate:', error);
+      if (!canGetSettings) {
+        log.error('BOOTSTRAP: textTimeCalculatorAPI.getSettings unavailable; required settings aggregate cannot be established.');
+        reportTerminalCalculatorI18nFailure('settings-bootstrap');
+        return;
+      }
+
+      let initialSettings;
+      try {
+        initialSettings = await textTimeCalculatorApi.getSettings();
+        if (!initialSettings || typeof initialSettings !== 'object' || Array.isArray(initialSettings)) {
+          throw new Error('textTimeCalculatorAPI.getSettings returned an invalid required settings aggregate');
         }
-      } else if (textTimeCalculatorApi) {
-        log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; attempting default-language translations, but required number-format settings are unavailable and startup will terminate.');
+      } catch (error) {
+        log.error('BOOTSTRAP: text-time calculator required settings aggregate unavailable:', error);
+        reportTerminalCalculatorI18nFailure('settings-bootstrap');
+        return;
       }
 
       try {

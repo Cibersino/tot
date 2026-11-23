@@ -59,6 +59,12 @@ const api = {
     'editor-state-changed callback error:',
     'removeListener error (editor-state-changed):'
   ),
+  onEditorFontSizePersistenceFailed: (cb) => subscribeWithUnsub(
+    'editor-font-size-persistence-failed',
+    cb,
+    'editor-font-size-persistence-failed callback error:',
+    'removeListener error (editor-font-size-persistence-failed):'
+  ),
   onReadingTestPrestartStateChanged: (cb) => subscribeWithUnsub(
     'reading-test-prestart-state-changed',
     cb,

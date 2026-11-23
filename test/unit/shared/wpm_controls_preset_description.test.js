@@ -79,6 +79,7 @@ function resolveDirectionFromText(text, fallbackDirection) {
 }
 
 function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null } = {}) {
+  const notifications = [];
   const document = {
     documentElement: {
       dataset: { languageDirection },
@@ -112,6 +113,11 @@ function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null
             text,
             document.documentElement.dataset.languageDirection === 'rtl' ? 'rtl' : 'ltr'
           );
+        },
+      },
+      Notify: {
+        toastMain(key) {
+          notifications.push(key);
         },
       },
     },
@@ -175,6 +181,7 @@ function createHarness({ languageDirection = 'rtl', setSelectedPresetImpl = null
     electronAPI,
     rendererPresets: sandbox.window.RendererPresets,
     selectionPersists,
+    notifications,
   };
 }
 
@@ -248,7 +255,7 @@ test('wpm controls roll back to the previous preset when selection persistence f
       throw new Error('disk full');
     },
   });
-  const { controller, dom, electronAPI, selectionPersists } = harness;
+  const { controller, dom, electronAPI, selectionPersists, notifications } = harness;
 
   await controller.loadPresets({
     settingsSnapshot: {
@@ -278,4 +285,5 @@ test('wpm controls roll back to the previous preset when selection persistence f
   assert.equal(dom.presetDescription.getAttribute('dir'), 'rtl');
   assert.equal(dom.wpmInput.value, '200');
   assert.equal(dom.wpmSlider.value, '200');
+  assert.deepEqual(notifications, ['renderer.main.alerts.preset_selection_persistence_failed']);
 });

@@ -341,6 +341,7 @@
           }
           enqueuePresetSemanticWork(async () => {
             applyIncomingPresetPayload(payload);
+            const needsInitialSettingsAcquisition = !presetInitialPayloadPresentationEstablished;
             if (presetTranslationsEstablished) {
               try {
                 await applyPresetLanguagePresentation();
@@ -351,6 +352,10 @@
                 reportTerminalPresetI18nFailure('semantic-application');
                 return;
               }
+            }
+            if (!needsInitialSettingsAcquisition) {
+              btnSave.focus({ preventScroll: true });
+              return;
             }
             const language = getEffectivePresetLanguage(await getPresetSettingsLanguage());
             if (presetI18nTerminal || presetInitializationAborted) return;

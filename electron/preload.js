@@ -105,13 +105,23 @@ const api = {
         return subscribeWithUnsub('settings-updated', listener, 'removeListener error:');
     },
     onPreciseCountingFallback: (cb) => {
-        const listener = () => {
-            try { cb(); } catch (error) { console.error('precise-counting fallback callback error:', error); }
+        const listener = (_event, outcome) => {
+            try { cb(outcome); } catch (error) { console.error('precise-counting fallback callback error:', error); }
         };
         return subscribeWithUnsub(
             'precise-counting-fallback',
             listener,
             'removeListener error (precise-counting-fallback):'
+        );
+    },
+    onSpellcheckAvailabilityFailed: (cb) => {
+        const listener = () => {
+            try { cb(); } catch (error) { console.error('spellcheck availability callback error:', error); }
+        };
+        return subscribeWithUnsub(
+            'spellcheck-availability-failed',
+            listener,
+            'removeListener error (spellcheck-availability-failed):'
         );
     },
 

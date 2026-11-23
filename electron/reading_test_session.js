@@ -266,12 +266,7 @@ function createController(options = {}) {
   }
 
   function getSettingsSnapshot() {
-    try {
-      return settingsState.getSettings();
-    } catch (error) {
-      log.warn('Reading-test settings read failed; using fallback settings.', error);
-      return { language: DEFAULT_LANG, modeConteo: 'preciso', presetsByScope: {} };
-    }
+    return settingsState.getSettings();
   }
 
   function buildBlockedResult(guidanceKey, code) {
@@ -457,7 +452,6 @@ function createController(options = {}) {
       getLocaleTag,
       countUtils,
       fallbackPreciseCountingToSimple: settingsState.fallbackPreciseCountingToSimple,
-      DEFAULT_LANG,
       PRESET_WPM_MIN,
       PRESET_WPM_MAX,
       log,
@@ -468,7 +462,6 @@ function createController(options = {}) {
     return readingTestSessionFlow.buildPrefilledPresetPayload(wpm, {
       getSettingsSnapshot,
       settingsState,
-      DEFAULT_LANG,
     });
   }
 

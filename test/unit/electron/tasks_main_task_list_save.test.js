@@ -183,8 +183,8 @@ function loadFreshTasksMainForSave({
     filename: menuBuilderModulePath,
     loaded: true,
     exports: {
-      resolveDialogText(_dialogTexts, key, fallback = key) {
-        return fallback;
+      resolveDialogText(_dialogTexts, key) {
+        return key;
       },
       getDialogTexts() {
         return {};

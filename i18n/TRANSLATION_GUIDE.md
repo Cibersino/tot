@@ -1237,13 +1237,6 @@ Estados de revisión recomendados:
           "en": "An error occurred while clearing the current text."
           // [CONCEPTO_APP] texto actual
         },
-        "settings_payload_unavailable": {
-          "es": "No se pudieron entregar a esta ventana tus preferencias guardadas, por lo que no se pudieron aplicar. El idioma, modo de conteo, preset seleccionado o WPM efectivos pueden diferir de tu configuración guardada. Revisa estos ajustes antes de continuar.",
-          "en": "Your saved preferences could not be delivered to this window, so they could not be applied. The effective language, counting mode, selected preset, or WPM may differ from your saved configuration. Review these settings before continuing."
-          // [PROPÓSITO] Aviso de continuación recuperable cuando el renderer principal no recibe el payload de preferencias decorado. Declara que la configuración efectiva de esta ventana puede diferir de la guardada, sin afirmar corrupción, pérdida, restauración automática ni disponibilidad de respaldos.
-          // [CONCEPTO_APP] modo de conteo; preset de velocidad de lectura; palabras por minuto (WPM)
-          // [PROTEGIDO] `WPM`
-        },
         "current_text_processing_locked": {
           "es": "El texto actual todavía se está actualizando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el texto más reciente.",
           "en": "Current text is still updating. Main-window interactions are locked until the latest text settles."
@@ -1255,6 +1248,36 @@ Estados de revisión recomendados:
           "es": "No se pudo usar el modo Preciso. toT cambió al modo Simple.",
           "en": "Precise mode could not be used. toT switched to Simple mode."
           // [CONCEPTO_APP] modo preciso/simple;
+        },
+        "precise_counting_fallback_persistence_failed": {
+          "es": "No se pudo usar el modo Preciso. toT cambió al modo Simple, pero no pudo guardar ese cambio.",
+          "en": "Precise mode could not be used. toT switched to Simple mode, but could not save that change."
+          // [PROPÓSITO] Informa la transición de recuperación a modo Simple y que su persistencia falló, sin afirmar el estado final del disco.
+          // [CONCEPTO_APP] modo preciso/simple
+        },
+        "counting_mode_persistence_failed": {
+          "es": "No se pudo guardar el modo de conteo seleccionado. Se mantiene el modo anterior.",
+          "en": "The selected counting mode could not be saved. The previous mode remains in use."
+          // [PROPÓSITO] Informa que un cambio voluntario de modo fue rechazado al no poder persistirse.
+          // [CONCEPTO_APP] modo de conteo
+        },
+        "preset_selection_persistence_failed": {
+          "es": "No se pudo guardar el preset seleccionado.",
+          "en": "The selected preset could not be saved."
+          // [PROPÓSITO] Informa que una selección voluntaria de preset fue rechazada al no poder persistirse.
+          // [CONCEPTO_APP] preset de velocidad de lectura
+        },
+        "preview_spoiler_persistence_failed": {
+          "es": "No se pudo guardar la preferencia de ocultar la vista previa. Se mantiene el valor anterior.",
+          "en": "The preview-spoiler preference could not be saved. The previous value remains in use."
+          // [PROPÓSITO] Informa que el cambio voluntario de ocultar vista previa fue revertido al no poder persistirse.
+          // [CONCEPTO_APP] vista previa; ocultar vista previa
+        },
+        "spellcheck_availability_failed": {
+          "es": "No se pudo determinar la disponibilidad del corrector ortográfico.",
+          "en": "Spellcheck availability could not be determined."
+          // [PROPÓSITO] Distingue un error inesperado de determinación de la indisponibilidad ordinaria del corrector.
+          // [CONCEPTO_APP] corrector ortográfico
         },
         "current_text_recount_locked": {
           "es": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
@@ -2505,6 +2528,24 @@ Estados de revisión recomendados:
           "en": "An error occurred while saving the text as the current text."
           // [PROPÓSITO] Alerta de fallo al guardar desde el Editor de Texto hacia el texto actual con `Aplicar` o auto-aplicar.
           // [CONCEPTO_APP] Editor de Texto; texto actual
+        },
+        "spellcheck_save_failed": {
+          "es": "No se pudo guardar la preferencia de ortografía.",
+          "en": "The spellcheck preference could not be saved."
+          // [PROPÓSITO] Toast de fallo único para un cambio voluntario de la preferencia de ortografía del Editor de Texto que no se pudo persistir y cuya UI se restaura.
+          // [CONCEPTO_APP] Editor de Texto; ortografía
+        },
+        "font_size_save_failed": {
+          "es": "No se pudo guardar la preferencia de tamaño del texto.",
+          "en": "The text size preference could not be saved."
+          // [PROPÓSITO] Toast de fallo único para un cambio voluntario del tamaño del texto, iniciado por un botón o un atajo nativo, que no se pudo persistir y cuya UI se restaura.
+          // [CONCEPTO_APP] Editor de Texto; tamaño del texto
+        },
+        "maximized_text_width_not_persisted": {
+          "es": "El ancho del texto cambió para esta sesión, pero no se pudo guardar.",
+          "en": "The text width was changed for this session but could not be saved."
+          // [PROPÓSITO] Toast de advertencia único tras completar un ajuste o reinicio del ancho del texto maximizado que se conserva durante la sesión aunque falle su persistencia.
+          // [CONCEPTO_APP] Editor de Texto; ancho del texto maximizado
         }
       }
     },

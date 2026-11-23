@@ -429,6 +429,7 @@
         } catch (error) {
           log.error('Preview spoiler setting persistence failed; restoring previous value:', error);
           setPreviewSpoilerEnabled(previousEnabled);
+          window.Notify.toastMain('renderer.main.alerts.preview_spoiler_persistence_failed', { type: 'warn' });
         } finally {
           previewSpoilerSavePending = false;
           applyPreviewSpoilerToggleControlState();
