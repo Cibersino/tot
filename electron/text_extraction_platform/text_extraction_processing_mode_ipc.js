@@ -68,6 +68,7 @@ function hasRequiredControllerMethods(controller) {
   return !!controller
     && typeof controller.getState === 'function'
     && typeof controller.isActive === 'function'
+    && typeof controller.getCancellationSignal === 'function'
     && typeof controller.enter === 'function'
     && typeof controller.update === 'function'
     && typeof controller.exit === 'function'
@@ -81,6 +82,7 @@ function hasRequiredControllerMethods(controller) {
 function createController({ onStateChanged } = {}) {
   let active = false;
   let lockId = 0;
+  let cancellationController = null;
   let sinceEpochMs = null;
   let source = '';
   let reason = '';
@@ -149,6 +151,7 @@ function createController({ onStateChanged } = {}) {
 
     active = true;
     lockId += 1;
+    cancellationController = new AbortController();
     sinceEpochMs = Date.now();
     source = sanitizeMeta(context.source);
     reason = sanitizeMeta(context.reason);
@@ -189,16 +192,21 @@ function createController({ onStateChanged } = {}) {
     const requestReason = sanitizeMeta(context.reason) || 'user_abort_requested';
     log.info('Processing abort requested:', { lockId, source: requestSource, reason: requestReason });
 
+    const signalOwner = cancellationController;
     const transition = exit({
       source: requestSource,
       reason: requestReason,
     });
+    signalOwner.abort();
     return { ok: true, cancelled: true, state: transition.state };
   };
 
   return {
     getState,
     isActive: () => active,
+    getCancellationSignal: (requestedLockId) => requestedLockId === lockId && cancellationController
+      ? cancellationController.signal
+      : null,
     enter,
     exit,
     update,

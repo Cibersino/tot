@@ -296,6 +296,8 @@
           "runtime_error": "An OCR runtime error occurred during extraction.",
           "cancelled": "OCR text extraction was cancelled.",
           "cleanup_warning": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder.",
+          "create_outcome_unknown": "Cancellation finished. A temporary document may have been created in Google Drive and may need to be removed.",
+          "delete_outcome_unknown": "Cancellation finished, but removal of the temporary Google Drive document could not be confirmed.",
           "batch_ocr": {
             "activation_required": "This batch includes OCR items, but Google OCR is not enabled. Use Preferences > Enable Google OCR, then start the extraction again.",
             "token_state_invalid": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again.",

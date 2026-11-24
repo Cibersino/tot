@@ -2279,6 +2279,22 @@ Estados de revisión recomendados:
             // [CONCEPTO_APP] OCR; Google OCR; extracción de texto
             // [PROTEGIDO] `OCR`; `Google Drive`
           },
+          "create_outcome_unknown": {
+            "es": "La cancelación terminó. Es posible que se haya creado un documento temporal en Google Drive y que debas eliminarlo.",
+            "en": "Cancellation finished. A temporary document may have been created in Google Drive and may need to be removed."
+            // [PROPÓSITO] Advertencia individual tras cancelar OCR cuando no se puede determinar si se creó un documento temporal remoto.
+            // [NO_CONFUNDIR] No afirmar que el documento existe ni que su eliminación falló; su creación es incierta.
+            // [CONCEPTO_APP] Google OCR; extracción de texto
+            // [PROTEGIDO] `Google Drive`
+          },
+          "delete_outcome_unknown": {
+            "es": "La cancelación terminó, pero no se pudo confirmar la eliminación del documento temporal de Google Drive.",
+            "en": "Cancellation finished, but removal of the temporary Google Drive document could not be confirmed."
+            // [PROPÓSITO] Advertencia individual tras cancelar OCR cuando no se puede confirmar la eliminación del documento temporal remoto.
+            // [NO_CONFUNDIR] No afirmar que la eliminación falló ni que el documento sigue existiendo; el resultado es incierto.
+            // [CONCEPTO_APP] Google OCR; extracción de texto
+            // [PROTEGIDO] `Google Drive`
+          },
           "batch_ocr": {
             "activation_required": {
               "es": "Este lote incluye ítems con OCR, pero Google OCR no está activado. Usa Preferencias > Activar Google OCR y luego vuelve a iniciar la extracción.",

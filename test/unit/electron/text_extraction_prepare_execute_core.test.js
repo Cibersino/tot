@@ -244,6 +244,7 @@ function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
 }
 
 function createIdleController({ changed = true, active = false, lockId = active ? 1 : 0, state = null } = {}) {
+  const cancellation = new AbortController();
   const currentState = state && typeof state === 'object'
     ? { ...state }
     : {
@@ -256,6 +257,7 @@ function createIdleController({ changed = true, active = false, lockId = active 
   return {
     enterCalls: [],
     exitCalls: [],
+    getCancellationSignal() { return cancellation.signal; },
     enter(payload) {
       this.enterCalls.push(payload);
       return { changed, state: { ...currentState } };
@@ -277,6 +279,7 @@ function createIdleController({ changed = true, active = false, lockId = active 
 function createExecutingController() {
   let active = false;
   let lockId = 0;
+  let cancellation = null;
 
   return {
     enterCalls: [],
@@ -285,6 +288,7 @@ function createExecutingController() {
       this.enterCalls.push(payload);
       active = true;
       lockId += 1;
+      cancellation = new AbortController();
       return { changed: true, state: this.getState() };
     },
     exit(payload) {
@@ -293,6 +297,9 @@ function createExecutingController() {
     },
     isActive() {
       return active;
+    },
+    getCancellationSignal(requestedLockId) {
+      return requestedLockId === lockId && cancellation ? cancellation.signal : null;
     },
     getState() {
       return {
@@ -305,6 +312,7 @@ function createExecutingController() {
     },
     cancelCurrent() {
       active = false;
+      cancellation.abort();
     },
     activateReplacement(nextLockId) {
       active = true;
@@ -1249,6 +1257,63 @@ test('executePreparedImport maps oversized OCR image uploads to the dedicated al
   assert.equal(result.result.error.code, 'ocr_image_upload_too_large');
   assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.ocr.image_upload_too_large');
   assert.deepEqual(result.warningAlertKeys, []);
+});
+
+test('OCR execution receives the actual controller cancellation and surfaces its cleanup warning', async (t) => {
+  const tempDir = createTestTempDir('ocr-controller-cancellation');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'scan.png');
+  fs.writeFileSync(source, 'image');
+  const { createController } = require('../../../electron/text_extraction_platform/text_extraction_processing_mode_ipc');
+  const controller = createController({ onStateChanged() {} });
+  let start;
+  const started = new Promise((resolve) => { start = resolve; });
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async ({ cancellationSignal, isAborted }) => {
+      assert.equal(cancellationSignal.aborted, false);
+      start();
+      await new Promise((resolve) => cancellationSignal.addEventListener('abort', resolve, { once: true }));
+      assert.equal(isAborted(), true);
+      return {
+        state: 'cancelled', executedRoute: 'ocr', text: '',
+        warnings: ['cleanup:ocr_create_outcome_unknown'],
+        provenance: { metadataSafeForLogs: {} }, error: { code: 'aborted_by_user' },
+      };
+    },
+    pdfPageSelectionOverrides: {
+      async materializePdfPageSelectionInput() {
+        return { ok: true, effectiveFilePath: source, processingInputFileName: 'scan.png' };
+      },
+    },
+  });
+  t.after(restore);
+  const execution = core.executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo(source), ocrLanguage: 'es',
+      routeMetadata: { availableRoutes: ['ocr'], chosenRoute: 'ocr', heavySplitEligible: false },
+      requiresRouteChoice: false, routeChoiceOptions: [],
+    },
+    resolvePaths: () => ({}), controller,
+  });
+  await started;
+  controller.requestAbort();
+  const result = await execution;
+  assert.equal(result.result.state, 'cancelled');
+  assert.deepEqual(result.warningAlertKeys, ['renderer.text_extraction.alerts.ocr.create_outcome_unknown']);
+});
+
+test('OCR execution rejects a controller that cannot provide cancellation signals', async () => {
+  const controller = createExecutingController();
+  delete controller.getCancellationSignal;
+  await assert.rejects(executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo(SELECTABLE_PDF_FIXTURE),
+      routeMetadata: { availableRoutes: ['ocr'], chosenRoute: 'ocr' },
+      routeChoiceOptions: [],
+    },
+    controller,
+  }), /requires a cancellation signal/);
+  assert.equal(controller.isActive(), false);
 });
 
 test('executePreparedImport materializes the selected PDF range for native success and preserves original provenance', async (t) => {

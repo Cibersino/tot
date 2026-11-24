@@ -969,11 +969,20 @@ function resolveWarningAlertKeys(routeKind, result) {
     alertKeys.push('renderer.text_extraction.alerts.generated_pdf_cleanup_warning');
   }
 
+  if (routeKind === 'ocr' && warnings.includes('cleanup:ocr_create_outcome_unknown')) {
+    alertKeys.push('renderer.text_extraction.alerts.ocr.create_outcome_unknown');
+  }
+  if (routeKind === 'ocr' && warnings.includes('cleanup:ocr_delete_outcome_unknown')) {
+    alertKeys.push('renderer.text_extraction.alerts.ocr.delete_outcome_unknown');
+  }
+
   if (routeKind === 'ocr'
     && warnings.some((warning) => (
       typeof warning === 'string'
       && warning.startsWith('cleanup:')
       && warning !== 'cleanup:pdf_subset_cleanup_failed'
+      && warning !== 'cleanup:ocr_create_outcome_unknown'
+      && warning !== 'cleanup:ocr_delete_outcome_unknown'
     ))) {
     alertKeys.push('renderer.text_extraction.alerts.ocr.cleanup_warning');
   }
@@ -1430,6 +1439,7 @@ async function executePreparedHeavySplitUnit({
   resolvePaths,
   controller,
   executionOwnsController,
+  cancellationSignal,
   heavySplitFailurePolicy,
   processingContext,
 }) {
@@ -1593,6 +1603,7 @@ async function executePreparedHeavySplitUnit({
         bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
         ocrLanguage: preparedRecord.ocrLanguage,
         isAborted: () => !executionOwnsController(),
+        cancellationSignal,
       });
       childResult = enforceFailureAbortInvariants({
         routeKind: 'ocr',
@@ -1857,6 +1868,9 @@ async function executePreparedImport({
   }
 
   const productRoute = resolvedRoute.productRoute;
+  if (productRoute === 'ocr' && typeof controller.getCancellationSignal !== 'function') {
+    throw new Error('OCR execution requires a cancellation signal from the processing controller.');
+  }
   const executionKind = productRoute === 'native' ? 'native' : 'google_drive';
   const fileInfo = preparedRecord.fileInfo;
   const controllerExecutionContext = buildControllerExecutionContext({
@@ -1893,6 +1907,14 @@ async function executePreparedImport({
   }
 
   const executionLockId = getControllerLockId(executionState);
+  const cancellationSignal = productRoute === 'ocr' ? controller.getCancellationSignal(executionLockId) : null;
+  if (productRoute === 'ocr' && (!cancellationSignal
+    || typeof cancellationSignal.addEventListener !== 'function'
+    || typeof cancellationSignal.removeEventListener !== 'function'
+    || typeof cancellationSignal.aborted !== 'boolean')) {
+    if (ownsControllerTransition) controller.exit({ source: 'text_extraction_execution', reason: 'invalid_cancellation_signal' });
+    throw new Error('OCR execution received an invalid cancellation signal.');
+  }
   const executionOwnsController = () => isExecutionStillOwned(controller, executionLockId);
   let executionResult = null;
   let processingInputContext = {
@@ -1918,6 +1940,7 @@ async function executePreparedImport({
         resolvePaths,
         controller,
         executionOwnsController,
+        cancellationSignal,
         heavySplitFailurePolicy,
         processingContext,
       });
@@ -2039,6 +2062,7 @@ async function executePreparedImport({
           bundledCredentialsFailureDetailsSafeForLogs: paths.bundledCredentialsFailureDetailsSafeForLogs,
           ocrLanguage: preparedRecord.ocrLanguage,
           isAborted: () => !executionOwnsController(),
+          cancellationSignal,
         });
         const safeOcrResult = enforceFailureAbortInvariants({
           routeKind: 'ocr',
