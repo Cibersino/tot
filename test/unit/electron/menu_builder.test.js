@@ -6,11 +6,12 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('path');
+const Log = require('../../../electron/log');
 const {
   installElectronModuleMock,
 } = require('../../helpers/electron_module_mock');
 
-function loadFreshMenuBuilder(t, electronOverrides = {}) {
+function loadFreshMenuBuilder(t, electronOverrides = {}, logDouble = null) {
   const modulePath = path.resolve(__dirname, '../../../electron/menu_builder.js');
   const baseMenu = {
     buildFromTemplate() {
@@ -38,6 +39,7 @@ function loadFreshMenuBuilder(t, electronOverrides = {}) {
       ...(electronOverrides.BrowserWindow || {}),
     },
   }));
+  if (logDouble) t.mock.method(Log, 'get', () => logDouble);
   delete require.cache[require.resolve(modulePath)];
   return require(modulePath);
 }
@@ -48,6 +50,39 @@ function createLogDouble() {
     warn(...args) {
       this.warnCalls.push(args);
     },
+  };
+}
+
+function createMenuLogDouble() {
+  return {
+    warnOnceCalls: [],
+    warnCalls: [],
+    errorCalls: [],
+    warnOnce(...args) {
+      this.warnOnceCalls.push(args);
+    },
+    warn(...args) {
+      this.warnCalls.push(args);
+    },
+    error(...args) {
+      this.errorCalls.push(args);
+    },
+  };
+}
+
+function createBuildAppMenuOptions(overrides = {}) {
+  return {
+    resolveMainWindow() {
+      return null;
+    },
+    isMenuEnabled() {
+      return true;
+    },
+    getMenuBlockReason() {
+      return '';
+    },
+    onOpenLanguage() {},
+    ...overrides,
   };
 }
 
@@ -288,7 +323,7 @@ test('missing required default main bundle is terminal and does not use a select
   });
 
   assert.throws(
-    () => menuBuilder.buildAppMenu('en'),
+    () => menuBuilder.buildAppMenu('en', createBuildAppMenuOptions()),
     /required default main\.json unavailable: es/
   );
   assert.equal(selectedRootRead, false);
@@ -324,7 +359,294 @@ test('an established default main bundle is retained for later selected-language
     return originalReadFileSync.call(fs, filePath, ...args);
   });
 
-  assert.doesNotThrow(() => menuBuilder.buildAppMenu('en'));
+  assert.doesNotThrow(() => menuBuilder.buildAppMenu('en', createBuildAppMenuOptions()));
+});
+
+test('buildAppMenu validates its required construction dependencies before menu installation', (t) => {
+  let buildCalls = 0;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    Menu: {
+      buildFromTemplate() {
+        buildCalls += 1;
+        return {};
+      },
+    },
+  });
+  const staticWindow = {};
+  const validOptions = createBuildAppMenuOptions();
+  const invalidCalls = [
+    [undefined, validOptions, /requires lang to be a non-empty string/],
+    ['', validOptions, /requires lang to be a non-empty string/],
+    [42, validOptions, /requires lang to be a non-empty string/],
+    ['en', undefined, /requires opts to be a non-null, non-array object/],
+    ['en', null, /requires opts to be a non-null, non-array object/],
+    ['en', [], /requires opts to be a non-null, non-array object/],
+    ['en', () => {}, /requires opts to be a non-null, non-array object/],
+    ['en', createBuildAppMenuOptions({ resolveMainWindow: undefined, mainWindow: staticWindow }), /requires opts\.resolveMainWindow to be a function/],
+    ['en', createBuildAppMenuOptions({ isMenuEnabled: null }), /requires opts\.isMenuEnabled to be a function/],
+    ['en', createBuildAppMenuOptions({ getMenuBlockReason: false }), /requires opts\.getMenuBlockReason to be a function/],
+    ['en', createBuildAppMenuOptions({ onOpenLanguage: 'open' }), /requires opts\.onOpenLanguage to be a function/],
+  ];
+
+  for (const [lang, opts, expectedError] of invalidCalls) {
+    assert.throws(() => menuBuilder.buildAppMenu(lang, opts), expectedError);
+  }
+
+  assert.equal(buildCalls, 0);
+});
+
+test('buildAppMenu does not invoke required callbacks during construction', (t) => {
+  const callbackCalls = [];
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const options = createBuildAppMenuOptions({
+    unrelatedOption: true,
+    resolveMainWindow() {
+      callbackCalls.push('resolveMainWindow');
+      return null;
+    },
+    isMenuEnabled() {
+      callbackCalls.push('isMenuEnabled');
+      return true;
+    },
+    getMenuBlockReason() {
+      callbackCalls.push('getMenuBlockReason');
+      return '';
+    },
+    onOpenLanguage() {
+      callbackCalls.push('onOpenLanguage');
+    },
+  });
+
+  assert.doesNotThrow(() => menuBuilder.buildAppMenu('en', options));
+
+  assert.deepEqual(callbackCalls, []);
+});
+
+test('buildAppMenu accepts a resolver that returns null when a menu action runs', (t) => {
+  withPlatform(t, 'win32');
+
+  let capturedTemplate = null;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return {};
+      },
+    },
+  });
+
+  menuBuilder.buildAppMenu('en', createBuildAppMenuOptions({
+    resolveMainWindow() {
+      return null;
+    },
+  }));
+
+  assert.doesNotThrow(() => capturedTemplate[0].submenu[0].click());
+});
+
+test('buildAppMenu dispatches only when isMenuEnabled returns strictly true', (t) => {
+  withPlatform(t, 'win32');
+
+  const sends = [];
+  const log = createMenuLogDouble();
+  let menuEnabled = 'true';
+  let blockReasonCalls = 0;
+  let capturedTemplate = null;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return {};
+      },
+    },
+  }, log);
+  const mainWindow = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      send(channel, payload) {
+        sends.push({ channel, payload });
+      },
+    },
+  };
+
+  menuBuilder.buildAppMenu('en', createBuildAppMenuOptions({
+    resolveMainWindow() {
+      return mainWindow;
+    },
+    isMenuEnabled() {
+      return menuEnabled;
+    },
+    getMenuBlockReason() {
+      blockReasonCalls += 1;
+      return 'processing_mode';
+    },
+  }));
+
+  const click = capturedTemplate[0].submenu[0].click;
+  click();
+  menuEnabled = undefined;
+  click();
+
+  assert.deepEqual(sends, []);
+  assert.equal(blockReasonCalls, 0);
+  assert.deepEqual(log.warnOnceCalls, [
+    [
+      'menu_builder.contract.isMenuEnabled.invalidResult',
+      'isMenuEnabled callback contract violation: expected boolean; menu action denied.',
+      { actionId: 'guia_basica', resultType: 'string' },
+    ],
+    [
+      'menu_builder.contract.isMenuEnabled.invalidResult',
+      'isMenuEnabled callback contract violation: expected boolean; menu action denied.',
+      { actionId: 'guia_basica', resultType: 'undefined' },
+    ],
+  ]);
+
+  menuEnabled = true;
+  click();
+
+  assert.deepEqual(sends, [{ channel: 'menu-click', payload: 'guia_basica' }]);
+});
+
+test('buildAppMenu preserves ordinary blocking and processing-lock notices for false menu gates', (t) => {
+  withPlatform(t, 'win32');
+
+  const sends = [];
+  let blockReason = 'ordinary_lock';
+  let blockReasonCalls = 0;
+  let capturedTemplate = null;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return {};
+      },
+    },
+  });
+  const mainWindow = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      send(channel, payload) {
+        sends.push({ channel, payload });
+      },
+    },
+  };
+
+  menuBuilder.buildAppMenu('en', createBuildAppMenuOptions({
+    resolveMainWindow() {
+      return mainWindow;
+    },
+    isMenuEnabled() {
+      return false;
+    },
+    getMenuBlockReason() {
+      blockReasonCalls += 1;
+      return blockReason;
+    },
+  }));
+
+  const click = capturedTemplate[0].submenu[0].click;
+  click();
+  assert.deepEqual(sends, []);
+  assert.equal(blockReasonCalls, 1);
+
+  blockReason = ' processing_mode ';
+  click();
+
+  assert.equal(blockReasonCalls, 2);
+  assert.deepEqual(sends, [
+    { channel: 'menu-click', payload: '__menu_processing_lock_notice__' },
+  ]);
+});
+
+test('buildAppMenu uses interaction_locked for invalid block-reason results', (t) => {
+  withPlatform(t, 'win32');
+
+  const sends = [];
+  const log = createMenuLogDouble();
+  let blockReason = '';
+  let capturedTemplate = null;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return {};
+      },
+    },
+  }, log);
+  const mainWindow = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      send(channel, payload) {
+        sends.push({ channel, payload });
+      },
+    },
+  };
+
+  menuBuilder.buildAppMenu('en', createBuildAppMenuOptions({
+    resolveMainWindow() {
+      return mainWindow;
+    },
+    isMenuEnabled() {
+      return false;
+    },
+    getMenuBlockReason() {
+      return blockReason;
+    },
+  }));
+
+  let coercionCalls = 0;
+  const processingModeLikeResult = {
+    toString() {
+      coercionCalls += 1;
+      return 'processing_mode';
+    },
+  };
+  const invalidReasons = ['', '   ', null, processingModeLikeResult];
+  const click = capturedTemplate[0].submenu[0].click;
+  for (const invalidReason of invalidReasons) {
+    blockReason = invalidReason;
+    click();
+  }
+
+  assert.deepEqual(sends, []);
+  assert.equal(coercionCalls, 0);
+  assert.deepEqual(
+    log.warnOnceCalls.filter(([key]) => key === 'menu_builder.contract.getMenuBlockReason.invalidResult'),
+    [
+      [
+        'menu_builder.contract.getMenuBlockReason.invalidResult',
+        'getMenuBlockReason callback contract violation: expected non-empty string; using interaction_locked.',
+        { actionId: 'guia_basica', resultType: 'string' },
+      ],
+      [
+        'menu_builder.contract.getMenuBlockReason.invalidResult',
+        'getMenuBlockReason callback contract violation: expected non-empty string; using interaction_locked.',
+        { actionId: 'guia_basica', resultType: 'string' },
+      ],
+      [
+        'menu_builder.contract.getMenuBlockReason.invalidResult',
+        'getMenuBlockReason callback contract violation: expected non-empty string; using interaction_locked.',
+        { actionId: 'guia_basica', resultType: 'object' },
+      ],
+      [
+        'menu_builder.contract.getMenuBlockReason.invalidResult',
+        'getMenuBlockReason callback contract violation: expected non-empty string; using interaction_locked.',
+        { actionId: 'guia_basica', resultType: 'object' },
+      ],
+    ]
+  );
+  assert.equal(
+    log.warnOnceCalls.filter(([key]) => key === 'menu_builder.inert.interaction_locked:guia_basica').length,
+    invalidReasons.length
+  );
 });
 
 test('buildAppMenu prepends a localized macOS app menu while preserving shared menus', (t) => {
@@ -352,7 +674,7 @@ test('buildAppMenu prepends a localized macOS app menu while preserving shared m
     },
   });
 
-  menuBuilder.buildAppMenu('es');
+  menuBuilder.buildAppMenu('es', createBuildAppMenuOptions());
 
   assert.equal(installedMenu, builtMenu);
   assert.ok(Array.isArray(capturedTemplate));
@@ -377,6 +699,8 @@ test('buildAppMenu prepends a localized macOS app menu while preserving shared m
 });
 
 test('buildAppMenu keeps the shared top-level menu structure and links submenu outside macOS', (t) => {
+  withPlatform(t, 'win32');
+
   let capturedTemplate = null;
   let installedMenu = null;
   const builtMenu = { tag: 'menu' };
@@ -392,7 +716,7 @@ test('buildAppMenu keeps the shared top-level menu structure and links submenu o
     },
   });
 
-  menuBuilder.buildAppMenu('en');
+  menuBuilder.buildAppMenu('en', createBuildAppMenuOptions());
 
   assert.equal(installedMenu, builtMenu);
   assert.ok(Array.isArray(capturedTemplate));
@@ -450,7 +774,7 @@ test('development menu actions preserve their target operations', (t) => {
     },
   });
 
-  menuBuilder.buildAppMenu('en');
+  menuBuilder.buildAppMenu('en', createBuildAppMenuOptions());
 
   const developmentMenu = capturedTemplate.at(-1);
   assert.deepEqual(
