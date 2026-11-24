@@ -4,17 +4,29 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Renderer i18n owner for shared renderer surfaces
-// Renderer translation owner. The graph is required metadata: application IDs
-// are resolved only through it, while locale tags are used at standards-facing
-// boundaries such as document.lang and Intl consumers.
+// Renderer i18n owner for shared renderer surfaces.
+// Responsibilities:
+// - Establish the required language graph and resolve application IDs only through it.
+// - Keep graph locale tags available for standards-facing consumers such as document.lang and Intl.
+// - Load and merge renderer bundles through the declared graph, with DEFAULT_LANG as the required final bundle.
+// - Serialize renderer translation transitions and restore the last established state after recoverable failures.
+// - Own document language attributes, user-text direction resolution, localized document loading, and renderer text helpers.
+// - Expose the shared window.RendererI18n surface to renderer consumers.
 
 (() => {
+  // =============================================================================
+  // Logger and required runtime dependencies
+  // =============================================================================
+
   if (typeof window.getLogger !== 'function') throw new Error('[i18n] window.getLogger unavailable; cannot continue');
   const log = window.getLogger('i18n');
   const { AppConstants, LanguageResourceGraph: graphApi } = window;
   if (!AppConstants || typeof AppConstants.DEFAULT_LANG !== 'string' || !AppConstants.DEFAULT_LANG.trim()) throw new Error('[i18n] AppConstants.DEFAULT_LANG unavailable; cannot continue');
   if (!graphApi || typeof graphApi.validateCatalog !== 'function') throw new Error('[i18n] LanguageResourceGraph unavailable; cannot continue');
+
+  // =============================================================================
+  // Constants / config
+  // =============================================================================
 
   const { DEFAULT_LANG } = AppConstants;
   const FIXED_DOCUMENT_DIRECTION = 'ltr';
@@ -22,6 +34,10 @@
     'renderer.info.acerca_de': './info/acerca_de.{locale}.html',
     'renderer.info.instructions': './info/instrucciones.{locale}.html',
   });
+
+  // =============================================================================
+  // Shared state
+  // =============================================================================
 
   let languageGraph = null;
   let languageGraphPromise = null;
@@ -32,6 +48,10 @@
   let rendererTransitionQueue = Promise.resolve();
   let userTextDirectionProbeHost = null;
   let userTextDirectionProbe = null;
+
+  // =============================================================================
+  // Language graph and descriptor helpers
+  // =============================================================================
 
   const getLanguageDirection = (localeTag) => graphApi.getLocaleDirection(localeTag);
 
@@ -77,6 +97,10 @@
   function getOcrLocaleTag(languageId) {
     return getLanguageDescriptor(languageId).ocrLocaleTag;
   }
+
+  // =============================================================================
+  // Document language attributes and user-text direction
+  // =============================================================================
 
   function getUiLanguageDirection() {
     const direction = document && document.documentElement ? document.documentElement.dataset.languageDirection : '';
@@ -132,10 +156,7 @@
     if (!normalizedValue) return fallbackDirection;
     ensureUserTextDirectionProbe();
     if (!userTextDirectionProbeHost || !userTextDirectionProbe) {
-      log.warnOnce(
-        'i18n.resolveUserTextDirection.probeUnavailable',
-        'resolveUserTextDirection probe unavailable; using UI fallback direction.'
-      );
+      log.warn('resolveUserTextDirection probe unavailable; using UI fallback direction.');
       return fallbackDirection;
     }
     if (typeof window.getComputedStyle !== 'function') {
@@ -151,6 +172,10 @@
     userTextDirectionProbe.textContent = '';
     return computedDirection === 'rtl' ? 'rtl' : 'ltr';
   }
+
+  // =============================================================================
+  // Renderer bundle loading and translation transitions
+  // =============================================================================
 
   const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
   const deepMerge = (base, overlay) => {
@@ -228,6 +253,11 @@
     return !!transition && (!transition.hadEstablishedState || transition.restorationFailed);
   }
 
+  function reportRendererTranslationRestorationFailure(restoreError, candidate, previousState) {
+    log.error('Renderer translation transition restoration failed:', { requestedLanguage: candidate.language, previousLanguage: previousState.language }, restoreError);
+    return markRendererTransitionError(restoreError, { hadEstablishedState: !!previousState.translations, restorationFailed: true });
+  }
+
   function transitionRendererTranslations(languageId, { applyTranslations } = {}) {
     if (typeof applyTranslations !== 'function') return Promise.reject(new Error('[i18n] transitionRendererTranslations requires applyTranslations'));
     const runTransition = async () => {
@@ -248,10 +278,10 @@
         applyWindowLanguageAttributes(committed.descriptor);
       } catch (error) {
         try {
+          // The consumer callback has not run, so restore shared state without reapplying consumer semantics.
           await restoreRendererTranslationState(previousState, applyTranslations, { restoreConsumerSemantics: false });
         } catch (restoreError) {
-          log.error('Renderer translation transition restoration failed:', { requestedLanguage: candidate.language, previousLanguage: previousState.language }, restoreError);
-          throw markRendererTransitionError(restoreError, { hadEstablishedState: !!previousState.translations, restorationFailed: true });
+          throw reportRendererTranslationRestorationFailure(restoreError, candidate, previousState);
         }
         throw markRendererTransitionError(error, { hadEstablishedState: !!previousState.translations });
       }
@@ -261,17 +291,21 @@
         try {
           await restoreRendererTranslationState(previousState, applyTranslations);
         } catch (restoreError) {
-          log.error('Renderer translation transition restoration failed:', { requestedLanguage: candidate.language, previousLanguage: previousState.language }, restoreError);
-          throw markRendererTransitionError(restoreError, { hadEstablishedState: !!previousState.translations, restorationFailed: true });
+          throw reportRendererTranslationRestorationFailure(restoreError, candidate, previousState);
         }
         throw markRendererTransitionError(error, { hadEstablishedState: !!previousState.translations });
       }
     };
+    // Callers receive each transition result; the internal queue continues only after non-terminal failures.
     const scheduled = rendererTransitionQueue.then(runTransition);
     rendererTransitionQueue = scheduled.catch((error) => { if (isTerminalRendererTransitionFailure(error)) throw error; });
     rendererTransitionQueue.catch(() => {});
     return scheduled;
   }
+
+  // =============================================================================
+  // Localized documents and renderer text helpers
+  // =============================================================================
 
   async function loadLocalizedDocument(documentId, languageId) {
     const pathTemplate = LOCALIZED_DOCUMENT_RESOURCES[documentId];

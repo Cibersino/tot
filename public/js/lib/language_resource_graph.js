@@ -1,14 +1,31 @@
 // public/js/lib/language_resource_graph.js
 'use strict';
 
-// Shared application-language graph. Application IDs, resource directories,
-// preference scopes, and standards-facing locale tags are deliberately
-// separate values; no relationship is inferred from ID spelling or paths.
+// =============================================================================
+// Overview
+// =============================================================================
+// Shared application-language graph.
+// Responsibilities:
+// - Expose the same graph API to CommonJS consumers and root.LanguageResourceGraph.
+// - Validate the declared language catalog and produce immutable descriptors.
+// - Resolve declared language IDs and aliases.
+// - Build the catalog-defined inheritance and resource-candidate chains.
+//
+// Application IDs, resource directories, preference scopes, and standards-facing locale tags are deliberately separate values; no relationship is inferred from ID spelling or paths.
+
+// =============================================================================
+// Module registration
+// =============================================================================
+
 (function initLanguageResourceGraph(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root && typeof root === 'object') root.LanguageResourceGraph = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
+  // =============================================================================
+  // Constants / catalog validation
+  // =============================================================================
+
   const RESOURCE_DIRECTORY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
   function isPlainObject(value) {
@@ -39,6 +56,10 @@
     return localeTag;
   }
 
+  // =============================================================================
+  // Catalog graph construction
+  // =============================================================================
+
   function validateCatalog(rawCatalog, { defaultLanguage } = {}) {
     if (!isPlainObject(rawCatalog) || rawCatalog.schemaVersion !== 1 || !Array.isArray(rawCatalog.languages)) {
       throw new Error('[language-resource-graph] catalog must be a schemaVersion 1 object with a languages array');
@@ -67,7 +88,12 @@
       const preferenceScopeId = requireString(rawNode.preferenceScopeId, `languages[${index}].preferenceScopeId`);
       if (typeof rawNode.selectable !== 'boolean') throw new Error(`[language-resource-graph] selectable must be boolean for ${id}`);
       const label = requireString(rawNode.label, `languages[${index}].label`);
-      if (!Array.isArray(rawNode.aliases) || rawNode.aliases.some((alias) => typeof alias !== 'string' || !alias.trim())) throw new Error(`[language-resource-graph] aliases must be an array of non-empty strings for ${id}`);
+      if (
+        !Array.isArray(rawNode.aliases)
+        || rawNode.aliases.some((alias) => typeof alias !== 'string' || !alias.trim())
+      ) {
+        throw new Error(`[language-resource-graph] aliases must be an array of non-empty strings for ${id}`);
+      }
       rawNode.aliases.forEach((rawAlias) => {
         const alias = rawAlias.trim();
         if (alias === id || nodesById.has(alias) || aliasesToId.has(alias)) throw new Error(`[language-resource-graph] duplicate language alias: ${alias}`);
@@ -75,7 +101,18 @@
       });
       resourceDirectories.add(resourceDirectory);
       localeTags.add(localeTag);
-      nodesById.set(id, Object.freeze({ id, kind, parentId, resourceDirectory, localeTag, ocrLocaleTag, preferenceScopeId, selectable: rawNode.selectable, label, aliases: Object.freeze(rawNode.aliases.map((alias) => alias.trim())) }));
+      nodesById.set(id, Object.freeze({
+        id,
+        kind,
+        parentId,
+        resourceDirectory,
+        localeTag,
+        ocrLocaleTag,
+        preferenceScopeId,
+        selectable: rawNode.selectable,
+        label,
+        aliases: Object.freeze(rawNode.aliases.map((alias) => alias.trim())),
+      }));
     });
 
     nodesById.forEach((node) => {
@@ -93,8 +130,17 @@
         current = nodesById.get(current.parentId);
       }
     });
-    return Object.freeze({ defaultId, nodesById, aliasesToId, languages: Object.freeze(Array.from(nodesById.values())) });
+    return Object.freeze({
+      defaultId,
+      nodesById,
+      aliasesToId,
+      languages: Object.freeze(Array.from(nodesById.values())),
+    });
   }
+
+  // =============================================================================
+  // Graph queries
+  // =============================================================================
 
   function resolveLanguageId(graph, input) {
     if (!graph || typeof input !== 'string') return null;
@@ -145,5 +191,22 @@
     return new Set(['ar', 'fa', 'he', 'ur']).has(String(localeTag || '').split('-')[0].toLowerCase()) ? 'rtl' : 'ltr';
   }
 
-  return { getCompleteResourceCandidates, getDescriptor, getLocaleDirection, getMergeChain, getParentChain, getSelectableLanguages, resolveLanguageId, validateCatalog };
+  // =============================================================================
+  // Exports / module surface
+  // =============================================================================
+
+  return {
+    getCompleteResourceCandidates,
+    getDescriptor,
+    getLocaleDirection,
+    getMergeChain,
+    getParentChain,
+    getSelectableLanguages,
+    resolveLanguageId,
+    validateCatalog,
+  };
 });
+
+// =============================================================================
+// End of public/js/lib/language_resource_graph.js
+// =============================================================================

@@ -19,8 +19,6 @@
     throw new Error('[snapshot-save-tags-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('snapshot-save-tags-modal');
-  log.debug('Snapshot save tags modal starting...');
-
   if (!window.RendererI18n
     || typeof window.RendererI18n.tRenderer !== 'function'
     || typeof window.RendererI18n.msgRenderer !== 'function') {
@@ -273,22 +271,24 @@
 
     if (!getSnapshotTagPreferences) {
       log.warn(
-        'Snapshot-tag preference bridge unavailable; using empty preferences.'
+        'Snapshot-tag preference bridge unavailable; snapshot-tag prompt cancelled.'
       );
-      return snapshotTagCatalog.createEmptySnapshotTagPreferences();
+      window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
+      return null;
     }
 
     try {
       const result = await getSnapshotTagPreferences();
-      if (result && result.ok === true) {
+      if (result && result.ok === true && snapshotTagCatalog.isPlainObject(result.snapshotTags)) {
         return snapshotTagCatalog.normalizeSnapshotTagPreferences(result.snapshotTags);
       }
-      log.warn('Snapshot-tag preferences load returned non-ok result; using empty preferences:', result);
+      log.error('Snapshot-tag preferences load returned an unusable result; snapshot-tag prompt cancelled:', result);
     } catch (error) {
-      log.warn('Snapshot-tag preferences load failed; using empty preferences:', error);
+      log.error('Snapshot-tag preferences load failed; snapshot-tag prompt cancelled:', error);
     }
 
-    return snapshotTagCatalog.createEmptySnapshotTagPreferences();
+    window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
+    return null;
   }
 
   async function persistSnapshotTagPreferences(nextPreferences) {
@@ -734,6 +734,7 @@
     }
 
     let managerPreferences = await loadSnapshotTagPreferences(options.initialPreferences || null);
+    if (!managerPreferences) return null;
     const draftStateByCategory = new Map();
     for (const category of snapshotTagCatalog.TAG_KEYS) {
       draftStateByCategory.set(category, {
@@ -1149,6 +1150,7 @@
     populateCopy(options.copy);
     setSnapshotSaveFieldVisibility(includeSaveFields);
     currentSnapshotTagPreferences = await loadSnapshotTagPreferences();
+    if (!currentSnapshotTagPreferences) return null;
     resetFields(options.initialTags);
     resetMetricChoices();
     resetSnapshotSaveFields();

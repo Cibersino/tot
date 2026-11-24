@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Si è verificato un errore durante la sostituzione del testo dagli appunti.",
         "append_clipboard_error": "Si è verificato un errore durante l'aggiunta del testo dagli appunti.",
         "clear_error": "Si è verificato un errore durante la cancellazione del testo. Controlla la console.",
-        "settings_payload_unavailable": "Non è stato possibile recapitare a questa finestra le preferenze salvate e quindi applicarle. La lingua effettiva, la modalità di conteggio, il preset selezionato o i WPM potrebbero differire dalla configurazione salvata. Controlla queste impostazioni prima di continuare.",
         "current_text_processing_locked": "Il testo corrente è ancora in aggiornamento. Le interazioni della finestra principale restano bloccate finché il testo più recente non si stabilizza.",
         "precise_counting_fallback": "Non è stato possibile usare Modalità precisa. toT è passato alla modalità semplice.",
+        "precise_counting_fallback_persistence_failed": "Non è stato possibile usare la modalità precisa. toT è passato alla modalità semplice, ma non ha potuto salvare la modifica.",
+        "counting_mode_persistence_failed": "Non è stato possibile salvare la modalità di conteggio selezionata. Rimane attiva la modalità precedente.",
+        "preset_selection_persistence_failed": "Non è stato possibile salvare il preset selezionato.",
+        "preview_spoiler_persistence_failed": "Non è stato possibile salvare la preferenza per nascondere la parte finale dell’anteprima. Rimane in uso il valore precedente.",
+        "spellcheck_availability_failed": "Non è stato possibile determinare la disponibilità del correttore ortografico.",
         "current_text_recount_locked": "I risultati del testo corrente sono ancora in fase di ricalcolo. Le interazioni della finestra principale restano bloccate finché l’ultimo ricalcolo non si stabilizza.",
         "wip": {
           "design_skins": "WIP: Il selettore di skin si aprirà qui in una versione futura.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Il testo trascinato ha superato lo spazio disponibile ed è stato troncato.",
         "text_truncated": "Il testo è stato troncato per adattarsi al limite massimo dell'applicazione.",
         "sync_isolated": "La sincronizzazione del testo è stata sospesa per proteggere il testo corrente. Puoi continuare a modificare e copiare il testo, ma le modifiche locali non vengono sincronizzate e potrebbero andare perse alla chiusura dell’Editor di testo. Copia o salva il testo che vuoi conservare prima di chiudere o riaprire l’Editor di testo.",
-        "calc_error": "Si è verificato un errore durante il calcolo. Controlla la console."
+        "calc_error": "Si è verificato un errore durante il calcolo. Controlla la console.",
+        "spellcheck_save_failed": "Non è stato possibile salvare la preferenza per il controllo ortografico.",
+        "font_size_save_failed": "Non è stato possibile salvare la preferenza per la dimensione del testo.",
+        "maximized_text_width_not_persisted": "La larghezza del testo è cambiata per questa sessione, ma non è stato possibile salvarla."
       }
     },
     "snapshots": {

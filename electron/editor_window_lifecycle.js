@@ -402,12 +402,24 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
     }
   }
 
-  function handleOpenEditor({ guardOpenEditor, editorWin, mainWin, createEditorWindow, startupState, logContext }) {
+  function handleOpenEditor({
+    guardOpenEditor,
+    editorWin,
+    mainWin,
+    createEditorWindow,
+    startupState,
+    getStartupState,
+    logContext,
+  }) {
     if (typeof guardOpenEditor === 'function' && guardOpenEditor() !== true) {
       return { ok: false, error: 'not ready' };
     }
 
-    const initialPresentationMode = startupState && startupState.maximized === true
+    // A fresh ordinary Editor needs its state to choose its first presentation.
+    const resolvedStartupState = isAliveWindow(editorWin)
+      ? null
+      : (typeof getStartupState === 'function' ? getStartupState() : startupState);
+    const initialPresentationMode = resolvedStartupState && resolvedStartupState.maximized === true
       ? 'maximized'
       : 'reduced';
 
@@ -420,7 +432,7 @@ function createController({ editorState, showStartupFailureDisclosure = null }) 
         waitForBasePresentationReady: true,
         startupOwner: 'ordinary',
         initialPresentationMode,
-        startupState: isPlainObject(startupState) ? startupState : null,
+        startupState: isPlainObject(resolvedStartupState) ? resolvedStartupState : null,
       },
       logContext,
     });

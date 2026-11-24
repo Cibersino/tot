@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Ocorreu um erro ao substituir o texto atual pelo texto da área de transferência.",
         "append_clipboard_error": "Ocorreu um erro ao adicionar o texto da área de transferência ao texto atual.",
         "clear_error": "Ocorreu um erro ao limpar o texto atual.",
-        "settings_payload_unavailable": "Não foi possível entregar suas preferências salvas a esta janela e, por isso, elas não foram aplicadas. O idioma, o modo de contagem, o preset selecionado ou o WPM efetivos podem ser diferentes das configurações salvas. Revise esses ajustes antes de continuar.",
         "current_text_processing_locked": "O texto atual ainda está sendo atualizado. As interações da janela principal ficam bloqueadas até o texto mais recente estabilizar.",
         "precise_counting_fallback": "Não foi possível usar Modo preciso. toT mudou para o modo simples.",
+        "precise_counting_fallback_persistence_failed": "Não foi possível usar o modo preciso. O toT mudou para o modo simples, mas não conseguiu salvar essa alteração.",
+        "counting_mode_persistence_failed": "Não foi possível salvar o modo de contagem selecionado. O modo anterior permanece em uso.",
+        "preset_selection_persistence_failed": "Não foi possível salvar o preset selecionado.",
+        "preview_spoiler_persistence_failed": "Não foi possível salvar a preferência de ocultar o trecho final da prévia. O valor anterior permanece em uso.",
+        "spellcheck_availability_failed": "Não foi possível determinar a disponibilidade do corretor ortográfico.",
         "current_text_recount_locked": "Os resultados do texto atual ainda estão sendo recalculados. As interações da janela principal ficam bloqueadas até o recálculo mais recente estabilizar.",
         "wip": {
           "design_skins": "WIP: O seletor de skins será aberto aqui em uma versão futura.",
@@ -353,7 +357,10 @@
         "drop_truncated": "O texto arrastado excedeu o espaço disponível e foi truncado.",
         "text_truncated": "O texto foi truncado para caber no limite máximo do app.",
         "sync_isolated": "A sincronização de texto foi suspensa para proteger o texto atual. Você pode continuar editando e copiando texto, mas as alterações locais não são sincronizadas e podem ser perdidas ao fechar o Editor de Texto. Copie ou salve o texto que deseja manter antes de fechar ou reabrir o Editor de Texto.",
-        "calc_error": "Ocorreu um erro ao salvar o texto como texto atual."
+        "calc_error": "Ocorreu um erro ao salvar o texto como texto atual.",
+        "spellcheck_save_failed": "Não foi possível salvar a preferência do corretor ortográfico.",
+        "font_size_save_failed": "Não foi possível salvar a preferência de tamanho do texto.",
+        "maximized_text_width_not_persisted": "A largura do texto mudou nesta sessão, mas não foi possível salvá-la."
       }
     },
     "snapshots": {

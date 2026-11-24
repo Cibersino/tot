@@ -470,7 +470,8 @@
           previousPresetName,
           combobox: presetsCombobox,
           presetDescription,
-          electronAPI
+          electronAPI,
+          notifyOnPersistenceFailure: true
         });
         if (selected) {
           const previousWpm = wpm;

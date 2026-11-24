@@ -108,9 +108,7 @@ function createSettingsHarness(initialStoredValue, {
 
 function initializeSettings(settings, harness, extraDependencies = {}) {
   return settings.init({
-    loadJson: harness.loadJson,
     loadJsonWithStatus: harness.loadJsonWithStatus,
-    saveJson: harness.saveJson,
     saveJsonStrict: harness.saveJsonStrict,
     createJsonStrict: harness.createJsonStrict,
     createSettingsStartupBackup: harness.createSettingsStartupBackup,
@@ -376,7 +374,7 @@ test('normalization keeps absent language-scoped preferences quiet and diagnoses
   });
   const invalidResult = captureWarnings(() => {
     const normalized = initializeSettings(settings, invalidHarness);
-    return settings.saveSettings({
+    return settings.saveSettingsStrict({
       ...normalized,
       presetsByScope: { en: {} },
       selectedPresetByScope: { en: 42 },
@@ -445,13 +443,13 @@ test('fresh settings include an enabled preview Spoiler preference', () => {
   assert.equal(harness.getStoredValue().previewSpoilerEnabled, true);
 });
 
-test('saveSettings normalizes language-scoped buckets and trims selected preset names', () => {
+test('saveSettingsStrict normalizes language-scoped buckets and trims selected preset names', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({});
 
   initializeSettings(settings, harness);
 
-  const normalized = settings.saveSettings({
+  const normalized = settings.saveSettingsStrict({
     language: 'zh-Hans-CN',
     presetsByScope: { en: 'bad-shape' },
     selectedPresetByScope: { es: '  my preset  ' },
@@ -473,7 +471,7 @@ test('saveSettings normalizes language-scoped buckets and trims selected preset 
   assert.deepEqual(normalized.disabledDefaultPresetsByScope, {});
 });
 
-test('getSettings reloads from the backing store and re-normalizes external edits', () => {
+test('getSettings retains the admitted cache despite external backing-store edits', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({ language: 'es' });
 
@@ -489,14 +487,16 @@ test('getSettings reloads from the backing store and re-normalizes external edit
     previewSpoilerEnabled: false,
   });
 
-  const reloaded = settings.getSettings();
-  assert.equal(reloaded.language, '');
-  assert.equal(reloaded.modeConteo, 'simple');
-  assert.equal(reloaded.previewSpoilerEnabled, false);
-  assert.deepEqual(reloaded.numberFormattingByScope.es, {
+  const cached = settings.getSettings();
+  assert.equal(cached.language, 'es');
+  assert.equal(cached.modeConteo, 'preciso');
+  assert.equal(cached.previewSpoilerEnabled, true);
+  assert.deepEqual(cached.numberFormattingByScope.es, {
     separadorMiles: '.',
     separadorDecimal: ',',
   });
+  assert.equal(harness.getStoredValue().language, 'zh-Hans-CN');
+  assert.equal(typeof settings.saveSettings, 'undefined');
 });
 
 test('applyFallbackLanguageIfUnset strictly persists a normalized fallback language', () => {
@@ -930,8 +930,8 @@ test('Precise-counting fallback strictly persists Simple once, then publishes an
     stage: 'availability',
   });
 
-  assert.deepEqual(first, { ok: true, changed: true, mode: 'simple' });
-  assert.deepEqual(second, { ok: true, changed: false, mode: 'simple' });
+  assert.deepEqual(first, { ok: true, changed: true, mode: 'simple', persistenceFailed: false });
+  assert.deepEqual(second, { ok: true, changed: false, mode: 'simple', persistenceFailed: false });
   assert.equal(harness.getStoredValue().modeConteo, 'simple');
   assert.deepEqual(sent.map(({ channel }) => channel), [
     'settings-updated',
@@ -970,11 +970,11 @@ test('Precise-counting fallback accepts a Unicode-property capability failure re
     stage: 'unicode-properties',
   });
 
-  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple' });
+  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple', persistenceFailed: false });
   assert.equal(harness.getStoredValue().modeConteo, 'simple');
 });
 
-test('Precise-counting fallback does not publish or notify when strict persistence fails', () => {
+test('Precise-counting fallback retains and publishes Simple mode when strict persistence fails', () => {
   const settings = loadFreshSettingsModule();
   const harness = createSettingsHarness({ modeConteo: 'preciso' }, {
     saveJsonStrictImpl() {
@@ -988,7 +988,7 @@ test('Precise-counting fallback does not publish or notify when strict persisten
     getWindows: () => ({
       mainWin: {
         isDestroyed: () => false,
-        webContents: { send: (channel) => sent.push(channel) },
+        webContents: { send: (channel, payload) => sent.push({ channel, payload }) },
       },
     }),
     decorateSettings: (nextSettings) => nextSettings,
@@ -1000,9 +1000,13 @@ test('Precise-counting fallback does not publish or notify when strict persisten
     stage: 'availability',
   });
 
-  assert.deepEqual(result, { ok: false, code: 'PERSIST_FAILED' });
+  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple', persistenceFailed: true });
   assert.equal(harness.getStoredValue().modeConteo, 'preciso');
-  assert.deepEqual(sent, []);
+  assert.equal(settings.getSettings().modeConteo, 'simple');
+  assert.deepEqual(sent, [
+    { channel: 'settings-updated', payload: settings.getSettings() },
+    { channel: 'precise-counting-fallback', payload: { persistenceFailed: true } },
+  ]);
 });
 
 test('Precise-counting fallback remains committed when settings or notice delivery fails', () => {
@@ -1030,7 +1034,7 @@ test('Precise-counting fallback remains committed when settings or notice delive
     stage: 'availability',
   });
 
-  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple' });
+  assert.deepEqual(result, { ok: true, changed: true, mode: 'simple', persistenceFailed: false });
   assert.equal(harness.getStoredValue().modeConteo, 'simple');
 });
 

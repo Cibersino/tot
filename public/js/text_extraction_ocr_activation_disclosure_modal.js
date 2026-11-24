@@ -19,7 +19,6 @@
     throw new Error('[text-extraction-ocr-activation-disclosure-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-ocr-activation-disclosure-modal');
-  log.debug('Text extraction OCR activation disclosure modal starting...');
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-ocr-activation-disclosure-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }

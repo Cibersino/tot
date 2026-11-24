@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Une erreur s'est produite lors du remplacement du texte depuis le presse-papiers.",
         "append_clipboard_error": "Une erreur s'est produite lors de l'ajout du texte depuis le presse-papiers.",
         "clear_error": "Une erreur s'est produite lors de la suppression du texte. Vérifiez la console.",
-        "settings_payload_unavailable": "Vos préférences enregistrées n’ont pas pu être transmises à cette fenêtre et n’ont donc pas pu être appliquées. La langue effective, le mode de comptage, le preset sélectionné ou la valeur WPM peuvent différer de la configuration enregistrée. Vérifiez ces réglages avant de continuer.",
         "current_text_processing_locked": "Le texte actuel est encore en cours de mise à jour. Les interactions de la fenêtre principale restent verrouillées jusqu’à la stabilisation du texte le plus récent.",
         "precise_counting_fallback": "Mode précis n’a pas pu être utilisé. toT est passé au mode simple.",
+        "precise_counting_fallback_persistence_failed": "Le mode précis n’a pas pu être utilisé. toT est passé au mode simple, mais n’a pas pu enregistrer ce changement.",
+        "counting_mode_persistence_failed": "Le mode de comptage sélectionné n’a pas pu être enregistré. Le mode précédent reste actif.",
+        "preset_selection_persistence_failed": "Le preset sélectionné n’a pas pu être enregistré.",
+        "preview_spoiler_persistence_failed": "La préférence de masquage de la partie finale de l’aperçu n’a pas pu être enregistrée. La valeur précédente reste active.",
+        "spellcheck_availability_failed": "La disponibilité du correcteur orthographique n’a pas pu être déterminée.",
         "current_text_recount_locked": "Les résultats du texte actuel sont encore en cours de recalcul. Les interactions de la fenêtre principale restent verrouillées jusqu’à la stabilisation du dernier recalcul.",
         "wip": {
           "design_skins": "WIP : Le sélecteur de skins s'ouvrira ici dans une version future.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Le texte déplacé a dépassé l'espace disponible et a été tronqué.",
         "text_truncated": "Le texte a été tronqué pour respecter la limite maximale de l'application.",
         "sync_isolated": "La synchronisation du texte a été suspendue pour protéger le texte actuel. Vous pouvez continuer à modifier et copier du texte, mais les modifications locales ne sont pas synchronisées et risquent d’être perdues à la fermeture de l’Éditeur de texte. Copiez ou enregistrez le texte que vous souhaitez conserver avant de fermer ou de rouvrir l’Éditeur de texte.",
-        "calc_error": "Une erreur s'est produite lors du calcul. Vérifiez la console."
+        "calc_error": "Une erreur s'est produite lors du calcul. Vérifiez la console.",
+        "spellcheck_save_failed": "La préférence de correction orthographique n’a pas pu être enregistrée.",
+        "font_size_save_failed": "La préférence de taille du texte n’a pas pu être enregistrée.",
+        "maximized_text_width_not_persisted": "La largeur du texte a été modifiée pour cette session, mais n’a pas pu être enregistrée."
       }
     },
     "snapshots": {

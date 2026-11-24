@@ -18,7 +18,6 @@
     throw new Error('[text-extraction-drag-drop] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-drag-drop');
-  log.debug('Text extraction drag/drop module starting...');
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-drag-drop] RendererI18n.tRenderer unavailable; cannot continue');
   }

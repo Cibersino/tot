@@ -169,11 +169,27 @@ test('main preload forwards Precise-counting failures and exposes an unsubscribe
 
   assert.deepEqual(invoked, [{ channel: 'precise-counting-failed', payload }]);
   assert.equal(subscriptions.at(-1).channel, 'precise-counting-fallback');
-  subscriptions.at(-1).listener();
+  subscriptions.at(-1).listener({}, { persistenceFailed: true });
   assert.equal(notices, 1);
 
   unsubscribe();
   assert.equal(removed.at(-1).channel, 'precise-counting-fallback');
+});
+
+test('main preload exposes an unsubscribe listener for spellcheck availability failures', () => {
+  const { exposedApi, subscriptions, removed } = loadMainPreload();
+  let notices = 0;
+
+  const unsubscribe = exposedApi.api.onSpellcheckAvailabilityFailed(() => {
+    notices += 1;
+  });
+
+  assert.equal(subscriptions.at(-1).channel, 'spellcheck-availability-failed');
+  subscriptions.at(-1).listener();
+  assert.equal(notices, 1);
+
+  unsubscribe();
+  assert.equal(removed.at(-1).channel, 'spellcheck-availability-failed');
 });
 
 test('main preload exposes openTextTimeCalculator through electronAPI', () => {

@@ -21,7 +21,6 @@
     throw new Error('[text-extraction-status-ui] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-status-ui');
-  log.debug('Text extraction status UI starting...');
   if (!window.RendererI18n
     || typeof window.RendererI18n.tRenderer !== 'function'
     || typeof window.RendererI18n.renderLocalizedLabelWithInvariantValue !== 'function') {

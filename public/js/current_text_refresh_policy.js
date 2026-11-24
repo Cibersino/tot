@@ -14,16 +14,6 @@
 
 (() => {
   // =============================================================================
-  // Logger
-  // =============================================================================
-
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[current-text-refresh-policy] window.getLogger unavailable; cannot continue');
-  }
-  const log = window.getLogger('current-text-refresh-policy');
-  log.debug('Current text refresh policy starting...');
-
-  // =============================================================================
   // Constants / config
   // =============================================================================
 

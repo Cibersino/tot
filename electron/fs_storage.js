@@ -4,13 +4,14 @@
 // =============================================================================
 // Overview
 // =============================================================================
-// Main-process file system storage helpers.
+// Main-process file-system storage helpers.
 // Responsibilities:
-// - Initialize the config root under app.getPath('userData') once Electron is ready.
+// - Initialize the config root under app.getPath('userData') and the app root from app.getAppPath() once Electron is ready.
 // - Resolve stable paths for settings, current text, Text Editor state, presets, current-text snapshots, task files, and text extraction + OCR storage.
-// - Ensure required storage directories exist before reads and writes.
-// - Read small JSON files with recoverable fallback handling.
-// - Write small JSON files through either a best-effort or strict contract.
+// - Create storage directories and write parents synchronously.
+// - Read small JSON files with recoverable fallback values and status reporting.
+// - Persist small JSON files through replacement or direct writes under best-effort or strict contracts, and support strict exclusive creation.
+// - Create bounded, byte-exact settings startup backups before normalization can rewrite admitted settings.
 // - Stay synchronous because it is used only from the Electron main process.
 
 // =============================================================================
@@ -19,21 +20,27 @@
 
 const fs = require('fs');
 const path = require('path');
+const { randomUUID } = require('crypto');
 const Log = require('./log');
 
 const log = Log.get('fs-storage');
-log.debug('FS storage starting...');
+
+// =============================================================================
+// Constants / configuration
+// =============================================================================
+
+const ENSURE_DIR_OPTIONS = { recursive: true };
+const FILE_PERMISSION_BITS = 0o777;
+const SPECIAL_PERMISSION_BITS = 0o7000;
+const SETTINGS_BACKUP_FILE_PREFIX = 'user_settings.json.backup.';
+const MAX_SETTINGS_BACKUPS = 3;
 
 // =============================================================================
 // Shared state
 // =============================================================================
 
-let CONFIG_DIR = null;
-let APP_ROOT_DIR = null;
-
-const ENSURE_DIR_OPTIONS = { recursive: true };
-const SETTINGS_BACKUP_FILE_PREFIX = 'user_settings.json.backup.';
-const MAX_SETTINGS_BACKUPS = 3;
+let configDir = null;
+let appRootDir = null;
 
 // =============================================================================
 // Storage initialization
@@ -58,27 +65,27 @@ function initStorage(app) {
     throw new Error("[fs_storage] initStorage app.getPath('userData') returned invalid path");
   }
 
-  const appRootDir = app.getAppPath();
-  if (typeof appRootDir !== 'string' || appRootDir.length === 0) {
+  const resolvedAppRootDir = app.getAppPath();
+  if (typeof resolvedAppRootDir !== 'string' || resolvedAppRootDir.length === 0) {
     throw new Error('[fs_storage] initStorage app.getAppPath() returned invalid path');
   }
 
-  CONFIG_DIR = path.join(userDataPath, 'config');
-  APP_ROOT_DIR = appRootDir;
+  configDir = path.join(userDataPath, 'config');
+  appRootDir = resolvedAppRootDir;
 }
 
 function getConfigDir() {
-  if (!CONFIG_DIR) {
+  if (!configDir) {
     throw new Error('[fs_storage] CONFIG_DIR is not initialized');
   }
-  return CONFIG_DIR;
+  return configDir;
 }
 
 function getAppRootDir() {
-  if (!APP_ROOT_DIR) {
+  if (!appRootDir) {
     throw new Error('[fs_storage] APP_ROOT_DIR is not initialized');
   }
-  return APP_ROOT_DIR;
+  return appRootDir;
 }
 
 // =============================================================================
@@ -184,7 +191,7 @@ function ensureConfigDir() {
     const dir = getConfigDir();
     ensureDirExists(dir);
   } catch (error) {
-    log.error('ensureConfigDir failed:', CONFIG_DIR || '(uninitialized)', error);
+    log.error('ensureConfigDir failed (ignored):', configDir || '(uninitialized)', error);
   }
 }
 
@@ -194,7 +201,7 @@ function ensureConfigPresetsDir() {
     presetsDir = getConfigPresetsDir();
     ensureDirExists(presetsDir);
   } catch (error) {
-    log.error('ensureConfigPresetsDir failed:', presetsDir || '(uninitialized)', error);
+    log.error('ensureConfigPresetsDir failed (ignored):', presetsDir || '(uninitialized)', error);
   }
 }
 
@@ -204,7 +211,7 @@ function ensureCurrentTextSnapshotsDir() {
     snapshotsDir = getCurrentTextSnapshotsDir();
     ensureDirExists(snapshotsDir);
   } catch (error) {
-    log.error('ensureCurrentTextSnapshotsDir failed:', snapshotsDir || '(uninitialized)', error);
+    log.error('ensureCurrentTextSnapshotsDir failed (ignored):', snapshotsDir || '(uninitialized)', error);
   }
 }
 
@@ -217,7 +224,7 @@ function ensureTasksDirs() {
     ensureDirExists(tasksDir);
     ensureDirExists(listsDir);
   } catch (error) {
-    log.error('ensureTasksDirs failed:', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', error);
+    log.error('ensureTasksDirs failed (ignored):', tasksDir || '(uninitialized)', listsDir || '(uninitialized)', error);
   }
 }
 
@@ -227,12 +234,12 @@ function ensureOcrGoogleDriveDir() {
     ocrDir = getOcrGoogleDriveDir();
     ensureDirExists(ocrDir);
   } catch (error) {
-    log.error('ensureOcrGoogleDriveDir failed:', ocrDir || '(uninitialized)', error);
+    log.error('ensureOcrGoogleDriveDir failed (ignored):', ocrDir || '(uninitialized)', error);
   }
 }
 
 // =============================================================================
-// JSON helpers
+// JSON loading helpers
 // =============================================================================
 
 const LOAD_JSON_FILE_METADATA = Object.freeze({
@@ -325,30 +332,176 @@ function loadJson(filePath, fallback = {}) {
   return loadJsonWithStatus(filePath, fallback).value;
 }
 
+// =============================================================================
+// JSON persistence helpers
+// =============================================================================
+
+function prepareJsonWrite(filePath, obj) {
+  const parentDir = path.dirname(filePath);
+  ensureDirExists(parentDir);
+  return {
+    parentDir,
+    serialized: JSON.stringify(obj, null, 2),
+  };
+}
+
+function writeSerializedJsonDirect(filePath, serialized) {
+  fs.writeFileSync(filePath, serialized, 'utf8');
+}
+
+function writeJsonDirect(filePath, obj) {
+  const { serialized } = prepareJsonWrite(filePath, obj);
+  writeSerializedJsonDirect(filePath, serialized);
+}
+
+function getReplacementPermissionMode(filePath) {
+  try {
+    const destinationStats = fs.lstatSync(filePath);
+    if (
+      !destinationStats.isFile()
+      || destinationStats.nlink !== 1
+      || (destinationStats.mode & SPECIAL_PERMISSION_BITS) !== 0
+    ) {
+      return undefined;
+    }
+    return destinationStats.mode & FILE_PERMISSION_BITS;
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function canCreateReplacementIn(parentDir) {
+  try {
+    fs.accessSync(parentDir, fs.constants.W_OK | fs.constants.X_OK);
+    return true;
+  } catch (error) {
+    log.warn(
+      'JSON replacement skipped; using direct write after temporary-file creation access check failed:',
+      parentDir,
+      error
+    );
+    return false;
+  }
+}
+
+function verifyExistingFileIsWritable(filePath) {
+  const destinationFileDescriptor = fs.openSync(filePath, 'r+');
+  fs.closeSync(destinationFileDescriptor);
+}
+
+function cleanupTemporaryJsonFile(temporaryFilePath) {
+  try {
+    fs.unlinkSync(temporaryFilePath);
+  } catch (error) {
+    log.warn('JSON replacement temporary-file cleanup failed (ignored):', temporaryFilePath, error);
+  }
+}
+
+function writeTemporaryJsonFile(temporaryFileDescriptor, serialized, temporaryFilePath) {
+  let writeError = null;
+  try {
+    fs.writeFileSync(temporaryFileDescriptor, serialized, 'utf8');
+  } catch (error) {
+    writeError = error;
+  }
+
+  try {
+    fs.closeSync(temporaryFileDescriptor);
+  } catch (error) {
+    if (writeError) {
+      log.warn(
+        'JSON replacement temporary-file close failed after write failure (ignored):',
+        temporaryFilePath,
+        error
+      );
+    } else {
+      throw error;
+    }
+  }
+
+  if (writeError) throw writeError;
+}
+
+// Replaces a regular, single-linked JSON record only after a complete sibling
+// file has been written and closed. Other destination entries retain direct
+// write semantics so their identity, metadata, and access behavior are not
+// silently changed.
+function writeJsonWithReplacement(filePath, obj) {
+  const { parentDir, serialized } = prepareJsonWrite(filePath, obj);
+  const replacementPermissionMode = getReplacementPermissionMode(filePath);
+
+  if (replacementPermissionMode === undefined) {
+    log.warn(
+      'JSON replacement skipped; using direct write for a destination that cannot be safely replaced:',
+      filePath
+    );
+    writeSerializedJsonDirect(filePath, serialized);
+    return;
+  }
+
+  if (replacementPermissionMode !== null) {
+    verifyExistingFileIsWritable(filePath);
+    if (!canCreateReplacementIn(parentDir)) {
+      writeSerializedJsonDirect(filePath, serialized);
+      return;
+    }
+  }
+
+  const temporaryFilePath = path.join(parentDir, `.tot-json-${randomUUID()}.tmp`);
+  let temporaryFileExists = false;
+
+  try {
+    const temporaryFileDescriptor = replacementPermissionMode === null
+      ? fs.openSync(temporaryFilePath, 'wx')
+      : fs.openSync(temporaryFilePath, 'wx', replacementPermissionMode);
+    temporaryFileExists = true;
+    writeTemporaryJsonFile(temporaryFileDescriptor, serialized, temporaryFilePath);
+
+    if (replacementPermissionMode !== null && process.platform !== 'win32') {
+      fs.chmodSync(temporaryFilePath, replacementPermissionMode);
+    }
+    fs.renameSync(temporaryFilePath, filePath);
+    temporaryFileExists = false;
+  } finally {
+    if (temporaryFileExists) {
+      cleanupTemporaryJsonFile(temporaryFilePath);
+    }
+  }
+}
+
 // Best-effort JSON persistence for runtime/config state:
-// - attempts a synchronous write;
+// - attempts a synchronous replacement write where the destination permits it;
 // - logs internally on failure;
 // - does not throw or return a success result.
 function saveJson(filePath, obj) {
   try {
-    // Ensure the parent folder exists so callers do not depend on init ordering.
-    const parentDir = path.dirname(filePath);
-    ensureDirExists(parentDir);
-
-    fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
+    writeJsonWithReplacement(filePath, obj);
   } catch (error) {
     log.warn('saveJson failed (ignored):', filePath, error);
   }
 }
 
 // Strict JSON persistence for explicit save flows:
-// - uses the same parent-dir creation and serialization contract as saveJson(...);
+// - uses the same parent-dir creation and replacement contract as saveJson(...);
 // - does not suppress failures;
 // - callers own catch/log/result mapping at the operation boundary.
 function saveJsonStrict(filePath, obj) {
-  const parentDir = path.dirname(filePath);
-  ensureDirExists(parentDir);
-  fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
+  writeJsonWithReplacement(filePath, obj);
+}
+
+// Direct JSON persistence is reserved for the high-frequency editor-state
+// owners, whose geometry writes deliberately retain the previous mechanism.
+function saveJsonDirect(filePath, obj) {
+  try {
+    writeJsonDirect(filePath, obj);
+  } catch (error) {
+    log.warn('saveJsonDirect failed (ignored):', filePath, error);
+  }
+}
+
+function saveJsonDirectStrict(filePath, obj) {
+  writeJsonDirect(filePath, obj);
 }
 
 // Strict JSON creation for flows that must never replace an entry that appeared after their preflight. By default, unlike saveJsonStrict(...), this does not create the parent directory and requests exclusive filesystem creation.
@@ -362,6 +515,10 @@ function createJsonStrict(filePath, obj, { ensureParent = false } = {}) {
   });
 }
 
+// =============================================================================
+// Settings startup backup helpers
+// =============================================================================
+
 function getSettingsBackupGeneration(fileName) {
   if (!fileName.startsWith(SETTINGS_BACKUP_FILE_PREFIX)) return null;
   const rawGeneration = fileName.slice(SETTINGS_BACKUP_FILE_PREFIX.length);
@@ -369,7 +526,7 @@ function getSettingsBackupGeneration(fileName) {
   return BigInt(rawGeneration);
 }
 
-function getSettingsBackupEntries(settingsFile) {
+function getSettingsBackupInventory(settingsFile) {
   const backupDir = path.dirname(settingsFile);
   const reservedGenerations = [];
   const backupEntries = [];
@@ -395,17 +552,17 @@ function createSettingsStartupBackup(settingsFile, originalBytes) {
   }
 
   const backupDir = path.dirname(settingsFile);
-  const { reservedGenerations } = getSettingsBackupEntries(settingsFile);
-  const highestGeneration = reservedGenerations.reduce(
+  const { reservedGenerations } = getSettingsBackupInventory(settingsFile);
+  const highestReservedGeneration = reservedGenerations.reduce(
     (highest, generation) => (highest === null || generation > highest ? generation : highest),
     null
   );
-  const nextGeneration = highestGeneration === null ? 1n : highestGeneration + 1n;
-  const backupPath = path.join(backupDir, `${SETTINGS_BACKUP_FILE_PREFIX}${nextGeneration}`);
+  const nextReservedGeneration = highestReservedGeneration === null ? 1n : highestReservedGeneration + 1n;
+  const backupPath = path.join(backupDir, `${SETTINGS_BACKUP_FILE_PREFIX}${nextReservedGeneration}`);
 
   fs.writeFileSync(backupPath, originalBytes, { flag: 'wx' });
 
-  const { backupEntries } = getSettingsBackupEntries(settingsFile);
+  const { backupEntries } = getSettingsBackupInventory(settingsFile);
   backupEntries.sort((left, right) => (left.generation < right.generation ? -1 : 1));
   const obsoleteEntries = backupEntries.slice(0, Math.max(0, backupEntries.length - MAX_SETTINGS_BACKUPS));
   for (const entry of obsoleteEntries) {
@@ -456,6 +613,8 @@ module.exports = {
   loadJsonWithStatus,
   saveJson,
   saveJsonStrict,
+  saveJsonDirect,
+  saveJsonDirectStrict,
   createJsonStrict,
   createSettingsStartupBackup,
 };

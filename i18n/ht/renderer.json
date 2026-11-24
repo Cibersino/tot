@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Gen yon erè ki rive pandan ranplasman tèks ki soti nan clipboard la.",
         "append_clipboard_error": "Gen yon erè ki rive pandan ajoute tèks ki soti nan clipboard la.",
         "clear_error": "Gen yon erè ki fèt pandan vide tèks la. Tcheke konsole a.",
-        "settings_payload_unavailable": "Preferans ou te sove yo pa t ka rive nan fenèt sa a, kidonk yo pa t ka aplike. Lang aktyèl la, mòd konte a, preset ki chwazi a oswa WPM ka diferan de konfigirasyon ou te sove a. Verifye paramèt sa yo anvan ou kontinye.",
         "current_text_processing_locked": "Tèks aktyèl la toujou ap mete ajou. Entèraksyon fenèt prensipal la bloke jiskaske dènye tèks la estabilize.",
         "precise_counting_fallback": "Yo pa t kapab itilize Mòd presi. toT chanje pou mòd senp.",
+        "precise_counting_fallback_persistence_failed": "Yo pa t kapab itilize Mòd presi. toT chanje pou mòd senp, men li pa t ka sove chanjman sa a.",
+        "counting_mode_persistence_failed": "Yo pa t kapab sove mòd konte ou te chwazi a. Ansyen mòd la rete an sèvis.",
+        "preset_selection_persistence_failed": "Yo pa t kapab sove preset ou te chwazi a.",
+        "preview_spoiler_persistence_failed": "Yo pa t kapab sove preferans pou kache dènye pati aperçu a. Ansyen valè a rete an sèvis.",
+        "spellcheck_availability_failed": "Yo pa t kapab detèmine si korektè òtograf la disponib.",
         "current_text_recount_locked": "Rezilta tèks aktyèl la toujou ap rekalkile. Entèraksyon fenèt prensipal la bloke jiskaske dènye rekalkil la estabilize.",
         "wip": {
           "design_skins": "WIP: selektè skins la ap louvri isit nan yon vèsyon pi devan.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Tèks trennen an te depase espas disponib la epi li te tronke.",
         "text_truncated": "Tèks la te tronke pou antre nan limit app la.",
         "sync_isolated": "Yo sispann senkronizasyon tèks la pou pwoteje tèks aktyèl la. Ou ka kontinye modifye epi kopye tèks, men chanjman lokal yo pa senkronize epi yo ka pèdi lè ou fèmen Editè Tèks la. Kopye oswa sove nenpòt tèks ou vle konsève anvan ou fèmen oswa relouvri Editè Tèks la.",
-        "calc_error": "Gen yon erè ki fèt pandan kalkil. Tcheke konsole a."
+        "calc_error": "Gen yon erè ki fèt pandan kalkil. Tcheke konsole a.",
+        "spellcheck_save_failed": "Yo pa t kapab sove preferans koreksyon òtograf la.",
+        "font_size_save_failed": "Yo pa t kapab sove preferans gwosè tèks la.",
+        "maximized_text_width_not_persisted": "Lajè tèks la chanje pou sesyon sa a, men yo pa t kapab sove li."
       }
     },
     "snapshots": {

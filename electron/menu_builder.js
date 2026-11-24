@@ -42,14 +42,12 @@ const MENU_PROCESSING_LOCK_NOTICE_ACTION = '__menu_processing_lock_notice__';
 // =============================================================================
 
 const log = Log.get('menu');
-log.debug('Menu builder starting...');
 
 const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 let defaultMainTranslations = null;
 
 const deepMerge = (base, overlay) => {
-    const result = Object.assign({}, base || {});
-    if (!overlay) return result;
+    const result = Object.assign({}, base);
     Object.keys(overlay).forEach((key) => {
         if (isPlainObject(result[key]) && isPlainObject(overlay[key])) {
             result[key] = deepMerge(result[key], overlay[key]);
@@ -60,28 +58,27 @@ const deepMerge = (base, overlay) => {
     return result;
 };
 
-function resolveMenuLabel(obj, key, fallback = key) {
-    if (obj && typeof obj[key] === 'string') return obj[key];
+function resolveMenuLabel(menuTexts, key) {
+    if (menuTexts && typeof menuTexts[key] === 'string') return menuTexts[key];
     log.warnOnce(
         `menu_builder.missingKey:${key}`,
-        'Missing menu translation key (using fallback):',
+        'Missing menu translation key (using key path):',
         key
     );
-    return fallback;
+    return key;
 }
 
-// Exported helper: callers inject their own logger scope so missing
-// dialog-key diagnostics stay attributed to the feature that requested them.
-function resolveDialogText(dialogTexts, key, fallback = key, opts = {}) {
+// Exported helper: callers inject their own logger scope so missing dialog-key diagnostics stay attributed to the feature that requested them.
+function resolveDialogText(dialogTexts, key, opts = {}) {
     if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
     if (!opts.log || typeof opts.log.warn !== 'function') {
         throw new Error('[menu_builder] resolveDialogText requires opts.log.warn');
     }
     opts.log.warn(
-        'Missing dialog translation key (using fallback):',
+        'Missing dialog translation key (using key path):',
         key
     );
-    return fallback;
+    return key;
 }
 
 function describeMenuBlockReason(reason) {
@@ -145,12 +142,12 @@ function loadMainTranslations(lang) {
         if (descriptor.id === DEFAULT_LANG) return;
         const bundle = loadBundle(descriptor, selectedId, false);
         if (!bundle) return;
-        translations = translations ? deepMerge(translations, bundle) : bundle;
+        translations = deepMerge(translations, bundle);
     });
     return translations;
 }
 
-function loadBundle(descriptor, requestedLanguageId, required) {
+function loadBundle(descriptor, requestedLanguageId, isRequired) {
     const file = path.join(I18N_DIR, descriptor.resourceDirectory, 'main.json');
     try {
         const raw = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '');
@@ -159,7 +156,7 @@ function loadBundle(descriptor, requestedLanguageId, required) {
         return parsed;
     } catch (error) {
         const details = { requestedLanguageId, languageId: descriptor.id, resourceDirectory: descriptor.resourceDirectory, file };
-        if (required) {
+        if (isRequired) {
             log.errorOnce(`menu_builder.loadMainTranslations.requiredMissing:${descriptor.id}`, 'Required default main.json unavailable:', details, error);
         } else {
             log.warnOnce(`menu_builder.loadMainTranslations.failed:${descriptor.id}`, 'main.json unavailable; continuing through declared graph chain:', details, error);
@@ -175,9 +172,9 @@ function loadBundle(descriptor, requestedLanguageId, required) {
 // This returns the "main.dialog" section from the translation file.
 
 function getDialogTexts(lang) {
-    const tr = loadMainTranslations(lang);
-    const tMain = isPlainObject(tr && tr.main) ? tr.main : {};
-    return isPlainObject(tMain.dialog) ? tMain.dialog : {};
+    const translations = loadMainTranslations(lang);
+    const mainTexts = isPlainObject(translations.main) ? translations.main : {};
+    return isPlainObject(mainTexts.dialog) ? mainTexts.dialog : {};
 }
 
 // =============================================================================
@@ -199,10 +196,10 @@ function getDialogTexts(lang) {
  */
 function buildAppMenu(lang, opts = {}) {
     const effectiveLang = typeof lang === 'string' && lang.trim() ? lang.trim() : DEFAULT_LANG;
-    const tr = loadMainTranslations(effectiveLang) || {};
-    const tMain = isPlainObject(tr.main) ? tr.main : {};
-    const m = isPlainObject(tMain.menu) ? tMain.menu : {};
-    const mMac = isPlainObject(m.mac) ? m.mac : {};
+    const translations = loadMainTranslations(effectiveLang);
+    const mainTexts = isPlainObject(translations.main) ? translations.main : {};
+    const menuTexts = isPlainObject(mainTexts.menu) ? mainTexts.menu : {};
+    const macMenuTexts = isPlainObject(menuTexts.mac) ? menuTexts.mac : {};
     const appMenuName = resolveAppMenuName();
 
     const resolveMainWindow =
@@ -230,31 +227,32 @@ function buildAppMenu(lang, opts = {}) {
             `Menu action ignored (${reasonLabel}):`,
             actionId
         );
-        if (reason === 'processing_mode' || reason === 'current_text_pending') {
-            const mainWindow = resolveMainWindow();
-            if (!mainWindow) {
-                log.warnOnce(
-                    'menu_builder.processing_lock_notice.noWindow',
-                    "Processing lock notice 'menu-click' send failed (ignored): no mainWindow"
-                );
-                return false;
-            }
-            if (mainWindow.isDestroyed()) {
-                log.warnOnce(
-                    'menu_builder.processing_lock_notice.destroyed',
-                    "Processing lock notice 'menu-click' send failed (ignored): mainWindow destroyed"
-                );
-                return false;
-            }
-            try {
-                mainWindow.webContents.send(MENU_CLICK_CHANNEL, MENU_PROCESSING_LOCK_NOTICE_ACTION);
-            } catch (error) {
-                log.warnOnce(
-                    'menu_builder.processing_lock_notice.sendFailed',
-                    "webContents.send('menu-click') failed for processing lock notice (ignored):",
-                    error
-                );
-            }
+        const shouldSendProcessingLockNotice = reason === 'processing_mode' || reason === 'current_text_pending';
+        if (!shouldSendProcessingLockNotice) return false;
+
+        const mainWindow = resolveMainWindow();
+        if (!mainWindow) {
+            log.warnOnce(
+                'menu_builder.processing_lock_notice.noWindow',
+                "Processing lock notice 'menu-click' send failed (ignored): no mainWindow"
+            );
+            return false;
+        }
+        if (mainWindow.isDestroyed()) {
+            log.warnOnce(
+                'menu_builder.processing_lock_notice.destroyed',
+                "Processing lock notice 'menu-click' send failed (ignored): mainWindow destroyed"
+            );
+            return false;
+        }
+        try {
+            mainWindow.webContents.send(MENU_CLICK_CHANNEL, MENU_PROCESSING_LOCK_NOTICE_ACTION);
+        } catch (error) {
+            log.warnOnce(
+                'menu_builder.processing_lock_notice.sendFailed',
+                "webContents.send('menu-click') failed for processing lock notice (ignored):",
+                error
+            );
         }
         return false;
     };
@@ -266,6 +264,26 @@ function buildAppMenu(lang, opts = {}) {
         if (resolvedMain && !resolvedMain.isDestroyed()) return resolvedMain;
         return null;
     };
+
+    const createDevMenuActionItem = (labelKey, actionId, accelerator, actionLabel, runOnTarget) => ({
+        label: resolveMenuLabel(menuTexts, labelKey),
+        accelerator,
+        click: () => {
+            if (!canDispatchMenuAction(actionId)) return;
+
+            const target = resolveDevTarget();
+            if (!target) {
+                log.warn(`${actionLabel} failed (ignored): no target window`);
+                return;
+            }
+
+            try {
+                runOnTarget(target);
+            } catch (error) {
+                log.warn(`${actionLabel} failed (ignored):`, error);
+            }
+        },
+    });
 
     // Optional integration hook supplied by main.js for the language picker.
     const onOpenLanguage =
@@ -313,25 +331,25 @@ function buildAppMenu(lang, opts = {}) {
             submenu: [
                 {
                     role: 'services',
-                    label: resolveMenuLabel(mMac, 'mac_services'),
+                    label: resolveMenuLabel(macMenuTexts, 'mac_services'),
                 },
                 { type: 'separator' },
                 {
                     role: 'hide',
-                    label: formatMenuLabel(resolveMenuLabel(mMac, 'mac_hide_app'), { app: appMenuName }),
+                    label: formatMenuLabel(resolveMenuLabel(macMenuTexts, 'mac_hide_app'), { app: appMenuName }),
                 },
                 {
                     role: 'hideOthers',
-                    label: resolveMenuLabel(mMac, 'mac_hide_others'),
+                    label: resolveMenuLabel(macMenuTexts, 'mac_hide_others'),
                 },
                 {
                     role: 'unhide',
-                    label: resolveMenuLabel(mMac, 'mac_show_all'),
+                    label: resolveMenuLabel(macMenuTexts, 'mac_show_all'),
                 },
                 { type: 'separator' },
                 {
                     role: 'quit',
-                    label: formatMenuLabel(resolveMenuLabel(mMac, 'mac_quit_app'), { app: appMenuName }),
+                    label: formatMenuLabel(resolveMenuLabel(macMenuTexts, 'mac_quit_app'), { app: appMenuName }),
                 },
             ],
         });
@@ -339,63 +357,63 @@ function buildAppMenu(lang, opts = {}) {
 
     menuTemplate.push(
         {
-            label: resolveMenuLabel(m, 'como_usar'),
+            label: resolveMenuLabel(menuTexts, 'como_usar'),
             submenu: [
-                createMenuActionItem(m, 'guia_basica', 'guia_basica', sendMenuClick),
-                createMenuActionItem(m, 'instrucciones_completas', 'instrucciones_completas', sendMenuClick),
-                createMenuActionItem(m, 'faq', 'faq', sendMenuClick),
+                createMenuActionItem(menuTexts, 'guia_basica', 'guia_basica', sendMenuClick),
+                createMenuActionItem(menuTexts, 'instrucciones_completas', 'instrucciones_completas', sendMenuClick),
+                createMenuActionItem(menuTexts, 'faq', 'faq', sendMenuClick),
             ],
         },
         {
-            label: resolveMenuLabel(m, 'preferencias'),
+            label: resolveMenuLabel(menuTexts, 'preferencias'),
             submenu: [
                 {
-                    label: resolveMenuLabel(m, 'idioma'),
+                    label: resolveMenuLabel(menuTexts, 'idioma'),
                     // The window lifecycle is handled by main.js; this module only calls the hook.
                     click: () => {
                         if (!canDispatchMenuAction('menu.language')) return;
-                        if (onOpenLanguage) {
-                            try {
-                                onOpenLanguage();
-                            } catch (error) {
-                                log.error(
-                                    'onOpenLanguage callback failed:',
-                                    error
-                                );
-                            }
-                        } else {
+                        if (!onOpenLanguage) {
                             log.warn(
                                 'Language menu clicked but no handler was provided (ignored).'
+                            );
+                            return;
+                        }
+                        try {
+                            onOpenLanguage();
+                        } catch (error) {
+                            log.error(
+                                'onOpenLanguage callback failed:',
+                                error
                             );
                         }
                     },
                 },
                 {
-                    label: resolveMenuLabel(m, 'diseno'),
+                    label: resolveMenuLabel(menuTexts, 'diseno'),
                     submenu: [
-                        createMenuActionItem(m, 'skins', 'diseno_skins', sendMenuClick),
-                        createMenuActionItem(m, 'crono_flotante', 'diseno_crono_flotante', sendMenuClick),
-                        createMenuActionItem(m, 'fuentes', 'diseno_fuentes', sendMenuClick),
-                        createMenuActionItem(m, 'colores', 'diseno_colores', sendMenuClick),
+                        createMenuActionItem(menuTexts, 'skins', 'diseno_skins', sendMenuClick),
+                        createMenuActionItem(menuTexts, 'crono_flotante', 'diseno_crono_flotante', sendMenuClick),
+                        createMenuActionItem(menuTexts, 'fuentes', 'diseno_fuentes', sendMenuClick),
+                        createMenuActionItem(menuTexts, 'colores', 'diseno_colores', sendMenuClick),
                     ],
                 },
-                createMenuActionItem(m, 'shortcuts', 'shortcuts', sendMenuClick),
-                createMenuActionItem(m, 'presets_por_defecto', 'presets_por_defecto', sendMenuClick),
-                createMenuActionItem(m, 'enable_google_ocr', 'enable_google_ocr', sendMenuClick),
-                createMenuActionItem(m, 'disconnect_google_ocr', 'disconnect_google_ocr', sendMenuClick),
+                createMenuActionItem(menuTexts, 'shortcuts', 'shortcuts', sendMenuClick),
+                createMenuActionItem(menuTexts, 'presets_por_defecto', 'presets_por_defecto', sendMenuClick),
+                createMenuActionItem(menuTexts, 'enable_google_ocr', 'enable_google_ocr', sendMenuClick),
+                createMenuActionItem(menuTexts, 'disconnect_google_ocr', 'disconnect_google_ocr', sendMenuClick),
             ],
         },
         {
-            label: resolveMenuLabel(m, 'links_interes'),
+            label: resolveMenuLabel(menuTexts, 'links_interes'),
             submenu: [
-                createMenuActionItem(m, 'enlaces_generales', 'links_interes', sendMenuClick),
+                createMenuActionItem(menuTexts, 'enlaces_generales', 'links_interes', sendMenuClick),
             ],
         },
         {
-            label: resolveMenuLabel(m, 'ayuda'),
+            label: resolveMenuLabel(menuTexts, 'ayuda'),
             submenu: [
-                createMenuActionItem(m, 'actualizar_version', 'actualizar_version', sendMenuClick),
-                createMenuActionItem(m, 'acerca_de', 'acerca_de', sendMenuClick),
+                createMenuActionItem(menuTexts, 'actualizar_version', 'actualizar_version', sendMenuClick),
+                createMenuActionItem(menuTexts, 'acerca_de', 'acerca_de', sendMenuClick),
             ],
         }
     );
@@ -406,68 +424,29 @@ function buildAppMenu(lang, opts = {}) {
     const showDevMenu = process.env.SHOW_DEV_MENU === '1';
     if (!app.isPackaged && showDevMenu) {
         menuTemplate.push({
-            label: resolveMenuLabel(m, 'desarrollo'),
+            label: resolveMenuLabel(menuTexts, 'desarrollo'),
             submenu: [
-                {
-                    label: resolveMenuLabel(m, 'recargar'),
-                    accelerator: 'CommandOrControl+R',
-                    click: () => {
-                        if (!canDispatchMenuAction('dev.reload')) return;
-                        const target = resolveDevTarget();
-                        if (!target) {
-                            log.warn('dev reload failed (ignored): no target window');
-                            return;
-                        }
-                        try {
-                            target.webContents.reload();
-                        } catch (error) {
-                            log.warn(
-                                'dev reload failed (ignored):',
-                                error
-                            );
-                        }
-                    },
-                },
-                {
-                    label: resolveMenuLabel(m, 'forcereload'),
-                    accelerator: 'CommandOrControl+Shift+R',
-                    click: () => {
-                        if (!canDispatchMenuAction('dev.forceReload')) return;
-                        const target = resolveDevTarget();
-                        if (!target) {
-                            log.warn('dev force reload failed (ignored): no target window');
-                            return;
-                        }
-                        try {
-                            target.webContents.reloadIgnoringCache();
-                        } catch (error) {
-                            log.warn(
-                                'dev force reload failed (ignored):',
-                                error
-                            );
-                        }
-                    },
-                },
-                {
-                    label: resolveMenuLabel(m, 'toggle_devtools'),
-                    accelerator: 'Ctrl+Shift+I',
-                    click: () => {
-                        if (!canDispatchMenuAction('dev.toggleDevTools')) return;
-                        const target = resolveDevTarget();
-                        if (!target) {
-                            log.warn('toggleDevTools failed (ignored): no target window');
-                            return;
-                        }
-                        try {
-                            target.webContents.toggleDevTools();
-                        } catch (error) {
-                            log.warn(
-                                'toggleDevTools failed (ignored):',
-                                error
-                            );
-                        }
-                    },
-                },
+                createDevMenuActionItem(
+                    'recargar',
+                    'dev.reload',
+                    'CommandOrControl+R',
+                    'dev reload',
+                    (target) => target.webContents.reload()
+                ),
+                createDevMenuActionItem(
+                    'forcereload',
+                    'dev.forceReload',
+                    'CommandOrControl+Shift+R',
+                    'dev force reload',
+                    (target) => target.webContents.reloadIgnoringCache()
+                ),
+                createDevMenuActionItem(
+                    'toggle_devtools',
+                    'dev.toggleDevTools',
+                    'Ctrl+Shift+I',
+                    'toggleDevTools',
+                    (target) => target.webContents.toggleDevTools()
+                ),
             ],
         });
     }

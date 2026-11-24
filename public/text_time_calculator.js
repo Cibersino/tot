@@ -16,8 +16,7 @@
   // =============================================================================
   // Runtime dependencies and owner surfaces
   // =============================================================================
-  // This window depends on stable renderer-owned globals for logging, i18n,
-  // formatting, reading duration, clock parsing, calculator math, and default language.
+  // This window depends on stable renderer-owned globals for logging, i18n, formatting, reading duration, clock parsing, calculator math, and default language.
   if (typeof window.getLogger !== 'function') {
     throw new Error('[text_time_calculator] window.getLogger unavailable; cannot continue');
   }
@@ -29,9 +28,8 @@
   const canWatchSettings = !!textTimeCalculatorApi
     && typeof textTimeCalculatorApi.onSettingsChanged === 'function';
   let calculatorTerminal = false;
-  // The earliest required-dependency failure occurs before the field constants
-  // exist. Static markup already keeps those fields disabled at that point;
-  // defer the dynamic lock until the normal-control surface has been created.
+  // The earliest required-dependency failure occurs before the field constants exist.
+  // Static markup already keeps those fields disabled at that point; defer the dynamic lock until the normal-control surface has been created.
   let calculatorInteractionControlsInitialized = false;
 
   const rendererI18n = window.RendererI18n || null;
@@ -85,7 +83,6 @@
   const formatUtils = formatCore.createFormatUtils({
     DEFAULT_LANG,
     getPreferenceScope,
-    log,
   });
   const stopwatchUtils = stopwatchTimeCore.createStopwatchTimeUtils();
   const integerFormatState = {
@@ -323,8 +320,7 @@
 
   function enqueueCalculatorSemanticWork(work) {
     const run = async () => {
-      // Main-process closure is asynchronous. Do not admit queued semantic
-      // work after this window has entered a terminal failure state.
+      // Main-process closure is asynchronous. Do not admit queued semantic work after this window has entered a terminal failure state.
       if (calculatorTerminal) return;
       return work();
     };
@@ -340,8 +336,7 @@
         reportCalculatorI18nFailure(error);
       }
     };
-    // Preload listeners intentionally do not await async callbacks. Serialize
-    // every settings source so rollback snapshots are taken when its work begins.
+    // Preload listeners intentionally do not await async callbacks. Serialize every settings source so rollback snapshots are taken when its work begins.
     return enqueueCalculatorSemanticWork(run);
   }
 
@@ -408,9 +403,8 @@
   // App lifecycle and bootstrapping
   // =============================================================================
   async function bootstrap() {
-    // The window is shown once its document is paintable, before the required
-    // settings-backed translation transition finishes. Keep native fields from
-    // admitting input until that first semantic presentation succeeds.
+    // The window is shown once its document is paintable, before the required settings-backed translation transition finishes.
+    // Keep native fields from admitting input until that first semantic presentation succeeds.
     setCalculatorNormalInteractionAvailable(false);
     fieldNames.forEach(bindFieldInput);
 
@@ -428,15 +422,22 @@
     }
 
     await enqueueCalculatorSemanticWork(async () => {
-      let initialSettings = null;
-      if (canGetSettings) {
-        try {
-          initialSettings = await textTimeCalculatorApi.getSettings();
-        } catch (error) {
-          log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings failed; attempting default-language translations, but required number-format settings are unavailable and startup will terminate:', error);
+      if (!canGetSettings) {
+        log.error('BOOTSTRAP: textTimeCalculatorAPI.getSettings unavailable; required settings aggregate cannot be established.');
+        reportTerminalCalculatorI18nFailure('settings-bootstrap');
+        return;
+      }
+
+      let initialSettings;
+      try {
+        initialSettings = await textTimeCalculatorApi.getSettings();
+        if (!initialSettings || typeof initialSettings !== 'object' || Array.isArray(initialSettings)) {
+          throw new Error('textTimeCalculatorAPI.getSettings returned an invalid required settings aggregate');
         }
-      } else if (textTimeCalculatorApi) {
-        log.warn('BOOTSTRAP: textTimeCalculatorAPI.getSettings missing; attempting default-language translations, but required number-format settings are unavailable and startup will terminate.');
+      } catch (error) {
+        log.error('BOOTSTRAP: text-time calculator required settings aggregate unavailable:', error);
+        reportTerminalCalculatorI18nFailure('settings-bootstrap');
+        return;
       }
 
       try {

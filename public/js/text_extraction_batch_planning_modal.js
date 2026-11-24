@@ -20,7 +20,6 @@
     throw new Error('[text-extraction-batch-planning-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-batch-planning-modal');
-  log.debug('Text extraction batch planning modal starting...');
   const { AppConstants } = window;
   if (!AppConstants) {
     throw new Error('[text-extraction-batch-planning-modal] AppConstants unavailable; verify constants.js load order');

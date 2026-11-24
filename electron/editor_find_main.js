@@ -34,7 +34,6 @@ const {
 } = require('./constants_main');
 
 const log = Log.get('editor-find-main');
-log.debug('Text Editor find main starting...');
 
 // =============================================================================
 // Constants / config (paths, window size)

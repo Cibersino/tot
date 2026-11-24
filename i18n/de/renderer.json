@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Beim Ersetzen von Text aus der Zwischenablage ist ein Fehler aufgetreten.",
         "append_clipboard_error": "Beim Anhängen von Text aus der Zwischenablage ist ein Fehler aufgetreten.",
         "clear_error": "Beim Löschen des Textes ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
-        "settings_payload_unavailable": "Ihre gespeicherten Einstellungen konnten nicht an dieses Fenster übermittelt und deshalb nicht angewendet werden. Die verwendete Sprache, der Zählmodus, das ausgewählte Preset oder die WPM können von Ihrer gespeicherten Konfiguration abweichen. Prüfen Sie diese Einstellungen, bevor Sie fortfahren.",
         "current_text_processing_locked": "Der aktuelle Text wird noch aktualisiert. Interaktionen im Hauptfenster bleiben gesperrt, bis der neueste Text stabil ist.",
         "precise_counting_fallback": "Präziser Modus konnte nicht verwendet werden. toT ist in den einfachen Modus gewechselt.",
+        "precise_counting_fallback_persistence_failed": "Der präzise Modus konnte nicht verwendet werden. toT ist in den einfachen Modus gewechselt, konnte diese Änderung aber nicht speichern.",
+        "counting_mode_persistence_failed": "Der ausgewählte Zählmodus konnte nicht gespeichert werden. Der vorherige Modus bleibt aktiv.",
+        "preset_selection_persistence_failed": "Das ausgewählte Preset konnte nicht gespeichert werden.",
+        "preview_spoiler_persistence_failed": "Die Einstellung zum Ausblenden des letzten Abschnitts der Vorschau konnte nicht gespeichert werden. Der vorherige Wert bleibt erhalten.",
+        "spellcheck_availability_failed": "Die Verfügbarkeit der Rechtschreibprüfung konnte nicht ermittelt werden.",
         "current_text_recount_locked": "Die Ergebnisse des aktuellen Texts werden noch neu berechnet. Interaktionen im Hauptfenster bleiben gesperrt, bis die neueste Neuberechnung stabil ist.",
         "wip": {
           "design_skins": "WIP: Der Skin-Selektor wird hier in einer zukünftigen Version geöffnet.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Abgelegter Text hat den verfügbaren Speicherplatz überschritten und wurde gekürzt.",
         "text_truncated": "Text wurde gekürzt, um die Anwendungsgrenze zu passen.",
         "sync_isolated": "Die Textsynchronisierung wurde ausgesetzt, um den aktuellen Text zu schützen. Sie können weiter bearbeiten und Text kopieren, aber lokale Änderungen werden nicht synchronisiert und können beim Schließen des Texteditors verloren gehen. Kopieren oder speichern Sie den Text, den Sie behalten möchten, bevor Sie den Texteditor schließen oder erneut öffnen.",
-        "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole."
+        "calc_error": "Beim Berechnen ist ein Fehler aufgetreten. Überprüfen Sie die Konsole.",
+        "spellcheck_save_failed": "Die Einstellung zur Rechtschreibprüfung konnte nicht gespeichert werden.",
+        "font_size_save_failed": "Die Einstellung für die Textgröße konnte nicht gespeichert werden.",
+        "maximized_text_width_not_persisted": "Die Textbreite wurde für diese Sitzung geändert, konnte aber nicht gespeichert werden."
       }
     },
     "snapshots": {

@@ -455,6 +455,7 @@
         log.warn(
           'editorAPI.setEditorFontSizePx missing; Text Editor text-size update ignored.'
         );
+        window.Notify.notifyEditor('renderer.editor.alerts.font_size_save_failed', { type: 'error' });
         return false;
       }
 
@@ -474,6 +475,7 @@
       } catch (error) {
         log.error('Error updating Text Editor font size setting:', error);
         setLocalEditorFontSizePx(previousFontSizePx);
+        window.Notify.notifyEditor('renderer.editor.alerts.font_size_save_failed', { type: 'error' });
         return false;
       }
     }
@@ -497,11 +499,6 @@
         return false;
       }
 
-      if (normalizedNextTextWidthPx === previousTextWidthPx) {
-        syncEditorMaximizedLayout();
-        return true;
-      }
-
       if (!skipLocalApply) {
         setLocalEditorMaximizedTextWidthPx(normalizedNextTextWidthPx);
       }
@@ -510,6 +507,12 @@
         const result = await editorAPI.setMaximizedTextWidthPx(normalizedNextTextWidthPx);
         if (!result || result.ok !== true) {
           throw new Error(result && result.error ? String(result.error) : 'unknown');
+        }
+        if (result.persisted === false) {
+          window.Notify.notifyEditor(
+            'renderer.editor.alerts.maximized_text_width_not_persisted',
+            { type: 'warn' }
+          );
         }
         return true;
       } catch (error) {

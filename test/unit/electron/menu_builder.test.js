@@ -68,13 +68,13 @@ test('resolveDialogText uses the caller-injected logger for missing dialog keys'
   const menuBuilder = loadFreshMenuBuilder(t);
   const log = createLogDouble();
 
-  const result = menuBuilder.resolveDialogText({}, 'continue_button', 'Continue', {
+  const result = menuBuilder.resolveDialogText({}, 'continue_button', {
     log,
   });
 
-  assert.equal(result, 'Continue');
+  assert.equal(result, 'continue_button');
   assert.deepEqual(log.warnCalls, [
-    ['Missing dialog translation key (using fallback):', 'continue_button'],
+    ['Missing dialog translation key (using key path):', 'continue_button'],
   ]);
 });
 
@@ -82,7 +82,7 @@ test('resolveDialogText requires caller-injected warn logging', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 
   assert.throws(
-    () => menuBuilder.resolveDialogText({}, 'continue_button', 'Continue'),
+    () => menuBuilder.resolveDialogText({}, 'continue_button'),
     /\[menu_builder\] resolveDialogText requires opts\.log\.warn/
   );
 });
@@ -404,4 +404,65 @@ test('buildAppMenu keeps the shared top-level menu structure and links submenu o
     ['General links']
   );
   assert.equal(capturedTemplate[3].label, '?');
+});
+
+test('development menu actions preserve their target operations', (t) => {
+  const originalShowDevMenu = process.env.SHOW_DEV_MENU;
+  process.env.SHOW_DEV_MENU = '1';
+  t.after(() => {
+    if (originalShowDevMenu === undefined) {
+      delete process.env.SHOW_DEV_MENU;
+      return;
+    }
+    process.env.SHOW_DEV_MENU = originalShowDevMenu;
+  });
+
+  const operations = [];
+  const target = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {
+      reload() {
+        operations.push('reload');
+      },
+      reloadIgnoringCache() {
+        operations.push('forceReload');
+      },
+      toggleDevTools() {
+        operations.push('toggleDevTools');
+      },
+    },
+  };
+  let capturedTemplate = null;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    app: { isPackaged: false },
+    BrowserWindow: {
+      getFocusedWindow() {
+        return target;
+      },
+    },
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return {};
+      },
+    },
+  });
+
+  menuBuilder.buildAppMenu('en');
+
+  const developmentMenu = capturedTemplate.at(-1);
+  assert.deepEqual(
+    developmentMenu.submenu.map(({ accelerator, label }) => ({ accelerator, label })),
+    [
+      { accelerator: 'CommandOrControl+R', label: 'Reload' },
+      { accelerator: 'CommandOrControl+Shift+R', label: 'Force reload' },
+      { accelerator: 'Ctrl+Shift+I', label: 'Toggle DevTools' },
+    ]
+  );
+
+  developmentMenu.submenu.forEach(({ click }) => click());
+
+  assert.deepEqual(operations, ['reload', 'forceReload', 'toggleDevTools']);
 });

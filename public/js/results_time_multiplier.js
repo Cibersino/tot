@@ -17,7 +17,6 @@
     throw new Error('[results-time-multiplier] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('results-time-multiplier');
-  log.debug('Results time multiplier starting...');
   const {
     getRoundedReadingSeconds,
     isEstimatedReadingDuration,

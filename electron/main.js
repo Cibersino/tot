@@ -47,27 +47,36 @@ const {
   createSettingsStartupBackup,
 } = require('./fs_storage');
 
-const settingsState = require('./settings');
+// Startup foundations and shared state
 const languageResources = require('./language_resources');
+const menuBuilder = require('./menu_builder');
+const settingsState = require('./settings');
 const snapshotTagSettings = require('./snapshot_tag_settings');
 const textState = require('./text_state');
-const editorState = require('./editor_state');
-const editorWindowLifecycle = require('./editor_window_lifecycle');
-const taskEditorWindowLifecycle = require('./task_editor_window_lifecycle');
-const menuBuilder = require('./menu_builder');
-const presetsMain = require('./presets_main');
-const snapshotsMain = require('./current_text_snapshots_main');
-const updater = require('./updater');
-const { registerLinkIpc } = require('./link_openers');
-const tasksMain = require('./tasks_main');
-const taskEditorState = require('./task_editor_state');
-const editorFindMain = require('./editor_find_main');
-const spellcheck = require('./spellcheck');
-const readingTestSession = require('./reading_test_session');
-const readingTestPoolImport = require('./reading_test_pool_import');
-const readingTestPool = require('./reading_test_pool');
 const currentTextProcessingStateIpc = require('./current_text_processing_state_ipc');
 const currentTextProcessingMainBridge = require('./current_text_processing_main_bridge');
+
+// Window state and lifecycle owners
+const editorState = require('./editor_state');
+const editorWindowLifecycle = require('./editor_window_lifecycle');
+const editorFindMain = require('./editor_find_main');
+const taskEditorState = require('./task_editor_state');
+const taskEditorWindowLifecycle = require('./task_editor_window_lifecycle');
+
+// Feature IPC owners and services
+const presetsMain = require('./presets_main');
+const snapshotsMain = require('./current_text_snapshots_main');
+const tasksMain = require('./tasks_main');
+const readingTestPool = require('./reading_test_pool');
+const readingTestSession = require('./reading_test_session');
+const readingTestPoolImport = require('./reading_test_pool_import');
+const spellcheck = require('./spellcheck');
+const updater = require('./updater');
+
+// Pre-ready bootstrap IPC owner
+const { registerLinkIpc } = require('./link_openers');
+
+// Text extraction platform
 const textExtractionFilePickerIpc = require('./text_extraction_platform/text_extraction_file_picker_ipc');
 const textExtractionPreconditionsIpc = require('./text_extraction_platform/text_extraction_preconditions_ipc');
 const textExtractionProcessingModeIpc = require('./text_extraction_platform/text_extraction_processing_mode_ipc');
@@ -77,7 +86,11 @@ const textExtractionPdfInspectIpc = require('./text_extraction_platform/text_ext
 const textExtractionPrepareIpc = require('./text_extraction_platform/text_extraction_prepare_ipc');
 const textExtractionExecutePreparedIpc = require('./text_extraction_platform/text_extraction_execute_prepared_ipc');
 const textExtractionGeneratedPdfRevealIpc = require('./text_extraction_platform/text_extraction_generated_pdf_reveal_ipc');
+
+// Shared utilities
 const stopwatchTimeCore = require('../public/js/lib/stopwatch_time_core');
+
+// OCR Google Drive bundled credentials
 const {
   materializeBundledCredentials,
 } = require('./text_extraction_platform/ocr_google_drive_bundled_credentials');
@@ -87,7 +100,6 @@ const {
 // =============================================================================
 
 const log = Log.get('main');
-log.debug('Main process starting...');
 const { formatStopwatchMs } = stopwatchTimeCore.createStopwatchTimeUtils();
 
 const spellcheckController = spellcheck.createController({
@@ -495,29 +507,45 @@ currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBri
 // =============================================================================
 
 function getSelectedLanguage() {
+  const settings = settingsState.getSettings();
+  const lang = typeof settings.language === 'string' ? settings.language.trim() : '';
+  if (!lang) throw new Error('Selected language is unavailable after settings initialization');
+  return lang;
+}
+
+function notifySpellcheckAvailabilityFailure() {
+  const targetWindow = resolveMainWindow();
+  if (!hasLiveWebContents(targetWindow)) {
+    log.warn('Spellcheck availability failure notice skipped: Main Window unavailable.');
+    return;
+  }
   try {
-    const settings = settingsState.getSettings();
-    const lang = settings && typeof settings.language === 'string' ? settings.language.trim() : '';
-    if (!lang) {
-      log.warnOnce(
-        'main.menu.language.empty',
-        `Settings language is empty; falling back to "${DEFAULT_LANG}".`
-      );
-      return DEFAULT_LANG;
-    }
-    return lang;
+    targetWindow.webContents.send('spellcheck-availability-failed');
   } catch (error) {
-    log.warn(`Settings language read failed; using "${DEFAULT_LANG}".`, error);
-    return DEFAULT_LANG;
+    log.warn('Spellcheck availability failure notice delivery failed (ignored):', error);
   }
 }
 
 function decorateRendererSettings(settingsPayload) {
-  const spellcheckDecorated = spellcheckController.decorateSettings(settingsPayload);
-  return {
+  let spellcheckDecorated;
+  let spellcheckAvailabilityFailed = false;
+  try {
+    spellcheckDecorated = spellcheckController.decorateSettings(settingsPayload);
+  } catch (error) {
+    spellcheckAvailabilityFailed = true;
+    log.error('Spellcheck availability determination failed; disabling spellcheck for this payload:', error);
+    spellcheckDecorated = {
+      ...settingsPayload,
+      spellcheckAvailable: false,
+    };
+  }
+
+  const decoratedSettings = {
     ...spellcheckDecorated,
     snapshotTags: snapshotTagSettings.getSnapshotTagPreferences(),
   };
+  if (spellcheckAvailabilityFailed) notifySpellcheckAvailabilityFailure();
+  return decoratedSettings;
 }
 
 /**
@@ -1099,7 +1127,7 @@ function createEditorWindow(options = {}) {
   });
 
   // Delegate persistent window-state management to editor_state.js.
-  editorState.attachTo(editorWin, loadJson, saveJson);
+  editorState.attachTo(editorWin);
 
   // Drop reference on close so the window can be recreated later.
   editorWin.on('closed', () => {
@@ -1514,7 +1542,11 @@ function createLanguageWindow() {
 
       let dialogTexts = null;
       try {
-        dialogTexts = menuBuilder.getDialogTexts(getSelectedLanguage());
+        // The first-run chooser intentionally runs while settings.language is unset.
+        const dialogLanguage = isFirstRunLanguageChooser
+          ? DEFAULT_LANG
+          : getSelectedLanguage();
+        dialogTexts = menuBuilder.getDialogTexts(dialogLanguage);
       } catch (error) {
         log.error('Language chooser initial document load native dialog translations unavailable:', error);
       }
@@ -1580,6 +1612,7 @@ function createLanguageWindow() {
               error,
               logContext: 'Initial fallback-language persistence',
               messageKey: 'startup_language_fallback_persistence_failure_message',
+              language: DEFAULT_LANG,
             });
             return;
           }
@@ -1597,6 +1630,7 @@ function createLanguageWindow() {
       error,
       logContext: 'Initial Language Window structural setup',
       messageKey: 'startup_language_chooser_setup_failure_message',
+      language: DEFAULT_LANG,
     });
     return null;
   }
@@ -1636,6 +1670,7 @@ function maybeAuthorizeStartupReady() {
     targetWin.webContents.send('startup:ready');
     startupReadySent = true;
     mainReadyState = 'READY';
+    log.info('Main startup: READY granted to initial renderer; awaiting splash acknowledgment.');
   } catch (error) {
     terminateAfterRequiredStartupFailure({
       error,
@@ -1698,6 +1733,7 @@ function handleSplashRemoved(event) {
   }
   splashRemoved = true;
   menuEnabled = true;
+  log.info('Main startup: initial splash acknowledged; main interaction enabled.');
 
   if (isSmokeTest) {
     try {
@@ -2480,7 +2516,7 @@ ipcMain.handle('open-editor', () => {
       editorWin,
       mainWin,
       createEditorWindow,
-      startupState: editorState.loadInitialState(loadJson),
+      getStartupState: () => editorState.loadInitialState(loadJson),
       logContext: 'open-editor',
     });
   } catch (error) {
@@ -2665,6 +2701,8 @@ ipcMain.handle('language-chooser-bootstrap-failure', handleInitialLanguageChoose
 // =============================================================================
 
 app.whenReady().then(() => {
+  log.info('Main startup: Electron ready; initializing required services.');
+
   try {
     initStorage(app);
   } catch (error) {
@@ -2706,9 +2744,7 @@ app.whenReady().then(() => {
   let settings;
   try {
     settings = settingsState.init({
-      loadJson,
       loadJsonWithStatus,
-      saveJson,
       saveJsonStrict,
       createJsonStrict,
       createSettingsStartupBackup,
@@ -2942,11 +2978,11 @@ app.whenReady().then(() => {
     loadJson,
     saveJson,
     currentTextFile,
-    settingsFile,
     app,
     maxTextChars: MAX_TEXT_CHARS,
     currentTextProcessingController: currentTextProcessingStateController,
   });
+  log.info('Main startup: required services initialized and IPC registration complete.');
 
   // First run: show language picker before creating the main window.
   if (!settings.language || settings.language === '') {
@@ -2975,19 +3011,6 @@ app.whenReady().then(() => {
     resolveLanguage('present');
   }
 
-  // macOS behavior: recreate a window when clicking the dock icon and none are open.
-  app.on('activate', () => {
-    if (startupTerminalFailure || !languageResolved || BrowserWindow.getAllWindows().length !== 0) return;
-    try {
-      createMainWindow();
-    } catch (error) {
-      terminateAfterRequiredStartupFailure({
-        error,
-        logContext: 'Main BrowserWindow construction during activation',
-        messageKey: 'startup_main_window_failure_message',
-      });
-    }
-  });
 });
 
 // Windows/Linux behavior: quit when the last window is closed.

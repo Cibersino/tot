@@ -20,7 +20,6 @@ const https = require('https');
 const Log = require('./log');
 
 const log = Log.get('updater');
-log.debug('Updater starting...');
 const menuBuilder = require('./menu_builder');
 const { DEFAULT_LANG } = require('./constants_main');
 
@@ -41,8 +40,8 @@ let updateCheckDone = false;
 // =============================================================================
 // Helpers (i18n, SemVer, network)
 // =============================================================================
-const resolveDialogText = (dialogTexts, key, fallback) =>
-  menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+const resolveDialogText = (dialogTexts, key) =>
+  menuBuilder.resolveDialogText(dialogTexts, key, {
     log
   });
 

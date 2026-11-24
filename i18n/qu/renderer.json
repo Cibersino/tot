@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Portapapeles-manta qillqata rantichkaspa pantay karqan.",
         "append_clipboard_error": "Portapapeles-manta qillqata yapachkaspa pantay karqan.",
         "clear_error": "Qillqa pichaypi pantay karqan. Consolata qhaway.",
-        "settings_payload_unavailable": "Waqaychasqa preferencias mana kay qhawanaman chayarqanchu, chayrayku mana llamk’achisqachu. Llamk’aq rimay, yupay modo, akllasqa preset utaq WPM waqaychasqa configuración-manta hukniray kanman. Manaraq qatispa chay ajustes qhaway.",
         "current_text_processing_locked": "Kunan textoqa musuqyachisqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa musuq texto takyanankama.",
         "precise_counting_fallback": "Chiqap modo mana llamk'achiyta atirqanchu. toT Simple modo nisqamanmi tikrarqan.",
+        "precise_counting_fallback_persistence_failed": "Chiqap modo mana llamk'achiyta atirqanchu. toT Simple modo nisqamanmi tikrarqan, ichaqa chay tikrayta mana waqaychayta atirqanchu.",
+        "counting_mode_persistence_failed": "Akllasqa yupay modo mana waqaychakuyta atirqanchu. Ñawpaq modo hinallataq llamk’achkan.",
+        "preset_selection_persistence_failed": "Akllasqa preset mana waqaychakuyta atirqanchu.",
+        "preview_spoiler_persistence_failed": "Ñawpaq qhawaypa tukukuyninta pakay munay mana waqaychakuyta atirqanchu. Ñawpaq chanin hinallataq llamk’achkan.",
+        "spellcheck_availability_failed": "Qillqay allinchaypa llamk'anan kachkanta mana yachayta atirqanchu.",
         "current_text_recount_locked": "Kunan textopa resultadokunaqa yapamanta yupasqa kachkanraq. Ventana principal interaccionesqa wisqasqa kanqa qhipa yupay takyankama.",
         "wip": {
           "design_skins": "WIP: Kaypi hamuq versiónpi skins akllana kichakunqa.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Aysasqa qillqa kachkaq espaciomanta aswan karqan hinaspa kuchusqa.",
         "text_truncated": "Qillqa apppa hatun kayninman tupananpaq kuchusqa.",
         "sync_isolated": "Qillqap sincronización-ninqa sayachisqa kachkan kunan qillqata waqaychanapaq. Qillqata allichayta hinallataq copiayta atinki, ichaqa kaypi ruwasqa tikraykuna mana sincronizasqachu, hinaspa Editor de Texto wichq’asqaykipi chinkayta atin. Waqaychay munasqayki qillqata copiay utaq waqaychay manaraq Editor de Texto wichq’achkaspa utaq yapamanta kichachkaspa.",
-        "calc_error": "Yupaypi pantay karqan. Consolata qhaway."
+        "calc_error": "Yupaypi pantay karqan. Consolata qhaway.",
+        "spellcheck_save_failed": "Qillqay allinchay munay mana waqaychakuyta atirqanchu.",
+        "font_size_save_failed": "Qillqap hatun kaynin munay mana waqaychakuyta atirqanchu.",
+        "maximized_text_width_not_persisted": "Qillqap kinraynin kay sesión-pi tikrasqa karqan, ichaqa mana waqaychakuyta atirqanchu."
       }
     },
     "snapshots": {

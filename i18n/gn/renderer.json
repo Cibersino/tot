@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Oiko peteĩ jejavy oñemyengoviávo jehaipyre portapapeles-gui.",
         "append_clipboard_error": "Oiko peteĩ jejavy oñembojoapývo jehaipyre portapapeles-gui.",
         "clear_error": "Oiko jejavy oñemopotĩ aja jehai. Ehecha consola.",
-        "settings_payload_unavailable": "Nde preferencias oñeñongatúva ndaikatúi oñemondo ko ovetãme, upévare ndojepurúi. Ñe’ẽ ojepurúva, modo conteo, preset ojeporavóva térã WPM ikatu iñambue configuración oñeñongatúvagui. Ehecha ko’ã ajuste esegi mboyve.",
         "current_text_processing_locked": "Texto ko’ag̃agua oñembopyahu gueteri. Ventana principal rehegua interacciones oñembotýta texto ipyahuvéva oñemohenda peve.",
         "precise_counting_fallback": "Ndaikatúi ojepuru Modo preciso. toT ohasa Modo simple-pe.",
+        "precise_counting_fallback_persistence_failed": "Ndaikatúi ojepuru Modo preciso. toT ohasa Modo simple-pe, hákatu ndaikatúi oñongatu upe ñemoambue.",
+        "counting_mode_persistence_failed": "Ndaikatúi oñongatu modo conteo ojeporavóva. Modo ymaguare ojepuru gueteri.",
+        "preset_selection_persistence_failed": "Ndaikatúi oñongatu preset ojeporavóva.",
+        "preview_spoiler_persistence_failed": "Ndaikatúi oñongatu preferencia oñemokañy hag̃ua jehecha mboyve paha. Valor ymaguare ojepuru gueteri.",
+        "spellcheck_availability_failed": "Ndaikatúi ojekuaa ojeporukuaápa corrector ortográfico.",
         "current_text_recount_locked": "Texto ko’ag̃agua resultado oñeñemboheko jey gueteri. Ventana principal rehegua interacciones oñembotýta conteo ipaháva oñemohenda peve.",
         "wip": {
           "design_skins": "WIP: Ko’ápe ojepe’áta selector de skins versión oútavape.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Jehai ojeityva’ekue ohasa espacio disponible ha oñekytĩ.",
         "text_truncated": "Jehai oñekytĩ oike hag̃ua límite máximo app-pe.",
         "sync_isolated": "Ojejoko jehaipy sincronización oñangareko hag̃ua texto actual rehe. Ikatu resegi remohenda ha rekopia jehai, ha katu umi cambio local noñesincronizái ha ikatu okañy oñembotývo Editor de Texto. Ekopia térã eñongatu jehai reñongatuséva emboty térã eipe’a jey mboyve Editor de Texto.",
-        "calc_error": "Oiko jejavy ojejapo aja cálculo. Ehecha consola."
+        "calc_error": "Oiko jejavy ojejapo aja cálculo. Ehecha consola.",
+        "spellcheck_save_failed": "Ndaikatúi oñongatu preferencia corrector ortográfico rehegua.",
+        "font_size_save_failed": "Ndaikatúi oñongatu preferencia texto tuichakue rehegua.",
+        "maximized_text_width_not_persisted": "Texto ipekue oñemoambue ko sesión-pe, hákatu ndaikatúi oñongatu."
       }
     },
     "snapshots": {

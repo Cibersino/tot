@@ -20,8 +20,6 @@
     throw new Error('[current-text-selector-section] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('current-text-selector-section');
-  log.debug('Current text selector section starting...');
-
   const { AppConstants } = window;
   if (!AppConstants) {
     throw new Error('[current-text-selector-section] AppConstants unavailable; cannot continue');
@@ -431,6 +429,7 @@
         } catch (error) {
           log.error('Preview spoiler setting persistence failed; restoring previous value:', error);
           setPreviewSpoilerEnabled(previousEnabled);
+          window.Notify.toastMain('renderer.main.alerts.preview_spoiler_persistence_failed', { type: 'warn' });
         } finally {
           previewSpoilerSavePending = false;
           applyPreviewSpoilerToggleControlState();

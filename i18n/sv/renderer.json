@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Ett fel uppstod när text från urklipp skulle ersätta den nuvarande texten.",
         "append_clipboard_error": "Ett fel uppstod när text från urklipp skulle läggas till.",
         "clear_error": "Ett fel uppstod när texten skulle rensas. Kontrollera konsolen.",
-        "settings_payload_unavailable": "Dina sparade inställningar kunde inte skickas till det här fönstret och kunde därför inte tillämpas. Det faktiska språket, räknesättet, den valda förinställningen eller WPM kan skilja sig från den sparade konfigurationen. Kontrollera dessa inställningar innan du fortsätter.",
         "current_text_processing_locked": "Den aktuella texten uppdateras fortfarande. Interaktioner i huvudfönstret är låsta tills den senaste texten har stabiliserats.",
         "precise_counting_fallback": "Precist läge kunde inte användas. toT växlade till enkelt läge.",
+        "precise_counting_fallback_persistence_failed": "Precist läge kunde inte användas. toT växlade till enkelt läge, men ändringen kunde inte sparas.",
+        "counting_mode_persistence_failed": "Det valda räkneläget kunde inte sparas. Det föregående läget används fortfarande.",
+        "preset_selection_persistence_failed": "Den valda förinställningen kunde inte sparas.",
+        "preview_spoiler_persistence_failed": "Inställningen för att dölja den sista delen av förhandsvisningen kunde inte sparas. Det tidigare värdet används fortfarande.",
+        "spellcheck_availability_failed": "Det gick inte att avgöra om stavningskontrollen är tillgänglig.",
         "current_text_recount_locked": "Resultaten för den aktuella texten beräknas fortfarande om. Interaktioner i huvudfönstret är låsta tills den senaste omberäkningen har stabiliserats.",
         "wip": {
           "design_skins": "WIP: Skin-väljaren öppnas här i en framtida version.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Den dragna texten överskred tillgängligt utrymme och har kortats.",
         "text_truncated": "Texten kortades för att rymmas inom appens gräns.",
         "sync_isolated": "Textsynkroniseringen har pausats för att skydda den aktuella texten. Du kan fortsätta redigera och kopiera text, men lokala ändringar synkroniseras inte och kan gå förlorade när textredigeraren stängs. Kopiera eller spara texten du vill behålla innan du stänger eller öppnar textredigeraren igen.",
-        "calc_error": "Ett fel uppstod vid beräkning. Kontrollera konsolen."
+        "calc_error": "Ett fel uppstod vid beräkning. Kontrollera konsolen.",
+        "spellcheck_save_failed": "Inställningen för stavningskontroll kunde inte sparas.",
+        "font_size_save_failed": "Inställningen för textstorlek kunde inte sparas.",
+        "maximized_text_width_not_persisted": "Textbredden ändrades för den här sessionen men kunde inte sparas."
       }
     },
     "snapshots": {

@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Errore bat gertatu da arbeletik testua ordezkatzean.",
         "append_clipboard_error": "Errore bat gertatu da arbeletik testua eranstean.",
         "clear_error": "Errorea gertatu da testua hustean. Begiratu kontsola.",
-        "settings_payload_unavailable": "Gordetako hobespenak ezin izan dira leiho honetara bidali eta, beraz, ezin izan dira aplikatu. Uneko hizkuntza, zenbaketa modua, hautatutako preseta edo WPM balioa gordetako konfiguraziotik desberdinak izan daitezke. Berrikusi ezarpen horiek jarraitu aurretik.",
         "current_text_processing_locked": "Uneko testua oraindik eguneratzen ari da. Leiho nagusiko interakzioak blokeatuta egongo dira azken testua egonkortu arte.",
         "precise_counting_fallback": "Ezin izan da Modu zehatza erabili. toT modu sinplera aldatu da.",
+        "precise_counting_fallback_persistence_failed": "Ezin izan da modu zehatza erabili. toT modu sinplera aldatu da, baina ezin izan du aldaketa gorde.",
+        "counting_mode_persistence_failed": "Ezin izan da hautatutako zenbaketa-modua gorde. Aurreko modua erabiltzen jarraituko da.",
+        "preset_selection_persistence_failed": "Ezin izan da hautatutako aurrezarpena gorde.",
+        "preview_spoiler_persistence_failed": "Ezin izan da aurrebistaren azken zatia ezkutatzeko hobespena gorde. Aurreko balioa mantenduko da.",
+        "spellcheck_availability_failed": "Ezin izan da zuzentzaile ortografikoaren erabilgarritasuna zehaztu.",
         "current_text_recount_locked": "Uneko testuaren emaitzak oraindik berriz kalkulatzen ari dira. Leiho nagusiko interakzioak blokeatuta egongo dira azken berriz kalkulua egonkortu arte.",
         "wip": {
           "design_skins": "WIP: azal hautatzailea etorkizuneko bertsio batean irekiko da hemen.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Arrastatutako testuak erabilgarri zegoen espazioa gainditzen zuen eta moztu egin da.",
         "text_truncated": "Testua moztu da aplikazioaren mugara egokitzeko.",
         "sync_isolated": "Testuaren sinkronizazioa eten da uneko testua babesteko. Editatzen eta testua kopiatzen jarrai dezakezu, baina tokiko aldaketak ez dira sinkronizatzen eta gal daitezke Testu Editorea ixtean. Kopiatu edo gorde mantendu nahi duzun testua Testu Editorea itxi edo berriro ireki aurretik.",
-        "calc_error": "Errorea gertatu da kalkulatzean. Begiratu kontsola."
+        "calc_error": "Errorea gertatu da kalkulatzean. Begiratu kontsola.",
+        "spellcheck_save_failed": "Ezin izan da zuzenketa ortografikoaren hobespena gorde.",
+        "font_size_save_failed": "Ezin izan da testuaren tamainaren hobespena gorde.",
+        "maximized_text_width_not_persisted": "Testuaren zabalera saio honetarako aldatu da, baina ezin izan da gorde."
       }
     },
     "snapshots": {

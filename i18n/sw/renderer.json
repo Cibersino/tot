@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Hitilafu ilitokea wakati wa kubadilisha maandishi ya sasa kwa maandishi ya ubao wa kunakili.",
         "append_clipboard_error": "Hitilafu ilitokea wakati wa kuongeza maandishi ya ubao wa kunakili kwenye maandishi ya sasa.",
         "clear_error": "Hitilafu ilitokea wakati wa kufuta maandishi ya sasa.",
-        "settings_payload_unavailable": "Mapendeleo yako yaliyohifadhiwa hayakuweza kufikishwa kwenye dirisha hili, hivyo hayakuweza kutumika. Lugha inayotumika, hali ya kuhesabu, preseti iliyochaguliwa au WPM vinaweza kuwa tofauti na usanidi uliohifadhiwa. Kagua mipangilio hii kabla ya kuendelea.",
         "current_text_processing_locked": "Maandishi ya sasa bado yanasasishwa. Matendo katika dirisha kuu yamezuiwa hadi maandishi ya hivi karibuni yakamilike.",
         "precise_counting_fallback": "Hali ya usahihi haikuweza kutumika. toT ilibadilisha hadi hali rahisi.",
+        "precise_counting_fallback_persistence_failed": "Hali ya usahihi haikuweza kutumika. toT ilibadilisha hadi hali rahisi, lakini haikuweza kuhifadhi mabadiliko hayo.",
+        "counting_mode_persistence_failed": "Hali ya kuhesabu iliyochaguliwa haikuweza kuhifadhiwa. Hali ya awali inaendelea kutumika.",
+        "preset_selection_persistence_failed": "Preseti iliyochaguliwa haikuweza kuhifadhiwa.",
+        "preview_spoiler_persistence_failed": "Mapendeleo ya kuficha sehemu ya mwisho ya onyesho la awali hayakuweza kuhifadhiwa. Thamani ya awali inaendelea kutumika.",
+        "spellcheck_availability_failed": "Haikuwezekana kubaini ikiwa kikagua tahajia kinapatikana.",
         "current_text_recount_locked": "Matokeo ya maandishi ya sasa bado yanakokotolewa upya. Matendo katika dirisha kuu yamezuiwa hadi hesabu ya hivi karibuni ikamilike.",
         "wip": {
           "design_skins": "WIP: Kiteuzi cha mionekano kitafunguka hapa katika toleo la baadaye.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Maandishi yaliyoburutwa yalizidi nafasi iliyopo na yalikatwa.",
         "text_truncated": "Maandishi yalikatwa ili yatoshee kikomo cha programu.",
         "sync_isolated": "Usawazishaji wa maandishi umesitishwa ili kulinda maandishi ya sasa. Unaweza kuendelea kuhariri na kunakili maandishi, lakini mabadiliko ya ndani hayasawazishwi na yanaweza kupotea unapofunga Kihariri cha Maandishi. Nakili au hifadhi maandishi unayotaka kubaki nayo kabla ya kufunga au kufungua tena Kihariri cha Maandishi.",
-        "calc_error": "Hitilafu ilitokea wakati wa kuhifadhi maandishi kama maandishi ya sasa."
+        "calc_error": "Hitilafu ilitokea wakati wa kuhifadhi maandishi kama maandishi ya sasa.",
+        "spellcheck_save_failed": "Mapendeleo ya ukaguzi wa tahajia hayakuweza kuhifadhiwa.",
+        "font_size_save_failed": "Mapendeleo ya ukubwa wa maandishi hayakuweza kuhifadhiwa.",
+        "maximized_text_width_not_persisted": "Upana wa maandishi umebadilika kwa kipindi hiki, lakini haukuweza kuhifadhiwa."
       }
     },
     "snapshots": {

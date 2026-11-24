@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Cagó el reemplazo con lo del portapapeles.",
         "append_clipboard_error": "Cagó agregar lo del portapapeles.",
         "clear_error": "No te lo pudiste pitiar. Lorea la consola.",
-        "settings_payload_unavailable": "No se pudieron entregar a esta ventana tus preferencias guardadas, así que no se aplicaron. El idioma, el modo de conteo, el preset seleccionado o el WPM efectivo pueden ser distintos de tu configuración guardada. Revisa esos ajustes antes de seguir.",
         "current_text_processing_locked": "El texto actual todavía se está actualizando. La ventana principal queda bloqueada hasta que el texto más reciente se asiente.",
         "precise_counting_fallback": "No se pudo usar el Modo fino. toT se cambió al modo simple.",
+        "precise_counting_fallback_persistence_failed": "No se pudo usar el Modo fino. toT se cambió al modo simple, pero no pudo guardar el cambio.",
+        "counting_mode_persistence_failed": "No se pudo guardar el modo de conteo que elegiste. Se mantiene el anterior.",
+        "preset_selection_persistence_failed": "No se pudo guardar el preset que elegiste.",
+        "preview_spoiler_persistence_failed": "No se pudo guardar la preferencia de ocultar el segmento final de la vista previa. Se mantiene el valor anterior.",
+        "spellcheck_availability_failed": "No se pudo averiguar si el corrector ortográfico está disponible.",
         "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. La ventana principal queda bloqueada hasta que el último reconteo se asiente.",
         "wip": {
           "design_skins": "WIP: Aquí vamos a cambiar las pilchas.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Lo que tiraste estaba muy largo y lo mochamos.",
         "text_truncated": "Mochamos el texto pa' que entre en la aplicación.",
         "sync_isolated": "Se suspendió la sincronización del texto pa' proteger el texto actual. Puedes seguir editando y copiando texto, pero los cambios locales no se sincronizan y se pueden perder al cerrar el Editor de Texto. Copia o guarda lo que quieras conservar antes de cerrar o volver a abrir el Editor de Texto.",
-        "calc_error": "Cagaron las matemáticas. Lorea la consola."
+        "calc_error": "Cagaron las matemáticas. Lorea la consola.",
+        "spellcheck_save_failed": "No se pudo guardar la preferencia del corrector ortográfico.",
+        "font_size_save_failed": "No se pudo guardar la preferencia del tamaño del texto.",
+        "maximized_text_width_not_persisted": "El ancho del texto cambió pa' esta sesión, pero no se pudo guardar."
       }
     },
     "snapshots": {

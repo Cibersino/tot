@@ -18,8 +18,6 @@
     throw new Error('[reading-speed-test] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('reading-speed-test');
-  log.debug('Reading speed test main-renderer module starting...');
-
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[reading-speed-test] RendererI18n unavailable; cannot continue');
   }

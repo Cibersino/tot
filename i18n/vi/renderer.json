@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Đã xảy ra lỗi khi thay thế văn bản từ clipboard.",
         "append_clipboard_error": "Đã xảy ra lỗi khi thêm văn bản từ clipboard.",
         "clear_error": "Đã xảy ra lỗi khi xóa văn bản. Hãy kiểm tra console.",
-        "settings_payload_unavailable": "Không thể chuyển các tùy chọn đã lưu của bạn đến cửa sổ này nên chúng không được áp dụng. Ngôn ngữ đang dùng, chế độ đếm, preset đã chọn hoặc WPM có thể khác cấu hình đã lưu. Hãy kiểm tra các cài đặt này trước khi tiếp tục.",
         "current_text_processing_locked": "Văn bản hiện tại vẫn đang được cập nhật. Tương tác với cửa sổ chính bị khóa cho đến khi văn bản mới nhất ổn định.",
         "precise_counting_fallback": "Không thể sử dụng Chế độ chính xác. toT đã chuyển sang chế độ đơn giản.",
+        "precise_counting_fallback_persistence_failed": "Không thể sử dụng Chế độ chính xác. toT đã chuyển sang chế độ đơn giản nhưng không thể lưu thay đổi này.",
+        "counting_mode_persistence_failed": "Không thể lưu chế độ đếm đã chọn. Chế độ trước đó vẫn được sử dụng.",
+        "preset_selection_persistence_failed": "Không thể lưu preset đã chọn.",
+        "preview_spoiler_persistence_failed": "Không thể lưu tùy chọn ẩn phần cuối của bản xem trước. Giá trị trước đó vẫn được sử dụng.",
+        "spellcheck_availability_failed": "Không thể xác định tính khả dụng của trình kiểm tra chính tả.",
         "current_text_recount_locked": "Kết quả của văn bản hiện tại vẫn đang được tính lại. Tương tác với cửa sổ chính bị khóa cho đến khi lần tính lại mới nhất ổn định.",
         "wip": {
           "design_skins": "WIP: Bộ chọn giao diện sẽ mở tại đây trong phiên bản tương lai.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Văn bản được kéo vượt quá không gian còn lại và đã bị cắt bớt.",
         "text_truncated": "Văn bản đã bị cắt bớt để vừa với giới hạn của ứng dụng.",
         "sync_isolated": "Đã tạm ngừng đồng bộ hóa văn bản để bảo vệ văn bản hiện tại. Bạn vẫn có thể chỉnh sửa và sao chép văn bản, nhưng các thay đổi cục bộ sẽ không được đồng bộ hóa và có thể bị mất khi đóng Trình chỉnh sửa văn bản. Hãy sao chép hoặc lưu văn bản muốn giữ lại trước khi đóng hoặc mở lại Trình chỉnh sửa văn bản.",
-        "calc_error": "Đã xảy ra lỗi khi tính toán. Hãy kiểm tra console."
+        "calc_error": "Đã xảy ra lỗi khi tính toán. Hãy kiểm tra console.",
+        "spellcheck_save_failed": "Không thể lưu tùy chọn kiểm tra chính tả.",
+        "font_size_save_failed": "Không thể lưu tùy chọn cỡ chữ.",
+        "maximized_text_width_not_persisted": "Độ rộng văn bản đã thay đổi trong phiên này nhưng không thể lưu lại."
       }
     },
     "snapshots": {

@@ -19,7 +19,6 @@
     throw new Error('[text-extraction-batch-final-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-batch-final-modal');
-  log.debug('Text extraction batch final modal starting...');
   const rendererIcons = window.RendererIcons || null;
   if (!rendererIcons || typeof rendererIcons.createIconButton !== 'function') {
     throw new Error('[text-extraction-batch-final-modal] RendererIcons unavailable; cannot continue');

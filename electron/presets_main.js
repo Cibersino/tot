@@ -21,9 +21,7 @@ const { dialog, shell } = require('electron');
 const Log = require('./log');
 
 const log = Log.get('presets-main');
-log.debug('Presets main starting...');
 const {
-  DEFAULT_LANG,
   PRESET_NAME_MAX,
   PRESET_DESC_MAX,
   PRESET_WPM_MIN,
@@ -71,8 +69,8 @@ function isAuthorizedSender(event, expectedWin, channelName) {
   }
 }
 
-const resolveDialogText = (dialogTexts, key, fallback) =>
-  menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+const resolveDialogText = (dialogTexts, key) =>
+  menuBuilder.resolveDialogText(dialogTexts, key, {
     log
   });
 
@@ -376,11 +374,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   // Resolve the explicit preference scope for the selected application ID.
   function getEffectiveLang(settings) {
     const s = settings || settingsState.getSettings();
-    const lang =
+    const selectedLanguage =
       s.language && typeof s.language === 'string' && s.language.trim()
         ? s.language.trim()
-        : DEFAULT_LANG;
-    return getPreferenceScope(lang || DEFAULT_LANG);
+        : '';
+    const languageId = getValidLanguageId(selectedLanguage);
+    if (!languageId) {
+      throw new Error('[presets_main] preset operation requires a selected application language');
+    }
+    return getPreferenceScope(languageId);
   }
 
   function clonePresetSettings(settings, lang) {
@@ -400,13 +402,15 @@ function registerIpc(ipcMain, { getWindows } = {}) {
   }
 
   function cloneCurrentSettingsForPresetMutation(lang) {
-    // Confirmation awaits user input, so use the latest settings at the
-    // persistence boundary instead of overwriting changes made while waiting.
+    // Confirmation awaits user input, so use the latest settings at the persistence boundary instead of overwriting changes made while waiting.
     return clonePresetSettings(settingsState.getSettings(), lang);
   }
 
   function getUserPresets(settings, preferenceScopeId) {
-    const scopeId = preferenceScopeId || getPreferenceScope(DEFAULT_LANG);
+    const scopeId = typeof preferenceScopeId === 'string' ? preferenceScopeId.trim() : '';
+    if (!scopeId) {
+      throw new Error('[presets_main] preset operation requires a preference scope');
+    }
     if (typeof settings.presetsByScope !== 'object' || settings.presetsByScope === null || Array.isArray(settings.presetsByScope)) {
       settings.presetsByScope = {};
     }
@@ -425,8 +429,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     return settings.disabledDefaultPresetsByScope[lang];
   }
 
-  // Replace {placeholders} in i18n dialog strings.
-  // If a key is missing, keep the placeholder unchanged (useful for debugging).
+  // Replace {placeholders} in i18n dialog strings. If a key is missing, keep the placeholder unchanged (useful for debugging).
   function interpolateDialogText(template, vars = {}) {
     if (typeof template !== 'string' || !template) return '';
     return template.replace(/\{(\w+)\}/g, (m, key) => {
@@ -438,7 +441,10 @@ function registerIpc(ipcMain, { getWindows } = {}) {
 
   function getDialogContext(settings) {
     const lang = getEffectiveLang(settings);
-    const dialogLang = getValidLanguageId(settings.language) || DEFAULT_LANG;
+    const dialogLang = getValidLanguageId(settings && settings.language);
+    if (!dialogLang) {
+      throw new Error('[presets_main] preset dialog requires a selected application language');
+    }
     const dialogTexts = menuBuilder.getDialogTexts(dialogLang);
     return { lang, dialogLang, dialogTexts };
   }
@@ -450,8 +456,7 @@ function registerIpc(ipcMain, { getWindows } = {}) {
     };
   }
 
-  // The renderer combines default lists with user presets and may persist a replacement for a missing saved selection.
-  // catalogFailure distinguishes resource failures from a valid empty or intentionally disabled catalog.
+  // The renderer combines default lists with user presets and may persist a replacement for a missing saved selection. catalogFailure distinguishes resource failures from a valid empty or intentionally disabled catalog.
   ipcMain.handle('get-default-presets', () => {
     try {
       const { catalogFailure, general, defaultPresetsByScope } = loadConfiguredDefaultPresetCatalog();

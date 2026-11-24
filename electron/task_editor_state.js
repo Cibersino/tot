@@ -8,20 +8,17 @@
 // - window geometry and maximized state;
 // - the six user-resizable utility column widths.
 //
-// A single in-memory snapshot is authoritative while a Task Editor BrowserWindow
-// is alive. Every accepted change updates that snapshot before attempting a
-// best-effort write of the complete document. This avoids independent writers
-// accidentally discarding another presentation preference.
+// A single in-memory snapshot is authoritative from its first initialization until process termination, including after Task Editor windows close and later reopen.
+// Every accepted change updates that snapshot before attempting a best-effort write of the complete document. This avoids independent writers accidentally discarding another presentation preference.
 
 // =============================================================================
 // Imports / logger
 // =============================================================================
 const { screen } = require('electron');
-const { getTaskEditorStateFile, loadJson, saveJsonStrict } = require('./fs_storage');
+const { getTaskEditorStateFile, loadJson, saveJsonDirectStrict } = require('./fs_storage');
 const Log = require('./log');
 
 const log = Log.get('task-editor-state');
-log.debug('Task Editor state starting...');
 
 // =============================================================================
 // Constants / defaults
@@ -264,7 +261,7 @@ function getReducedBounds(taskEditorWin) {
 
 function persistActiveState() {
   try {
-    saveJsonStrict(getTaskEditorStateFile(), copyState(activeState));
+    saveJsonDirectStrict(getTaskEditorStateFile(), copyState(activeState));
     return true;
   } catch (error) {
     log.warn('Task Editor presentation state save failed (ignored):', error);
@@ -281,6 +278,8 @@ function requireActiveState() {
 // API (public entrypoints)
 // =============================================================================
 function loadInitialState() {
+  if (activeState) return copyState(activeState);
+
   try {
     activeState = normalizeState(loadJson(getTaskEditorStateFile(), DEFAULT_STATE));
   } catch (error) {

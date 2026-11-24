@@ -17,8 +17,6 @@
     throw new Error('[browser-extension-modal] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('browser-extension-modal');
-  log.debug('Browser extension modal starting...');
-
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[browser-extension-modal] RendererI18n.tRenderer unavailable; cannot continue');
   }

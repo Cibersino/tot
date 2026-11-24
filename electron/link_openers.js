@@ -224,7 +224,6 @@ const IMAGE_PROCESSING_RUNTIME_NOTICE_PUBLIC_FILES = Object.freeze({
 });
 
 const log = Log.get('link-openers');
-log.debug('Link openers starting...');
 
 // =============================================================================
 // Helpers

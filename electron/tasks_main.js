@@ -23,7 +23,6 @@ const menuBuilder = require('./menu_builder');
 const { normalizeSnapshotRelPath } = require('./current_text_snapshots_main');
 const taskDurationCore = require('../public/js/lib/task_duration_core');
 const {
-  DEFAULT_LANG,
   TASK_NAME_MAX_CHARS,
   TASK_LIST_MAX_ROWS,
   TASK_LIBRARY_MAX_ITEMS,
@@ -46,7 +45,6 @@ const taskEditorState = require('./task_editor_state');
 const { getTextExtractionPlatformAdapter } = require('./text_extraction_platform/text_extraction_platform_adapter');
 
 const log = Log.get('tasks-main');
-log.debug('Tasks main starting...');
 
 // =============================================================================
 // Constants / shared state
@@ -111,21 +109,14 @@ function sanitizeTaskBaseName(base) {
   return next || 'task';
 }
 
-function resolveDialogText(dialogTexts, key, fallback) {
-  return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+function resolveDialogText(dialogTexts, key) {
+  return menuBuilder.resolveDialogText(dialogTexts, key, {
     log,
   });
 }
 
 function getDialogTexts() {
-  try {
-    const settings = require('./settings').getSettings();
-    const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
-    return menuBuilder.getDialogTexts(lang);
-  } catch (error) {
-    log.warn('Using fallback dialog texts:', error);
-    return {};
-  }
+  return menuBuilder.getDialogTexts(require('./settings').getSettings().language);
 }
 
 async function showContinueCancelDialog(ownerWin, {

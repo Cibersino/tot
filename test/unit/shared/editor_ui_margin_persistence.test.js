@@ -58,6 +58,8 @@ function createElementDouble() {
 
 function createHarness({ editorAPI } = {}) {
   const editorApiCalls = [];
+  const editorToastCalls = [];
+  const windowListeners = new Map();
   const documentElement = { style: createStyleRecorder(), lang: 'es' };
   const body = { classList: createClassList() };
   const windowObj = {
@@ -68,6 +70,19 @@ function createHarness({ editorAPI } = {}) {
         error() {},
         debug() {},
       };
+    },
+    Notify: {
+      notifyEditor(...args) {
+        editorToastCalls.push(args);
+      },
+    },
+    addEventListener(eventName, listener) {
+      windowListeners.set(eventName, listener);
+    },
+    removeEventListener(eventName, listener) {
+      if (windowListeners.get(eventName) === listener) {
+        windowListeners.delete(eventName);
+      }
     },
     requestAnimationFrame(cb) {
       cb();
@@ -181,6 +196,8 @@ function createHarness({ editorAPI } = {}) {
     ui,
     state,
     editorApiCalls,
+    editorToastCalls,
+    windowListeners,
     documentElement,
     editorWrap,
     editor,
@@ -214,6 +231,25 @@ test('updateEditorTextSizeUi composes the technical font-size value at the consu
   assert.equal(harness.textSizeValue.attributes['aria-label'], '20');
 });
 
+test('persistEditorFontSizePx restores the optimistic size and shows one failure toast', async () => {
+  const harness = createHarness({
+    editorAPI: {
+      async setEditorFontSizePx() {
+        return { ok: false, error: 'write failed' };
+      },
+    },
+  });
+
+  const ok = await harness.ui.persistEditorFontSizePx(24);
+
+  assert.equal(ok, false);
+  assert.equal(harness.state.editorFontSizePx, 20);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.editorToastCalls)), [[
+    'renderer.editor.alerts.font_size_save_failed',
+    { type: 'error' },
+  ]]);
+});
+
 test('persistEditorMaximizedTextWidthPx persists drag-updated width when local state was already updated optimistically', async () => {
   const harness = createHarness();
 
@@ -245,23 +281,69 @@ test('persistEditorMaximizedTextWidthPx restores a drag preview when its persist
   assert.equal(harness.documentElement.style.values['--editor-maximized-text-width'], '960px');
 });
 
-test('persistEditorMaximizedTextWidthPx restores a drag preview after a non-ok persistence result', async () => {
+test('persistEditorMaximizedTextWidthPx retains a reset width and warns when Main reports failed durability', async () => {
+  let attempts = 0;
   const harness = createHarness({
     editorAPI: {
       async setMaximizedTextWidthPx() {
-        return { ok: false, error: 'write failed' };
+        attempts += 1;
+        return {
+          ok: true,
+          maximizedTextWidthPx: 960,
+          persisted: attempts === 1 ? false : true,
+        };
       },
     },
   });
 
   harness.ui.setLocalEditorMaximizedTextWidthPx(880);
 
-  const ok = await harness.ui.persistEditorMaximizedTextWidthPx(880, {
-    previousTextWidthPx: 960,
-    skipLocalApply: true,
-  });
+  const ok = await harness.ui.resetEditorMaximizedTextWidth();
 
-  assert.equal(ok, false);
+  assert.equal(ok, true);
   assert.equal(harness.state.maximizedTextWidthPx, 960);
   assert.equal(harness.documentElement.style.values['--editor-maximized-text-width'], '960px');
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.editorToastCalls)), [[
+    'renderer.editor.alerts.maximized_text_width_not_persisted',
+    { type: 'warn' },
+  ]]);
+
+  assert.equal(await harness.ui.resetEditorMaximizedTextWidth(), true);
+  assert.equal(attempts, 2);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.editorToastCalls)), [[
+    'renderer.editor.alerts.maximized_text_width_not_persisted',
+    { type: 'warn' },
+  ]]);
+});
+
+test('gutter dragging retains its new width and warns when Main reports failed durability', async () => {
+  const persistedValues = [];
+  const harness = createHarness({
+    editorAPI: {
+      async setMaximizedTextWidthPx(value) {
+        persistedValues.push(value);
+        return { ok: true, maximizedTextWidthPx: value, persisted: false };
+      },
+    },
+  });
+
+  harness.ui.handleEditorMarginPointerDown({
+    clientX: 100,
+    pointerId: 7,
+    preventDefault() {},
+  }, 'right');
+  harness.windowListeners.get('pointermove')({ clientX: 180, pointerId: 7 });
+  const draggedWidth = harness.state.maximizedTextWidthPx;
+  harness.windowListeners.get('pointerup')({ pointerId: 7, type: 'pointerup' });
+
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.notEqual(draggedWidth, 960);
+  assert.deepEqual(persistedValues, [draggedWidth]);
+  assert.equal(harness.state.maximizedTextWidthPx, draggedWidth);
+  assert.deepEqual(JSON.parse(JSON.stringify(harness.editorToastCalls)), [[
+    'renderer.editor.alerts.maximized_text_width_not_persisted',
+    { type: 'warn' },
+  ]]);
 });

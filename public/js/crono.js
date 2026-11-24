@@ -20,7 +20,6 @@
     throw new Error('[crono] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('crono');
-  log.debug('Crono starting...');
   const rendererIcons = window.RendererIcons || null;
   if (!rendererIcons || typeof rendererIcons.applyIconToElement !== 'function') {
     throw new Error('[crono] RendererIcons.applyIconToElement unavailable; cannot continue');

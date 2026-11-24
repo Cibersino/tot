@@ -12,14 +12,9 @@
 
 (() => {
   // =============================================================================
-  // Imports / logger
+  // Imports
   // =============================================================================
 
-  if (typeof window.getLogger !== 'function') {
-    throw new Error('[text-extraction-pdf-page-selection] window.getLogger unavailable; cannot continue');
-  }
-  const log = window.getLogger('text-extraction-pdf-page-selection');
-  log.debug('Text extraction PDF page selection helper starting...');
   if (!window.RendererI18n
     || typeof window.RendererI18n.msgRenderer !== 'function'
     || typeof window.RendererI18n.tRenderer !== 'function') {

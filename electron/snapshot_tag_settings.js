@@ -7,7 +7,7 @@
 // Snapshot-tag preference owner for config/snapshot_tags.json.
 // Responsibilities:
 // - Load and normalize persisted snapshot-tag preferences.
-// - Reload public reads from disk while keeping the latest normalized value in memory.
+// - Admit preferences at startup and serve the authoritative cache for the process lifetime.
 // - Admit and strictly persist normal bootstrap preferences before publication.
 // - Persist user-triggered mutations through verified saveJsonStrict(...).
 // - Own direct snapshot-tag IPC operations that require usable storage before reporting success or saving.
@@ -21,13 +21,11 @@ const Log = require('./log');
 const snapshotTagCatalog = require('../public/js/lib/snapshot_tag_catalog');
 
 const log = Log.get('snapshot-tag-settings');
-log.debug('Snapshot tag settings starting...');
 
 // =============================================================================
 // Shared state
 // =============================================================================
 
-let _loadJsonWithStatus = null;
 let _saveJsonStrict = null;
 let _snapshotTagsFile = null;
 let _currentSnapshotTagPreferences = null;
@@ -119,7 +117,7 @@ function getStartupAdmissionError(loadResult) {
 }
 
 function assertInitialized(apiName) {
-  if (!_loadJsonWithStatus || !_snapshotTagsFile) {
+  if (!_snapshotTagsFile || !_currentSnapshotTagPreferences) {
     throw new Error(`[snapshot-tag-settings] ${apiName} called before init`);
   }
 }
@@ -128,35 +126,6 @@ function assertStrictInitialized(apiName) {
   if (!_saveJsonStrict || !_snapshotTagsFile) {
     throw new Error(`[snapshot-tag-settings] ${apiName} called before init`);
   }
-}
-
-function loadSnapshotTagPreferencesFromDisk() {
-  assertInitialized('loadSnapshotTagPreferencesFromDisk');
-
-  const loadResult = _loadJsonWithStatus(
-    _snapshotTagsFile,
-    createDefaultSnapshotTagPreferences()
-  );
-  _currentSnapshotTagPreferences = normalizeSnapshotTagPreferences(loadResult.value);
-  return {
-    snapshotTags: _currentSnapshotTagPreferences,
-    storageReadStatus: loadResult.status,
-  };
-}
-
-function isSnapshotTagStorageReadUsable(storageReadStatus) {
-  return storageReadStatus === 'loaded' || storageReadStatus === 'missing';
-}
-
-function loadUsableSnapshotTagPreferences() {
-  const loadResult = loadSnapshotTagPreferencesFromDisk();
-  // Fallback-shaped data after an empty or failed read must not become a write baseline.
-  if (!isSnapshotTagStorageReadUsable(loadResult.storageReadStatus)) {
-    throw new Error(
-      `Snapshot-tag preferences unavailable after ${loadResult.storageReadStatus} storage read.`
-    );
-  }
-  return loadResult.snapshotTags;
 }
 
 function saveSnapshotTagPreferencesStrict(nextSnapshotTags) {
@@ -199,7 +168,6 @@ function init({ loadJsonWithStatus, saveJsonStrict, snapshotTagsFile }) {
     );
   }
 
-  _loadJsonWithStatus = loadJsonWithStatus;
   _saveJsonStrict = saveJsonStrict;
   _snapshotTagsFile = snapshotTagsFile;
   _currentSnapshotTagPreferences = normalizedSnapshotTags;
@@ -212,7 +180,7 @@ function init({ loadJsonWithStatus, saveJsonStrict, snapshotTagsFile }) {
 
 function getSnapshotTagPreferences() {
   assertInitialized('getSnapshotTagPreferences');
-  return loadSnapshotTagPreferencesFromDisk().snapshotTags;
+  return _currentSnapshotTagPreferences;
 }
 
 // =============================================================================
@@ -233,17 +201,16 @@ function registerIpc(
     try {
       return {
         ok: true,
-        snapshotTags: loadUsableSnapshotTagPreferences(),
+        snapshotTags: getSnapshotTagPreferences(),
       };
     } catch (error) {
       log.error(
-        'IPC get-snapshot-tag-preferences failed (using safe fallback):',
+        'IPC get-snapshot-tag-preferences failed:',
         error
       );
       return {
         ok: false,
         error: String(error),
-        snapshotTags: createDefaultSnapshotTagPreferences(),
       };
     }
   });
@@ -259,7 +226,7 @@ function registerIpc(
       }
 
       const nextSnapshotTags = normalizeSnapshotTagPreferences(rawSnapshotTags);
-      const currentSnapshotTags = loadUsableSnapshotTagPreferences();
+      const currentSnapshotTags = getSnapshotTagPreferences();
       if (JSON.stringify(currentSnapshotTags) === JSON.stringify(nextSnapshotTags)) {
         return { ok: true, snapshotTags: currentSnapshotTags };
       }

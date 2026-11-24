@@ -22,7 +22,6 @@
     throw new Error('[text-extraction-batch-flow] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-batch-flow');
-  log.debug('Text extraction batch flow starting...');
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-batch-flow] RendererI18n.tRenderer unavailable; cannot continue');
   }

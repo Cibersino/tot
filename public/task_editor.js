@@ -15,8 +15,7 @@
 // =============================================================================
 // Bootstrap terminal reporting
 // =============================================================================
-// A required dependency can fail before the Task Editor's normal coordinator exists.
-// Report the no-draft terminal state through the already-exposed lifecycle bridge when it is available; no renderer draft has been admitted at this point.
+// A required dependency can fail before the Task Editor's normal coordinator exists. Report the no-draft terminal state through the already-exposed lifecycle bridge when it is available; no renderer draft has been admitted at this point.
 function reportNoDraftTaskBootstrapFailure(kind) {
   const api = typeof window !== 'undefined' ? window.taskEditorAPI : null;
   if (!api || typeof api.reportTerminalState !== 'function') return false;
@@ -48,7 +47,6 @@ try {
   reportNoDraftTaskBootstrapFailure('bootstrap-logger');
   throw error;
 }
-log.debug('Task Editor starting...');
 const rendererIcons = window.RendererIcons || null;
 if (!rendererIcons
   || typeof rendererIcons.applyIconToElement !== 'function'
@@ -1561,8 +1559,7 @@ function moveRow(id, delta) {
 // Task lifecycle (load/save/delete)
 // =============================================================================
 function applyTaskPayload(payload) {
-  // tasks_main owns persisted-task schema validation. The renderer validates only
-  // the operational fields it will materialize and use for Task Editor state.
+  // tasks_main owns persisted-task schema validation. The renderer validates only the operational fields it will materialize and use for Task Editor state.
   const nextTask = copyTaskInitPayload(payload);
   const summaryResult = taskDurationUtils.deriveTaskSummary(nextTask.rows);
   if (!summaryResult.ok) {
@@ -2237,8 +2234,7 @@ function sendTaskEditorCloseResponse(payload) {
   try {
     window.taskEditorAPI.respondToClose(payload);
   } catch (error) {
-    // Deliberate current tradeoff: response-send failure stays fail-closed, even if close remains pending.
-    // Safe retry requires correlated IPC; revisit only if stronger close-recovery guarantees are warranted.
+    // Deliberate current tradeoff: response-send failure stays fail-closed, even if close remains pending. Safe retry requires correlated IPC; revisit only if stronger close-recovery guarantees are warranted.
     log.warn('taskEditorAPI.respondToClose failed (ignored):', error);
   }
 }
@@ -2315,8 +2311,7 @@ function enqueueTaskEditorSettingsApplication(settings) {
 
 function enqueueTaskEditorSemanticWork(work) {
   const run = async () => {
-    // Window closure is coordinated asynchronously through the main process.
-    // Do not admit queued Task Editor semantic work after terminal i18n failure.
+    // Window closure is coordinated asynchronously through the main process. Do not admit queued Task Editor semantic work after terminal i18n failure.
     if (taskEditorI18nTerminal) return;
     return work();
   };

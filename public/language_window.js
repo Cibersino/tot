@@ -19,8 +19,7 @@ const locationSearch = window.location && typeof window.location.search === 'str
   : '';
 const isFirstRunLanguageChooser = /(?:^|[?&])languageChooserFirstRun=1(?:&|$)/.test(locationSearch);
 
-// First-run bootstrap failure reports through the narrow chooser bridge before closing so main can
-// distinguish it from voluntary closure. Main owns the subsequent fallback and startup resolution.
+// First-run bootstrap failure reports through the narrow chooser bridge before closing so main can distinguish it from voluntary closure. Main owns the subsequent fallback and startup resolution.
 const closeFirstRunChooserAfterBootstrapFailure = async () => {
   if (!isFirstRunLanguageChooser) return;
   try {
@@ -51,7 +50,6 @@ try {
   closeFirstRunChooserAfterBootstrapFailure();
   throw error;
 }
-log.debug('Language window starting...');
 const langFilter = document.getElementById('langFilter');
 const langList = document.getElementById('langList');
 const statusLine = document.getElementById('statusLine');

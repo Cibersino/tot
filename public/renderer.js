@@ -20,8 +20,6 @@ if (typeof window.getLogger !== 'function') {
 }
 const log = window.getLogger('renderer');
 
-log.debug('Renderer main starting...');
-
 const { AppConstants } = window;
 if (!AppConstants) {
   throw new Error('[renderer] AppConstants unavailable; verify constants.js load order');
@@ -31,7 +29,6 @@ const {
   DEFAULT_LANG,
   MAX_CLIPBOARD_REPEAT,
 } = AppConstants;
-const SETTINGS_PAYLOAD_UNAVAILABLE_ERROR_MESSAGE = '[settings] renderer settings payload unavailable';
 if (typeof DEFAULT_LANG !== 'string' || !DEFAULT_LANG.trim()) {
   throw new Error('[renderer] AppConstants.DEFAULT_LANG unavailable; cannot continue');
 }
@@ -250,7 +247,7 @@ let rendererCoreReadySent = false;
 let splashRemovedSent = false;
 let ipcSubscriptionsArmed = false;
 let uiListenersArmed = false;
-let pendingStartupSettingsPayloadNotice = false;
+let pendingSpellcheckAvailabilityFailureNotice = false;
 let pendingStartupDefaultPresetCatalogFailure = 'none';
 let syncToggleFromSettings = null;
 let hasCurrentTextSubscription = false;
@@ -682,10 +679,11 @@ function maybeUnblockReady() {
     reportRequiredRendererStartupFailure('splash-removed-send', error);
     return;
   }
+  log.info('Main Window renderer startup: READY received; splash-removal acknowledgment sent to Main.');
   syncMainInteractionLockUi();
-  if (pendingStartupSettingsPayloadNotice) {
-    pendingStartupSettingsPayloadNotice = false;
-    window.Notify.notifyMain('renderer.main.alerts.settings_payload_unavailable');
+  if (pendingSpellcheckAvailabilityFailureNotice) {
+    pendingSpellcheckAvailabilityFailureNotice = false;
+    window.Notify.toastMain('renderer.main.alerts.spellcheck_availability_failed', { type: 'warn' });
   }
   if (pendingStartupDefaultPresetCatalogFailure !== 'none') {
     const catalogFailure = pendingStartupDefaultPresetCatalogFailure;
@@ -708,6 +706,7 @@ function markRendererInvariantsReady() {
   }
   rendererInvariantsReady = true;
   sendRendererCoreReady();
+  log.info('Main Window renderer startup: core-ready signal sent to Main.');
   maybeUnblockReady();
 }
 
@@ -731,12 +730,6 @@ function getRequiredElectronMethod(methodName) {
     throw new Error(`[renderer] electronAPI.${methodName} unavailable; cannot continue bootstrap`);
   }
   return api[methodName].bind(api);
-}
-
-function isSettingsPayloadUnavailableError(error) {
-  return !!(error
-    && typeof error.message === 'string'
-    && error.message.includes(SETTINGS_PAYLOAD_UNAVAILABLE_ERROR_MESSAGE));
 }
 
 function reportDefaultPresetCatalogFailure(catalogFailure) {
@@ -1158,7 +1151,7 @@ function settingsChangeHandler(newSettings) {
 
 function enqueuePresetReconciliation({ preset, settingsSnapshot, preferenceScopeId }, reason) {
   return enqueueMainSemanticWork(async () => {
-    if (preferenceScopeId !== getPreferenceScope(idiomaActual || DEFAULT_LANG)) return;
+    if (preferenceScopeId !== getPreferenceScope(idiomaActual)) return;
 
     const result = preset
       ? await wpmControls.handlePresetCreated({
@@ -1234,11 +1227,29 @@ function armIpcSubscriptions() {
     window.electronAPI.onSettingsChanged(settingsChangeHandler);
 
     if (typeof window.electronAPI.onPreciseCountingFallback === 'function') {
-      window.electronAPI.onPreciseCountingFallback(() => {
-        window.Notify.toastMain('renderer.main.alerts.precise_counting_fallback', { type: 'warn' });
+      window.electronAPI.onPreciseCountingFallback((outcome) => {
+        const persistenceFailed = !!(outcome && outcome.persistenceFailed === true);
+        window.Notify.toastMain(
+          persistenceFailed
+            ? 'renderer.main.alerts.precise_counting_fallback_persistence_failed'
+            : 'renderer.main.alerts.precise_counting_fallback',
+          { type: 'warn' }
+        );
       });
     } else {
       throw new Error('[renderer] electronAPI.onPreciseCountingFallback unavailable; cannot present Precise fallback notice');
+    }
+
+    if (typeof window.electronAPI.onSpellcheckAvailabilityFailed === 'function') {
+      window.electronAPI.onSpellcheckAvailabilityFailed(() => {
+        if (!isRendererReady()) {
+          pendingSpellcheckAvailabilityFailureNotice = true;
+          return;
+        }
+        window.Notify.toastMain('renderer.main.alerts.spellcheck_availability_failed', { type: 'warn' });
+      });
+    } else {
+      log.warn('onSpellcheckAvailabilityFailed unavailable; spellcheck availability failures will not be disclosed to the user.');
     }
 
     if (typeof window.electronAPI.onTextExtractionProcessingModeChanged === 'function') {
@@ -1302,6 +1313,7 @@ function setupToggleModoPreciso() {
       if (!persistModeConteo) {
         syncToggleFromSettings(settingsCache || {});
         syncToggleModoPrecisoInteractionState();
+        window.Notify.toastMain('renderer.main.alerts.counting_mode_persistence_failed', { type: 'warn' });
         return;
       }
       if (!guardUserAction('toggle-modo-preciso')) {
@@ -1327,6 +1339,7 @@ function setupToggleModoPreciso() {
         } catch (error) {
           log.error('Error persisting modeConteo using setModeConteo:', error);
           syncToggleFromSettings(settingsCache || {});
+          window.Notify.toastMain('renderer.main.alerts.counting_mode_persistence_failed', { type: 'warn' });
         } finally {
           isModeConteoPersistencePending = false;
           syncToggleModoPrecisoInteractionState();
@@ -1383,27 +1396,21 @@ async function runMainStartup() {
       }
     }
 
-    let settingsSnapshot = {};
-    // Load user settings once at renderer startup
-    const getSettings = getOptionalElectronMethod('getSettings', {
-      unavailableMessage: 'BOOTSTRAP: getSettings unavailable; bootstrap will use default settings.'
-    });
-    if (getSettings) {
-      try {
-        const settings = await getSettings();
-        settingsCache = settings || {};
-        settingsSnapshot = settingsCache;
-        idiomaActual = settingsCache.language || DEFAULT_LANG;
-        if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
-      } catch (error) {
-        log.warn('BOOTSTRAP: getSettings failed; using defaults:', error);
-        pendingStartupSettingsPayloadNotice = isSettingsPayloadUnavailableError(error);
-        settingsCache = {};
-        settingsSnapshot = settingsCache;
+    let settingsSnapshot;
+    try {
+      const getSettings = getRequiredElectronMethod('getSettings');
+      const settings = await getSettings();
+      if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+        throw new Error('getSettings returned an invalid required settings aggregate');
       }
-    } else {
-      settingsCache = {};
+      settingsCache = settings;
       settingsSnapshot = settingsCache;
+      idiomaActual = settingsCache.language;
+      if (settingsCache.modeConteo) modoConteo = settingsCache.modeConteo;
+    } catch (error) {
+      log.error('BOOTSTRAP: required settings aggregate unavailable:', error);
+      reportRequiredRendererStartupFailure('required-initialization', error);
+      return;
     }
     currentTextSelectorSection.setPreviewSpoilerEnabled(settingsCache.previewSpoilerEnabled);
 
@@ -2422,6 +2429,7 @@ function startRendererBootstrap() {
   initCronoController();
   uiListenersArmed = true;
   syncMainInteractionLockUi();
+  log.info('Main Window renderer startup: initial IPC subscriptions and UI listeners registered.');
   runStartupOrchestrator();
 }
 

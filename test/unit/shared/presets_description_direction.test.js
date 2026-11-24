@@ -136,6 +136,21 @@ test('default preset catalogs use exact preference-scope IDs rather than normali
   assert.equal(presets.map((preset) => preset.name).join(','), 'Declared scope');
 });
 
+test('preset resolution refuses an absent settings language instead of deriving a default scope', () => {
+  const harness = createHarness();
+
+  assert.throws(
+    () => harness.api.combinePresets({
+      settings: {
+        presetsByScope: {},
+        disabledDefaultPresetsByScope: {},
+      },
+      defaults: { general: [], defaultPresetsByScope: {} },
+    }),
+    /selected language is required/
+  );
+});
+
 test('preset selection flows use the shared description helper for selected and clear states', async () => {
   const harness = createHarness({ languageDirection: 'rtl' });
   const combobox = {

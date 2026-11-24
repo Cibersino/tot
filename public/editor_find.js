@@ -35,13 +35,9 @@ try {
 } catch (error) {
   failClosedFindBootstrap(error);
 }
-log.debug('Editor find window starting...');
-
 function reportEarlyTerminalFindI18nFailure(kind) {
-  // The static shell already disables normal Find controls while the required
-  // translation surface is being established. At this boundary, the dynamic
-  // DOM references below do not exist yet, so report directly through the
-  // stable preload surface rather than entering the regular terminal helper.
+  // The static shell already disables normal Find controls while the required translation surface is being established.
+  // At this boundary, the dynamic DOM references below do not exist yet, so report directly through the stable preload surface rather than entering the regular terminal helper.
   const api = window.editorFindAPI;
   if (!api || typeof api.reportRendererI18nFailure !== 'function') {
     log.warn('BOOTSTRAP: editorFindAPI.reportRendererI18nFailure unavailable; report failed (ignored): closing failed renderer locally.');
@@ -188,8 +184,7 @@ function resolveStatusText() {
 }
 
 function synchronizeQueryInputFromMainState() {
-  // The editable query is Main-owned state. Translation presentation must not
-  // overwrite input that has been submitted but whose state echo is still pending.
+  // The editable query is Main-owned state. Translation presentation must not overwrite input that has been submitted but whose state echo is still pending.
   if (inputEl.value !== findState.query) {
     inputEl.value = findState.query;
   }
@@ -476,8 +471,7 @@ window.addEventListener('keydown', (event) => {
 // =============================================================================
 function enqueueFindSemanticWork(work) {
   const run = async () => {
-    // Window closure is coordinated asynchronously through the main process.
-    // Do not admit queued Editor Find semantic work after terminal i18n failure.
+    // Window closure is coordinated asynchronously through the main process. Do not admit queued Editor Find semantic work after terminal i18n failure.
     if (findI18nTerminal) return;
     return work();
   };
@@ -501,8 +495,7 @@ function enqueueFindSettingsApplication(settings) {
     if (!nextLang || nextLang === idiomaActual) return;
     await applyFindLanguage(nextLang);
   };
-  // Preload listeners do not await async callbacks. Admit full settings
-  // snapshots after the preceding root semantic operation has settled.
+  // Preload listeners do not await async callbacks. Admit full settings snapshots after the preceding root semantic operation has settled.
   return enqueueFindSemanticWork(run);
 }
 

@@ -153,8 +153,6 @@ try {
   throw error;
 }
 try {
-  log.debug('Text Editor starting...');
-
   appConstants = window.AppConstants;
   if (!appConstants) {
     throw new Error('[editor] AppConstants unavailable; verify constants.js load order');
@@ -302,8 +300,7 @@ function validateEditorBootstrapRequirements() {
   requireBootstrapMethod(ctx.editorAPI, 'setCurrentText', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'getInitialCurrentTextSnapshot', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'onExternalUpdate', 'editorAPI');
-  // Replace is not negotiated as an optional capability in the current bridge contract.
-  // Relax these checks only with an owner-visible availability contract that disables Replace admission coherently.
+  // Replace is not negotiated as an optional capability in the current bridge contract. Relax these checks only with an owner-visible availability contract that disables Replace admission coherently.
   requireBootstrapMethod(ctx.editorAPI, 'onReplaceRequest', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'sendReplaceResponse', 'editorAPI');
   requireBootstrapMethod(ctx.editorAPI, 'getEditorState', 'editorAPI');
@@ -634,7 +631,7 @@ async function applyEditorSettingsSnapshot(settings, { startup = false } = {}) {
   const nextLang = settings && settings.language
     ? settings.language
     : (startup ? defaultLang : '');
-  const nextSpellcheckAvailable = !settings || settings.spellcheckAvailable !== false;
+  const nextSpellcheckAvailable = !!settings && settings.spellcheckAvailable === true;
   const languageChanged = !!nextLang && (startup || nextLang !== ctx.state.idiomaActual);
   const spellcheckAvailabilityChanged = nextSpellcheckAvailable !== ctx.state.spellcheckAvailable;
 
@@ -759,6 +756,24 @@ function registerEditorBridgeListeners() {
     log.warn('BOOTSTRAP: editorAPI.onEditorStateChanged missing; live editor-state updates disabled.');
   }
 
+  if (typeof ctx.editorAPI.onEditorFontSizePersistenceFailed === 'function') {
+    try {
+      ctx.editorAPI.onEditorFontSizePersistenceFailed(() => {
+        if (editorI18nTerminal) return;
+        window.Notify.notifyEditor('renderer.editor.alerts.font_size_save_failed', { type: 'error' });
+      });
+    } catch (error) {
+      log.warn(
+        'BOOTSTRAP: editorAPI.onEditorFontSizePersistenceFailed registration failed; shortcut persistence failures will not show a renderer toast:',
+        error
+      );
+    }
+  } else {
+    log.warn(
+      'BOOTSTRAP: editorAPI.onEditorFontSizePersistenceFailed missing; shortcut persistence failures will not show a renderer toast.'
+    );
+  }
+
   if (typeof ctx.editorAPI.onReadingTestPrestartStateChanged === 'function') {
     try {
       ctx.editorAPI.onReadingTestPrestartStateChanged((payload) => {
@@ -813,7 +828,9 @@ Promise.resolve()
     if (editorBootstrapPresentationOutcome !== 'pending') return;
     ctx.ui.setNormalInteractionAvailable(true);
     ctx.ui.focusEditorAtTop();
-    reportBasePresentationState({ status: 'ready' });
+    if (reportBasePresentationState({ status: 'ready' })) {
+      log.info('Text Editor startup: base presentation readiness reported to Main.');
+    }
   })
   .catch((error) => {
     if (log) {
@@ -1018,6 +1035,7 @@ if (!bootstrapSetupError && spellcheckToggle) {
         preferenceEnabled: previousEnabled,
         available: previousAvailable,
       });
+      window.Notify.notifyEditor('renderer.editor.alerts.spellcheck_save_failed', { type: 'error' });
     }
   });
 }

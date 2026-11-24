@@ -20,12 +20,6 @@
     throw new Error('[presets] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('presets');
-  log.debug('Presets starting...');
-  const { AppConstants } = window;
-  if (!AppConstants) {
-    throw new Error('[presets] AppConstants unavailable; verify constants.js load order');
-  }
-  const { DEFAULT_LANG } = AppConstants;
   const { RendererI18n } = window;
   if (
     !RendererI18n
@@ -39,15 +33,15 @@
   // =============================================================================
   // Helpers (merge + DOM utilities)
   // =============================================================================
-  function normalizeSettings(settings, language) {
-    return (settings && typeof settings === 'object' && !Array.isArray(settings))
-      ? settings
-      : {
-        language,
-        presetsByScope: {},
-        disabledDefaultPresetsByScope: {},
-        selectedPresetByScope: {}
-      };
+  function requirePresetSettings(settings) {
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+      throw new Error('[presets] settings aggregate is required for preset resolution');
+    }
+    const language = typeof settings.language === 'string' ? settings.language.trim() : '';
+    if (!language) {
+      throw new Error('[presets] selected language is required for preset resolution');
+    }
+    return settings;
   }
 
   function findPresetByName(list, presetName) {
@@ -57,10 +51,11 @@
       : null;
   }
 
-  function combinePresets({ settings = {}, defaults = {} }) {
-    const preferenceScopeId = getPreferenceScope(settings.language || DEFAULT_LANG);
-    const presetsByScope = settings.presetsByScope || {};
-    const disabledPresetsByScope = settings.disabledDefaultPresetsByScope || {};
+  function combinePresets({ settings, defaults = {} }) {
+    const settingsSnapshot = requirePresetSettings(settings);
+    const preferenceScopeId = getPreferenceScope(settingsSnapshot.language);
+    const presetsByScope = settingsSnapshot.presetsByScope || {};
+    const disabledPresetsByScope = settingsSnapshot.disabledDefaultPresetsByScope || {};
     const defaultPresetsByScope = defaults.defaultPresetsByScope || {};
 
     const userPresets = Array.isArray(presetsByScope[preferenceScopeId])
@@ -128,10 +123,9 @@
   async function loadPresetsIntoCombobox({
     electronAPI,
     settings = null,
-    language = DEFAULT_LANG,
     combobox
   }) {
-    const settingsSnapshot = normalizeSettings(settings, language);
+    const settingsSnapshot = requirePresetSettings(settings);
     let defaults = { general: [], defaultPresetsByScope: {} };
     let catalogFailure = 'none';
     if (!electronAPI || typeof electronAPI.getDefaultPresets !== 'function') {
@@ -162,16 +156,16 @@
 
   async function resolvePresetSelection({
     list = [],
-    settings = {},
-    language = DEFAULT_LANG,
+    settings,
     currentPresetName = null,
     previousPresetName = null,
     combobox,
     presetDescription,
-    electronAPI
+    electronAPI,
+    notifyOnPersistenceFailure = false
   }) {
-    const settingsSnapshot = normalizeSettings(settings, language);
-    const preferenceScopeId = getPreferenceScope(settingsSnapshot.language || language || DEFAULT_LANG);
+    const settingsSnapshot = requirePresetSettings(settings);
+    const preferenceScopeId = getPreferenceScope(settingsSnapshot.language);
     const selectedByScope = settingsSnapshot.selectedPresetByScope || {};
 
     const persisted =
@@ -233,6 +227,9 @@
       }
     } catch (error) {
       log.warn('Selection persistence failed:', error);
+      if (notifyOnPersistenceFailure) {
+        window.Notify.toastMain('renderer.main.alerts.preset_selection_persistence_failed', { type: 'warn' });
+      }
       if (rollbackSelection && rollbackSelection.name !== selected.name) {
         applyPresetSelection(rollbackSelection, { combobox, presetDescription });
         return rollbackSelection;

@@ -18,7 +18,6 @@
     throw new Error('[text-extraction-entry] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-entry');
-  log.debug('Text extraction shared entry starting...');
   if (!window.RendererI18n || typeof window.RendererI18n.tRenderer !== 'function') {
     throw new Error('[text-extraction-entry] RendererI18n.tRenderer unavailable; cannot continue');
   }

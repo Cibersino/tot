@@ -101,7 +101,7 @@ function loadPickerWithUnavailableSettings(dialogOptions) {
   return { picker, senderWin, restore };
 }
 
-test('text-extraction picker resolves native dialog copy through DEFAULT_LANG when settings are unavailable', async (t) => {
+test('text-extraction picker rejects when the admitted settings cache is unavailable', async (t) => {
   const dialogOptions = [];
   const { picker, senderWin, restore } = loadPickerWithUnavailableSettings(dialogOptions);
   t.after(restore);
@@ -118,9 +118,10 @@ test('text-extraction picker resolves native dialog copy through DEFAULT_LANG wh
     { sender: senderWin.webContents }
   );
 
-  assert.deepEqual(result, { ok: true, canceled: true });
-  assert.deepEqual(dialogOptions[0].filters.map((filter) => filter.name), [
-    'Archivos compatibles',
-    'Todos los archivos',
-  ]);
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'PICKER_FAILED',
+    error: 'Error: settings unavailable',
+  });
+  assert.deepEqual(dialogOptions, []);
 });

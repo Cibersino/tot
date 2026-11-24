@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "An error occurred while replacing the current text with the clipboard text.",
         "append_clipboard_error": "An error occurred while appending the clipboard text to the current text.",
         "clear_error": "An error occurred while clearing the current text.",
-        "settings_payload_unavailable": "Your saved preferences could not be delivered to this window, so they could not be applied. The effective language, counting mode, selected preset, or WPM may differ from your saved configuration. Review these settings before continuing.",
         "current_text_processing_locked": "Current text is still updating. Main-window interactions are locked until the latest text settles.",
         "precise_counting_fallback": "Precise mode could not be used. toT switched to Simple mode.",
+        "precise_counting_fallback_persistence_failed": "Precise mode could not be used. toT switched to Simple mode, but could not save that change.",
+        "counting_mode_persistence_failed": "The selected counting mode could not be saved. The previous mode remains in use.",
+        "preset_selection_persistence_failed": "The selected preset could not be saved.",
+        "preview_spoiler_persistence_failed": "The preference to hide the final segment of the preview could not be saved. The previous value remains in use.",
+        "spellcheck_availability_failed": "Spellcheck availability could not be determined.",
         "current_text_recount_locked": "Current text results are still being recalculated. Main-window interactions are locked until the latest recount settles.",
         "wip": {
           "design_skins": "WIP: The skins selector will open here in a future version.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Dragged text exceeded the available space and was truncated.",
         "text_truncated": "Text was truncated to fit the app limit.",
         "sync_isolated": "Text synchronization was suspended to protect the current text. You can keep editing and copy text, but local changes are not synchronized and may be lost when the Text Editor closes. Copy or save any text you want to keep before closing or reopening the Text Editor.",
-        "calc_error": "An error occurred while saving the text as the current text."
+        "calc_error": "An error occurred while saving the text as the current text.",
+        "spellcheck_save_failed": "The spellcheck preference could not be saved.",
+        "font_size_save_failed": "The text size preference could not be saved.",
+        "maximized_text_width_not_persisted": "The text width was changed for this session but could not be saved."
       }
     },
     "snapshots": {

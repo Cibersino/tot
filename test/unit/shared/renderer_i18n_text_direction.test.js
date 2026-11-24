@@ -88,6 +88,7 @@ function createHarness(uiDirection = 'ltr', options = {}) {
       };
     };
   const logEntries = [];
+  const logMethods = [];
   const documentElement = {
     attributes: {
       lang: defaultLang,
@@ -158,10 +159,10 @@ function createHarness(uiDirection = 'ltr', options = {}) {
       getLogger() {
         return {
           debug() {},
-          warn(...args) { logEntries.push(args); },
-          warnOnce(...args) { logEntries.push(args); },
-          error(...args) { logEntries.push(args); },
-          errorOnce(...args) { logEntries.push(args); },
+          warn(...args) { logMethods.push('warn'); logEntries.push(args); },
+          warnOnce(...args) { logMethods.push('warnOnce'); logEntries.push(args); },
+          error(...args) { logMethods.push('error'); logEntries.push(args); },
+          errorOnce(...args) { logMethods.push('errorOnce'); logEntries.push(args); },
         };
       },
       AppConstants: {
@@ -191,7 +192,12 @@ function createHarness(uiDirection = 'ltr', options = {}) {
   );
   vm.runInContext(source, sandbox, { filename: 'public/js/i18n.js' });
 
-  return { i18n: sandbox.window.RendererI18n, documentElement, logEntries };
+  return {
+    i18n: sandbox.window.RendererI18n,
+    documentElement,
+    logEntries,
+    logMethods,
+  };
 }
 
 test('resolveUserTextDirection uses UI fallback for empty and neutral-only text', () => {
@@ -224,10 +230,11 @@ test('resolveUserTextDirection diagnoses unavailable probe and computed-style fa
 
   assert.equal(probeUnavailable.i18n.resolveUserTextDirection('hello'), 'rtl');
   assert.equal(computedStyleUnavailable.i18n.resolveUserTextDirection('שלום'), 'ltr');
-  assert.ok(probeUnavailable.logEntries.some(([key, message]) => (
-    key === 'i18n.resolveUserTextDirection.probeUnavailable'
-      && message === 'resolveUserTextDirection probe unavailable; using UI fallback direction.'
+  assert.deepEqual(probeUnavailable.logMethods, ['warn']);
+  assert.ok(probeUnavailable.logEntries.some(([message]) => (
+    message === 'resolveUserTextDirection probe unavailable; using UI fallback direction.'
   )));
+  assert.deepEqual(computedStyleUnavailable.logMethods, ['warnOnce']);
   assert.ok(computedStyleUnavailable.logEntries.some(([key, message]) => (
     key === 'i18n.resolveUserTextDirection.getComputedStyle.missing'
       && message === 'window.getComputedStyle unavailable; using UI fallback direction.'

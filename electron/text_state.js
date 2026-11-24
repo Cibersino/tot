@@ -10,16 +10,13 @@
 // - Accept current-text updates from authorized IPC senders only.
 // - Expose current-text IPC handlers, including the Editor bootstrap snapshot with a canonical write revision.
 // - Broadcast current-text updates to the main window and Text Editor window.
-// - Preserve compatibility behavior for the settings file on quit.
 
 // =============================================================================
 // Imports / logger
 // =============================================================================
-const fs = require('fs');
 const { BrowserWindow, clipboard } = require('electron');
 const Log = require('./log');
 const {
-  DEFAULT_LANG,
   MAX_TEXT_CHARS,
   MAX_IPC_MULTIPLIER,
   MAX_IPC_CHARS,
@@ -27,7 +24,6 @@ const {
 } = require('./constants_main');
 
 const log = Log.get('text-state');
-log.debug('Text state starting...');
 
 // =============================================================================
 // Validation / normalization helpers and action policy
@@ -86,7 +82,6 @@ let currentText = '';
 let loadJson = null;
 let saveJson = null;
 let currentTextFile = null;
-let settingsFile = null;
 let appRef = null;
 let currentTextProcessingController = null;
 // Starts after bootstrap and advances on every canonical write for the Editor snapshot/live stream.
@@ -124,24 +119,11 @@ function safeSend(win, channel, payload) {
   }
 }
 
-// Persist current text and preserve the historical settings-file side effect on quit.
+// Persist current text on quit.
 function persistCurrentTextOnQuit() {
   try {
     if (saveJson && currentTextFile) {
       saveJson(currentTextFile, { text: currentText });
-    }
-
-    // Maintain previous behavior: ensure settings file exists.
-    if (loadJson && saveJson && settingsFile) {
-      const settingsDefaults = {
-        language: DEFAULT_LANG,
-        presetsByScope: {},
-        disabledDefaultPresetsByScope: {},
-      };
-      const settings = loadJson(settingsFile, settingsDefaults);
-      if (!fs.existsSync(settingsFile)) {
-        saveJson(settingsFile, settings);
-      }
     }
   } catch (error) {
     log.error('Error persisting text in quit:', error);
@@ -171,9 +153,7 @@ function getProcessingRequestId(processingState) {
 }
 
 function getEditorCurrentTextSnapshot() {
-  // Both reads occur in this synchronous main-process turn, so the text and
-  // revision describe the same canonical write. This is independent from the
-  // optional processing lifecycle and its requestId.
+  // Both reads occur in this synchronous main-process turn, so the text and revision describe the same canonical write. This is independent from the optional processing lifecycle and its requestId.
   return { ok: true, text: currentText, revision: currentTextRevision };
 }
 
@@ -250,8 +230,7 @@ function applyCurrentText(rawText, rawMeta) {
   };
 }
 
-// Load the canonical { text: ... } storage form and a raw-string root only as
-// defensive recovery for noncanonical data; writers remain object-form only.
+// Load the canonical { text: ... } storage form and a raw-string root only as defensive recovery for noncanonical data; writers remain object-form only.
 function loadInitialCurrentText() {
   try {
     let raw = loadJson
@@ -325,7 +304,6 @@ function init(options) {
   loadJson = opts.loadJson;
   saveJson = opts.saveJson;
   currentTextFile = opts.currentTextFile;
-  settingsFile = opts.settingsFile;
   appRef = opts.app || null;
   currentTextProcessingController = opts.currentTextProcessingController || null;
 

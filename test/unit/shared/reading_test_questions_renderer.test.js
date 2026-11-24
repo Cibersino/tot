@@ -638,18 +638,10 @@ test('Reading Test renderer scripts fail-close direct pre-wiring bootstrap abort
     assert.equal(missingLoggerCloseCalls, 1);
 
     let loggerFailureCloseCalls = 0;
-    const loggerErrors = [];
     assert.throws(
       runBootstrap(file, {
         getLogger() {
-          return {
-            debug() {
-              throw new Error('logger startup failed');
-            },
-            error(...args) {
-              loggerErrors.push(args);
-            },
-          };
+          throw new Error('logger startup failed');
         },
         close() {
           loggerFailureCloseCalls += 1;
@@ -658,7 +650,6 @@ test('Reading Test renderer scripts fail-close direct pre-wiring bootstrap abort
       /logger startup failed/u
     );
     assert.equal(loggerFailureCloseCalls, 1);
-    assert.equal(loggerErrors.length, 1);
 
     let incompleteApiCloseCalls = 0;
     const apiErrors = [];
@@ -766,42 +757,19 @@ test('missing initial settings does not recover after the settings-listener boot
   });
 });
 
-test('Questions uses defaults when getSettings is unavailable', async () => {
+test('Questions terminates when the required settings aggregate is unavailable', async () => {
   const harness = createRendererHarness({ missingGetSettings: true });
   await flushRendererWork();
 
-  harness.callbacks.initData({
-    developerEmail: 'support@example.test',
-    questions: [{
-      id: 'q1',
-      prompt: 'Question one?',
-      correctOptionId: 'a',
-      options: [
-        { id: 'a', text: 'Answer A' },
-        { id: 'b', text: 'Answer B' },
-      ],
-    }],
-  });
-  await flushRendererWork();
-
   assert.equal(harness.getGetSettingsCalls(), 0);
-  assert.deepEqual(harness.translationRequests, ['en', 'en']);
+  assert.deepEqual(harness.translationRequests, []);
   assert.equal(harness.getCloseCalls(), 0);
-  assert.equal(harness.getReporterCalls(), 0);
-  assert.equal(harness.elements.title.textContent, 'Questions');
-  assert.match(harness.elements.randomValue.textContent, /25\.00\[,\.\]%/u);
-  assert.equal(harness.elements.btnCheck.disabled, false);
-  const inputs = harness.getInputs();
-  assert.equal(inputs.length, 2);
-  assert.ok(inputs.every((input) => input.disabled === false));
-  inputs[0].checked = true;
-  inputs[0].dispatch('change');
-  harness.elements.btnCheck.dispatch('click');
-  await flushRendererWork();
-  assert.match(harness.elements.resultMessage.textContent, /1\/1 \(100\.00\[,\.\]%\)/u);
-  assert.equal(harness.getWarnLogEntries().filter(([message]) => (
-    message === 'BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; using default renderer settings.'
-  )).length, 1);
+  assert.equal(harness.getReporterCalls(), 1);
+  assert.equal(harness.elements.btnCheck.disabled, true);
+  assert.deepEqual(harness.getInputs(), []);
+  assert.ok(harness.getErrorLogEntries().some(([message]) => (
+    message === 'BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; required settings aggregate cannot be established.'
+  )));
 });
 
 test('Questions preserves canonical Chinese application IDs during settings transitions', async () => {

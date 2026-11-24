@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Portapapeles ukat qillqata mayjt'ayañan pantjasiwi utji.",
         "append_clipboard_error": "Portapapeles ukat qillqata yapxatañan pantjasiwi utji.",
         "clear_error": "Qillqata pichhañan pantjasiw utji. Consola uñakipam.",
-        "settings_payload_unavailable": "Imata preferencias ukax aka ventana ukar janiw purinkiti, ukatwa jan apnaqatäkiti. Apnaqata aru, jakhuña modo, ajllita preset jan ukax WPM ukax imata configuración ukat mayjäspawa. Janïr sarantkasax uka ajustes uñakipam.",
         "current_text_processing_locked": "Jichha textox machaqachaskakiwa. Ventana principal ukan lurawinakax qhipa texto askichasiñkamax jist’antatawa.",
         "precise_counting_fallback": "Chiqapa modo janiw apnaqañjamäkiti. toT ukax Simple modo ukaruw mayjt’äna.",
+        "precise_counting_fallback_persistence_failed": "Chiqapa modo janiw apnaqañjamäkiti. toT ukax Simple modo ukaruw mayjt’äna, ukampis uka mayjt’awix janiw imañjamäkiti.",
+        "counting_mode_persistence_failed": "Ajllita jakhuña modo janiw imañjamäkiti. Nayra modow apnaqataskaki.",
+        "preset_selection_persistence_failed": "Ajllita preset janiw imañjamäkiti.",
+        "preview_spoiler_persistence_failed": "Nayra uñtaña tukuyapa imantaña munawi janiw imañjamäkiti. Nayra chanipaw apnaqataskaki.",
+        "spellcheck_availability_failed": "Qillqañ askichañ yanapirin utjatap janiw yatiñjamäkiti.",
         "current_text_recount_locked": "Jichha texton resultadonakapax wasitat jakthapiskakiwa. Ventana principal ukan lurawinakax qhipa jakthapiwi askichasiñkamax jist’antatawa.",
         "wip": {
           "design_skins": "WIP: Skins ajllirix jutïr versión ukan aka chiqan jist’aratani.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Aysuta qillqatax utjki uka espacio sipans jilänwa ukat khuchhuratawa.",
         "text_truncated": "Qillqatax app límite ukar mantañapatak khuchhuratawa.",
         "sync_isolated": "Qillqata sincronización ukax saytayatawa, jichha qillqata jark’aqañataki. Qillqaña mayjt’ayaskakismawa ukat copiañamawa, ukampis local mayjt’awinakax janiw sincronizaskiti, ukat Editor de Texto jist’antasax chhaqhaspawa. Janïr Editor de Texto jist’antkasa jan ukax wasitat jist’arkasaxa, imaña munkta uka qillqata copiañamawa jan ukax imañamawa.",
-        "calc_error": "Jakhuñan pantjasiw utji. Consola uñakipam."
+        "calc_error": "Jakhuñan pantjasiw utji. Consola uñakipam.",
+        "spellcheck_save_failed": "Qillqañ askichañ munawi janiw imañjamäkiti.",
+        "font_size_save_failed": "Qillqatan jach’a jisk’añapa munawi janiw imañjamäkiti.",
+        "maximized_text_width_not_persisted": "Qillqatan anchopax aka sesiónatak mayjt’awayiwa, ukampis janiw imañjamäkiti."
       }
     },
     "snapshots": {

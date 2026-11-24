@@ -7,7 +7,7 @@
 // This module owns persisted user settings.
 //
 // Responsibilities:
-// - Load and normalize settings, refreshing the in-memory cache on reads and saves.
+// - Admit and normalize settings once at startup, then serve the authoritative in-memory cache.
 // - Validate catalog-declared application IDs and maintain explicit preference scopes.
 // - Hydrate numberFormattingByScope defaults when persisted data is missing or invalid.
 // - Expose the state owner API consumed by main-process modules.
@@ -23,7 +23,6 @@ const {
 } = require('./constants_main');
 
 const log = Log.get('settings');
-log.debug('Settings starting...');
 
 // =============================================================================
 // Language helpers
@@ -36,8 +35,10 @@ function getLanguageDescriptor(languageId) {
 }
 
 function getValidLanguageId(value) {
-  if (typeof value !== 'string' || !value.trim()) return '';
-  const descriptor = getLanguageDescriptor(value.trim());
+  if (typeof value !== 'string') return '';
+  const languageId = value.trim();
+  if (!languageId) return '';
+  const descriptor = getLanguageDescriptor(languageId);
   return descriptor ? descriptor.id : '';
 }
 
@@ -71,19 +72,6 @@ function isValidNumberFormattingEntry(value) {
     && !!value.separadorDecimal;
 }
 
-// =============================================================================
-// Shared state
-// =============================================================================
-// Dependencies injected from main.js (centralized file I/O).
-let _loadJson = null;
-let _saveJson = null;
-let _saveJsonStrict = null;
-let _settingsFile = null;
-let publicationConfig = null;
-
-// Last normalized settings kept in memory.
-let _currentSettings = null;
-
 const PRECISE_FAILURE_CODES = new Set([
   'PRECISE_SEGMENTER_UNAVAILABLE',
   'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE',
@@ -97,6 +85,17 @@ const PRECISE_FAILURE_STAGES = new Set([
   'word-construction',
   'word-segmentation',
 ]);
+
+// =============================================================================
+// Shared state
+// =============================================================================
+// Dependencies injected from main.js (centralized file I/O).
+let saveJsonStrictDependency = null;
+let settingsFilePath = null;
+let publicationConfig = null;
+
+// Last normalized settings kept in memory.
+let currentSettings = null;
 
 // =============================================================================
 // Number format defaults loader
@@ -120,9 +119,9 @@ function loadNumberFormatDefaults(lang) {
     } catch (error) {
       const details = { languageId: descriptor.id, resourceDirectory: descriptor.resourceDirectory, filePath };
       if (descriptor.id === DEFAULT_LANG) {
-        log.errorOnce(`settings.loadNumberFormatDefaults.required:${descriptor.id}`, 'Required default numberFormat.json unavailable:', details, error);
+        log.error('Required default numberFormat.json unavailable:', details, error);
       } else {
-        log.warnOnce(`settings.loadNumberFormatDefaults.failed:${descriptor.id}`, 'numberFormat.json unavailable; continuing through declared graph chain:', details, error);
+        log.warn('numberFormat.json unavailable; continuing through declared graph chain:', details, error);
       }
     }
   }
@@ -138,14 +137,14 @@ function loadNumberFormatDefaults(lang) {
  */
 function ensureNumberFormattingForScope(settings, languageId) {
   if (!settings || typeof settings !== 'object') return;
-  const preferenceScopeId = getPreferenceScope(languageId || DEFAULT_LANG);
+  const effectiveLanguageId = languageId || DEFAULT_LANG;
+  const preferenceScopeId = getPreferenceScope(effectiveLanguageId);
   const currentEntry = settings.numberFormattingByScope[preferenceScopeId];
 
   if (typeof currentEntry !== 'undefined') {
     if (isValidNumberFormattingEntry(currentEntry)) return;
 
-    log.warnOnce(
-      `settings.ensureNumberFormattingForScope.invalidEntry:${preferenceScopeId}`,
+    log.warn(
       'Invalid numberFormattingByScope entry; rebuilding from defaults:',
       {
         preferenceScopeId,
@@ -156,7 +155,7 @@ function ensureNumberFormattingForScope(settings, languageId) {
     );
   }
 
-  const numberFormatDefaults = loadNumberFormatDefaults(languageId || DEFAULT_LANG);
+  const numberFormatDefaults = loadNumberFormatDefaults(effectiveLanguageId);
   settings.numberFormattingByScope[preferenceScopeId] = {
     separadorMiles: numberFormatDefaults.thousands,
     separadorDecimal: numberFormatDefaults.decimal,
@@ -171,13 +170,12 @@ function ensureNumberFormattingForScope(settings, languageId) {
  *
  * Goals:
  * - Rebuild a safe in-memory shape when the persisted file is missing or edited externally.
- * - Convert invalid shapes to safe defaults (and log once).
+ * - Convert invalid shapes to safe defaults (and log).
  * - Ensure language-dependent buckets exist for the current preference scope.
  */
 function normalizeSettings(settings) {
   if (!isNonArrayObject(settings)) {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidRoot',
+    log.warn(
       'Settings root is invalid; using empty object:',
       {
         type: typeof settings,
@@ -190,8 +188,7 @@ function normalizeSettings(settings) {
 
   // language must be a string; empty string means "unset".
   if (typeof settings.language !== 'string') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidLanguage',
+    log.warn(
       'Invalid settings.language; forcing empty string:',
       { type: typeof settings.language }
     );
@@ -204,8 +201,7 @@ function normalizeSettings(settings) {
       return;
     }
     if (!isNonArrayObject(settings[field])) {
-      log.warnOnce(
-        `settings.normalizeSettings.invalidScopeMap:${field}`,
+      log.warn(
         'Invalid language-scoped settings map; resetting to empty object:',
         {
           field,
@@ -220,12 +216,11 @@ function normalizeSettings(settings) {
 
   // modeConteo:
   // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
+  // - present but invalid -> warn + default
   if (typeof settings.modeConteo === 'undefined') {
     settings.modeConteo = 'preciso';
   } else if (settings.modeConteo !== 'preciso' && settings.modeConteo !== 'simple') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidModeConteo',
+    log.warn(
       'Invalid modeConteo; forcing default:',
       { value: settings.modeConteo }
     );
@@ -234,12 +229,11 @@ function normalizeSettings(settings) {
 
   // previewSpoilerEnabled:
   // - missing -> default (silent)
-  // - present but invalid -> warnOnce + default
+  // - present but invalid -> warn + default
   if (typeof settings.previewSpoilerEnabled === 'undefined') {
     settings.previewSpoilerEnabled = true;
   } else if (typeof settings.previewSpoilerEnabled !== 'boolean') {
-    log.warnOnce(
-      'settings.normalizeSettings.invalidPreviewSpoilerEnabled',
+    log.warn(
       'Invalid previewSpoilerEnabled; forcing default:',
       { type: typeof settings.previewSpoilerEnabled }
     );
@@ -248,40 +242,39 @@ function normalizeSettings(settings) {
 
   const languageId = getValidLanguageId(settings.language);
   if (settings.language && !languageId) {
-    log.warnOnce('settings.normalizeSettings.undeclaredLanguage', 'Discarded undeclared application language ID:', settings.language);
+    log.warn('Discarded undeclared application language ID:', settings.language);
   }
   settings.language = languageId;
-  const scopeId = getPreferenceScope(languageId || DEFAULT_LANG);
-  if (typeof settings.presetsByScope[scopeId] === 'undefined') {
-    settings.presetsByScope[scopeId] = [];
-  } else if (!Array.isArray(settings.presetsByScope[scopeId])) {
-    log.warnOnce(
-      `settings.normalizeSettings.invalidPresetsByScopeEntry:${scopeId}`,
+  const effectiveLanguageId = languageId || DEFAULT_LANG;
+  const preferenceScopeId = getPreferenceScope(effectiveLanguageId);
+  if (typeof settings.presetsByScope[preferenceScopeId] === 'undefined') {
+    settings.presetsByScope[preferenceScopeId] = [];
+  } else if (!Array.isArray(settings.presetsByScope[preferenceScopeId])) {
+    log.warn(
       'Invalid presetsByScope entry; resetting to empty array:',
       {
-        preferenceScopeId: scopeId,
-        type: typeof settings.presetsByScope[scopeId],
-        isArray: Array.isArray(settings.presetsByScope[scopeId]),
+        preferenceScopeId,
+        type: typeof settings.presetsByScope[preferenceScopeId],
+        isArray: Array.isArray(settings.presetsByScope[preferenceScopeId]),
       }
     );
-    settings.presetsByScope[scopeId] = [];
+    settings.presetsByScope[preferenceScopeId] = [];
   }
-  const selectedPreset = settings.selectedPresetByScope[scopeId];
+  const selectedPreset = settings.selectedPresetByScope[preferenceScopeId];
   if (typeof selectedPreset !== 'undefined') {
     if (typeof selectedPreset !== 'string') {
-      log.warnOnce(
-        `settings.normalizeSettings.invalidSelectedPresetByScopeEntry:${scopeId}`,
+      log.warn(
         'Invalid selectedPresetByScope entry; removing:',
-        { preferenceScopeId: scopeId, type: typeof selectedPreset }
+        { preferenceScopeId, type: typeof selectedPreset }
       );
-      delete settings.selectedPresetByScope[scopeId];
+      delete settings.selectedPresetByScope[preferenceScopeId];
     } else if (!selectedPreset.trim()) {
-      delete settings.selectedPresetByScope[scopeId];
+      delete settings.selectedPresetByScope[preferenceScopeId];
     } else {
-      settings.selectedPresetByScope[scopeId] = selectedPreset.trim();
+      settings.selectedPresetByScope[preferenceScopeId] = selectedPreset.trim();
     }
   }
-  ensureNumberFormattingForScope(settings, languageId || DEFAULT_LANG);
+  ensureNumberFormattingForScope(settings, effectiveLanguageId);
 
   return settings;
 }
@@ -318,41 +311,41 @@ function createStartupInitializationError(code, message, cause = null) {
 function getStartupAdmissionError(initialLoad) {
   if (initialLoad.status === 'missing') return null;
 
-  if (initialLoad.status === 'loaded') {
-    const settings = initialLoad.value;
-    if (!isNonArrayObject(settings)) {
-      return createStartupInitializationError(
-        'SETTINGS_STARTUP_ADMISSION_FAILED',
-        '[settings] startup settings root must be a non-array object'
-      );
-    }
-    if (!Object.prototype.hasOwnProperty.call(settings, 'presetsByScope')) return null;
-    if (!isNonArrayObject(settings.presetsByScope)) {
-      return createStartupInitializationError(
-        'SETTINGS_STARTUP_ADMISSION_FAILED',
-        '[settings] startup presetsByScope must be a non-array object when present'
-      );
-    }
-    for (const [preferenceScopeId, presets] of Object.entries(settings.presetsByScope)) {
-      if (!Array.isArray(presets)) {
-        return createStartupInitializationError(
-          'SETTINGS_STARTUP_ADMISSION_FAILED',
-          `[settings] startup presetsByScope entry must be an array: ${preferenceScopeId}`
-        );
-      }
-    }
-    return null;
+  if (initialLoad.status !== 'loaded') {
+    return createStartupInitializationError(
+      'SETTINGS_STARTUP_ADMISSION_FAILED',
+      `[settings] startup settings file is ${initialLoad.status}`,
+      initialLoad.error || null
+    );
   }
 
-  return createStartupInitializationError(
-    'SETTINGS_STARTUP_ADMISSION_FAILED',
-    `[settings] startup settings file is ${initialLoad.status}`,
-    initialLoad.error || null
-  );
+  const settings = initialLoad.value;
+  if (!isNonArrayObject(settings)) {
+    return createStartupInitializationError(
+      'SETTINGS_STARTUP_ADMISSION_FAILED',
+      '[settings] startup settings root must be a non-array object'
+    );
+  }
+  if (!Object.prototype.hasOwnProperty.call(settings, 'presetsByScope')) return null;
+  if (!isNonArrayObject(settings.presetsByScope)) {
+    return createStartupInitializationError(
+      'SETTINGS_STARTUP_ADMISSION_FAILED',
+      '[settings] startup presetsByScope must be a non-array object when present'
+    );
+  }
+  for (const [preferenceScopeId, presets] of Object.entries(settings.presetsByScope)) {
+    if (!Array.isArray(presets)) {
+      return createStartupInitializationError(
+        'SETTINGS_STARTUP_ADMISSION_FAILED',
+        `[settings] startup presetsByScope entry must be an array: ${preferenceScopeId}`
+      );
+    }
+  }
+  return null;
 }
 
 // =============================================================================
-// State API: init / getSettings / saveSettings / saveSettingsStrict
+// State API: init / getSettings / saveSettingsStrict
 // =============================================================================
 /**
  * Initializes the module (called from main.js).
@@ -360,9 +353,7 @@ function getStartupAdmissionError(initialLoad) {
  * - Loads, normalizes, caches, and attempts to persist settings once on startup.
  */
 function init({
-  loadJson,
   loadJsonWithStatus,
-  saveJson,
   saveJsonStrict,
   createJsonStrict,
   createSettingsStartupBackup,
@@ -370,9 +361,7 @@ function init({
   languageResources: injectedLanguageResources,
 } = {}) {
   if (
-    typeof loadJson !== 'function'
-    || typeof loadJsonWithStatus !== 'function'
-    || typeof saveJson !== 'function'
+    typeof loadJsonWithStatus !== 'function'
     || typeof saveJsonStrict !== 'function'
     || typeof createJsonStrict !== 'function'
     || typeof createSettingsStartupBackup !== 'function'
@@ -425,69 +414,37 @@ function init({
     );
   }
 
-  _loadJson = loadJson;
-  _saveJson = saveJson;
-  _saveJsonStrict = saveJsonStrict;
-  _settingsFile = settingsFile;
-  _currentSettings = normalizedSettings;
-  return _currentSettings;
+  saveJsonStrictDependency = saveJsonStrict;
+  settingsFilePath = settingsFile;
+  currentSettings = normalizedSettings;
+  return currentSettings;
 }
 
 /**
- * Reads the current settings from disk and returns a normalized object.
- * This reflects external edits to the settings file.
+ * Returns the admitted authoritative settings cache for this process.
  */
 function getSettings() {
-  if (!_loadJson || !_settingsFile) {
+  if (!currentSettings || !settingsFilePath) {
     throw new Error('[settings] getSettings called before init');
   }
-
-  const rawSettings = _loadJson(_settingsFile, createDefaultSettings());
-
-  _currentSettings = normalizeSettings(rawSettings);
-  return _currentSettings;
-}
-
-/**
- * Normalizes settings, updates the in-memory cache, and attempts best-effort persistence.
- * If nextSettings is falsy, it reloads from disk (getSettings()).
- */
-function saveSettings(nextSettings) {
-  if (!nextSettings) return getSettings();
-  if (!_saveJson || !_settingsFile) {
-    throw new Error('[settings] saveSettings called before init');
-  }
-
-  const normalizedSettings = normalizeSettings(cloneSettingsForMutation(nextSettings));
-  _currentSettings = normalizedSettings;
-
-  try {
-    _saveJson(_settingsFile, normalizedSettings);
-  } catch (error) {
-    log.error(
-      'saveSettings failed (not persisted):',
-      _settingsFile,
-      error
-    );
-  }
-
-  return _currentSettings;
+  return currentSettings;
 }
 
 /**
  * Normalizes settings and requires persistence before updating the in-memory cache.
- * If nextSettings is falsy, it reloads from disk (getSettings()).
  */
 function saveSettingsStrict(nextSettings) {
-  if (!nextSettings) return getSettings();
-  if (!_saveJsonStrict || !_settingsFile) {
+  if (!nextSettings || typeof nextSettings !== 'object' || Array.isArray(nextSettings)) {
+    throw new Error('[settings] saveSettingsStrict requires candidate settings');
+  }
+  if (!saveJsonStrictDependency || !settingsFilePath) {
     throw new Error('[settings] saveSettingsStrict called before init');
   }
 
   const normalizedSettings = normalizeSettings(cloneSettingsForMutation(nextSettings));
-  _saveJsonStrict(_settingsFile, normalizedSettings);
-  _currentSettings = normalizedSettings;
-  return _currentSettings;
+  saveJsonStrictDependency(settingsFilePath, normalizedSettings);
+  currentSettings = normalizedSettings;
+  return currentSettings;
 }
 
 // =============================================================================
@@ -515,8 +472,7 @@ function configurePublication({ getWindows, onSettingsUpdated, decorateSettings 
 function decorateSettingsPayload(settings) {
   const decorateSettings = publicationConfig && publicationConfig.decorateSettings;
   if (typeof decorateSettings !== 'function') {
-    log.errorOnce(
-      'settings.decorateSettings.unavailable',
+    log.error(
       'Renderer settings decorator unavailable; settings payload dropped.'
     );
     return null;
@@ -529,16 +485,14 @@ function decorateSettingsPayload(settings) {
       || typeof decoratedSettings !== 'object'
       || Array.isArray(decoratedSettings)
     ) {
-      log.errorOnce(
-        'settings.decorateSettings.invalid',
+      log.error(
         'Renderer settings decorator returned an invalid payload; settings payload dropped.'
       );
       return null;
     }
     return decoratedSettings;
   } catch (error) {
-    log.errorOnce(
-      'settings.decorateSettings.failed',
+    log.error(
       'Renderer settings decorator failed; settings payload dropped:',
       error
     );
@@ -557,8 +511,7 @@ function requireDecoratedSettingsPayload(settings) {
 function resolvePublicationWindows() {
   const getWindows = publicationConfig && publicationConfig.getWindows;
   if (typeof getWindows !== 'function') {
-    log.warnOnce(
-      'settings.getWindows.unavailable',
+    log.warn(
       'getWindows unavailable; window-targeted updates skipped.'
     );
     return {};
@@ -567,16 +520,14 @@ function resolvePublicationWindows() {
   try {
     const windows = getWindows();
     if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
-      log.warnOnce(
-        'settings.getWindows.invalid',
+      log.warn(
         'getWindows returned no windows object; window-targeted updates skipped.'
       );
       return {};
     }
     return windows;
   } catch (error) {
-    log.warnOnce(
-      'settings.getWindows.failed',
+    log.warn(
       'getWindows failed (window-targeted updates skipped):',
       error
     );
@@ -587,8 +538,7 @@ function resolvePublicationWindows() {
 function notifySettingsUpdated(settings) {
   const onSettingsUpdated = publicationConfig && publicationConfig.onSettingsUpdated;
   if (typeof onSettingsUpdated !== 'function') {
-    log.warnOnce(
-      'settings.onSettingsUpdated.unavailable',
+    log.warn(
       'onSettingsUpdated callback unavailable; settings callback publish skipped.'
     );
     return;
@@ -603,12 +553,11 @@ function notifySettingsUpdated(settings) {
 
 /**
  * Sends a prepared 'settings-updated' payload to open windows (best-effort).
- * This may fail during shutdown/races; failures are logged once and ignored.
+ * This may fail during shutdown/races; failures are logged and ignored.
  */
 function sendSettingsUpdated(settingsPayload, windows) {
   if (!windows || typeof windows !== 'object' || Array.isArray(windows)) {
-    log.warnOnce(
-      'settings.broadcastSettingsUpdated.windows.invalid',
+    log.warn(
       'settings-updated broadcast failed (ignored): windows object unavailable.'
     );
     return;
@@ -630,8 +579,7 @@ function sendSettingsUpdated(settingsPayload, windows) {
       if (!win || win.isDestroyed()) return;
       win.webContents.send('settings-updated', settingsPayload);
     } catch (error) {
-      log.warnOnce(
-        `settings.broadcastSettingsUpdated.${name}`,
+      log.warn(
         'settings-updated notify failed (ignored):',
         name,
         error
@@ -663,7 +611,7 @@ function saveAndPublishSettingsStrict(nextSettings) {
   return savedSettings;
 }
 
-function sendPreciseCountingFallbackNotice() {
+function sendPreciseCountingFallbackNotice({ persistenceFailed = false } = {}) {
   try {
     const windows = resolvePublicationWindows();
     const mainWin = windows && windows.mainWin;
@@ -671,7 +619,9 @@ function sendPreciseCountingFallbackNotice() {
       log.warn('Precise-counting fallback notice could not be delivered (ignored): main window unavailable.');
       return;
     }
-    mainWin.webContents.send('precise-counting-fallback');
+    mainWin.webContents.send('precise-counting-fallback', {
+      persistenceFailed: persistenceFailed === true,
+    });
   } catch (error) {
     log.warn('Precise-counting fallback notice delivery failed (ignored):', error);
   }
@@ -687,28 +637,30 @@ function isValidPreciseCountingFailureReport(payload) {
 
 /**
  * Canonical, idempotent transition after genuine Precise counting fails.
- * Strict persistence is the commit boundary. Publication and notice delivery
- * happen only after that commit and are deliberately best effort.
+ * The usable Simple runtime state survives a later strict-persistence failure.
  */
 function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
   const details = { source, code, stage };
-  let savedSettings;
-  try {
-    const settings = getSettings();
-    if (settings.modeConteo === 'simple') {
-      return { ok: true, changed: false, mode: 'simple' };
-    }
+  const settings = getSettings();
+  if (settings.modeConteo === 'simple') {
+    return { ok: true, changed: false, mode: 'simple', persistenceFailed: false };
+  }
 
-    const nextSettings = cloneSettingsForMutation(settings);
-    nextSettings.modeConteo = 'simple';
-    savedSettings = saveSettingsStrict(nextSettings);
+  const nextSettings = cloneSettingsForMutation(settings);
+  nextSettings.modeConteo = 'simple';
+  const simpleSettings = normalizeSettings(nextSettings);
+  currentSettings = simpleSettings;
+
+  let persistenceFailed = false;
+  try {
+    saveJsonStrictDependency(settingsFilePath, simpleSettings);
   } catch (error) {
+    persistenceFailed = true;
     log.error('Precise-counting fallback persistence failed:', details, error);
-    return { ok: false, code: 'PERSIST_FAILED' };
   }
 
   try {
-    publishSettingsUpdated(savedSettings);
+    publishSettingsUpdated(simpleSettings);
   } catch (error) {
     log.warn('Precise-counting fallback settings publication failed (ignored):', error);
   }
@@ -717,8 +669,8 @@ function fallbackPreciseCountingToSimple({ source, code, stage } = {}) {
   } catch {
     // Logging must not change the established fallback state.
   }
-  sendPreciseCountingFallbackNotice();
-  return { ok: true, changed: true, mode: savedSettings.modeConteo };
+  sendPreciseCountingFallbackNotice({ persistenceFailed });
+  return { ok: true, changed: true, mode: simpleSettings.modeConteo, persistenceFailed };
 }
 
 // =============================================================================
@@ -754,6 +706,7 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - get-current-language
  * - set-language
  * - set-mode-conteo
+ * - precise-counting-failed
  * - set-selected-preset
  * - set-preview-spoiler-enabled
  */
@@ -772,19 +725,14 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
     }
   }
 
-  // get-settings: returns the decorated renderer payload; storage failures use safe defaults.
+  // get-settings: returns the required decorated aggregate from admitted owner caches.
   ipcMain.handle('get-settings', async () => {
-    let settings;
     try {
-      settings = getSettings();
+      return requireDecoratedSettingsPayload(getSettings());
     } catch (error) {
-      log.warn(
-        'IPC get-settings failed (using safe fallback):',
-        error
-      );
-      settings = normalizeSettings(createDefaultSettings(DEFAULT_LANG));
+      log.error('IPC get-settings failed:', error);
+      throw error;
     }
-    return requireDecoratedSettingsPayload(settings);
   });
 
   // get-current-language: returns only the persisted language needed by the language window
@@ -808,20 +756,17 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
       }
 
       let settings = getSettings();
-      if (chosen) {
-        const nextSettings = cloneSettingsForMutation(settings);
-        nextSettings.language = chosen;
-        settings = saveSettingsStrict(nextSettings);
-      }
+      const nextSettings = cloneSettingsForMutation(settings);
+      nextSettings.language = chosen;
+      settings = saveSettingsStrict(nextSettings);
 
       const windows = resolvePublicationWindows();
 
-      // The first-run picker persists the selection before startup owns its one
-      // initial menu installation. Later user-initiated changes rebuild here.
+      // The first-run picker persists the selection before startup owns its one initial menu installation. Later user-initiated changes rebuild here.
       const rebuildAppMenu = typeof shouldRebuildAppMenu !== 'function'
         || shouldRebuildAppMenu() !== false;
       if (rebuildAppMenu) {
-        const menuLang = settings.language || DEFAULT_LANG;
+        const menuLang = settings.language;
         if (typeof buildAppMenu !== 'function') {
           log.warn(
             'buildAppMenu unavailable; menu rebuild skipped.',
@@ -899,7 +844,7 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
       }
 
       const settings = getSettings();
-      const preferenceScopeId = getPreferenceScope(settings.language || DEFAULT_LANG);
+      const preferenceScopeId = getPreferenceScope(settings.language);
       if (settings.selectedPresetByScope[preferenceScopeId] === name) {
         return { ok: true, preferenceScopeId, name };
       }
@@ -950,7 +895,6 @@ module.exports = {
   init,
   registerIpc,
   getSettings,
-  saveSettings,
   saveSettingsStrict,
   configurePublication,
   publishSettingsUpdated,

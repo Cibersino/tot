@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Kiñe error müley portapapeles mew texto reemplazar mew.",
         "append_clipboard_error": "Kiñe error müley portapapeles mew texto append mew.",
         "clear_error": "Welulkuy lifün mu. Kintunge consola.",
-        "settings_payload_unavailable": "Tami guardado preferencias pepi elungelay tüfachi ovetã mew, femngechi no aplicangey. Kezungun efectivo, rakiduam modo, dullingelu preset kam WPM pepi kañpüle müleafuy guardado configuración mew. Kintunge tachi ajustes petu amuln mew.",
         "current_text_processing_locked": "Current text petu updatekünuwküley. Main window interacciones bloqueadongey texto asentamün mew.",
         "precise_counting_fallback": "Pepi pünegelafuy Rüf rakiduam. toT konüy simple rakiduam mew.",
+        "precise_counting_fallback_persistence_failed": "Pepi pünegelafuy Rüf rakiduam. toT konüy simple rakiduam mew, welu pepi guardalafuy tüfachi weyulkan.",
+        "counting_mode_persistence_failed": "Dullingelu rakin modo pepi guardalafuy. Wüne modo müley.",
+        "preset_selection_persistence_failed": "Dullingelu preset pepi guardalafuy.",
+        "preview_spoiler_persistence_failed": "Wünen pen ñi afel ellkañmawün preferencia pepi guardalafuy. Wüne valor müley.",
+        "spellcheck_availability_failed": "Corrector ortográfico ñi mülen pepi kimngelay.",
         "current_text_recount_locked": "Current text resultados petu wiño rakinmekey. Main window interacciones bloqueadongey rakin asentamün mew.",
         "wip": {
           "design_skins": "WIP: Faw nülai düllin skins küpalechi version mu.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Küpalyelu wirin afiy ka pichikünutuy.",
         "text_truncated": "Wirin pichikünutuy tachi app mew.",
         "sync_isolated": "Tachi texto sincronización katrüntungey texto actual küme müleam. Pepi wirintukukeymi ka textu kopiaymi, welu local cambios no sincronizangey ka pepi ñamüafuy Editor de Texto nürüfle. Kopiange kam guardange tami wirin nieael, petu Editor de Texto nürüfün kam wiño nülün.",
-        "calc_error": "Welulkuy rakiduam mu. Kintunge consola."
+        "calc_error": "Welulkuy rakiduam mu. Kintunge consola.",
+        "spellcheck_save_failed": "Corrector ortográfico preferencia pepi guardalafuy.",
+        "font_size_save_failed": "Wirin tamaño preferencia pepi guardalafuy.",
+        "maximized_text_width_not_persisted": "Wirin ancho weyulkuy tüfachi sesión mew, welu pepi guardalafuy."
       }
     },
     "snapshots": {

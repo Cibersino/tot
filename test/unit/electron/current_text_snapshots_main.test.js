@@ -67,6 +67,9 @@ function loadSnapshotsMainWithMocks({
   rootDir,
   currentText = 'Snapshot text',
   settings = { language: 'en' },
+  settingsGetError = null,
+  dialogTexts = {},
+  dialogTextsError = null,
   shellOpenPathResult = '',
   messageBoxResponse = 0,
   saveDialogResult = null,
@@ -119,6 +122,7 @@ function loadSnapshotsMainWithMocks({
   const showSaveDialogCalls = [];
   const showOpenDialogCalls = [];
   const languageDescriptorCalls = [];
+  const dialogLanguageCalls = [];
   const restoreElectronModule = installElectronModuleMock({
     dialog: {
       async showSaveDialog(ownerWin, options) {
@@ -207,6 +211,7 @@ function loadSnapshotsMainWithMocks({
     loaded: true,
     exports: {
       getSettings() {
+        if (settingsGetError) throw settingsGetError;
         return settings;
       },
       getLanguageDescriptor(languageId) {
@@ -248,11 +253,14 @@ function loadSnapshotsMainWithMocks({
     filename: menuBuilderModulePath,
     loaded: true,
     exports: {
-      resolveDialogText(_dialogTexts, key, fallback) {
-        return fallback || key;
+      resolveDialogText(dialogTexts, key) {
+        if (dialogTexts && typeof dialogTexts[key] === 'string') return dialogTexts[key];
+        return key;
       },
-      getDialogTexts() {
-        return {};
+      getDialogTexts(language) {
+        dialogLanguageCalls.push(language);
+        if (dialogTextsError) throw dialogTextsError;
+        return dialogTexts;
       },
     },
   };
@@ -314,6 +322,7 @@ function loadSnapshotsMainWithMocks({
     showSaveDialogCalls,
     showOpenDialogCalls,
     languageDescriptorCalls,
+    dialogLanguageCalls,
   };
 }
 
@@ -351,7 +360,7 @@ test('snapshot metrics retry only counting after the canonical Precise fallback 
     fallbackPreciseCountingToSimple() {
       fallbackCalls += 1;
       settings.modeConteo = 'simple';
-      return { ok: true, changed: true, mode: 'simple' };
+      return { ok: true, changed: true, mode: 'simple', persistenceFailed: true };
     },
   });
   t.after(restore);
@@ -1670,6 +1679,107 @@ test('snapshot load still asks for overwrite confirmation when current text is n
 
   assert.equal(result.ok, true);
   assert.equal(showMessageBoxCalls.length, 1);
+});
+
+test('snapshot overwrite does not substitute default dialog texts when settings are unavailable', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-default-dialog-texts');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'confirm-target.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify(createSnapshotFileData('Loaded snapshot text'), null, 2));
+
+  const {
+    snapshotsMain,
+    restore,
+    showMessageBoxCalls,
+    dialogLanguageCalls,
+  } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'Existing text',
+    settingsGetError: new Error('settings unavailable'),
+    dialogTexts: {
+      continue_button: 'Continue',
+      cancel_button: 'Cancel',
+      snapshot_overwrite_load: 'Replace {name}?',
+    },
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/confirm-target.json' }
+  );
+
+  assert.deepEqual(dialogLanguageCalls, []);
+  assert.equal(showMessageBoxCalls.length, 0);
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'READ_FAILED',
+    message: 'Error: settings unavailable',
+  });
+});
+
+test('snapshot overwrite does not classify translation acquisition failure as a settings failure', async (t) => {
+  const rootDir = createTestTempDir('current-text-snapshots-dialog-translation-failure');
+  t.after(() => fs.rmSync(rootDir, { recursive: true, force: true }));
+
+  const senderWin = {
+    isDestroyed() {
+      return false;
+    },
+    webContents: {},
+  };
+  const snapshotPath = path.join(rootDir, 'confirm-target.json');
+  fs.mkdirSync(rootDir, { recursive: true });
+  fs.writeFileSync(snapshotPath, JSON.stringify(createSnapshotFileData('Loaded snapshot text'), null, 2));
+
+  const translationError = new Error('dialog translations unavailable');
+  const {
+    snapshotsMain,
+    restore,
+    showMessageBoxCalls,
+    dialogLanguageCalls,
+  } = loadSnapshotsMainWithMocks({
+    senderWin,
+    rootDir,
+    currentText: 'Existing text',
+    settings: { language: 'en' },
+    dialogTextsError: translationError,
+  });
+  t.after(restore);
+
+  const ipcMain = createIpcMainDouble();
+  snapshotsMain.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin: senderWin }),
+  });
+
+  const result = await ipcMain.invoke(
+    'current-text-snapshot-load',
+    { sender: senderWin.webContents },
+    { snapshotRelPath: '/confirm-target.json' }
+  );
+
+  assert.deepEqual(dialogLanguageCalls, ['en']);
+  assert.equal(showMessageBoxCalls.length, 0);
+  assert.deepEqual(result, {
+    ok: false,
+    code: 'READ_FAILED',
+    message: 'Error: dialog translations unavailable',
+  });
 });
 
 test('snapshot load accepts custom snapshot tags that are unknown to the current editable catalog', async (t) => {

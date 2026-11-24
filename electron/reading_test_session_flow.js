@@ -237,7 +237,6 @@ function computeCurrentWpm(options = {}) {
     getLocaleTag,
     countUtils,
     fallbackPreciseCountingToSimple,
-    DEFAULT_LANG,
     PRESET_WPM_MIN,
     PRESET_WPM_MAX,
     log,
@@ -258,7 +257,7 @@ function computeCurrentWpm(options = {}) {
     modoConteo,
   };
   if (modoConteo === 'preciso') {
-    const languageId = settings.language || DEFAULT_LANG;
+    const languageId = settings.language;
     countOptions.idioma = getLocaleTag(languageId);
   }
   let stats;
@@ -317,11 +316,10 @@ function buildPrefilledPresetPayload(wpm, options = {}) {
   const {
     getSettingsSnapshot,
     settingsState,
-    DEFAULT_LANG,
   } = options;
 
   const settings = getSettingsSnapshot();
-  const preferenceScopeId = settingsState.getPreferenceScope(settings.language || DEFAULT_LANG);
+  const preferenceScopeId = settingsState.getPreferenceScope(settings.language);
   const userPresets = settings && settings.presetsByScope && Array.isArray(settings.presetsByScope[preferenceScopeId])
     ? settings.presetsByScope[preferenceScopeId]
     : [];

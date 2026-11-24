@@ -34,7 +34,6 @@
   }
   try {
     log = window.getLogger('reading-test-questions');
-    log.debug('Reading-test questions window starting...');
   } catch (error) {
     failClosedQuestionsBootstrap(error);
   }
@@ -644,18 +643,22 @@
     }
 
     function loadInitialSettings() {
-      // Bootstrap may start before persisted settings are available; this path applies the stored language when possible and otherwise keeps DEFAULT_LANG.
       enqueueUiSync(async () => {
         let nextSettings;
         if (typeof questionsApi.getSettings !== 'function') {
-          log.warn('BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; using default renderer settings.');
-          nextSettings = {};
+          log.error('BOOTSTRAP: readingTestQuestionsAPI.getSettings unavailable; required settings aggregate cannot be established.');
+          reportTerminalQuestionsI18nFailure('settings-bootstrap');
+          return false;
         } else {
           try {
-            nextSettings = await questionsApi.getSettings() || {};
+            nextSettings = await questionsApi.getSettings();
+            if (!nextSettings || typeof nextSettings !== 'object' || Array.isArray(nextSettings)) {
+              throw new Error('readingTestQuestionsAPI.getSettings returned an invalid required settings aggregate');
+            }
           } catch (error) {
-            log.warn('BOOTSTRAP: Reading-test questions initial settings fetch failed (using default language):', error);
-            nextSettings = {};
+            log.error('BOOTSTRAP: Reading-test questions required settings aggregate unavailable:', error);
+            reportTerminalQuestionsI18nFailure('settings-bootstrap');
+            return false;
           }
         }
         return {
@@ -709,6 +712,8 @@
       window.close();
     });
 
+    loadInitialSettings();
+
     try {
       questionsApi.onInitData(handleInitData);
     } catch (error) {
@@ -726,7 +731,6 @@
       reportTerminalQuestionsI18nFailure('settings-listener');
       return;
     }
-    loadInitialSettings();
   }
 })();
 

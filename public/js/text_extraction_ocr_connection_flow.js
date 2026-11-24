@@ -17,8 +17,6 @@
     throw new Error('[text-extraction-ocr-connection-flow] window.getLogger unavailable; cannot continue');
   }
   const log = window.getLogger('text-extraction-ocr-connection-flow');
-  log.debug('Text extraction OCR connection flow starting...');
-
   // =============================================================================
   // Shared state
   // =============================================================================

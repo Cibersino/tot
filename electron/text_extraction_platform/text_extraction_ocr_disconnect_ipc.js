@@ -17,7 +17,6 @@
 
 const { BrowserWindow, dialog } = require('electron');
 const Log = require('../log');
-const { DEFAULT_LANG } = require('../constants_main');
 const settingsState = require('../settings');
 const menuBuilder = require('../menu_builder');
 const ocrOperation = require('./ocr_google_drive_operation');
@@ -44,25 +43,14 @@ function safeErrorMessage(error) {
   return String(error && error.message ? error.message : error || '');
 }
 
-function resolveDialogText(dialogTexts, key, fallback) {
-  return menuBuilder.resolveDialogText(dialogTexts, key, fallback, {
+function resolveDialogText(dialogTexts, key) {
+  return menuBuilder.resolveDialogText(dialogTexts, key, {
     log,
   });
 }
 
 function getDialogTexts() {
-  try {
-    const settings = settingsState.getSettings();
-    const lang = settings && settings.language ? settings.language : DEFAULT_LANG;
-    return menuBuilder.getDialogTexts(lang);
-  } catch (error) {
-    log.warnOnce(
-      'text_extraction_ocr_disconnect.dialogTexts',
-      'Using fallback dialog texts:',
-      error
-    );
-    return {};
-  }
+  return menuBuilder.getDialogTexts(settingsState.getSettings().language);
 }
 
 function buildFailure({
