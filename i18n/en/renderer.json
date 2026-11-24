@@ -98,7 +98,7 @@
         "precise_counting_fallback_persistence_failed": "Precise mode could not be used. toT switched to Simple mode, but could not save that change.",
         "counting_mode_persistence_failed": "The selected counting mode could not be saved. The previous mode remains in use.",
         "preset_selection_persistence_failed": "The selected preset could not be saved.",
-        "preview_spoiler_persistence_failed": "The preview-spoiler preference could not be saved. The previous value remains in use.",
+        "preview_spoiler_persistence_failed": "The preference to hide the final segment of the preview could not be saved. The previous value remains in use.",
         "spellcheck_availability_failed": "Spellcheck availability could not be determined.",
         "current_text_recount_locked": "Current text results are still being recalculated. Main-window interactions are locked until the latest recount settles.",
         "wip": {

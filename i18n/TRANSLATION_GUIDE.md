@@ -1268,10 +1268,10 @@ Estados de revisión recomendados:
           // [CONCEPTO_APP] preset de velocidad de lectura
         },
         "preview_spoiler_persistence_failed": {
-          "es": "No se pudo guardar la preferencia de ocultar la vista previa. Se mantiene el valor anterior.",
-          "en": "The preview-spoiler preference could not be saved. The previous value remains in use."
-          // [PROPÓSITO] Informa que el cambio voluntario de ocultar vista previa fue revertido al no poder persistirse.
-          // [CONCEPTO_APP] vista previa; ocultar vista previa
+          "es": "No se pudo guardar la preferencia de ocultar el segmento final de la vista previa. Se mantiene el valor anterior.",
+          "en": "The preference to hide the final segment of the preview could not be saved. The previous value remains in use."
+          // [PROPÓSITO] Informa que el cambio voluntario de ocultar el segmento final de la vista previa del texto actual fue revertido al no poder persistirse; el resto de la vista previa no se oculta por esta preferencia.
+          // [CONCEPTO_APP] vista previa del texto actual; segmento final de la vista previa; spoiler
         },
         "spellcheck_availability_failed": {
           "es": "No se pudo determinar la disponibilidad del corrector ortográfico.",

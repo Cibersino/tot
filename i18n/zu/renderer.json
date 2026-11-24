@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Kwenzeke iphutha ngesikhathi kushintshwa umbhalo ovela ebhodini lokunamathisela.",
         "append_clipboard_error": "Kwenzeke iphutha ngesikhathi kwengezwa umbhalo ovela ebhodini lokunamathisela.",
         "clear_error": "Kuvele iphutha ngesikhathi kusulwa umbhalo. Hlola ikhonsoli.",
-        "settings_payload_unavailable": "Okuthandwayo okulondoloziwe akukwazanga ukuthunyelwa kuleli windi, ngakho akuzange kusetshenziswe. Ulimi olusebenzayo, indlela yokubala, ipreset ekhethiwe noma i-WPM kungase kwehluke ekusethweni okulondoloziwe. Hlola lezi zilungiselelo ngaphambi kokuqhubeka.",
         "current_text_processing_locked": "Umbhalo wamanje usavuselelwa. Ukusebenzisana kwewindi elikhulu kukhiyiwe kuze kuzinze umbhalo wakamuva.",
         "precise_counting_fallback": "Akukwazekanga ukusebenzisa Imodi enembile. i-toT ishintshele kwimodi elula.",
+        "precise_counting_fallback_persistence_failed": "Akukwazekanga ukusebenzisa Imodi enembile. i-toT ishintshele kwimodi elula, kodwa ayikwazanga ukulondoloza lolo shintsho.",
+        "counting_mode_persistence_failed": "Imodi yokubala ekhethiwe ayikwazanga ukulondolozwa. Imodi yangaphambili isasetshenziswa.",
+        "preset_selection_persistence_failed": "Iphrezethi ekhethiwe ayikwazanga ukulondolozwa.",
+        "preview_spoiler_persistence_failed": "Okuthandwayo kokufihla ingxenye yokugcina yokubuka kuqala akukwazanga ukulondolozwa. Inani langaphambili lisasetshenziswa.",
+        "spellcheck_availability_failed": "Akukwazekanga ukuthola ukuthi isihloli sesipelingi siyatholakala yini.",
         "current_text_recount_locked": "Imiphumela yombhalo wamanje isabalwa kabusha. Ukusebenzisana kwewindi elikhulu kukhiyiwe kuze kuzinze ukubalwa kabusha kwakamuva.",
         "wip": {
           "design_skins": "WIP: Isikhethi sezindikimba sizovuleka lapha enguqulweni yesikhathi esizayo.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Umbhalo ohudulwe wedlule isikhala esitholakalayo futhi unqanyuliwe.",
         "text_truncated": "Umbhalo unqanyuliwe ukuze ulingane nomkhawulo we-app.",
         "sync_isolated": "Ukuvumelanisa umbhalo kumisiwe ukuze kuvikelwe umbhalo wamanje. Ungaqhubeka nokuhlela nokukopisha umbhalo, kodwa izinguquko zasendaweni azivumelaniswa futhi zingalahleka lapho uvala Isihleli Sombhalo. Kopisha noma ulondoloze umbhalo ofuna ukuwugcina ngaphambi kokuvala noma ukuvula kabusha Isihleli Sombhalo.",
-        "calc_error": "Kuvele iphutha ngesikhathi kubalwa. Hlola ikhonsoli."
+        "calc_error": "Kuvele iphutha ngesikhathi kubalwa. Hlola ikhonsoli.",
+        "spellcheck_save_failed": "Okuthandwayo kokuhlola isipelingi akukwazanga ukulondolozwa.",
+        "font_size_save_failed": "Okuthandwayo kosayizi wombhalo akukwazanga ukulondolozwa.",
+        "maximized_text_width_not_persisted": "Ububanzi bombhalo bushintshile kulesi sikhathi sokusebenza, kodwa abukwazanga ukulondolozwa."
       }
     },
     "snapshots": {

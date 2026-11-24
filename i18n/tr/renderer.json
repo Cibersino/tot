@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Panodan metin değiştirilirken bir hata oluştu.",
         "append_clipboard_error": "Panodan metin eklenirken bir hata oluştu.",
         "clear_error": "Metin temizlenirken hata oluştu. Konsolu kontrol edin.",
-        "settings_payload_unavailable": "Kaydedilmiş tercihleriniz bu pencereye iletilemediğinden uygulanamadı. Kullanılan dil, sayım modu, seçili ön ayar veya WPM kaydedilmiş yapılandırmadan farklı olabilir. Devam etmeden önce bu ayarları gözden geçirin.",
         "current_text_processing_locked": "Geçerli metin hâlâ güncelleniyor. En son metin sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
         "precise_counting_fallback": "Hassas mod kullanılamadı. toT basit moda geçti.",
+        "precise_counting_fallback_persistence_failed": "Hassas mod kullanılamadı. toT basit moda geçti, ancak bu değişiklik kaydedilemedi.",
+        "counting_mode_persistence_failed": "Seçilen sayım modu kaydedilemedi. Önceki mod kullanılmaya devam ediyor.",
+        "preset_selection_persistence_failed": "Seçilen ön ayar kaydedilemedi.",
+        "preview_spoiler_persistence_failed": "Önizlemenin son bölümünü gizleme tercihi kaydedilemedi. Önceki değer kullanılmaya devam ediyor.",
+        "spellcheck_availability_failed": "Yazım denetiminin kullanılabilirliği belirlenemedi.",
         "current_text_recount_locked": "Geçerli metin sonuçları hâlâ yeniden hesaplanıyor. En son yeniden hesaplama sabitlenene kadar ana pencere etkileşimleri kilitli kalır.",
         "wip": {
           "design_skins": "WIP: Tema seçici gelecek bir sürümde burada açılacak.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Sürüklenen metin kullanılabilir alanı aştı ve kesildi.",
         "text_truncated": "Metin uygulama sınırına sığması için kesildi.",
         "sync_isolated": "Geçerli metni korumak için metin eşitlemesi askıya alındı. Metni düzenlemeye ve kopyalamaya devam edebilirsiniz, ancak yerel değişiklikler eşitlenmez ve Metin Düzenleyicisi kapatıldığında kaybolabilir. Saklamak istediğiniz metni Metin Düzenleyicisi'ni kapatmadan veya yeniden açmadan önce kopyalayın ya da kaydedin.",
-        "calc_error": "Hesaplama sırasında hata oluştu. Konsolu kontrol edin."
+        "calc_error": "Hesaplama sırasında hata oluştu. Konsolu kontrol edin.",
+        "spellcheck_save_failed": "Yazım denetimi tercihi kaydedilemedi.",
+        "font_size_save_failed": "Metin boyutu tercihi kaydedilemedi.",
+        "maximized_text_width_not_persisted": "Metin genişliği bu oturum için değiştirildi ancak kaydedilemedi."
       }
     },
     "snapshots": {

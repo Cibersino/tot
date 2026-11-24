@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Terjadi kesalahan saat mengganti teks dari clipboard.",
         "append_clipboard_error": "Terjadi kesalahan saat menambahkan teks dari clipboard.",
         "clear_error": "Terjadi kesalahan saat mengosongkan teks. Periksa konsol.",
-        "settings_payload_unavailable": "Preferensi tersimpan Anda tidak dapat dikirim ke jendela ini, sehingga tidak dapat diterapkan. Bahasa aktif, mode penghitungan, preset terpilih, atau WPM mungkin berbeda dari konfigurasi tersimpan. Tinjau pengaturan ini sebelum melanjutkan.",
         "current_text_processing_locked": "Teks saat ini masih diperbarui. Interaksi jendela utama dikunci sampai teks terbaru stabil.",
         "precise_counting_fallback": "Mode presisi tidak dapat digunakan. toT beralih ke mode sederhana.",
+        "precise_counting_fallback_persistence_failed": "Mode presisi tidak dapat digunakan. toT beralih ke mode sederhana, tetapi perubahan tersebut tidak dapat disimpan.",
+        "counting_mode_persistence_failed": "Mode penghitungan yang dipilih tidak dapat disimpan. Mode sebelumnya tetap digunakan.",
+        "preset_selection_persistence_failed": "Preset yang dipilih tidak dapat disimpan.",
+        "preview_spoiler_persistence_failed": "Preferensi untuk menyembunyikan bagian akhir pratinjau tidak dapat disimpan. Nilai sebelumnya tetap digunakan.",
+        "spellcheck_availability_failed": "Ketersediaan pemeriksa ejaan tidak dapat ditentukan.",
         "current_text_recount_locked": "Hasil teks saat ini masih dihitung ulang. Interaksi jendela utama dikunci sampai penghitungan ulang terbaru stabil.",
         "wip": {
           "design_skins": "WIP: Pemilih skin akan dibuka di sini pada versi mendatang.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Teks yang diseret melebihi ruang yang tersedia dan dipotong.",
         "text_truncated": "Teks dipotong agar sesuai dengan batas aplikasi.",
         "sync_isolated": "Sinkronisasi teks ditangguhkan untuk melindungi teks saat ini. Anda masih dapat mengedit dan menyalin teks, tetapi perubahan lokal tidak disinkronkan dan dapat hilang saat Editor Teks ditutup. Salin atau simpan teks yang ingin dipertahankan sebelum menutup atau membuka kembali Editor Teks.",
-        "calc_error": "Terjadi kesalahan saat menghitung. Periksa konsol."
+        "calc_error": "Terjadi kesalahan saat menghitung. Periksa konsol.",
+        "spellcheck_save_failed": "Preferensi pemeriksaan ejaan tidak dapat disimpan.",
+        "font_size_save_failed": "Preferensi ukuran teks tidak dapat disimpan.",
+        "maximized_text_width_not_persisted": "Lebar teks berubah untuk sesi ini, tetapi tidak dapat disimpan."
       }
     },
     "snapshots": {

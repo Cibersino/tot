@@ -98,7 +98,7 @@
         "precise_counting_fallback_persistence_failed": "No se pudo usar el modo Preciso. toT cambió al modo Simple, pero no pudo guardar ese cambio.",
         "counting_mode_persistence_failed": "No se pudo guardar el modo de conteo seleccionado. Se mantiene el modo anterior.",
         "preset_selection_persistence_failed": "No se pudo guardar el preset seleccionado.",
-        "preview_spoiler_persistence_failed": "No se pudo guardar la preferencia de ocultar la vista previa. Se mantiene el valor anterior.",
+        "preview_spoiler_persistence_failed": "No se pudo guardar la preferencia de ocultar el segmento final de la vista previa. Se mantiene el valor anterior.",
         "spellcheck_availability_failed": "No se pudo determinar la disponibilidad del corrector ortográfico.",
         "current_text_recount_locked": "Los resultados del texto actual todavía se están recalculando. Las interacciones de la ventana principal quedan bloqueadas hasta que se asiente el último reconteo.",
         "wip": {

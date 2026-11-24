@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "从剪贴板替换文本时发生错误。",
         "append_clipboard_error": "从剪贴板追加文本时发生错误。",
         "clear_error": "清空文本时发生错误。请检查控制台。",
-        "settings_payload_unavailable": "无法将已保存的偏好设置传递到此窗口，因此未能应用。实际使用的语言、计数模式、所选预设或 WPM 可能与已保存的配置不同。请在继续前检查这些设置。",
         "current_text_processing_locked": "当前文本仍在更新。在最新文本稳定之前，主窗口交互将被锁定。",
         "precise_counting_fallback": "无法使用精确模式。toT 已切换到简单模式。",
+        "precise_counting_fallback_persistence_failed": "无法使用精确模式。toT 已切换到简单模式，但无法保存此更改。",
+        "counting_mode_persistence_failed": "无法保存所选计数模式。将继续使用之前的模式。",
+        "preset_selection_persistence_failed": "无法保存所选预设。",
+        "preview_spoiler_persistence_failed": "无法保存隐藏预览末尾部分的偏好设置。将继续使用之前的值。",
+        "spellcheck_availability_failed": "无法确定拼写检查功能是否可用。",
         "current_text_recount_locked": "当前文本结果仍在重新计算。在最新重新计数稳定之前，主窗口交互将被锁定。",
         "wip": {
           "design_skins": "WIP：皮肤选择器将在未来版本中从这里打开。",
@@ -353,7 +357,10 @@
         "drop_truncated": "拖入的文本超过可用空间，已被截断。",
         "text_truncated": "文本已被截断，以符合应用最大限制。",
         "sync_isolated": "为保护当前文本，文本同步已暂停。你仍可继续编辑和复制文本，但本地更改不会同步，关闭文本编辑器时可能丢失。请在关闭或重新打开文本编辑器前复制或保存需要保留的文本。",
-        "calc_error": "计算时发生错误。请检查控制台。"
+        "calc_error": "计算时发生错误。请检查控制台。",
+        "spellcheck_save_failed": "无法保存拼写检查偏好设置。",
+        "font_size_save_failed": "无法保存文本字号偏好设置。",
+        "maximized_text_width_not_persisted": "本次会话的文本宽度已更改，但无法保存。"
       }
     },
     "snapshots": {

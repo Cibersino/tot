@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "Error happen while replacing text from clipboard.",
         "append_clipboard_error": "Error happen while appending text from clipboard.",
         "clear_error": "Error happen while clearing text. Check console.",
-        "settings_payload_unavailable": "Di saved preferences no reach dis window, so dem no apply. Di language wey dey work, counting mode, selected preset, or WPM fit different from wetin dey saved. Check dese settings before you continue.",
         "current_text_processing_locked": "Current text still dey update. Main-window interactions dey locked until di latest text settle.",
         "precise_counting_fallback": "Precise mode no fit work. toT switch go Simple mode.",
+        "precise_counting_fallback_persistence_failed": "Precise mode no fit work. toT switch go Simple mode, but e no fit save dat change.",
+        "counting_mode_persistence_failed": "Dem no fit save di counting mode wey you choose. Dem still dey use di former mode.",
+        "preset_selection_persistence_failed": "Dem no fit save di preset wey you choose.",
+        "preview_spoiler_persistence_failed": "Dem no fit save di setting to hide di last part of di preview. Dem still dey use di former value.",
+        "spellcheck_availability_failed": "Dem no fit know whether spellcheck dey available.",
         "current_text_recount_locked": "Current-text results still dey recalculate. Main-window interactions dey locked until di latest recount settle.",
         "wip": {
           "design_skins": "WIP: Di skins selector go open here for future version.",
@@ -353,7 +357,10 @@
         "drop_truncated": "Dragged text pass available space and dem truncate am.",
         "text_truncated": "Text was truncated to fit di app limit.",
         "sync_isolated": "Dem don stop text synchronization to protect di current text. You fit still edit and copy text, but local changes no dey synchronize and dem fit loss when you close di Text Editor. Copy or save any text wey you wan keep before you close or open di Text Editor again.",
-        "calc_error": "Error happen while calculating. Check console."
+        "calc_error": "Error happen while calculating. Check console.",
+        "spellcheck_save_failed": "Dem no fit save di spellcheck setting.",
+        "font_size_save_failed": "Dem no fit save di text-size setting.",
+        "maximized_text_width_not_persisted": "Text width change for dis session, but dem no fit save am."
       }
     },
     "snapshots": {

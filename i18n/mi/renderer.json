@@ -93,9 +93,13 @@
         "overwrite_clipboard_error": "I hapa i te whakakapi i te tuhinga mai i te papatopenga.",
         "append_clipboard_error": "I hapa i te tāpiri i te tuhinga mai i te papatopenga.",
         "clear_error": "I puta he hapa i te ūkui kuputuhi. Tirohia te papatohu.",
-        "settings_payload_unavailable": "Kāore i taea te tuku ngā manakohanga kua tiakina ki tēnei matapihi, nō reira kāore i whakamahia. Ka rerekē pea te reo e whakamahia ana, te aratau tatau, te preset kua kōwhiria, te WPM rānei i ngā tautuhinga kua tiakina. Arotakengia ēnei tautuhinga i mua i te haere tonu.",
         "current_text_processing_locked": "Kei te whakahōu tonu te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te kuputuhi hou.",
         "precise_counting_fallback": "Kāore i taea te whakamahi Aratau tōtika. I huri a toT ki te aratau māmā.",
+        "precise_counting_fallback_persistence_failed": "Kāore i taea te whakamahi i te aratau tōtika. I huri a toT ki te aratau māmā, engari kāore i taea te tiaki i taua panonitanga.",
+        "counting_mode_persistence_failed": "Kāore i taea te tiaki i te aratau tatau kua kōwhiria. Ka whakamahia tonutia te aratau o mua.",
+        "preset_selection_persistence_failed": "Kāore i taea te tiaki i te preset kua kōwhiria.",
+        "preview_spoiler_persistence_failed": "Kāore i taea te tiaki i te manakohanga ki te huna i te wāhanga whakamutunga o te arokite. Ka mau tonu te uara o mua.",
+        "spellcheck_availability_failed": "Kāore i taea te whakatau mēnā e wātea ana te kaitaki takikupu.",
         "current_text_recount_locked": "Kei te tātai anō tonu ngā hua o te kuputuhi onāianei. Ka maukati ngā pāhekoheko o te matapihi matua kia whakatau rā anō te tātaitanga hou.",
         "wip": {
           "design_skins": "WIP: Ka whakatuwhera te kaikōwhiri skins ki konei i tētahi putanga ā muri ake.",
@@ -353,7 +357,10 @@
         "drop_truncated": "I hipa te kuputuhi kua tōia i te wāhi wātea, ā, i tapahia.",
         "text_truncated": "I tapahia te kuputuhi kia uru ki te rohe taupānga.",
         "sync_isolated": "Kua whakatārewatia te tukutahitanga o te kuputuhi hei tiaki i te kuputuhi o nāianei. Ka taea tonu e koe te whakatika me te tārua kuputuhi, engari kāore ngā panonitanga ā-rohe e tukutahia, ā, tērā pea ka ngaro ina kati te Kaiwhakatika Kuputuhi. Tāruatia, tiakina rānei te kuputuhi e hiahia ana koe ki te pupuri i mua i te kati, i te whakatuwhera anō rānei i te Kaiwhakatika Kuputuhi.",
-        "calc_error": "I puta he hapa i te tatau. Tirohia te papatohu."
+        "calc_error": "I puta he hapa i te tatau. Tirohia te papatohu.",
+        "spellcheck_save_failed": "Kāore i taea te tiaki i te manakohanga taki takikupu.",
+        "font_size_save_failed": "Kāore i taea te tiaki i te manakohanga mō te rahi o te kuputuhi.",
+        "maximized_text_width_not_persisted": "Kua panonitia te whānui o te kuputuhi mō tēnei wāhanga mahi, engari kāore i taea te tiaki."
       }
     },
     "snapshots": {
