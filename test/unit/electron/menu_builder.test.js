@@ -658,9 +658,9 @@ test('buildAppMenu prepends a localized macOS app menu while preserving shared m
   const menuBuilder = loadFreshMenuBuilder(t, {
     app: {
       isPackaged: true,
-      name: 'toT',
+      name: 'toT Desktop',
       getName() {
-        return 'toT';
+        throw new Error('app.getName must not be called');
       },
     },
     Menu: {
@@ -678,15 +678,15 @@ test('buildAppMenu prepends a localized macOS app menu while preserving shared m
 
   assert.equal(installedMenu, builtMenu);
   assert.ok(Array.isArray(capturedTemplate));
-  assert.equal(capturedTemplate[0].label, 'toT');
+  assert.equal(capturedTemplate[0].label, 'toT Desktop');
   assert.deepEqual(capturedTemplate[0].submenu, [
     { role: 'services', label: 'Servicios' },
     { type: 'separator' },
-    { role: 'hide', label: 'Ocultar toT' },
+    { role: 'hide', label: 'Ocultar toT Desktop' },
     { role: 'hideOthers', label: 'Ocultar otros' },
     { role: 'unhide', label: 'Mostrar todo' },
     { type: 'separator' },
-    { role: 'quit', label: 'Salir de toT' },
+    { role: 'quit', label: 'Salir de toT Desktop' },
   ]);
   assert.equal(capturedTemplate[1].label, '¿Cómo usar la app?');
   assert.equal(capturedTemplate[2].label, 'Preferencias');
@@ -698,13 +698,49 @@ test('buildAppMenu prepends a localized macOS app menu while preserving shared m
   assert.equal(capturedTemplate[4].label, '?');
 });
 
+test('buildAppMenu uses the toT app-name fallback with a diagnostic on macOS', (t) => {
+  withPlatform(t, 'darwin');
+
+  const log = createMenuLogDouble();
+  let capturedTemplate = null;
+  const menuBuilder = loadFreshMenuBuilder(t, {
+    app: {
+      name: '   ',
+      getName() {
+        return 'Unexpected app name';
+      },
+    },
+    Menu: {
+      buildFromTemplate(template) {
+        capturedTemplate = template;
+        return {};
+      },
+    },
+  }, log);
+
+  menuBuilder.buildAppMenu('en', createBuildAppMenuOptions());
+
+  assert.equal(capturedTemplate[0].label, 'toT');
+  assert.deepEqual(log.warnOnceCalls, [[
+    'menu_builder.appName.fallback',
+    'Application name unavailable; using fallback:',
+    'toT',
+  ]]);
+});
+
 test('buildAppMenu keeps the shared top-level menu structure and links submenu outside macOS', (t) => {
   withPlatform(t, 'win32');
 
+  const log = createMenuLogDouble();
   let capturedTemplate = null;
   let installedMenu = null;
   const builtMenu = { tag: 'menu' };
   const menuBuilder = loadFreshMenuBuilder(t, {
+    app: {
+      getName() {
+        throw new Error('app.getName must not be called');
+      },
+    },
     Menu: {
       buildFromTemplate(template) {
         capturedTemplate = template;
@@ -714,10 +750,20 @@ test('buildAppMenu keeps the shared top-level menu structure and links submenu o
         installedMenu = menu;
       },
     },
+  }, log);
+  let appNameReads = 0;
+  Object.defineProperty(require('electron').app, 'name', {
+    configurable: true,
+    get() {
+      appNameReads += 1;
+      return '';
+    },
   });
 
   menuBuilder.buildAppMenu('en', createBuildAppMenuOptions());
 
+  assert.equal(appNameReads, 0);
+  assert.deepEqual(log.warnOnceCalls, []);
   assert.equal(installedMenu, builtMenu);
   assert.ok(Array.isArray(capturedTemplate));
   assert.equal(capturedTemplate[0].label, 'How to use');

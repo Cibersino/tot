@@ -96,14 +96,13 @@ function createMenuActionItem(menuTexts, labelKey, actionId, sendMenuClick) {
 }
 
 function resolveAppMenuName() {
-    const candidates = [];
-    if (typeof app.getName === 'function') candidates.push(app.getName());
-    candidates.push(app.name);
+    if (typeof app.name === 'string' && app.name.trim()) return app.name;
 
-    for (const candidate of candidates) {
-        if (typeof candidate === 'string' && candidate.trim()) return candidate;
-    }
-
+    log.warnOnce(
+        'menu_builder.appName.fallback',
+        'Application name unavailable; using fallback:',
+        'toT'
+    );
     return 'toT';
 }
 
@@ -218,7 +217,6 @@ function buildAppMenu(lang, opts) {
     const mainTexts = isPlainObject(translations.main) ? translations.main : {};
     const menuTexts = isPlainObject(mainTexts.menu) ? mainTexts.menu : {};
     const macMenuTexts = isPlainObject(menuTexts.mac) ? menuTexts.mac : {};
-    const appMenuName = resolveAppMenuName();
 
     const {
         resolveMainWindow,
@@ -352,6 +350,7 @@ function buildAppMenu(lang, opts) {
     // - Each click emits a stable action id (string).
     const menuTemplate = [];
     if (process.platform === 'darwin') {
+        const appMenuName = resolveAppMenuName();
         menuTemplate.push({
             label: appMenuName,
             submenu: [
