@@ -718,12 +718,16 @@ function registerIpc(ipcMain, menuDependencies = {}) {
   const {
     buildAppMenu,
     shouldRebuildAppMenu,
+    onMenuRebuildFailure,
   } = menuDependencies || {};
   if (typeof buildAppMenu !== 'function') {
     throw new Error('[settings] registerIpc requires buildAppMenu to be a function');
   }
   if (typeof shouldRebuildAppMenu !== 'function') {
     throw new Error('[settings] registerIpc requires shouldRebuildAppMenu to be a function');
+  }
+  if (typeof onMenuRebuildFailure !== 'function') {
+    throw new Error('[settings] registerIpc requires onMenuRebuildFailure to be a function');
   }
 
   function hideWindowMenu(win, name) {
@@ -781,11 +785,13 @@ function registerIpc(ipcMain, menuDependencies = {}) {
 
       const windows = resolvePublicationWindows();
 
+      let menuRebuildFailed = false;
       if (rebuildAppMenu) {
         const menuLang = settings.language;
         try {
           buildAppMenu(menuLang);
         } catch (error) {
+          menuRebuildFailed = true;
           log.warn('menu rebuild failed (ignored):', menuLang, error);
         }
       }
@@ -800,6 +806,14 @@ function registerIpc(ipcMain, menuDependencies = {}) {
       hideWindowMenu(textTimeCalculatorWin, 'textTimeCalculatorWin');
 
       publishSettingsUpdated(settings);
+
+      if (menuRebuildFailed) {
+        try {
+          await onMenuRebuildFailure(settings.language);
+        } catch (error) {
+          log.warn('Application-menu rebuild failure notification failed (ignored):', error);
+        }
+      }
 
       return { ok: true, language: settings.language };
     } catch (error) {

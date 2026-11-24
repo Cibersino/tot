@@ -685,7 +685,13 @@ Estados de revisión recomendados:
       "application_problem_title": {
         "es": "Problema de la aplicación",
         "en": "Application problem"
-        // [PROPÓSITO] Título contextual compartido por los diálogos nativos de terminación administrada, tanto durante el inicio como al recrear la ventana principal.
+        // [PROPÓSITO] Título genérico de los diálogos nativos que informan de problemas de la aplicación.
+      },
+      "application_menu_rebuild_failure_message": {
+        "es": "No se pudo actualizar el menú de la aplicación. Algunas opciones del menú o atajos de teclado podrían no estar disponibles. Reinicia la aplicación.",
+        "en": "The application menu could not be updated. Some menu items or keyboard shortcuts may be unavailable. Restart the application."
+        // [PROPÓSITO] Aviso nativo no terminal tras un fallo de construcción o instalación durante la reconstrucción del menú por cambio de idioma; conserva el idioma ya guardado, recomienda reiniciar y no afirma que el menú anterior siga disponible o funcional.
+        // [CONCEPTO_APP] menú de la aplicación; atajos de teclado
       },
       "startup_language_fallback_persistence_failure_message": {
         "es": "toT no pudo guardar el idioma predeterminado necesario para iniciar. La aplicación se cerrará.",

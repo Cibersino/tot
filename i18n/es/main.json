@@ -91,6 +91,7 @@
       "language_chooser_initial_document_failure_message": "La ventana de idioma no pudo cargarse.",
       "language_chooser_first_run_bootstrap_failure_message": "toT no pudo completar la selección de idioma. Se intentará continuar con el idioma predeterminado.",
       "application_problem_title": "Problema de la aplicación",
+      "application_menu_rebuild_failure_message": "No se pudo actualizar el menú de la aplicación. Algunas opciones del menú o atajos de teclado podrían no estar disponibles. Reinicia la aplicación.",
       "startup_language_fallback_persistence_failure_message": "toT no pudo guardar el idioma predeterminado necesario para iniciar. La aplicación se cerrará.",
       "startup_language_chooser_setup_failure_message": "toT no pudo preparar la selección de idioma necesaria para iniciar. La aplicación se cerrará.",
       "floating_stopwatch_initial_document_failure_message": "El Cronómetro Flotante no pudo cargarse y se cerrará.",

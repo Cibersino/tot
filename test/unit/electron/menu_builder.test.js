@@ -281,6 +281,24 @@ test('getDialogTexts provides terminal startup copy for required main-startup fa
   }
 });
 
+test('getDialogTexts provides runtime application-menu rebuild failure copy', (t) => {
+  const menuBuilder = loadFreshMenuBuilder(t);
+
+  const dialogTexts = menuBuilder.getDialogTexts('en');
+
+  assert.equal(
+    dialogTexts.application_menu_rebuild_failure_message,
+    'The application menu could not be updated. Some menu items or keyboard shortcuts may be unavailable. Restart the application.'
+  );
+
+  for (const language of ['es', 'en']) {
+    const localizedDialogTexts = menuBuilder.getDialogTexts(language);
+    const message = localizedDialogTexts.application_menu_rebuild_failure_message;
+    assert.equal(typeof message, 'string', `${language} application_menu_rebuild_failure_message`);
+    assert.ok(message.trim(), `${language} application_menu_rebuild_failure_message`);
+  }
+});
+
 test('getDialogTexts resolves F-09 startup notices through the selected language or DEFAULT_LANG', (t) => {
   const menuBuilder = loadFreshMenuBuilder(t);
 

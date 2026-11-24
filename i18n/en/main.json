@@ -91,6 +91,7 @@
       "language_chooser_initial_document_failure_message": "The language chooser could not load.",
       "language_chooser_first_run_bootstrap_failure_message": "toT could not complete language selection. It will try to continue with the fallback language.",
       "application_problem_title": "Application problem",
+      "application_menu_rebuild_failure_message": "The application menu could not be updated. Some menu items or keyboard shortcuts may be unavailable. Restart the application.",
       "startup_language_fallback_persistence_failure_message": "toT could not save the fallback language needed to start. The application will close.",
       "startup_language_chooser_setup_failure_message": "toT could not prepare the language selection needed to start. The application will close.",
       "floating_stopwatch_initial_document_failure_message": "The Floating Stopwatch could not load and will close.",

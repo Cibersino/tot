@@ -135,7 +135,11 @@ function createPresetHarness(t, {
   settings.configurePublication({ getWindows: () => ({ mainWin, presetWin }), decorateSettings: (value) => value, onSettingsUpdated: () => {} });
   settings.registerIpc(
     { handle: (channel, handler) => handlers.set(channel, handler) },
-    { buildAppMenu: () => {} }
+    {
+      buildAppMenu: () => {},
+      shouldRebuildAppMenu: () => true,
+      onMenuRebuildFailure: () => {},
+    }
   );
   let lastRead;
   const getSettings = settings.getSettings;

@@ -139,6 +139,7 @@ function registerSettingsIpc(settings, ipcMain, menuDependencies = {}) {
     shouldRebuildAppMenu() {
       return true;
     },
+    onMenuRebuildFailure() {},
     ...menuDependencies,
   });
 }
@@ -161,8 +162,10 @@ test('registerIpc requires application-menu rebuild dependencies before register
   const invalidDependencies = [
     [{ shouldRebuildAppMenu() { return true; } }, /requires buildAppMenu to be a function/],
     [{ buildAppMenu() {} }, /requires shouldRebuildAppMenu to be a function/],
+    [{ buildAppMenu() {}, shouldRebuildAppMenu() { return true; } }, /requires onMenuRebuildFailure to be a function/],
     [{ buildAppMenu: 'rebuild', shouldRebuildAppMenu() { return true; } }, /requires buildAppMenu to be a function/],
     [{ buildAppMenu() {}, shouldRebuildAppMenu: false }, /requires shouldRebuildAppMenu to be a function/],
+    [{ buildAppMenu() {}, shouldRebuildAppMenu() { return true; }, onMenuRebuildFailure: false }, /requires onMenuRebuildFailure to be a function/],
   ];
 
   for (const [menuDependencies, expectedError] of invalidDependencies) {
@@ -690,6 +693,7 @@ test('set-language defers only first-run menu installation to startup and retain
     shouldRebuildAppMenu() {
       return startupLanguageResolved;
     },
+    onMenuRebuildFailure() {},
   });
 
   const firstRunResult = await ipcMain.invoke('set-language', 'en');
@@ -715,6 +719,57 @@ test('set-language defers only first-run menu installation to startup and retain
   assert.equal(harness.getStoredValue().language, 'es');
   assert.deepEqual(menuBuilds, ['es']);
   assert.deepEqual(publishedLanguages, ['en', 'es']);
+});
+
+test('set-language retains and publishes the selected language despite runtime menu-rebuild and notification failures', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
+  });
+  const ipcMain = createIpcMainDouble();
+  const publishedLanguages = [];
+  const failureNotices = [];
+
+  initializeSettings(settings, harness);
+  settings.configurePublication({
+    getWindows: () => ({}),
+    onSettingsUpdated(nextSettings) {
+      publishedLanguages.push(nextSettings.language);
+    },
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.registerIpc(ipcMain, {
+    buildAppMenu() {
+      throw new Error('Menu.setApplicationMenu failed');
+    },
+    shouldRebuildAppMenu() {
+      return true;
+    },
+    async onMenuRebuildFailure(language) {
+      await Promise.resolve();
+      failureNotices.push({
+        language,
+        publishedLanguages: publishedLanguages.slice(),
+      });
+      throw new Error('Language Window unavailable');
+    },
+  });
+
+  const result = await ipcMain.invoke('set-language', 'es');
+
+  assert.deepEqual(result, { ok: true, language: 'es' });
+  assert.equal(harness.getStoredValue().language, 'es');
+  assert.deepEqual(publishedLanguages, ['es']);
+  assert.deepEqual(failureNotices, [{
+    language: 'es',
+    publishedLanguages: ['es'],
+  }]);
 });
 
 test('publishSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
