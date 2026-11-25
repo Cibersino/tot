@@ -513,9 +513,10 @@ function createEditorScriptHarness({
               }
               return initialTextApplyResult;
             },
-            async applyExternalUpdate(payload) {
+            async applyExternalUpdate(payload, options) {
               bootstrapApplyCalls.push({
                 payload,
+                options,
                 maxTextCharsAtApply: engineCtx.state.maxTextChars,
               });
               if (payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'text')) {
@@ -909,10 +910,18 @@ test('editor keeps a newer live current-text update over an older bootstrap snap
   await tick();
 
   assert.equal(harness.elements.editorArea.value, 'live newer text');
+  assert.equal(harness.bootstrapApplyCalls[0].options.duringStartup, true);
   assert.deepEqual(
     harness.bootstrapApplyCalls.map(({ payload }) => payload.text),
     ['live newer text']
   );
+
+  await harness.subscriptions.externalUpdate({
+    text: 'runtime text',
+    revision: 3,
+    meta: { source: 'main-window', action: 'overwrite' },
+  });
+  assert.equal(harness.bootstrapApplyCalls[1].options.duringStartup, false);
 });
 
 test('a pre-ready live mismatch reports bootstrap failure and prevents a pending snapshot from reporting ready', async () => {

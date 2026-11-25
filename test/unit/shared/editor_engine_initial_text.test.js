@@ -13,6 +13,8 @@ function createEditorDouble() {
     selectionStart: 0,
     selectionEnd: 0,
     style: {},
+    focusCalls: 0,
+    selectCalls: 0,
     addEventListener(type, listener) {
       const registered = listeners.get(type) || [];
       registered.push(listener);
@@ -23,14 +25,17 @@ function createEditorDouble() {
       return true;
     },
     select() {
-      this.selectionStart = 0;
-      this.selectionEnd = this.value.length;
+      this.selectCalls += 1;
+      throw new Error('startup must not select text');
     },
-    focus() {},
+    focus() {
+      this.focusCalls += 1;
+      throw new Error('startup must not focus the editor');
+    },
   };
 }
 
-test('initial Text Editor seed uses the suppressed whole-value application path and refreshes input-side presentation', async () => {
+test('initial Text Editor seed refreshes presentation without a native edit or local sync', async () => {
   const editor = createEditorDouble();
   const state = {
     maxTextChars: 100,
@@ -39,6 +44,7 @@ test('initial Text Editor seed uses the suppressed whole-value application path 
   const inputSuppressStates = [];
   let readProgress = '100%';
   let localSyncAttempts = 0;
+  let nativeEditCalls = 0;
 
   editor.addEventListener('input', () => {
     inputSuppressStates.push(state.suppressLocalUpdate);
@@ -65,7 +71,8 @@ test('initial Text Editor seed uses the suppressed whole-value application path 
     document: {
       activeElement: null,
       execCommand() {
-        return false;
+        nativeEditCalls += 1;
+        throw new Error('startup must not use native editing');
       },
     },
     Event: class Event {
@@ -83,7 +90,7 @@ test('initial Text Editor seed uses the suppressed whole-value application path 
   vm.runInContext(source, sandbox, { filename: 'public/js/editor_engine.js' });
 
   const engine = sandbox.window.EditorEngine.createEditorEngine({
-    SMALL_UPDATE_THRESHOLD: 5,
+    SMALL_UPDATE_THRESHOLD: 100,
     editorAPI: {
       setCurrentText() {},
     },
@@ -105,11 +112,18 @@ test('initial Text Editor seed uses the suppressed whole-value application path 
   assert.deepEqual(inputSuppressStates, [true]);
   assert.equal(readProgress, '20%');
   assert.equal(localSyncAttempts, 0);
+  assert.equal(editor.focusCalls, 0);
+  assert.equal(editor.selectCalls, 0);
+  assert.equal(nativeEditCalls, 0);
   assert.equal(state.suppressLocalUpdate, false);
 });
 
 test('initial Text Editor seed fails closed when the textarea does not match the effective text', async () => {
   const editor = createEditorDouble();
+  Object.defineProperty(editor, 'value', {
+    get() { return ''; },
+    set() {},
+  });
   const state = {
     maxTextChars: 100,
     suppressLocalUpdate: false,
@@ -131,9 +145,7 @@ test('initial Text Editor seed fails closed when the textarea does not match the
     },
     document: {
       activeElement: null,
-      execCommand() {
-        return true;
-      },
+      execCommand() { throw new Error('startup must not use native editing'); },
     },
     Event: class Event {
       constructor(type) {
