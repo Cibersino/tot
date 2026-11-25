@@ -96,14 +96,13 @@ function createMenuActionItem(menuTexts, labelKey, actionId, sendMenuClick) {
 }
 
 function resolveAppMenuName() {
-    const candidates = [];
-    if (typeof app.getName === 'function') candidates.push(app.getName());
-    candidates.push(app.name);
+    if (typeof app.name === 'string' && app.name.trim()) return app.name;
 
-    for (const candidate of candidates) {
-        if (typeof candidate === 'string' && candidate.trim()) return candidate;
-    }
-
+    log.warnOnce(
+        'menu_builder.appName.fallback',
+        'Application name unavailable; using fallback:',
+        'toT'
+    );
     return 'toT';
 }
 
@@ -186,41 +185,70 @@ function getDialogTexts(lang) {
  * - Labels come from i18n/<lang>/main.json (with fallbacks).
  * - Clicks send an action id to the renderer via 'menu-click'.
  *
- * @param {string} lang - Language code (e.g. 'es', 'en').
- * @param {object} [opts]
- * @param {Electron.BrowserWindow|null} [opts.mainWindow] - Target window for 'menu-click'.
- * @param {Function} [opts.resolveMainWindow] - Resolver for the target window.
- * @param {Function} [opts.isMenuEnabled] - Returns whether menu actions should dispatch.
- * @param {Function} [opts.getMenuBlockReason] - Optional reason provider when menu actions are blocked.
- * @param {Function} [opts.onOpenLanguage] - Callback that opens the language selection window.
+ * @param {string} lang - Required language code (e.g. 'es', 'en').
+ * @param {object} opts
+ * @param {Function} opts.resolveMainWindow - Resolves the target window for 'menu-click'.
+ * @param {Function} opts.isMenuEnabled - Returns whether menu actions should dispatch.
+ * @param {Function} opts.getMenuBlockReason - Provides the reason when menu actions are blocked.
+ * @param {Function} opts.onOpenLanguage - Opens the language selection window.
  */
-function buildAppMenu(lang, opts = {}) {
-    const effectiveLang = typeof lang === 'string' && lang.trim() ? lang.trim() : DEFAULT_LANG;
+function buildAppMenu(lang, opts) {
+    if (typeof lang !== 'string' || !lang.trim()) {
+        throw new Error('[menu_builder] buildAppMenu requires lang to be a non-empty string');
+    }
+    if (!opts || typeof opts !== 'object' || Array.isArray(opts)) {
+        throw new Error('[menu_builder] buildAppMenu requires opts to be a non-null, non-array object');
+    }
+
+    const requiredCallbacks = [
+        'resolveMainWindow',
+        'isMenuEnabled',
+        'getMenuBlockReason',
+        'onOpenLanguage',
+    ];
+    for (const callbackName of requiredCallbacks) {
+        if (typeof opts[callbackName] !== 'function') {
+            throw new Error(`[menu_builder] buildAppMenu requires opts.${callbackName} to be a function`);
+        }
+    }
+
+    const effectiveLang = lang.trim();
     const translations = loadMainTranslations(effectiveLang);
     const mainTexts = isPlainObject(translations.main) ? translations.main : {};
     const menuTexts = isPlainObject(mainTexts.menu) ? mainTexts.menu : {};
     const macMenuTexts = isPlainObject(menuTexts.mac) ? menuTexts.mac : {};
-    const appMenuName = resolveAppMenuName();
 
-    const resolveMainWindow =
-        typeof opts.resolveMainWindow === 'function'
-            ? opts.resolveMainWindow
-            : () => (opts.mainWindow || null);
-
-    const isMenuEnabled =
-        typeof opts.isMenuEnabled === 'function'
-            ? opts.isMenuEnabled
-            : () => true;
-
-    const getMenuBlockReason =
-        typeof opts.getMenuBlockReason === 'function'
-            ? opts.getMenuBlockReason
-            : () => 'pre_ready';
+    const {
+        resolveMainWindow,
+        isMenuEnabled,
+        getMenuBlockReason,
+        onOpenLanguage,
+    } = opts;
 
     const canDispatchMenuAction = (actionId) => {
-        if (isMenuEnabled()) return true;
-        const reasonRaw = String(getMenuBlockReason(actionId) || '').trim();
-        const reason = reasonRaw || 'interaction_locked';
+        const menuEnabled = isMenuEnabled();
+        if (menuEnabled === true) return true;
+        if (menuEnabled !== false) {
+            log.warnOnce(
+                'menu_builder.contract.isMenuEnabled.invalidResult',
+                'isMenuEnabled callback contract violation: expected boolean; menu action denied.',
+                { actionId, resultType: typeof menuEnabled }
+            );
+            return false;
+        }
+
+        const blockReasonResult = getMenuBlockReason(actionId);
+        const normalizedBlockReason = typeof blockReasonResult === 'string'
+            ? blockReasonResult.trim()
+            : '';
+        const reason = normalizedBlockReason || 'interaction_locked';
+        if (!normalizedBlockReason) {
+            log.warnOnce(
+                'menu_builder.contract.getMenuBlockReason.invalidResult',
+                'getMenuBlockReason callback contract violation: expected non-empty string; using interaction_locked.',
+                { actionId, resultType: typeof blockReasonResult }
+            );
+        }
         const reasonLabel = describeMenuBlockReason(reason);
         log.warnOnce(
             `menu_builder.inert.${reason}:${actionId}`,
@@ -285,10 +313,6 @@ function buildAppMenu(lang, opts = {}) {
         },
     });
 
-    // Optional integration hook supplied by main.js for the language picker.
-    const onOpenLanguage =
-        typeof opts.onOpenLanguage === 'function' ? opts.onOpenLanguage : null;
-
     // Send a menu action to the renderer.
     // If the window is missing/closing, we drop the action and log once (best-effort IPC).
     const sendMenuClick = (payload) => {
@@ -326,6 +350,7 @@ function buildAppMenu(lang, opts = {}) {
     // - Each click emits a stable action id (string).
     const menuTemplate = [];
     if (process.platform === 'darwin') {
+        const appMenuName = resolveAppMenuName();
         menuTemplate.push({
             label: appMenuName,
             submenu: [
@@ -372,12 +397,6 @@ function buildAppMenu(lang, opts = {}) {
                     // The window lifecycle is handled by main.js; this module only calls the hook.
                     click: () => {
                         if (!canDispatchMenuAction('menu.language')) return;
-                        if (!onOpenLanguage) {
-                            log.warn(
-                                'Language menu clicked but no handler was provided (ignored).'
-                            );
-                            return;
-                        }
                         try {
                             onOpenLanguage();
                         } catch (error) {

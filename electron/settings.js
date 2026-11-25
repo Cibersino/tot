@@ -710,9 +710,24 @@ function applyFallbackLanguageIfUnset(fallbackLang = DEFAULT_LANG) {
  * - set-selected-preset
  * - set-preview-spoiler-enabled
  */
-function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
+function registerIpc(ipcMain, menuDependencies = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[settings] registerIpc requires ipcMain');
+  }
+
+  const {
+    buildAppMenu,
+    shouldRebuildAppMenu,
+    onMenuRebuildFailure,
+  } = menuDependencies || {};
+  if (typeof buildAppMenu !== 'function') {
+    throw new Error('[settings] registerIpc requires buildAppMenu to be a function');
+  }
+  if (typeof shouldRebuildAppMenu !== 'function') {
+    throw new Error('[settings] registerIpc requires shouldRebuildAppMenu to be a function');
+  }
+  if (typeof onMenuRebuildFailure !== 'function') {
+    throw new Error('[settings] registerIpc requires onMenuRebuildFailure to be a function');
   }
 
   function hideWindowMenu(win, name) {
@@ -755,6 +770,14 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
         return { ok: false, code: 'UNSUPPORTED_LANGUAGE' };
       }
 
+      // The first-run picker persists the selection before startup owns its one initial menu installation. Later user-initiated changes rebuild here.
+      const rebuildAppMenu = shouldRebuildAppMenu();
+      if (typeof rebuildAppMenu !== 'boolean') {
+        throw new Error(
+          `[settings] shouldRebuildAppMenu must return a boolean; received ${typeof rebuildAppMenu}`
+        );
+      }
+
       let settings = getSettings();
       const nextSettings = cloneSettingsForMutation(settings);
       nextSettings.language = chosen;
@@ -762,22 +785,14 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
 
       const windows = resolvePublicationWindows();
 
-      // The first-run picker persists the selection before startup owns its one initial menu installation. Later user-initiated changes rebuild here.
-      const rebuildAppMenu = typeof shouldRebuildAppMenu !== 'function'
-        || shouldRebuildAppMenu() !== false;
+      let menuRebuildFailed = false;
       if (rebuildAppMenu) {
         const menuLang = settings.language;
-        if (typeof buildAppMenu !== 'function') {
-          log.warn(
-            'buildAppMenu unavailable; menu rebuild skipped.',
-            { type: typeof buildAppMenu }
-          );
-        } else {
-          try {
-            buildAppMenu(menuLang);
-          } catch (error) {
-            log.warn('menu rebuild failed (ignored):', menuLang, error);
-          }
+        try {
+          buildAppMenu(menuLang);
+        } catch (error) {
+          menuRebuildFailed = true;
+          log.warn('menu rebuild failed (ignored):', menuLang, error);
         }
       }
 
@@ -791,6 +806,14 @@ function registerIpc(ipcMain, { buildAppMenu, shouldRebuildAppMenu } = {}) {
       hideWindowMenu(textTimeCalculatorWin, 'textTimeCalculatorWin');
 
       publishSettingsUpdated(settings);
+
+      if (menuRebuildFailed) {
+        try {
+          await onMenuRebuildFailure(settings.language);
+        } catch (error) {
+          log.warn('Application-menu rebuild failure notification failed (ignored):', error);
+        }
+      }
 
       return { ok: true, language: settings.language };
     } catch (error) {

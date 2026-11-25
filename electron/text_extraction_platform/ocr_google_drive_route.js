@@ -19,7 +19,11 @@
 const fs = require('fs');
 const path = require('path');
 const Log = require('../log');
-const { OCR_IMAGE_UPLOAD_LIMIT_MB } = require('../constants_main');
+const {
+  OCR_IMAGE_UPLOAD_LIMIT_MB,
+  OCR_CANCEL_CREATE_GRACE_MS,
+  OCR_CANCEL_DELETE_GRACE_MS,
+} = require('../constants_main');
 const { google } = require('googleapis');
 const {
   PROVIDER_API_DISABLED_CODE,
@@ -194,6 +198,50 @@ function sleep(ms) {
   });
 }
 
+function isAbortFailure(error) {
+  let current = error;
+  for (let depth = 0; current && depth < 5; depth += 1) {
+    if (current.name === 'AbortError' || current.code === 'ABORT_ERR' || current.code === 'AbortError') return true;
+    current = current.cause;
+  }
+  return false;
+}
+
+async function runCancellationAwareStage({ oauthClient, cancellationSignal, graceMs, onInterrupt, run }) {
+  if (!cancellationSignal) return run(undefined);
+
+  const stageController = new AbortController();
+  const originalTransporter = oauthClient.transporter;
+  let timer = null;
+  const interrupt = () => {
+    if (onInterrupt) onInterrupt();
+    stageController.abort();
+  };
+  const onCancel = () => {
+    if (graceMs === 0) interrupt();
+    else timer = setTimeout(interrupt, graceMs);
+  };
+  if (originalTransporter && typeof originalTransporter.request === 'function') {
+    const transporter = Object.create(originalTransporter);
+    transporter.request = (options = {}) => originalTransporter.request.call(originalTransporter, {
+      ...options,
+      signal: options.signal && options.signal !== stageController.signal
+        ? AbortSignal.any([options.signal, stageController.signal])
+        : stageController.signal,
+    });
+    oauthClient.transporter = transporter;
+  }
+  cancellationSignal.addEventListener('abort', onCancel, { once: true });
+  if (cancellationSignal.aborted) onCancel();
+  try {
+    return await run(stageController.signal);
+  } finally {
+    cancellationSignal.removeEventListener('abort', onCancel);
+    if (timer) clearTimeout(timer);
+    if (originalTransporter) oauthClient.transporter = originalTransporter;
+  }
+}
+
 function ensureNotAborted(isAborted) {
   if (typeof isAborted === 'function' && isAborted()) {
     const abortError = new Error('Extraction cancelled by user.');
@@ -328,7 +376,7 @@ function sanitizeLeadingOcrSeparatorArtifact(rawText) {
   };
 }
 
-async function runWithRateLimitRetry({ operationName, isAborted, fn }) {
+async function runWithRateLimitRetry({ operationName, isAborted, isInterrupted, fn }) {
   let attempt = 0;
 
   while (attempt < MAX_RATE_LIMIT_ATTEMPTS) {
@@ -338,6 +386,10 @@ async function runWithRateLimitRetry({ operationName, isAborted, fn }) {
     try {
       return await fn();
     } catch (error) {
+      if ((typeof isAborted === 'function' && isAborted())
+        || (typeof isInterrupted === 'function' && isInterrupted())) {
+        throw error;
+      }
       const parsedFailure = parseProviderFailure(error);
       const retryable = isRetryableRateLimit(parsedFailure);
       if (retryable && attempt < MAX_RATE_LIMIT_ATTEMPTS) {
@@ -434,6 +486,7 @@ async function runGoogleDriveOcrRoute({
   bundledCredentialsFailureDetailsSafeForLogs = {},
   ocrLanguage = '',
   isAborted,
+  cancellationSignal,
 } = {}) {
   const fileInfo = getFileInfo(filePath);
   const provenance = {
@@ -576,6 +629,13 @@ async function runGoogleDriveOcrRoute({
   let result = null;
   const cleanupWarnings = [];
   let uploadInput = null;
+  let createInterrupted = false;
+  let createInFlight = false;
+  let createAttempted = false;
+  let createFailureAmbiguous = false;
+  let createOutcomeUnknown = false;
+  let exportInterrupted = false;
+  let deleteInterrupted = false;
 
   try {
     ensureNotAborted(isAborted);
@@ -629,11 +689,45 @@ async function runGoogleDriveOcrRoute({
         createRequest.ocrLanguage = ocrLanguage.trim();
       }
 
-      const createResponse = await runWithRateLimitRetry({
-        operationName: 'upload_convert',
-        isAborted,
-        fn: async () => drive.files.create(createRequest),
-      });
+      const uploadStream = createRequest.media.body;
+      let createResponse;
+      try {
+        createResponse = await runCancellationAwareStage({
+          oauthClient,
+          cancellationSignal,
+          graceMs: OCR_CANCEL_CREATE_GRACE_MS,
+          onInterrupt: () => {
+            createInterrupted = createInFlight;
+            uploadStream.destroy();
+          },
+          run: (signal) => runWithRateLimitRetry({
+            operationName: 'upload_convert',
+            isAborted,
+            fn: async () => {
+              createAttempted = true;
+              createInFlight = true;
+              try {
+                return await drive.files.create(createRequest, signal ? { signal } : undefined);
+              } catch (error) {
+                const status = Number(error && error.response && error.response.status);
+                // A server error or timeout does not establish whether conversion completed.
+                createFailureAmbiguous = !Number.isInteger(status)
+                  || status < 400 || status >= 500 || status === 408;
+                throw error;
+              } finally {
+                createInFlight = false;
+              }
+            },
+          }),
+        });
+      } finally {
+        if (cancellationSignal && cancellationSignal.aborted && !uploadStream.destroyed) {
+          uploadStream.destroy();
+        }
+        if (cancellationSignal && cancellationSignal.aborted && !uploadStream.closed) {
+          await new Promise((resolve) => uploadStream.once('close', resolve));
+        }
+      }
 
       tempDocumentId = createResponse && createResponse.data && createResponse.data.id
         ? String(createResponse.data.id)
@@ -644,16 +738,22 @@ async function runGoogleDriveOcrRoute({
 
       ensureNotAborted(isAborted);
 
-      const exportResponse = await runWithRateLimitRetry({
-        operationName: 'export_text',
-        isAborted,
-        fn: async () => drive.files.export(
-          {
-            fileId: tempDocumentId,
-            mimeType: 'text/plain',
-          },
-          { responseType: 'arraybuffer' }
-        ),
+      const exportResponse = await runCancellationAwareStage({
+        oauthClient,
+        cancellationSignal,
+        graceMs: 0,
+        onInterrupt: () => { exportInterrupted = true; },
+        run: (signal) => runWithRateLimitRetry({
+          operationName: 'export_text',
+          isAborted,
+          fn: async () => drive.files.export(
+            {
+              fileId: tempDocumentId,
+              mimeType: 'text/plain',
+            },
+            { responseType: 'arraybuffer', ...(signal ? { signal } : {}) }
+          ),
+        }),
       });
 
       ensureNotAborted(isAborted);
@@ -678,9 +778,28 @@ async function runGoogleDriveOcrRoute({
       });
     }
   } catch (error) {
+    if (error && error.cleanupWarning) {
+      cleanupWarnings.push(error.cleanupWarning);
+    }
     const errorCode = getErrorCode(error);
+    const cancelledTransport = (createInterrupted || exportInterrupted) && isAbortFailure(error);
+    if (!tempDocumentId && createAttempted && cancellationSignal && cancellationSignal.aborted
+      && (createInterrupted || createFailureAmbiguous)) {
+      createOutcomeUnknown = true;
+    }
 
-    if (errorCode === 'aborted_by_user') {
+    if (errorCode === 'aborted_by_user' || (cancellationSignal && cancellationSignal.aborted)) {
+      if (errorCode !== 'aborted_by_user' && !cancelledTransport) {
+        const failure = parseProviderFailure(error);
+        log.warn('OCR operation failed during cancellation:', {
+          stage: tempDocumentId ? 'export' : 'upload_convert',
+          errorCode,
+          statusCode: failure.statusCode,
+          reasonCode: String(failure.errorsReason || failure.errorInfoReason || ''),
+          providerStatus: String(failure.providerStatus || ''),
+          networkErrorCode: failure.networkErrorCode,
+        });
+      }
       result = buildResultWithError({
         state: 'cancelled',
         summary: 'OCR route cancelled by user.',
@@ -732,17 +851,33 @@ async function runGoogleDriveOcrRoute({
       });
     }
   } finally {
+    if ((createInterrupted || createOutcomeUnknown) && !tempDocumentId) {
+      cleanupWarnings.push({ origin: 'remote', warningCode: 'cleanup:ocr_create_outcome_unknown' });
+      log.warn('OCR create during cancellation has an unknown temporary document outcome.');
+    }
     if (tempDocumentId) {
       try {
-        await runWithRateLimitRetry({
-          operationName: 'cleanup_delete_temp_doc',
-          isAborted: () => false,
-          fn: async () => drive.files.delete({ fileId: tempDocumentId }),
+        await runCancellationAwareStage({
+          oauthClient,
+          cancellationSignal,
+          graceMs: OCR_CANCEL_DELETE_GRACE_MS,
+          onInterrupt: () => { deleteInterrupted = true; },
+          run: (signal) => runWithRateLimitRetry({
+            operationName: 'cleanup_delete_temp_doc',
+            isAborted: () => false,
+            isInterrupted: () => !!(signal && signal.aborted),
+            fn: async () => {
+              if (signal && signal.aborted) throw new Error('OCR cleanup interrupted.');
+              return drive.files.delete({ fileId: tempDocumentId }, signal ? { signal } : undefined);
+            },
+          }),
         });
       } catch (error) {
         const parsedCleanupFailure = parseProviderFailure(error);
-        const cleanupCode = classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed';
-        cleanupWarnings.push(`cleanup:${cleanupCode}`);
+        const cleanupCode = deleteInterrupted
+          ? 'ocr_delete_outcome_unknown'
+          : (classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed');
+        cleanupWarnings.push({ origin: 'remote', warningCode: `cleanup:${cleanupCode}` });
         log.warn('OCR cleanup delete temp document failed (ignored):', {
           tempDocumentId,
           warning: `cleanup:${cleanupCode}`,
@@ -759,7 +894,7 @@ async function runGoogleDriveOcrRoute({
     if (uploadInput && typeof uploadInput.cleanup === 'function') {
       const cleanupWarning = uploadInput.cleanup();
       if (cleanupWarning && typeof cleanupWarning.warningCode === 'string') {
-        cleanupWarnings.push(cleanupWarning.warningCode);
+        cleanupWarnings.push(cleanupWarning);
         log.warn('OCR upload cleanup failed (ignored):', {
           warningCode: cleanupWarning.warningCode,
           ...(cleanupWarning.detailsSafeForLogs && typeof cleanupWarning.detailsSafeForLogs === 'object'
@@ -785,7 +920,8 @@ async function runGoogleDriveOcrRoute({
 
   if (cleanupWarnings.length > 0) {
     result.warnings = Array.isArray(result.warnings) ? result.warnings : [];
-    result.warnings.push(...cleanupWarnings);
+    result.warnings.push(...cleanupWarnings.map((warning) => warning.warningCode));
+    result.cleanupWarnings = cleanupWarnings.map(({ origin, warningCode }) => ({ origin, warningCode }));
     if (result.state === 'success') {
       result.summary = 'OCR route succeeded with cleanup warning.';
     }

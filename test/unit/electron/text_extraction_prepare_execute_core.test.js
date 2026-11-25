@@ -244,6 +244,7 @@ function loadCoreWithNativeRouteMock(mockRunNativeExtractionRoute) {
 }
 
 function createIdleController({ changed = true, active = false, lockId = active ? 1 : 0, state = null } = {}) {
+  const cancellation = new AbortController();
   const currentState = state && typeof state === 'object'
     ? { ...state }
     : {
@@ -256,6 +257,7 @@ function createIdleController({ changed = true, active = false, lockId = active 
   return {
     enterCalls: [],
     exitCalls: [],
+    getCancellationSignal() { return cancellation.signal; },
     enter(payload) {
       this.enterCalls.push(payload);
       return { changed, state: { ...currentState } };
@@ -277,6 +279,7 @@ function createIdleController({ changed = true, active = false, lockId = active 
 function createExecutingController() {
   let active = false;
   let lockId = 0;
+  let cancellation = null;
 
   return {
     enterCalls: [],
@@ -285,6 +288,7 @@ function createExecutingController() {
       this.enterCalls.push(payload);
       active = true;
       lockId += 1;
+      cancellation = new AbortController();
       return { changed: true, state: this.getState() };
     },
     exit(payload) {
@@ -293,6 +297,9 @@ function createExecutingController() {
     },
     isActive() {
       return active;
+    },
+    getCancellationSignal(requestedLockId) {
+      return requestedLockId === lockId && cancellation ? cancellation.signal : null;
     },
     getState() {
       return {
@@ -305,6 +312,7 @@ function createExecutingController() {
     },
     cancelCurrent() {
       active = false;
+      cancellation.abort();
     },
     activateReplacement(nextLockId) {
       active = true;
@@ -728,7 +736,58 @@ test('prepareSelectedFile returns a structured unsupported-format failure when n
   assert.equal(result.error.code, 'unsupported_format');
 });
 
-test('executePreparedImport treats execution-time unsupported format as a native runtime error', async (t) => {
+test('preparation classifies generic PDF probe and OCR availability failures by their stage', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockProbeNativePdfSelectableText: async () => ({ state: 'failure', error: { code: 'native_extraction_failed' } }),
+    mockValidateGoogleDriveOcrSetup: async () => ({ ok: false, state: 'failure', error: { code: 'platform_runtime_failed' } }),
+  });
+  t.after(restore);
+  const pdf = await core.prepareSelectedFile({ filePath: SELECTABLE_PDF_FIXTURE, resolvePaths: resolveHeavySplitTestPaths, log: silentLog });
+  const image = await core.prepareSelectedFile({ filePath: 'scan.png', resolvePaths: resolveHeavySplitTestPaths, log: silentLog });
+  assert.equal(pdf.error.code, 'native_extraction_failed');
+  assert.equal(pdf.primaryAlertKey, 'renderer.text_extraction.alerts.prepare_error');
+  assert.equal(image.error.code, 'platform_runtime_failed');
+  assert.equal(image.primaryAlertKey, 'renderer.text_extraction.alerts.ocr.unavailable');
+});
+
+test('execution uses route-specific and file-specific messages while preserving diagnostic codes', async (t) => {
+  let failureCode = '';
+  const routeResult = async () => ({ state: 'failure', text: '', warnings: [], error: { code: failureCode }, provenance: { metadataSafeForLogs: {} } });
+  const { core, restore } = loadCoreWithMocks({ mockRunNativeExtractionRoute: routeResult, mockRunGoogleDriveOcrRoute: routeResult });
+  t.after(restore);
+  const cases = [
+    ['native', 'native_extraction_failed', 'native.runtime_error'],
+    ['native', 'unsupported_format', 'unsupported_format'],
+    ['native', 'unreadable_or_corrupt', 'unreadable_or_corrupt'],
+    ['native', 'native_encrypted_or_password_protected', 'pdf.encrypted_or_password_protected'],
+    ['ocr', 'unsupported_format', 'unsupported_format'],
+    ['ocr', 'unreadable_or_corrupt', 'unreadable_or_corrupt'],
+    ['ocr', 'platform_runtime_failed', 'ocr.runtime_error'],
+    ['ocr', 'provider_api_disabled', 'ocr.unavailable'],
+    ['ocr', 'ocr_export_failed', 'ocr.runtime_error'],
+    ['ocr', 'ocr_image_upload_too_large', 'ocr.image_upload_too_large'],
+  ];
+  for (const [route, code, key] of cases) {
+    failureCode = code;
+    const fileInfo = getFileInfo(route === 'native' ? 'sample.txt' : 'scan.png');
+    const result = await core.executePreparedImport({
+      preparedRecord: {
+        fileInfo,
+        ocrLanguage: 'es',
+        routeMetadata: { availableRoutes: [route], chosenRoute: route },
+        processingInputFileName: fileInfo.fileName,
+        requiresRouteChoice: false,
+      },
+      routePreference: '',
+      resolvePaths: resolveHeavySplitTestPaths,
+      controller: createExecutingController(),
+    });
+    assert.equal(result.result.error.code, code);
+    assert.equal(result.primaryAlertKey, `renderer.text_extraction.alerts.${key}`, `${route}: ${code}`);
+  }
+});
+
+test('executePreparedImport reports execution-time unsupported format specifically', async (t) => {
   const { core, restore } = loadCoreWithNativeRouteMock(async () => ({
     state: 'failure',
     executedRoute: 'native',
@@ -788,7 +847,7 @@ test('executePreparedImport treats execution-time unsupported format as a native
   assert.equal(result.executionKind, 'native');
   assert.equal(result.result.state, 'failure');
   assert.equal(result.result.error.code, 'unsupported_format');
-  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.native.runtime_error');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.unsupported_format');
 });
 
 test('inspectSelectedFile returns PDF page-count metadata for selectable fixture', async () => {
@@ -1065,6 +1124,7 @@ test('prepareSelectedFile fails instead of silently demoting a forced full-sourc
   assert.equal(result.ok, true);
   assert.equal(result.prepareFailed, true);
   assert.equal(result.error.code, 'heavy_split_plan_invalid');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.prepare_error');
   assert.equal(result.routeMetadata.heavySplitEligible, false);
   assert.deepEqual(result.pdfPageSelection, {
     mode: 'all',
@@ -1114,7 +1174,7 @@ test('executePreparedImport rejects unresolved route choice before starting work
   assert.deepEqual(result, {
     ok: false,
     code: 'ROUTE_CHOICE_REQUIRED',
-    primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
+    primaryAlertKey: 'renderer.text_extraction.alerts.route_resolution_failed',
   });
   assert.deepEqual(controller.enterCalls, []);
   assert.deepEqual(controller.exitCalls, []);
@@ -1249,6 +1309,89 @@ test('executePreparedImport maps oversized OCR image uploads to the dedicated al
   assert.equal(result.result.error.code, 'ocr_image_upload_too_large');
   assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.ocr.image_upload_too_large');
   assert.deepEqual(result.warningAlertKeys, []);
+});
+
+test('OCR execution receives the actual controller cancellation and surfaces its cleanup warning', async (t) => {
+  const tempDir = createTestTempDir('ocr-controller-cancellation');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'scan.png');
+  fs.writeFileSync(source, 'image');
+  const { createController } = require('../../../electron/text_extraction_platform/text_extraction_processing_mode_ipc');
+  const controller = createController({ onStateChanged() {} });
+  let start;
+  const started = new Promise((resolve) => { start = resolve; });
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async ({ cancellationSignal, isAborted }) => {
+      assert.equal(cancellationSignal.aborted, false);
+      start();
+      await new Promise((resolve) => cancellationSignal.addEventListener('abort', resolve, { once: true }));
+      assert.equal(isAborted(), true);
+      return {
+        state: 'cancelled', executedRoute: 'ocr', text: '',
+        warnings: ['cleanup:ocr_create_outcome_unknown'],
+        cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:ocr_create_outcome_unknown' }],
+        provenance: { metadataSafeForLogs: {} }, error: { code: 'aborted_by_user' },
+      };
+    },
+    pdfPageSelectionOverrides: {
+      async materializePdfPageSelectionInput() {
+        return { ok: true, effectiveFilePath: source, processingInputFileName: 'scan.png' };
+      },
+    },
+  });
+  t.after(restore);
+  const execution = core.executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo(source), ocrLanguage: 'es',
+      routeMetadata: { availableRoutes: ['ocr'], chosenRoute: 'ocr', heavySplitEligible: false },
+      requiresRouteChoice: false, routeChoiceOptions: [],
+    },
+    resolvePaths: () => ({}), controller,
+  });
+  await started;
+  controller.requestAbort();
+  const result = await execution;
+  assert.equal(result.result.state, 'cancelled');
+  assert.deepEqual(result.warningAlertKeys, ['renderer.text_extraction.alerts.cleanup_remote_warning']);
+});
+
+test('individual OCR warnings use producer origins and retain diagnostic warnings', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async () => ({
+      state: 'success', executedRoute: 'ocr', text: 'text',
+      warnings: ['empty_extraction', 'cleanup:image_normalization_cleanup_failed', 'cleanup:provider_specific_failure'],
+      cleanupWarnings: [
+        { origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' },
+        { origin: 'remote', warningCode: 'cleanup:provider_specific_failure' },
+      ],
+    }),
+  });
+  t.after(restore);
+  const fileInfo = getFileInfo('scan.png');
+  const result = await core.executePreparedImport({
+    preparedRecord: { fileInfo, ocrLanguage: 'es', routeMetadata: { availableRoutes: ['ocr'], chosenRoute: 'ocr' } },
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+  });
+  assert.deepEqual(result.result.warnings, ['empty_extraction', 'cleanup:image_normalization_cleanup_failed', 'cleanup:provider_specific_failure']);
+  assert.deepEqual(result.warningAlertKeys, [
+    'renderer.text_extraction.alerts.cleanup_local_warning',
+    'renderer.text_extraction.alerts.cleanup_remote_warning',
+  ]);
+});
+
+test('OCR execution rejects a controller that cannot provide cancellation signals', async () => {
+  const controller = createExecutingController();
+  delete controller.getCancellationSignal;
+  await assert.rejects(executePreparedImport({
+    preparedRecord: {
+      fileInfo: getFileInfo(SELECTABLE_PDF_FIXTURE),
+      routeMetadata: { availableRoutes: ['ocr'], chosenRoute: 'ocr' },
+      routeChoiceOptions: [],
+    },
+    controller,
+  }), /requires a cancellation signal/);
+  assert.equal(controller.isActive(), false);
 });
 
 test('executePreparedImport materializes the selected PDF range for native success and preserves original provenance', async (t) => {
@@ -1558,6 +1701,7 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
         retainedArtifactPath: '',
         cleanupGeneratedArtifact: () => ({
           warningCode: 'cleanup:pdf_subset_cleanup_failed',
+          origin: 'local',
           detailsSafeForLogs: {
             stage: 'cleanup_generated_subset',
             runDir: 'C:\\temp\\tot-run',
@@ -1611,7 +1755,7 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
   assert.equal(result.result.state, 'success');
   assert.deepEqual(result.result.warnings, ['cleanup:pdf_subset_cleanup_failed']);
   assert.deepEqual(result.warningAlertKeys, [
-    'renderer.text_extraction.alerts.generated_pdf_cleanup_warning',
+    'renderer.text_extraction.alerts.cleanup_local_warning',
   ]);
   assert.equal(warnCalls.length, 1);
   assert.equal(warnCalls[0][0], 'Generated PDF subset cleanup failed (ignored):');
@@ -1621,6 +1765,65 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
     runDir: 'C:\\temp\\tot-run',
     fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
   });
+});
+
+test('PDF materialization failure retains its cleanup warning in the ordinary result', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    pdfPageSelectionOverrides: {
+      async materializePdfPageSelectionInput() {
+        return {
+          ok: false,
+          error: { code: 'pdf_subset_creation_failed' },
+          cleanupWarning: { origin: 'local', warningCode: 'cleanup:pdf_subset_cleanup_failed' },
+        };
+      },
+    },
+  });
+  t.after(restore);
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+  const result = await core.executePreparedImport({
+    preparedRecord: { fileInfo, routeMetadata: { availableRoutes: ['native'], chosenRoute: 'native' } },
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+  });
+  assert.equal(result.result.state, 'failure');
+  assert.equal(result.result.error.code, 'pdf_subset_creation_failed');
+  assert.deepEqual(result.result.warnings, ['cleanup:pdf_subset_cleanup_failed']);
+  assert.deepEqual(result.result.cleanupWarnings, [{ origin: 'local', warningCode: 'cleanup:pdf_subset_cleanup_failed' }]);
+  assert.deepEqual(result.warningAlertKeys, ['renderer.text_extraction.alerts.cleanup_local_warning']);
+});
+
+test('invalid heavy-split execution metadata returns a classified execution result', async () => {
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+  const controller = createExecutingController();
+  const result = await executePreparedImport({
+    preparedRecord: {
+      fileInfo,
+      ocrLanguage: 'es',
+      planningMode: 'batch',
+      forceHeavySplitFullSource: true,
+      processingInputFileName: fileInfo.fileName,
+      routeMetadata: {
+        availableRoutes: ['ocr'],
+        chosenRoute: 'ocr',
+        heavySplitEligible: true,
+        heavySplitPreview: { ok: true, generatedInputs: [] },
+      },
+      requiresRouteChoice: false,
+    },
+    routePreference: 'ocr',
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller,
+    log: silentLog,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.result.state, 'failure');
+  assert.equal(result.result.error.code, 'heavy_split_plan_invalid');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.execution_error');
+  assert.equal(controller.enterCalls.length, 1);
+  assert.equal(controller.exitCalls.length, 1);
+  assert.equal(controller.isActive(), false);
 });
 
 test('executePreparedImport processes heavy split through generated child PDFs instead of uploading the full source PDF', async (t) => {
@@ -1953,6 +2156,7 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
           retainedArtifactPath: '',
           cleanupGeneratedArtifact: () => ({
             warningCode: 'cleanup:pdf_subset_cleanup_failed',
+            origin: 'local',
             detailsSafeForLogs: {
               stage: 'cleanup_generated_subset',
               runDir: `C:\\temp\\tot-run-${fromPage}-${toPage}`,
@@ -2051,7 +2255,8 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
     'cleanup:pdf_subset_cleanup_failed',
   ]);
   assert.deepEqual(result.warningAlertKeys, [
-    'renderer.text_extraction.alerts.generated_pdf_cleanup_warning',
+    'renderer.text_extraction.alerts.cleanup_local_warning',
+    'renderer.text_extraction.alerts.cleanup_local_warning',
   ]);
   assert.equal(warnCalls.length, 2);
   assert.deepEqual(warnCalls[0], [
@@ -2072,6 +2277,80 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
       fileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
     },
   ]);
+});
+
+test('heavy split preserves cleanup incidents through success, failure, cancellation and exceptions', async () => {
+  for (const scenario of ['success', 'failure', 'failure_stop', 'invalid', 'materialize_failure', 'cancel_child', 'cancel_before_route', 'exception']) {
+    const controller = createExecutingController();
+    let materialized = 0;
+    let dispatched = 0;
+    const { core, restore } = loadCoreWithMocks({
+      pdfPageSelectionOverrides: {
+        async materializePdfPageSelectionInput() {
+          materialized += 1;
+          if (scenario === 'cancel_before_route' && materialized === 2) controller.cancelCurrent();
+          if (scenario === 'materialize_failure' && materialized === 2) {
+            return {
+              ok: false,
+              error: { code: 'pdf_subset_creation_failed' },
+              cleanupWarning: { origin: 'local', warningCode: 'cleanup:pdf-2' },
+            };
+          }
+          return {
+            ok: true,
+            effectiveFilePath: 'generated.pdf',
+            processingInputFileName: `part-${materialized}.pdf`,
+            cleanupGeneratedArtifact: () => ({ origin: 'local', warningCode: `cleanup:pdf-${materialized}` }),
+          };
+        },
+      },
+      mockRunGoogleDriveOcrRoute: async () => {
+        dispatched += 1;
+        if (scenario === 'exception' && dispatched === 2) throw new Error('unexpected provider failure');
+        const result = {
+          state: 'success', text: 'text',
+          warnings: ['empty_extraction', `cleanup:remote-${dispatched}`],
+          cleanupWarnings: [{ origin: 'remote', warningCode: `cleanup:remote-${dispatched}` }],
+        };
+        if ((scenario === 'failure' || scenario === 'failure_stop') && dispatched === 2) {
+          result.state = 'failure';
+          result.error = { code: 'ocr_conversion_failed' };
+        }
+        if (scenario === 'invalid' && dispatched === 2) result.text = null;
+        if (scenario === 'cancel_child' && dispatched === 2) {
+          result.state = 'cancelled';
+          result.error = { code: 'aborted_by_user' };
+        }
+        return result;
+      },
+    });
+    try {
+      const result = await core.executePreparedImport({
+        preparedRecord: createHeavySplitPreparedRecord(createHeavySplitGeneratedInputs(scenario === 'failure_stop' ? 3 : 2)),
+        routePreference: 'ocr',
+        heavySplitFailurePolicy: scenario === 'failure_stop' ? 'finish_unit_after_last_success' : 'omit_failed_and_continue',
+        resolvePaths: resolveHeavySplitTestPaths,
+        controller,
+        log: silentLog,
+      });
+      assert.equal(result.result.state, scenario === 'success' ? 'success'
+        : (scenario === 'cancel_child' || scenario === 'cancel_before_route' ? 'cancelled' : 'failure'), scenario);
+      const expected = [
+        { origin: 'remote', warningCode: 'cleanup:remote-1' },
+        { origin: 'local', warningCode: 'cleanup:pdf-1' },
+      ];
+      if (scenario !== 'exception' && scenario !== 'cancel_before_route' && scenario !== 'materialize_failure') {
+        expected.push({ origin: 'remote', warningCode: 'cleanup:remote-2' });
+      }
+      expected.push({ origin: 'local', warningCode: 'cleanup:pdf-2' });
+      assert.deepEqual(result.result.cleanupWarnings, expected, scenario);
+      assert.deepEqual(result.result.warnings.filter((code) => code.startsWith('cleanup:')), expected.map((item) => item.warningCode), scenario);
+      assert.ok(result.result.warnings.includes('empty_extraction'), scenario);
+      if (scenario === 'failure_stop') assert.equal(result.result.heavySplitExecution.generatedInputs[2].state, 'omitted');
+    } finally {
+      restore();
+    }
+  }
 });
 
 test('executePreparedImport keeps retained generated PDFs only on heavy split child statuses', async (t) => {
@@ -2310,6 +2589,7 @@ test('executePreparedImport continues later heavy children under omit_failed_and
   assert.equal(result.ok, true);
   assert.equal(result.result.state, 'failure');
   assert.equal(result.result.error.code, 'ocr_conversion_failed');
+  assert.equal(result.result.heavySplitExecution.failureOrigin, 'children');
   assert.equal(result.result.text, '');
   assert.equal(Object.hasOwn(result.result, 'textApplicability'), false);
   assert.deepEqual(
@@ -2318,6 +2598,32 @@ test('executePreparedImport continues later heavy children under omit_failed_and
   );
   assert.equal(result.result.heavySplitExecution.generatedInputs[0].textApplicability, 'applicable');
   assert.equal(result.result.heavySplitExecution.generatedInputs[2].textApplicability, 'applicable');
+});
+
+test('heavy split preserves an earlier child failure when a later child is cancelled', async (t) => {
+  let callCount = 0;
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async () => {
+      callCount += 1;
+      return callCount === 1
+        ? { state: 'failure', text: '', warnings: [], error: { code: 'ocr_conversion_failed' } }
+        : { state: 'cancelled', text: '', warnings: [], error: { code: 'aborted_by_user' } };
+    },
+  });
+  t.after(restore);
+  const result = await core.executePreparedImport({
+    preparedRecord: createHeavySplitPreparedRecord(createHeavySplitGeneratedInputs(3)),
+    routePreference: 'ocr',
+    heavySplitFailurePolicy: 'omit_failed_and_continue',
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+    log: silentLog,
+  });
+  assert.equal(result.result.state, 'cancelled');
+  assert.deepEqual(result.result.heavySplitExecution.generatedInputs.map((input) => input.state), [
+    'failed', 'cancelled_before_route_dispatch', 'omitted',
+  ]);
+  assert.equal(result.result.heavySplitExecution.generatedInputs[0].errorCode, 'ocr_conversion_failed');
 });
 
 test('executePreparedImport omits later heavy children under the stopping policy and fails the parent without partial aggregate text', async (t) => {

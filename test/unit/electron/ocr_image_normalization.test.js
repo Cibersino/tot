@@ -145,6 +145,7 @@ test('normalizeImageForOcrUpload cleanup returns one structured warning object',
 
   const cleanupWarning = uploadInput.cleanup();
   assert.equal(cleanupWarning.warningCode, 'cleanup:image_normalization_cleanup_failed');
+  assert.equal(cleanupWarning.origin, 'local');
   assert.equal(cleanupWarning.detailsSafeForLogs.stage, 'cleanup_image_normalization');
   assert.equal(cleanupWarning.detailsSafeForLogs.tempDirPath, tempDirPath);
   assert.equal(
@@ -208,6 +209,7 @@ test('normalizeImageForOcrUpload preserves cleanup warning details on conversion
     (err) => {
       assert.equal(err.code, 'source_to_png_conversion_failed');
       assert.equal(err.detailsSafeForLogs.cleanupWarningCode, 'cleanup:image_normalization_cleanup_failed');
+      assert.equal(err.cleanupWarning.origin, 'local');
       assert.equal(err.detailsSafeForLogs.cleanupFailure.stage, 'cleanup_image_normalization');
       assert.equal(err.detailsSafeForLogs.cleanupFailure.cleanupWarningDetails.errorCode, 'EPERM');
       return true;

@@ -5,6 +5,8 @@ process.env.TOT_LOG_LEVEL = 'silent';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
+const http = require('http');
+const { google } = require('googleapis');
 const path = require('path');
 const { createTestTempDir } = require('../../helpers/test_temp_paths');
 
@@ -17,6 +19,7 @@ function loadRouteModuleWithMocks({
   logDouble = null,
   normalizeImageForOcrUpload = null,
   driveFilesOverrides = null,
+  oauthClient = null,
 } = {}) {
   const logModulePath = path.resolve(__dirname, '../../../electron/log.js');
   const googleApisModulePath = require.resolve('googleapis');
@@ -71,7 +74,11 @@ function loadRouteModuleWithMocks({
       google: {
         drive() {
           const baseFiles = {
-            async create() {
+            async create(params) {
+              params.media.body.destroy();
+              if (!params.media.body.closed) {
+                await new Promise((resolve) => params.media.body.once('close', resolve));
+              }
               return {
                 data: {
                   id: 'temp-doc-1',
@@ -129,7 +136,7 @@ function loadRouteModuleWithMocks({
     loaded: true,
     exports: {
       buildGoogleOAuthClient() {
-        return {};
+        return oauthClient || {};
       },
       describePersistedGoogleToken() {
         return {
@@ -197,6 +204,427 @@ function loadRouteModuleWithMocks({
   };
 }
 
+test('cancellation interrupts OAuth refresh during export and leaves deletion usable', async (t) => {
+  const tempDir = createTestTempDir('ocr-cancel-refresh');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  let refreshStarted;
+  const started = new Promise((resolve) => { refreshStarted = resolve; });
+  const server = http.createServer((request) => { request.resume(); refreshStarted(); });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const auth = new google.auth.OAuth2('client', 'secret');
+  auth.setCredentials({ refresh_token: 'dummy' });
+  const original = auth.transporter;
+  const redirect = Object.create(original);
+  redirect.request = (options) => original.request.call(original, {
+    ...options,
+    url: `http://127.0.0.1:${server.address().port}/`,
+  });
+  auth.transporter = redirect;
+  const realDrive = google.drive({ version: 'v3', auth });
+  const cancellation = new AbortController();
+  let deleted = false;
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    oauthClient: auth,
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async create(params) { params.media.body.destroy(); return { data: { id: 'id' } }; },
+      export: (params, options) => realDrive.files.export(params, options),
+      async delete(params, options) { deleted = !options.signal.aborted; },
+    },
+  });
+  try {
+    const execution = loadedModule.runGoogleDriveOcrRoute({
+      filePath: source,
+      cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    await started;
+    cancellation.abort();
+    const result = await execution;
+    assert.equal(result.state, 'cancelled');
+    assert.equal(deleted, true);
+    assert.equal(auth.transporter, redirect);
+  } finally {
+    restore();
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+for (const stage of ['create', 'delete']) {
+  test(`cancellation interrupts OAuth refresh during ${stage} after its grace period`, async (t) => {
+    const tempDir = createTestTempDir(`ocr-refresh-${stage}`);
+    t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+    const source = path.join(tempDir, 'source.png');
+    fs.writeFileSync(source, 'image');
+    let notifyStarted;
+    const started = new Promise((resolve) => { notifyStarted = resolve; });
+    const server = http.createServer((request) => { request.resume(); notifyStarted(); });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const auth = new google.auth.OAuth2('client', 'secret');
+    auth.setCredentials({ refresh_token: 'dummy' });
+    const original = auth.transporter;
+    const redirect = Object.create(original);
+    redirect.request = (options) => original.request.call(original, {
+      ...options, url: `http://127.0.0.1:${server.address().port}/`,
+    });
+    auth.transporter = redirect;
+    const drive = google.drive({ version: 'v3', auth });
+    const cancellation = new AbortController();
+    let upload;
+    const { loadedModule, restore } = loadRouteModuleWithMocks({
+      oauthClient: auth,
+      normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+      driveFilesOverrides: {
+        async create(params, options) {
+          upload = params.media.body;
+          if (stage === 'create') return drive.files.create(params, options);
+          upload.destroy();
+          return { data: { id: 'id' } };
+        },
+        async delete(params, options) { return drive.files.delete(params, options); },
+      },
+    });
+    try {
+      const execution = loadedModule.runGoogleDriveOcrRoute({
+        filePath: source,
+        cancellationSignal: cancellation.signal,
+        isAborted: () => cancellation.signal.aborted,
+      });
+      await started;
+      t.mock.timers.enable({ apis: ['setTimeout'] });
+      cancellation.abort();
+      t.mock.timers.tick(stage === 'create' ? 60_000 : 30_000);
+      const result = await execution;
+      assert.ok(result.warnings.includes(stage === 'create'
+        ? 'cleanup:ocr_create_outcome_unknown'
+        : 'cleanup:ocr_delete_outcome_unknown'));
+      assert.deepEqual(result.cleanupWarnings, [{
+        origin: 'remote',
+        warningCode: stage === 'create' ? 'cleanup:ocr_create_outcome_unknown' : 'cleanup:ocr_delete_outcome_unknown',
+      }]);
+      assert.equal(upload.closed, true);
+      assert.equal(auth.transporter, redirect);
+    } finally {
+      restore();
+      server.closeAllConnections();
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
+}
+
+test('cancellation interrupts the installed multipart upload transport and closes its source', async (t) => {
+  const tempDir = createTestTempDir('ocr-cancel-real-upload');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.pdf');
+  fs.writeFileSync(source, Buffer.alloc(16 * 1024 * 1024));
+  let notifyStarted;
+  const started = new Promise((resolve) => { notifyStarted = resolve; });
+  const server = http.createServer((request) => { request.pause(); notifyStarted(); });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const auth = new google.auth.OAuth2('client', 'secret');
+  auth.setCredentials({ access_token: 'dummy', expiry_date: Date.now() + 3600000 });
+  const original = auth.transporter;
+  const redirect = Object.create(original);
+  redirect.request = (options) => original.request.call(original, {
+    ...options, url: `http://127.0.0.1:${server.address().port}/`,
+  });
+  auth.transporter = redirect;
+  const drive = google.drive({ version: 'v3', auth });
+  const cancellation = new AbortController();
+  let upload;
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    oauthClient: auth,
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async create(params, options) { upload = params.media.body; return drive.files.create(params, options); },
+    },
+  });
+  try {
+    const execution = loadedModule.runGoogleDriveOcrRoute({
+      filePath: source, cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    await started;
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    cancellation.abort();
+    t.mock.timers.tick(60_000);
+    const result = await execution;
+    assert.equal(result.state, 'cancelled');
+    assert.ok(result.warnings.includes('cleanup:ocr_create_outcome_unknown'));
+    assert.equal(upload.closed, true);
+  } finally {
+    restore();
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test('cancelled OCR interrupts export and still deletes the temporary document', async (t) => {
+  const tempDir = createTestTempDir('ocr-cancel-export');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const cancellation = new AbortController();
+  let exportStarted;
+  const started = new Promise((resolve) => { exportStarted = resolve; });
+  let deleted = false;
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async export(params, options) {
+        exportStarted();
+        return new Promise((resolve, reject) => options.signal.addEventListener('abort', () => reject(new DOMException('interrupted', 'AbortError')), { once: true }));
+      },
+      async delete(params, options) {
+        assert.equal(options.signal.aborted, false);
+        deleted = true;
+      },
+    },
+  });
+  try {
+    const execution = loadedModule.runGoogleDriveOcrRoute({
+      filePath: source,
+      cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    await started;
+    cancellation.abort();
+    const result = await execution;
+    assert.equal(result.state, 'cancelled');
+    assert.equal(deleted, true);
+  } finally {
+    restore();
+  }
+});
+
+test('cancelled OCR interrupts stalled creation after its grace period and closes the upload', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const tempDir = createTestTempDir('ocr-cancel-create');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const cancellation = new AbortController();
+  let start;
+  const started = new Promise((resolve) => { start = resolve; });
+  let upload;
+  let signal;
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async create(params, options) {
+        upload = params.media.body;
+        signal = options.signal;
+        start();
+        return new Promise((resolve, reject) => signal.addEventListener('abort', () => reject(new DOMException('interrupted', 'AbortError')), { once: true }));
+      },
+    },
+  });
+  try {
+    const execution = loadedModule.runGoogleDriveOcrRoute({
+      filePath: source,
+      cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    await started;
+    cancellation.abort();
+    t.mock.timers.tick(59_999);
+    assert.equal(signal.aborted, false);
+    t.mock.timers.tick(1);
+    const result = await execution;
+    assert.equal(result.state, 'cancelled');
+    assert.equal(upload.closed, true);
+    assert.ok(result.warnings.includes('cleanup:ocr_create_outcome_unknown'));
+  } finally {
+    restore();
+  }
+});
+
+test('cancelled OCR gives deletion an independent grace period', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const tempDir = createTestTempDir('ocr-cancel-delete');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const cancellation = new AbortController();
+  let start;
+  const started = new Promise((resolve) => { start = resolve; });
+  let deleteSignal;
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async delete(params, options) {
+        deleteSignal = options.signal;
+        start();
+        return new Promise((resolve, reject) => deleteSignal.addEventListener('abort', () => reject(new Error('interrupted')), { once: true }));
+      },
+    },
+  });
+  try {
+    const execution = loadedModule.runGoogleDriveOcrRoute({
+      filePath: source,
+      cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    await started;
+    cancellation.abort();
+    t.mock.timers.tick(29_999);
+    assert.equal(deleteSignal.aborted, false);
+    t.mock.timers.tick(1);
+    const result = await execution;
+    assert.ok(result.warnings.includes('cleanup:ocr_delete_outcome_unknown'));
+  } finally {
+    restore();
+  }
+});
+
+test('a document ID received during cancellation is deleted without exporting', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const tempDir = createTestTempDir('ocr-cancel-create-id');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const cancellation = new AbortController();
+  let start;
+  const started = new Promise((resolve) => { start = resolve; });
+  let finishCreate;
+  let exported = false;
+  let deleted = false;
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async create(params) {
+        params.media.body.destroy();
+        start();
+        return new Promise((resolve) => { finishCreate = resolve; });
+      },
+      async export() { exported = true; },
+      async delete() { deleted = true; },
+    },
+  });
+  try {
+    const execution = loadedModule.runGoogleDriveOcrRoute({
+      filePath: source,
+      cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    await started;
+    cancellation.abort();
+    t.mock.timers.tick(59_000);
+    finishCreate({ data: { id: 'late-id' } });
+    const result = await execution;
+    assert.equal(result.state, 'cancelled');
+    assert.equal(exported, false);
+    assert.equal(deleted, true);
+    assert.equal(result.warnings.includes('cleanup:ocr_create_outcome_unknown'), false);
+  } finally {
+    restore();
+  }
+});
+
+test('provider failure during cancellation remains diagnosable and an ambiguous create is warned', async (t) => {
+  const tempDir = createTestTempDir('ocr-cancel-provider-error');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const cancellation = new AbortController();
+  const warnCalls = [];
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    logDouble: { warn: (...args) => warnCalls.push(args), warnOnce() {}, error() {}, errorOnce() {}, debug() {}, info() {} },
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async create() {
+        cancellation.abort();
+        const error = new Error('connection lost');
+        error.code = 'ECONNRESET';
+        throw error;
+      },
+    },
+  });
+  try {
+    const result = await loadedModule.runGoogleDriveOcrRoute({
+      filePath: source,
+      cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    assert.equal(result.state, 'cancelled');
+    assert.ok(result.warnings.includes('cleanup:ocr_create_outcome_unknown'));
+    assert.ok(warnCalls.some(([message, details]) => message === 'OCR operation failed during cancellation:'
+      && details.networkErrorCode === 'ECONNRESET'));
+  } finally {
+    restore();
+  }
+});
+
+test('an explicit provider rejection during cancellation is not hidden or treated as an unknown create', async (t) => {
+  const tempDir = createTestTempDir('ocr-cancel-provider-response');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const cancellation = new AbortController();
+  const warnCalls = [];
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    logDouble: { warn: (...args) => warnCalls.push(args), warnOnce() {}, error() {}, errorOnce() {}, debug() {}, info() {} },
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async create() {
+        cancellation.abort();
+        const error = new Error('permission denied');
+        error.response = { status: 403, data: { error: { message: 'permission denied' } } };
+        throw error;
+      },
+    },
+  });
+  try {
+    const result = await loadedModule.runGoogleDriveOcrRoute({
+      filePath: source, cancellationSignal: cancellation.signal,
+      isAborted: () => cancellation.signal.aborted,
+    });
+    assert.equal(result.state, 'cancelled');
+    assert.ok(warnCalls.some(([message, details]) => message === 'OCR operation failed during cancellation:'
+      && details.statusCode === 403));
+    assert.equal(result.warnings.includes('cleanup:ocr_create_outcome_unknown'), false);
+  } finally {
+    restore();
+  }
+});
+
+for (const status of [500, 503, 408, null]) {
+  test(`create response ${status} during cancellation leaves the remote outcome unknown`, async (t) => {
+    const tempDir = createTestTempDir('ocr-cancel-ambiguous-response');
+    t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+    const source = path.join(tempDir, 'source.png');
+    fs.writeFileSync(source, 'image');
+    const cancellation = new AbortController();
+    const warnCalls = [];
+    const { loadedModule, restore } = loadRouteModuleWithMocks({
+      logDouble: { warn: (...args) => warnCalls.push(args), warnOnce() {}, error() {}, errorOnce() {}, debug() {}, info() {} },
+      normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+      driveFilesOverrides: {
+        async create() {
+          cancellation.abort();
+          const error = new Error('provider error');
+          error.response = { status, data: {} };
+          throw error;
+        },
+      },
+    });
+    try {
+      const result = await loadedModule.runGoogleDriveOcrRoute({
+        filePath: source, cancellationSignal: cancellation.signal,
+        isAborted: () => cancellation.signal.aborted,
+      });
+      assert.equal(result.state, 'cancelled');
+      assert.ok(result.warnings.includes('cleanup:ocr_create_outcome_unknown'));
+      assert.ok(warnCalls.some(([message]) => message === 'OCR operation failed during cancellation:'));
+    } finally {
+      restore();
+    }
+  });
+}
+
 test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning identity', async () => {
   const tempDir = createTestTempDir('ocr-google-drive-route');
   const sourceFilePath = path.join(tempDir, 'source.png');
@@ -216,6 +644,7 @@ test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning
   };
   const cleanupWarning = {
     warningCode: 'cleanup:image_normalization_cleanup_failed',
+    origin: 'local',
     detailsSafeForLogs: {
       stage: 'cleanup_image_normalization',
       tempDirPath: path.join(tempDir, 'run-1'),
@@ -251,6 +680,7 @@ test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning
     assert.equal(result.state, 'success');
     assert.equal(result.summary, 'OCR route succeeded with cleanup warning.');
     assert.deepEqual(result.warnings, ['cleanup:image_normalization_cleanup_failed']);
+    assert.deepEqual(result.cleanupWarnings, [{ origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' }]);
 
     const cleanupLog = warnCalls.find((call) => call[0] === 'OCR upload cleanup failed (ignored):');
     assert.ok(cleanupLog);
@@ -266,6 +696,49 @@ test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning
   } finally {
     restore();
   }
+});
+
+test('OCR classifies provider-derived cleanup diagnostics as remote', async (t) => {
+  const tempDir = createTestTempDir('ocr-remote-cleanup');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async delete() {
+        const error = new Error('DNS failure');
+        error.code = 'ENOTFOUND';
+        throw error;
+      },
+    },
+  });
+  t.after(restore);
+  const result = await loadedModule.runGoogleDriveOcrRoute({ filePath: source, isAborted: () => false });
+  assert.equal(result.state, 'success');
+  assert.ok(result.warnings.includes('cleanup:connectivity_failed'));
+  assert.deepEqual(result.cleanupWarnings, [{ origin: 'remote', warningCode: 'cleanup:connectivity_failed' }]);
+});
+
+test('OCR preserves local cleanup warnings when image normalization fails', async (t) => {
+  const tempDir = createTestTempDir('ocr-normalization-failed-cleanup');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.webp');
+  fs.writeFileSync(source, 'image');
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    async normalizeImageForOcrUpload() {
+      const error = new Error('conversion failed');
+      error.code = 'source_to_png_conversion_failed';
+      error.cleanupWarning = { origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' };
+      throw error;
+    },
+  });
+  t.after(restore);
+  const result = await loadedModule.runGoogleDriveOcrRoute({ filePath: source, isAborted: () => false });
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'unreadable_or_corrupt');
+  assert.deepEqual(result.warnings, ['cleanup:image_normalization_cleanup_failed']);
+  assert.deepEqual(result.cleanupWarnings, [{ origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' }]);
 });
 
 test('runGoogleDriveOcrRoute size-checks the normalized PNG input for JP2 sources', async () => {

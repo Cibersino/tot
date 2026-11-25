@@ -16,6 +16,7 @@ function createHarness({
   executionResultsByProcessingInputFileName = {},
   normalizeExecutionResultApplicability = true,
   promptBatchFinalReportImpl = null,
+  useMissingFinalReportDom = false,
   applyTextViaCanonicalPathImpl = null,
   applyTextViaCanonicalPathDependency = undefined,
   getOcrLanguageImpl = undefined,
@@ -28,6 +29,7 @@ function createHarness({
   snapshotTagsPromptImpl = null,
   snapshotSaveResult = { ok: true, filename: 'snapshot.json' },
   processingSessionStateResult = { ok: true, state: { active: true } },
+  processingSessionEnterResult = { ok: true },
   processingSessionUpdateResult = { ok: true },
   processingSessionExitResult = { ok: true },
   settingsCache = null,
@@ -195,7 +197,6 @@ function createHarness({
             'renderer.snapshots.options.type.non_fiction': 'No ficción',
             'renderer.text_extraction.batch_plan.unit_label': 'Unit {index}',
             'renderer.text_extraction.batch_report.snapshot_created': 'Snapshot created: {filename}',
-            'renderer.text_extraction.batch_report.snapshot_creation_failed': 'Snapshot creation failed: {code}',
             'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
           };
           return translations[key] || key;
@@ -236,6 +237,21 @@ function createHarness({
   };
 
   vm.createContext(sandbox);
+  if (useMissingFinalReportDom) {
+    sandbox.document = { getElementById() { return null; } };
+    sandbox.window.RendererIcons = { createIconButton() {} };
+    sandbox.window.Notify.registerCustomPrompt = (name, handler) => {
+      sandbox.window.Notify[name] = (options) => {
+        capturedFinalReport = options.report;
+        return handler(options);
+      };
+    };
+    const modalSource = fs.readFileSync(
+      path.resolve(__dirname, '../../../public/js/text_extraction_batch_final_modal.js'),
+      'utf8'
+    );
+    vm.runInContext(modalSource, sandbox, { filename: 'public/js/text_extraction_batch_final_modal.js' });
+  }
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/text_extraction_batch_flow.js'),
     'utf8'
@@ -289,7 +305,7 @@ function createHarness({
       if (methodName === 'enterTextExtractionProcessingSession') {
         return async () => {
           enterTextExtractionProcessingSessionCallCount += 1;
-          return { ok: true };
+          return processingSessionEnterResult;
         };
       }
       if (methodName === 'updateTextExtractionProcessingSession') {
@@ -463,6 +479,172 @@ function createDeferred() {
   return { promise, resolve };
 }
 
+test('planning and repeated preparation map failure context to the same localized description', async () => {
+  const cases = [
+    ['unsupported_format', 'unsupported_format'],
+    ['unreadable_or_corrupt', 'unreadable_or_corrupt'],
+    ['native_encrypted_or_password_protected', 'protected_pdf'],
+    ['pdf_page_count_unavailable', 'page_count_unavailable'],
+    ['pdf_page_selection_invalid', 'page_selection_invalid'],
+    ['pdf_subset_creation_failed', 'pdf_generation_failed'],
+    ['native_extraction_failed', 'preparation_error'],
+    ['heavy_split_plan_invalid', 'preparation_error'],
+    ['PREPARE_SHAPE_INVALID', 'preparation_error'],
+    ['INSPECT_IPC_FAILED', 'preparation_error'],
+    ['ocr_activation_required', 'ocr_activation_required', true],
+    ['credentials_missing', 'credentials_missing', true],
+    ['credentials_invalid', 'credentials_invalid', true],
+    ['ocr_token_state_invalid', 'ocr_token_state_invalid', true],
+    ['connectivity_failed', 'ocr_communication_failed', true],
+    ['quota_or_rate_limited', 'ocr_usage_restricted', true],
+    ['platform_runtime_failed', 'ocr_unavailable', true],
+  ];
+  for (const [code, category, ocrSetup] of cases) {
+    const failure = {
+      ok: true,
+      prepareFailed: true,
+      executionKind: ocrSetup ? 'google_drive' : 'native',
+      fileInfo: { fileName: 'broken.pdf', sourceFileKind: 'pdf' },
+      routeMetadata: ocrSetup ? { ocrSetupState: 'failure', ocrSetupCode: code } : {},
+      error: { code },
+    };
+    const harness = createHarness({
+      preparationsByPath: {
+        'broken.pdf': failure,
+        'valid.txt': createPreparation({ fileName: 'valid.txt', chosenRoute: 'native', fileKind: 'txt' }),
+      },
+      promptBatchPlanResult: { action: 'start' },
+    });
+    await harness.batchFlow.startFromSelectedFiles({ filePaths: ['broken.pdf', 'valid.txt'], source: 'test' });
+    const planInput = harness.getCapturedViewModel().units.flatMap((unit) => unit.inputs)
+      .find((input) => input.fileName === 'broken.pdf');
+    const reportInput = harness.getCapturedFinalReport().units.flatMap((unit) => unit.inputs)
+      .find((input) => input.fileName === 'broken.pdf');
+    const expected = `renderer.text_extraction.failure_descriptions.${category}`;
+    assert.equal(planInput.failureDescriptionKey, expected, `planning: ${code}`);
+    assert.equal(reportInput.failureDescriptionKey, expected, `report: ${code}`);
+    assert.equal(reportInput.code, code);
+  }
+});
+
+test('batch report classifies preparation, execution, application and input-size failures by context', async () => {
+  const cases = [
+    ['native', { ok: false, code: 'PREPARED_ID_INVALID', invalidReason: 'fingerprint_mismatch' }, null, 'prepared_request_invalid'],
+    ['native', { ok: false, code: 'PREPARED_ID_INVALID', invalidReason: 'new_reason' }, null, 'prepared_request_invalid'],
+    ['native', { ok: false, code: 'EXECUTE_PREPARED_IPC_FAILED' }, null, 'execution_error'],
+    ['native', { ok: false, code: 'ROUTE_RESOLUTION_FAILED' }, null, 'route_unresolved'],
+    ['native', { ok: true, result: { state: 'failure', error: { code: 'native_extraction_failed' } } }, null, 'native_execution_error'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'platform_runtime_failed' } } }, null, 'ocr_execution_error'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'heavy_split_plan_invalid' } } }, null, 'execution_error'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'ocr_image_upload_too_large' } } }, null, 'ocr_image_too_large'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'ocr_input_too_large' } } }, null, 'ocr_pdf_too_large'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'provider_api_disabled' } } }, null, 'ocr_unavailable'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'AUTH_FAILED' } } }, null, 'ocr_unavailable'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'connectivity_failed' } } }, null, 'ocr_communication_failed'],
+    ['native', { ok: true, result: { state: 'failure', error: { code: 'unreadable_or_corrupt' } } }, null, 'unreadable_or_corrupt'],
+    ['ocr', { ok: true, result: { state: 'failure', error: { code: 'unknown_external_code' } } }, null, 'ocr_execution_error'],
+    ['native', { ok: true, result: { state: 'success', executedRoute: 'native', text: 5 } }, null, 'native_execution_error'],
+    ['native', { ok: true, result: { state: 'success', executedRoute: 'native', text: 'text' } }, 'SET_CURRENT_TEXT_FAILED', 'application_error'],
+    ['native', { ok: true, result: { state: 'success', executedRoute: 'native', text: 'text' } }, 'PAYLOAD_TOO_LARGE', null],
+    ['native', { ok: true, result: { state: 'success', executedRoute: 'native', text: 'text' } }, 'TEXT_LIMIT', null],
+  ];
+  for (const [route, execution, applyCode, category] of cases) {
+    const harness = createHarness({
+      preparationsByPath: { 'file.txt': createPreparation({ fileName: 'file.txt', chosenRoute: route, fileKind: 'txt' }) },
+      promptBatchPlanResult: { action: 'start' },
+      executionResultsByProcessingInputFileName: { 'file.txt': execution },
+      applyTextViaCanonicalPathImpl: () => ({ ok: false, code: applyCode }),
+    });
+    await harness.batchFlow.startFromSelectedFiles({ filePaths: ['file.txt'], source: 'test' });
+    const record = harness.getCapturedFinalReport().units[0].inputs[0];
+    assert.equal(record.state, 'failed');
+    assert.equal(record.failureDescriptionKey, category ? `renderer.text_extraction.failure_descriptions.${category}` : undefined);
+    if (applyCode) assert.equal(record.code, applyCode);
+  }
+});
+
+test('batch planning and reporting preserve an IPC preparation code while classifying the failure', async () => {
+  const harness = createHarness({
+    preparationsByPath: {
+      'broken.pdf': { ok: false, code: 'PREPARE_IPC_FAILED' },
+      'valid.txt': createPreparation({ fileName: 'valid.txt', chosenRoute: 'native', fileKind: 'txt' }),
+    },
+    promptBatchPlanResult: { action: 'start' },
+  });
+  await harness.batchFlow.startFromSelectedFiles({ filePaths: ['broken.pdf', 'valid.txt'], source: 'test' });
+  const input = harness.getCapturedViewModel().units.flatMap((unit) => unit.inputs)
+    .find((item) => item.fileName === 'broken.pdf');
+  const record = harness.getCapturedFinalReport().units.flatMap((unit) => unit.inputs)
+    .find((item) => item.fileName === 'broken.pdf');
+  const expected = 'renderer.text_extraction.failure_descriptions.preparation_error';
+  assert.equal(input.failureDescriptionKey, expected);
+  assert.equal(record.failureDescriptionKey, expected);
+  assert.equal(record.code, 'PREPARE_IPC_FAILED');
+});
+
+test('batch report retains child failure attribution without hiding original-level failures', async () => {
+  for (const childCaused of [true, false]) {
+    const harness = createHarness({
+      preparationsByPath: { 'heavy.pdf': createPreparation({ fileName: 'heavy.pdf', chosenRoute: 'ocr', heavySplitEligible: true }) },
+      promptBatchPlanResult: { action: 'start' },
+      executionResultsByProcessingInputFileName: {
+        'heavy.pdf': {
+          ok: true,
+          result: {
+            state: 'failure',
+            executedRoute: 'ocr',
+            error: { code: childCaused ? 'ocr_conversion_failed' : 'heavy_split_plan_invalid' },
+            heavySplitExecution: {
+              ...(childCaused ? { failureOrigin: 'children' } : {}),
+              generatedInputs: [
+                { fileName: 'first.pdf', state: 'failed', errorCode: 'ocr_input_too_large' },
+                { fileName: 'second.pdf', state: 'failed', errorCode: 'invalid_execution_result' },
+                { fileName: 'third.pdf', state: 'cancelled', errorCode: 'aborted_by_user' },
+                { fileName: 'fourth.pdf', state: 'omitted' },
+              ],
+            },
+          },
+        },
+      },
+    });
+    await harness.batchFlow.startFromSelectedFiles({ filePaths: ['heavy.pdf'], source: 'test' });
+    const parent = harness.getCapturedFinalReport().units[0].inputs[0];
+    assert.equal(parent.failureDescriptionKey, childCaused ? undefined : 'renderer.text_extraction.failure_descriptions.execution_error');
+    assert.equal(parent.generatedInputs[0].failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.ocr_pdf_too_large');
+    assert.equal(parent.generatedInputs[1].failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.ocr_execution_error');
+    assert.equal(Object.hasOwn(parent.generatedInputs[2], 'failureDescriptionKey'), false);
+    assert.equal(Object.hasOwn(parent.generatedInputs[3], 'failureDescriptionKey'), false);
+    assert.equal(parent.generatedInputs[0].code, 'ocr_input_too_large');
+  }
+});
+
+test('batch report retains an earlier failed split child after later cancellation', async () => {
+  const harness = createHarness({
+    preparationsByPath: { 'heavy.pdf': createPreparation({ fileName: 'heavy.pdf', chosenRoute: 'ocr', heavySplitEligible: true }) },
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'heavy.pdf': {
+        ok: true,
+        result: {
+          state: 'cancelled',
+          error: { code: 'aborted_by_user' },
+          heavySplitExecution: { generatedInputs: [
+            { fileName: 'failed.pdf', state: 'failed', errorCode: 'ocr_conversion_failed' },
+            { fileName: 'cancelled.pdf', state: 'cancelled_before_route_dispatch', errorCode: 'aborted_by_user' },
+            { fileName: 'omitted.pdf', state: 'omitted' },
+          ] },
+        },
+      },
+    },
+  });
+  await harness.batchFlow.startSyntheticSingleFileHeavySplit({ filePath: 'heavy.pdf' });
+  const parent = harness.getCapturedFinalReport().units[0].inputs[0];
+  assert.equal(parent.state, 'cancelled');
+  assert.deepEqual(Array.from(parent.generatedInputs, (input) => input.state), ['failed', 'cancelled', 'omitted']);
+  assert.equal(parent.generatedInputs[0].failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.ocr_execution_error');
+  assert.equal(Object.hasOwn(parent.generatedInputs[1], 'failureDescriptionKey'), false);
+});
+
 test('batch rejects a missing operation context before starting its preflight', async () => {
   const harness = createHarness({
     preparationsByPath: {
@@ -519,28 +701,43 @@ test('batch stops before preparing selected files when preconditions reject', as
   assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.precondition_blocked']);
 });
 
-test('batch planning prompt failure is reported instead of treated as cancellation', async () => {
+test('planning prompt failure is reported for batch and single-file split', async () => {
   const preparationsByPath = {
     'C:\\docs\\document.pdf': createPreparation({
       fileName: 'document.pdf',
       chosenRoute: 'native',
     }),
   };
-  const harness = createHarness({
-    preparationsByPath,
-    onPromptBatchPlan() {
-      throw new Error('Batch planning modal DOM elements missing.');
-    },
-  });
+  for (const split of [false, true]) {
+    const harness = createHarness({
+      preparationsByPath,
+      onPromptBatchPlan() { throw new Error('Batch planning modal DOM elements missing.'); },
+    });
+    if (split) {
+      await harness.batchFlow.startSyntheticSingleFileHeavySplit({ filePath: Object.keys(preparationsByPath)[0] });
+    } else {
+      await harness.batchFlow.startFromSelectedFiles({ filePaths: Object.keys(preparationsByPath), source: 'picker' });
+    }
+    assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.planning_modal_error']);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+    assert.match(harness.getErrorLogs()[0][0], /Batch planning prompt failed/);
+  }
+});
 
-  await harness.batchFlow.startFromSelectedFiles({
-    filePaths: Object.keys(preparationsByPath),
-    source: 'picker',
-    actionId: 'test-batch-planning-prompt-error',
-  });
-
-  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.start_error']);
-  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+test('closing planning without starting is not a presentation failure in either flow', async () => {
+  const filePath = 'C:\\docs\\document.pdf';
+  const preparationsByPath = { [filePath]: createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }) };
+  for (const split of [false, true]) {
+    const harness = createHarness({ preparationsByPath, promptBatchPlanResult: null });
+    if (split) {
+      await harness.batchFlow.startSyntheticSingleFileHeavySplit({ filePath });
+    } else {
+      await harness.batchFlow.startFromSelectedFiles({ filePaths: [filePath], source: 'picker' });
+    }
+    assert.deepEqual(harness.notifications, []);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+    assert.deepEqual(harness.getErrorLogs(), []);
+  }
 });
 
 test('batch start remains pending until its real final-report prompt is dismissed', async () => {
@@ -1081,8 +1278,39 @@ test('batch start validation blocks OCR routes before execution when Google OCR 
   assert.equal(harness.getOcrAvailabilityCallCount(), 1);
   assert.deepEqual(
     harness.notifications,
-    ['renderer.text_extraction.alerts.batch_ocr.activation_required']
+    ['renderer.text_extraction.alerts.ocr.batch_ocr.activation_required']
   );
+});
+
+test('batch OCR preflight blocks all seven categories and selects their localized keys', async () => {
+  const cases = [
+    ['ocr_activation_required', 'activation_required'],
+    ['credentials_missing', 'credentials_missing'],
+    ['credentials_invalid', 'credentials_invalid'],
+    ['ocr_token_state_invalid', 'token_state_invalid'],
+    ['connectivity_failed', 'connectivity_failed'],
+    ['quota_or_rate_limited', 'quota_or_rate_limited'],
+    ['platform_runtime_failed', 'unavailable'],
+  ];
+  for (const [code, suffix] of cases) {
+    const preparationsByPath = { 'scan.pdf': createPreparation({ fileName: 'scan.pdf', chosenRoute: 'ocr' }) };
+    const harness = createHarness({ preparationsByPath, ocrAvailabilityResult: { ok: true, available: false, code } });
+    await harness.batchFlow.startFromSelectedFiles({ filePaths: ['scan.pdf'], source: 'test', actionId: 'ocr-preflight' });
+    assert.equal(await harness.getCapturedController().validateStart(), false, code);
+    assert.deepEqual(harness.notifications, [`renderer.text_extraction.alerts.ocr.batch_ocr.${suffix}`]);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  }
+});
+
+test('batch session acquisition failures notify once and do not execute', async () => {
+  const preparationsByPath = { 'first.pdf': createPreparation({ fileName: 'first.pdf', chosenRoute: 'native' }) };
+  for (const [code, alert] of [['ALREADY_ACTIVE', 'operation_in_progress'], ['SESSION_FAILED', 'execution_error']]) {
+    const harness = createHarness({ preparationsByPath, promptBatchPlanResult: { action: 'start' }, processingSessionEnterResult: { ok: false, code } });
+    await harness.batchFlow.startFromSelectedFiles({ filePaths: ['first.pdf'], source: 'test', actionId: 'session' });
+    assert.deepEqual(harness.notifications, [`renderer.text_extraction.alerts.${alert}`]);
+    assert.equal(harness.getEnterTextExtractionProcessingSessionCallCount(), 1);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  }
 });
 
 test('batch execution autosaves unnamed ordinary single-input units from source basenames and strips only the final extension', async () => {
@@ -1157,6 +1385,41 @@ test('batch execution autosaves unnamed ordinary single-input units from source 
   assert.ok(report.units.every((unit) => /snapshot\.json/.test(unit.snapshotResult.text)));
 });
 
+test('batch aggregates cleanup origins across units before failure and application branches', async () => {
+  const names = ['success', 'failed', 'invalid', 'apply', 'ipc'];
+  const cases = names.flatMap((name) => ['local', 'remote'].map((origin) => ({ warningsByName: { [name]: [origin] }, expected: [origin] })));
+  cases.push({ warningsByName: { success: ['remote'], failed: ['local'], invalid: ['remote'], apply: ['local'], ipc: ['remote'] }, expected: ['local', 'remote'] });
+
+  for (const { warningsByName, expected } of cases) {
+    const executionResultsByProcessingInputFileName = {
+      'success.txt': { ok: true, result: { state: 'success', text: 'success', textApplicability: 'applicable' } },
+      'failed.txt': { ok: true, result: { state: 'failure', error: { code: 'native_extraction_failed' } } },
+      'invalid.txt': { ok: true, result: { state: 'success', text: null } },
+      'apply.txt': { ok: true, result: { state: 'success', text: 'apply', textApplicability: 'applicable' } },
+      'ipc.txt': { ok: false, code: 'EXECUTE_PREPARED_IPC_FAILED', result: {} },
+    };
+    for (const [name, origins] of Object.entries(warningsByName)) {
+      executionResultsByProcessingInputFileName[`${name}.txt`].result.cleanupWarnings = origins.map((origin) => ({ origin, warningCode: `cleanup:${origin}-${name}` }));
+    }
+    const harness = createHarness({
+      preparationsByPath: Object.fromEntries(names.map((name) => [
+        `${name}.txt`, createPreparation({ fileName: `${name}.txt`, chosenRoute: 'native', fileKind: 'txt' }),
+      ])),
+      promptBatchPlanResult: { action: 'start' },
+      normalizeExecutionResultApplicability: false,
+      executionResultsByProcessingInputFileName,
+      applyTextViaCanonicalPathImpl: ({ textToApply }) => textToApply === 'apply' ? { ok: false, code: 'apply_failed' } : { ok: true },
+    });
+    await harness.batchFlow.startFromSelectedFiles({ filePaths: names.map((name) => `${name}.txt`), source: 'test' });
+    const report = harness.getCapturedFinalReport();
+    assert.deepEqual(Array.from(report.cleanupWarnings).sort(), expected, JSON.stringify(warningsByName));
+    assert.deepEqual(Array.from(report.units, (unit) => unit.inputs[0].state), ['success', 'failed', 'failed', 'failed', 'failed']);
+    assert.equal(report.units[2].inputs[0].code, 'invalid_execution_result');
+    assert.equal(report.units[3].inputs[0].code, 'apply_failed');
+    assert.equal(report.units[4].inputs[0].code, 'execute_prepared_ipc_failed');
+  }
+});
+
 test('batch execution reports malformed autosave results as failed without trusting their code', async () => {
   const preparationsByPath = {
     'C:\\docs\\first.pdf': createPreparation({
@@ -1188,8 +1451,8 @@ test('batch execution reports malformed autosave results as failed without trust
   assert.deepEqual(
     report.units.map((unit) => unit.snapshotResult),
     [
-      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
-      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
+      { state: 'failed' },
+      { state: 'failed' },
     ]
   );
   assert.deepEqual(
@@ -1199,6 +1462,29 @@ test('batch execution reports malformed autosave results as failed without trust
       ['Batch snapshot save returned an invalid result:', { code: 'CANCELLED' }],
     ]
   );
+});
+
+test('snapshot failure keeps its diagnostic code in logs and continues with later units', async () => {
+  const harness = createHarness({
+    preparationsByPath: {
+      'first.txt': createPreparation({ fileName: 'first.txt', chosenRoute: 'native', fileKind: 'txt' }),
+      'second.txt': createPreparation({ fileName: 'second.txt', chosenRoute: 'native', fileKind: 'txt' }),
+    },
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'first.txt': { ok: true, result: { state: 'success', text: 'First' } },
+      'second.txt': { ok: true, result: { state: 'success', text: 'Second' } },
+    },
+    snapshotSaveResult: { ok: false, code: 'WRITE_FAILED' },
+  });
+  await harness.batchFlow.startFromSelectedFiles({ filePaths: ['first.txt', 'second.txt'], source: 'test' });
+  const report = harness.getCapturedFinalReport();
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 2);
+  assert.deepEqual(Array.from(report.units, (unit) => unit.snapshotResult.state), ['failed', 'failed']);
+  assert.deepEqual(harness.getWarnLogs().filter(([message]) => message === 'Batch snapshot save failed:'), [
+    ['Batch snapshot save failed:', { code: 'WRITE_FAILED' }],
+    ['Batch snapshot save failed:', { code: 'WRITE_FAILED' }],
+  ]);
 });
 
 test('batch reports a technical processing-session update failure as failed and closes the session as failed', async () => {
@@ -1225,6 +1511,8 @@ test('batch reports a technical processing-session update failure as failed and 
   });
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(report.units[0].inputs[0].failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.execution_error');
+  assert.equal(Object.hasOwn(report.units[1].inputs[0], 'failureDescriptionKey'), false);
   assert.deepEqual(
     report.units.map((unit) => unit.inputs.map((input) => ({
       fileName: input.fileName,
@@ -1273,6 +1561,8 @@ test('batch reports a technical processing-session state failure as failed', asy
   });
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(report.units[0].inputs[0].failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.execution_error');
+  assert.equal(Object.hasOwn(report.units[1].inputs[0], 'failureDescriptionKey'), false);
   assert.deepEqual(
     report.units.map((unit) => unit.inputs.map((input) => ({
       fileName: input.fileName,
@@ -2025,6 +2315,7 @@ test('batch execution final report keeps cancellation on the heavy parent and ne
               {
                 fileName: 'book_pages_001_020.pdf',
                 state: 'success',
+                textApplicability: 'applicable',
                 errorCode: '',
                 generatedPdfArtifact: null,
               },
@@ -2293,8 +2584,47 @@ test('batch final report prompt synchronous failure clears abort finalization an
   assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 1);
   assert.deepEqual(
     harness.notifications,
-    ['renderer.text_extraction.alerts.start_error']
+    ['renderer.text_extraction.alerts.final_report_error']
   );
+});
+
+test('final-report failures notify once after processing for batch and single-file split, including missing DOM', async () => {
+  const filePath = 'C:\\docs\\document.pdf';
+  const preparationsByPath = { [filePath]: createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }) };
+  for (const split of [false, true]) {
+    for (const failure of ['throw', 'reject', 'missing-dom']) {
+      let submittedReport;
+      const harness = createHarness({
+        preparationsByPath,
+        promptBatchPlanResult: { action: 'start' },
+        useMissingFinalReportDom: failure === 'missing-dom',
+        promptBatchFinalReportImpl({ report }) {
+          submittedReport = report;
+          if (failure === 'throw') throw new Error('final report setup failed');
+          return Promise.reject(new Error('final report presentation failed'));
+        },
+        executionResultsByProcessingInputFileName: {
+          'document.pdf': { ok: true, result: { state: 'success', text: 'Text', textApplicability: 'applicable', cleanupWarnings: [{ origin: 'local', warningCode: 'cleanup:local' }, { origin: 'remote', warningCode: 'cleanup:remote' }] } },
+        },
+      });
+      if (split) {
+        await harness.batchFlow.startSyntheticSingleFileHeavySplit({ filePath });
+      } else {
+        await harness.batchFlow.startFromSelectedFiles({ filePaths: [filePath], source: 'picker' });
+      }
+      assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.final_report_error'], `${split} ${failure}`);
+      assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 1);
+      assert.ok(harness.getProcessingSessionEvents().some((event) => event.type === 'exit'));
+      assert.ok(harness.getSyncMainInteractionLockUiCallCount() >= 1);
+      assert.ok(harness.getErrorLogs().some(([message]) => message === 'Batch final report prompt failed:'));
+      if (failure === 'missing-dom') {
+        assert.ok(harness.getErrorLogs().some(([message]) => message === 'Batch final modal DOM elements missing.'));
+        submittedReport = harness.getCapturedFinalReport();
+      }
+      assert.equal(submittedReport.flowKind, split ? 'single_file_split' : 'batch');
+      assert.deepEqual(Array.from(submittedReport.cleanupWarnings), ['local', 'remote']);
+    }
+  }
 });
 
 test('batch execution final report preserves cancelled heavy child rows when split aborts', async () => {
@@ -3104,6 +3434,7 @@ test('batch rejects malformed nominal success results instead of reporting them 
   assert.equal(report.units[0].inputs[0].state, 'failed');
   assert.equal(report.units[0].inputs[0].code, 'invalid_execution_result');
   assert.equal(report.units[0].inputs[0].executionState, 'success');
+  assert.equal(Object.hasOwn(report.units[0].inputs[0], 'textApplication'), false);
   assert.equal(Object.hasOwn(report.units[0].inputs[0], 'textApplicability'), false);
 });
 
@@ -3163,6 +3494,32 @@ test('batch rejects a nominally successful heavy parent with a failed child', as
   assert.equal(parent.code, 'invalid_execution_result');
   assert.equal(parent.executionState, 'success');
   assert.deepEqual(parent.generatedInputs.map((input) => input.state), ['success', 'failed']);
+});
+
+test('batch reports a malformed successful split child as an OCR execution failure', async () => {
+  const harness = createHarness({
+    preparationsByPath: { 'heavy.pdf': createPreparation({ fileName: 'heavy.pdf', chosenRoute: 'ocr', heavySplitEligible: true }) },
+    normalizeExecutionResultApplicability: false,
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'heavy.pdf': {
+        ok: true,
+        result: {
+          state: 'success', text: 'aggregate', textApplicability: 'applicable', executedRoute: 'ocr',
+          heavySplitExecution: { generatedInputs: [{ fileName: 'part.pdf', state: 'success' }] },
+        },
+      },
+    },
+  });
+  await harness.batchFlow.startFromSelectedFiles({ filePaths: ['heavy.pdf'], source: 'test' });
+  const parent = harness.getCapturedFinalReport().units[0].inputs[0];
+  const child = parent.generatedInputs[0];
+  assert.equal(parent.code, 'invalid_execution_result');
+  assert.equal(parent.failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.ocr_execution_error');
+  assert.equal(child.state, 'failed');
+  assert.equal(child.code, 'invalid_execution_result');
+  assert.equal(child.failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.ocr_execution_error');
+  assert.deepEqual(harness.getExecutionEvents().filter((event) => event.type === 'apply'), []);
 });
 
 test('batch logs every blocked applicable apply when applyTextViaCanonicalPath is unavailable', async () => {
@@ -3395,8 +3752,8 @@ test('batch logs every ignored snapshot auto-save when the API is unavailable', 
   assert.deepEqual(
     report.units.map((unit) => unit.snapshotResult),
     [
-      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
-      { state: 'failed', text: 'Snapshot creation failed: WRITE_FAILED' },
+      { state: 'failed' },
+      { state: 'failed' },
     ]
   );
 });

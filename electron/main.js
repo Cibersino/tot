@@ -570,6 +570,23 @@ function buildAppMenu(lang) {
   menuInstalled = true;
 }
 
+async function showMenuRebuildFailureNotice(language) {
+  if (!isAliveWindow(langWin)) {
+    log.warn('Application-menu rebuild failure notice failed (ignored): Language Window unavailable.');
+    return;
+  }
+
+  const dialogTexts = menuBuilder.getDialogTexts(language);
+  await dialog.showMessageBox(langWin, {
+    type: 'warning',
+    title: menuBuilder.resolveDialogText(dialogTexts, 'application_problem_title', { log }),
+    message: menuBuilder.resolveDialogText(dialogTexts, 'application_menu_rebuild_failure_message', { log }),
+    buttons: [menuBuilder.resolveDialogText(dialogTexts, 'ok', { log })],
+    defaultId: 0,
+    noLink: true,
+  });
+}
+
 function settleInitialCurrentTextProcessingForStartupFailure() {
   let processingState;
   try {
@@ -2801,6 +2818,7 @@ app.whenReady().then(() => {
     settingsState.registerIpc(ipcMain, {
       buildAppMenu,
       shouldRebuildAppMenu: () => languageResolved,
+      onMenuRebuildFailure: (language) => showMenuRebuildFailureNotice(language),
     });
 
     startupRegistrationOperation = 'snapshot-tag settings IPC registration';

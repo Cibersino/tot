@@ -257,12 +257,18 @@ function createHarness() {
     'renderer.text_extraction.batch_report.cancelled_fallback': 'cancelled',
     'renderer.text_extraction.batch_report.omitted': 'Omitted',
     'renderer.text_extraction.batch_report.snapshot_not_created': 'Snapshot not created',
-    'renderer.text_extraction.batch_report.failed_with_code': 'failed: {code}',
+    'renderer.text_extraction.batch_report.failed_with_description': 'failed: {description}',
+    'renderer.text_extraction.failure_descriptions.native_execution_error': 'native extraction error',
+    'renderer.text_extraction.failure_descriptions.ocr_pdf_too_large': 'PDF too large for OCR',
+    'renderer.text_extraction.failure_descriptions.ocr_execution_error': 'OCR extraction error',
+    'renderer.text_extraction.failure_descriptions.execution_error': 'execution error',
+    'renderer.text_extraction.batch_report.snapshot_failed': '(text snapshot creation failed)',
+    'renderer.text_extraction.alerts.cleanup_local_warning': 'Local temporary files may remain.',
+    'renderer.text_extraction.alerts.cleanup_remote_warning': 'Remote temporary documents may remain.',
     'renderer.text_extraction.batch_report.no_text': 'No text',
     'renderer.text_extraction.batch_report.applied_truncated': 'applied with truncation',
     'renderer.text_extraction.batch_report.payload_too_large': 'too large to apply',
     'renderer.text_extraction.batch_report.text_limit': 'text limit reached',
-    'renderer.text_extraction.batch_report.cancelled_with_code': 'cancelled: {code}',
     'renderer.text_extraction.single_file_heavy.source_file_label': 'Source file:',
     'renderer.text_extraction.alerts.generated_pdf_reveal_failed': 'Reveal failed',
   };
@@ -449,6 +455,7 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
                 fileName: 'heavy_pages_1_2.pdf',
                 state: 'failed',
                 code: 'ocr_input_too_large',
+                failureDescriptionKey: 'renderer.text_extraction.failure_descriptions.ocr_pdf_too_large',
                 generatedPdfArtifact: {
                   retainedArtifactPath: 'C:\\tmp\\heavy_pages_1_2.pdf',
                 },
@@ -484,7 +491,7 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.match(harness.elements.textExtractionBatchFinalModalBody.innerHTML, /heavy\.pdf/);
   assert.match(
     harness.elements.textExtractionBatchFinalModalBody.textContent,
-    /heavy_pages_1_2\.pdf \(failed: ocr_input_too_large\)/
+    /heavy_pages_1_2\.pdf \(failed: PDF too large for OCR\)/
   );
   assert.ok(
     harness.elements.textExtractionBatchFinalModalBody.innerHTML.indexOf('heavy.pdf')
@@ -526,9 +533,9 @@ test('batch final modal renders report rows with explicit DOM and exposes reveal
   assert.match(harness.clipboardWrites[0], /Batch extraction complete/);
   assert.match(harness.clipboardWrites[0], /Execution time: 00:42/);
   assert.match(harness.clipboardWrites[0], /- heavy\.pdf \(FAILED\)/);
-  assert.match(harness.clipboardWrites[0], /  - heavy_pages_1_2\.pdf \(failed: ocr_input_too_large\)/);
+  assert.match(harness.clipboardWrites[0], /  - heavy_pages_1_2\.pdf \(failed: PDF too large for OCR\)/);
   assert.doesNotMatch(harness.clipboardWrites[0], /\n- heavy_pages_1_2\.pdf/);
-  assert.match(harness.clipboardWrites[0], /heavy_pages_1_2\.pdf \(failed: ocr_input_too_large\)/);
+  assert.match(harness.clipboardWrites[0], /heavy_pages_1_2\.pdf \(failed: PDF too large for OCR\)/);
 
   harness.elements.textExtractionBatchFinalModalOpenSnapshots.dispatch('click');
   await Promise.resolve();
@@ -603,6 +610,7 @@ test('batch final modal renders ordinary failed, cancelled, and omitted rows con
             fileName: 'failed.pdf',
             state: 'failed',
             code: 'native_extraction_failed',
+            failureDescriptionKey: 'renderer.text_extraction.failure_descriptions.native_execution_error',
           },
           {
             fileName: 'cancelled.pdf',
@@ -626,8 +634,8 @@ test('batch final modal renders ordinary failed, cancelled, and omitted rows con
 
   const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
   const renderedHtml = renderedBody.innerHTML;
-  assert.match(renderedBody.textContent, /failed\.pdf \(failed: native_extraction_failed\)/);
-  assert.match(renderedBody.textContent, /cancelled\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /failed\.pdf \(failed: native extraction error\)/);
+  assert.match(renderedBody.textContent, /cancelled\.pdf \(cancelled\)/);
   assert.match(renderedBody.textContent, /omitted\.pdf \(Omitted\)/);
   assert.match(renderedHtml, /text-extraction-batch-final-status--failed/);
   assert.match(renderedHtml, /text-extraction-batch-final-status--cancelled/);
@@ -636,12 +644,140 @@ test('batch final modal renders ordinary failed, cancelled, and omitted rows con
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
   assert.equal(harness.clipboardWrites.length, 1);
-  assert.match(harness.clipboardWrites[0], /- failed\.pdf \(failed: native_extraction_failed\)/);
-  assert.match(harness.clipboardWrites[0], /- cancelled\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(harness.clipboardWrites[0], /- failed\.pdf \(failed: native extraction error\)/);
+  assert.match(harness.clipboardWrites[0], /- cancelled\.pdf \(cancelled\)/);
   assert.match(harness.clipboardWrites[0], /- omitted\.pdf \(Omitted\)/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;
+});
+
+test('batch report shows child and original failures and cancellation without exposing diagnostics', async () => {
+  const harness = createHarness();
+  const report = {
+    flowKind: 'single_file_split',
+    hadOutput: false,
+    units: [{
+      unitTitle: 'unit_1',
+      snapshotResult: { state: 'failed', text: 'old snapshot failure: WRITE_FAILED' },
+      inputs: [
+        {
+          fileName: 'child-caused.pdf', state: 'failed', code: 'ocr_conversion_failed',
+          generatedInputs: [{
+            fileName: 'failed-part.pdf', state: 'failed', code: 'ocr_conversion_failed',
+            failureDescriptionKey: 'renderer.text_extraction.failure_descriptions.ocr_execution_error',
+          }],
+        },
+        {
+          fileName: 'original-failure.pdf', state: 'failed', code: 'heavy_split_plan_invalid',
+          failureDescriptionKey: 'renderer.text_extraction.failure_descriptions.execution_error',
+          generatedInputs: [{ fileName: 'other-part.pdf', state: 'omitted', code: 'omitted' }],
+        },
+        {
+          fileName: 'cancelled.pdf', state: 'cancelled', code: 'aborted_by_user',
+          generatedInputs: [
+            { fileName: 'earlier.pdf', state: 'failed', code: 'ocr_conversion_failed', failureDescriptionKey: 'renderer.text_extraction.failure_descriptions.ocr_execution_error' },
+            { fileName: 'interrupted.pdf', state: 'cancelled', code: 'aborted_by_user' },
+            { fileName: 'later.pdf', state: 'omitted', code: 'omitted' },
+          ],
+        },
+      ],
+    }],
+  };
+  const promptPromise = harness.prompt({ report });
+  const rendered = harness.elements.textExtractionBatchFinalModalBody.textContent;
+  assert.match(rendered, /child-caused\.pdf \(FAILED\)/);
+  assert.match(rendered, /failed-part\.pdf \(failed: OCR extraction error\)/);
+  assert.match(rendered, /original-failure\.pdf \(failed: execution error\)/);
+  assert.match(rendered, /cancelled\.pdf \(cancelled\)/);
+  assert.match(rendered, /earlier\.pdf \(failed: OCR extraction error\)/);
+  assert.match(rendered, /interrupted\.pdf \(cancelled\)/);
+  assert.match(rendered, /later\.pdf \(Omitted\)/);
+  assert.match(rendered, /\(text snapshot creation failed\)/);
+  assert.doesNotMatch(rendered, /ocr_conversion_failed|heavy_split_plan_invalid|aborted_by_user|WRITE_FAILED/);
+
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  const copied = harness.clipboardWrites[0];
+  assert.match(copied, /- child-caused\.pdf \(FAILED\)/);
+  assert.match(copied, /  - failed-part\.pdf \(failed: OCR extraction error\)/);
+  assert.match(copied, /- original-failure\.pdf \(failed: execution error\)/);
+  assert.match(copied, /- cancelled\.pdf \(cancelled\)/);
+  assert.match(copied, /  - earlier\.pdf \(failed: OCR extraction error\)/);
+  assert.match(copied, /  - interrupted\.pdf \(cancelled\)/);
+  assert.match(copied, /  - later\.pdf \(Omitted\)/);
+  assert.match(copied, /\(text snapshot creation failed\)/);
+  assert.doesNotMatch(copied, /ocr_conversion_failed|heavy_split_plan_invalid|aborted_by_user|WRITE_FAILED/);
+  harness.translations['renderer.text_extraction.batch_report.failed_with_description'] = 'falló: {description}';
+  harness.translations['renderer.text_extraction.failure_descriptions.ocr_execution_error'] = 'error de extracción OCR';
+  harness.translations['renderer.text_extraction.batch_report.snapshot_failed'] = '(falló la creación del snapshot de texto)';
+  harness.applyTranslations();
+  assert.match(harness.elements.textExtractionBatchFinalModalBody.textContent, /failed-part\.pdf \(falló: error de extracción OCR\)/);
+  assert.match(harness.elements.textExtractionBatchFinalModalBody.textContent, /\(falló la creación del snapshot de texto\)/);
+  harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+  await Promise.resolve();
+  assert.match(harness.clipboardWrites[1], /failed-part\.pdf \(falló: error de extracción OCR\)/);
+  assert.match(harness.clipboardWrites[1], /\(falló la creación del snapshot de texto\)/);
+  harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+  await promptPromise;
+});
+
+test('batch report shows each cleanup origin once after units in visual and copied reports', async () => {
+  const cases = [
+    { origins: [], expected: [] },
+    { origins: ['local'], expected: ['Local temporary files may remain.'] },
+    { origins: ['remote'], expected: ['Remote temporary documents may remain.'] },
+    { origins: ['remote', 'local', 'remote', 'local'], expected: ['Local temporary files may remain.', 'Remote temporary documents may remain.'] },
+  ];
+  for (const { origins, expected } of cases) {
+    const harness = createHarness();
+    const report = {
+      flowKind: 'batch', hadOutput: false, cleanupWarnings: origins,
+      units: [{ unitTitle: 'unit_1', inputs: [{ fileName: 'file.pdf', state: 'success' }],
+        snapshotResult: { state: 'not_created', text: 'Snapshot not created' } }],
+    };
+    const promptPromise = harness.prompt({ report });
+    const rendered = harness.elements.textExtractionBatchFinalModalBody.textContent;
+    const html = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+    const warningLists = harness.elements.textExtractionBatchFinalModalBody._children.filter((node) => node.tagName === 'ul');
+    assert.equal(warningLists.length, expected.length ? 1 : 0);
+    if (warningLists.length) {
+      assert.deepEqual(warningLists[0]._children.map((node) => node.textContent), expected);
+    }
+    assert.equal(html.includes('text-extraction-batch-final-warnings'), expected.length > 0);
+    for (const warning of ['Local temporary files may remain.', 'Remote temporary documents may remain.']) {
+      assert.equal(rendered.split(warning).length - 1, expected.includes(warning) ? 1 : 0);
+    }
+    for (const warning of expected) {
+      assert.ok(rendered.indexOf(warning) > rendered.indexOf('Snapshot not created'));
+    }
+    harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+    await Promise.resolve();
+    const copied = harness.clipboardWrites[0];
+    const copiedLines = copied.split('\n');
+    const snapshotIndex = copiedLines.indexOf('Snapshot not created');
+    const finalStatementIndex = copiedLines.indexOf('Current text was not changed.');
+    assert.ok(snapshotIndex >= 0 && finalStatementIndex > snapshotIndex);
+    assert.deepEqual(copiedLines.slice(snapshotIndex + 1, finalStatementIndex).filter(Boolean), expected.map((warning) => `- ${warning}`));
+    for (const warning of ['Local temporary files may remain.', 'Remote temporary documents may remain.']) {
+      assert.equal(copied.split(warning).length - 1, expected.includes(warning) ? 1 : 0);
+    }
+    for (const warning of expected) {
+      assert.ok(copied.indexOf(warning) > copied.indexOf('Snapshot not created'));
+      assert.ok(copied.indexOf(warning) < copied.indexOf('Current text was not changed.'));
+    }
+    if (expected.length === 2) {
+      harness.translations['renderer.text_extraction.alerts.cleanup_local_warning'] = 'Aviso local.';
+      harness.translations['renderer.text_extraction.alerts.cleanup_remote_warning'] = 'Aviso remoto.';
+      harness.applyTranslations();
+      assert.match(harness.elements.textExtractionBatchFinalModalBody.textContent, /Aviso local\..*Aviso remoto\./);
+      harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+      await Promise.resolve();
+      assert.match(harness.clipboardWrites[1], /Aviso local\.[\s\S]*Aviso remoto\./);
+    }
+    harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+    await promptPromise;
+  }
 });
 
 test('batch final modal renders no-text statuses consistently for ordinary and heavy records', async () => {
@@ -723,7 +859,7 @@ test('batch final modal renders direct labels for payload-too-large and text-lim
           {
             fileName: 'limit.pdf',
             state: 'failed',
-            code: 'TEXT_LIMIT',
+            code: 'text_limit',
           },
         ],
       },
@@ -900,8 +1036,8 @@ test('batch final modal distinguishes cancelled heavy parent and generated child
   });
 
   const renderedBody = harness.elements.textExtractionBatchFinalModalBody;
-  assert.match(renderedBody.textContent, /book\.pdf \(cancelled: aborted_by_user\)/);
-  assert.match(renderedBody.textContent, /book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(renderedBody.textContent, /book\.pdf \(cancelled\)/);
+  assert.match(renderedBody.textContent, /book_pages_001_020\.pdf \(cancelled\)/);
   assert.match(renderedBody.textContent, /book_pages_021_040\.pdf \(Omitted\)/);
   assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--cancelled/);
   assert.match(renderedBody.innerHTML, /text-extraction-batch-final-status--omitted/);
@@ -909,8 +1045,8 @@ test('batch final modal distinguishes cancelled heavy parent and generated child
   harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
   await Promise.resolve();
   assert.equal(harness.clipboardWrites.length, 1);
-  assert.match(harness.clipboardWrites[0], /- book\.pdf \(cancelled: aborted_by_user\)/);
-  assert.match(harness.clipboardWrites[0], /  - book_pages_001_020\.pdf \(cancelled: aborted_by_user\)/);
+  assert.match(harness.clipboardWrites[0], /- book\.pdf \(cancelled\)/);
+  assert.match(harness.clipboardWrites[0], /  - book_pages_001_020\.pdf \(cancelled\)/);
 
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;

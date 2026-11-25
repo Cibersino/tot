@@ -136,6 +136,21 @@ test('prepare IPC forwards PDF selection and generated artifact policy into prep
   assert.equal(result.processingInputFileName, 'selectable_text_fixture_12_pages_pages_02_03.pdf');
 });
 
+test('prepare IPC reports an unreadable file when fingerprint acquisition fails', async (t) => {
+  const senderWin = { isDestroyed: () => false, webContents: {} };
+  const { prepareIpc, restore } = loadPrepareIpcWithElectronMock(senderWin);
+  t.after(restore);
+  const ipcMain = createIpcMainDouble();
+  prepareIpc.registerIpc(ipcMain, { getWindows: () => ({ mainWin: senderWin }), resolvePaths: () => ({}) });
+  const result = await ipcMain.invoke('text-extraction-prepare-selected-file', { sender: senderWin.webContents }, {
+    filePath: path.resolve(__dirname, '../../fixtures/nonexistent-fingerprint-source.txt'),
+  });
+  assert.equal(result.prepareFailed, true);
+  assert.equal(result.error.code, 'unreadable_or_corrupt');
+  assert.equal(result.error.detailsSafeForLogs.stage, 'prepare_fingerprint');
+  assert.equal(result.primaryAlertKey, 'renderer.text_extraction.alerts.unreadable_or_corrupt');
+});
+
 test('prepare IPC forwards forceHeavySplitFullSource into prepareSelectedFile and preserves it in the prepare result', async (t) => {
   const senderWin = {
     isDestroyed() {

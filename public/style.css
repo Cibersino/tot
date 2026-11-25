@@ -1966,6 +1966,13 @@ body.text-extraction-drop-active .app-container {
   color: var(--text-soft);
 }
 
+.text-extraction-batch-final-warnings {
+  margin: 0;
+  padding-inline-start: 1.25em;
+  font-size: var(--font-size-8);
+  color: var(--warning-text);
+}
+
 .text-extraction-batch-final-unit h3 {
   margin: 0;
   font-size: var(--font-size-9);

@@ -540,10 +540,10 @@
         textContent: tRenderer('renderer.text_extraction.batch_plan.heavy_pdf_badge'),
       }));
     }
-    if (input.alertCode) {
+    if (input.failureDescriptionKey) {
       main.appendChild(createDomElement('span', {
         className: 'text-extraction-batch-plan-input-code',
-        textContent: `(${input.alertCode})`,
+        textContent: `(${tRenderer(input.failureDescriptionKey)})`,
       }));
     }
 

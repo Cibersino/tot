@@ -159,8 +159,10 @@
   function formatReportStatusText(state, code = '', {
     applyTruncated = false,
     textApplicability = '',
+    failureDescriptionKey = '',
   } = {}) {
     const normalizedState = normalizeReportState(state);
+    const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : '';
     if (!normalizedState) {
       return '';
     }
@@ -176,23 +178,18 @@
     if (normalizedState === 'omitted') {
       return tRenderer('renderer.text_extraction.batch_report.omitted');
     }
-    if (normalizedState === 'failed' && code === 'PAYLOAD_TOO_LARGE') {
+    if (normalizedState === 'failed' && normalizedCode === 'PAYLOAD_TOO_LARGE') {
       return tRenderer('renderer.text_extraction.batch_report.payload_too_large');
     }
-    if (normalizedState === 'failed' && code === 'TEXT_LIMIT') {
+    if (normalizedState === 'failed' && normalizedCode === 'TEXT_LIMIT') {
       return tRenderer('renderer.text_extraction.batch_report.text_limit');
     }
     if (normalizedState === 'cancelled') {
-      if (code) {
-        return formatTranslation('renderer.text_extraction.batch_report.cancelled_with_code', {
-          code,
-        });
-      }
       return tRenderer('renderer.text_extraction.batch_report.cancelled_fallback');
     }
-    if (code) {
-      return formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
-        code,
+    if (failureDescriptionKey) {
+      return formatTranslation('renderer.text_extraction.batch_report.failed_with_description', {
+        description: tRenderer(failureDescriptionKey),
       });
     }
     return tRenderer('renderer.text_extraction.batch_report.failed_fallback');
@@ -201,10 +198,12 @@
   function buildReportStatusSuffix(state, code = '', {
     applyTruncated = false,
     textApplicability = '',
+    failureDescriptionKey = '',
   } = {}) {
     const statusText = formatReportStatusText(state, code, {
       applyTruncated,
       textApplicability,
+      failureDescriptionKey,
     });
     return statusText ? `(${statusText})` : '';
   }
@@ -216,6 +215,7 @@
       {
         applyTruncated: item && item.applyTruncated === true,
         textApplicability: item && item.textApplicability,
+        failureDescriptionKey: item && item.failureDescriptionKey,
       }
     );
   }
@@ -236,9 +236,20 @@
   }
 
   function getSnapshotResultText(unit) {
+    if (unit && unit.snapshotResult && unit.snapshotResult.state === 'failed') {
+      return tRenderer('renderer.text_extraction.batch_report.snapshot_failed');
+    }
     return unit && unit.snapshotResult
       ? unit.snapshotResult.text
       : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
+  }
+
+  function getCleanupWarningTexts(report) {
+    const origins = Array.isArray(report && report.cleanupWarnings) ? report.cleanupWarnings : [];
+    const texts = [];
+    if (origins.includes('local')) texts.push(tRenderer('renderer.text_extraction.alerts.cleanup_local_warning'));
+    if (origins.includes('remote')) texts.push(tRenderer('renderer.text_extraction.alerts.cleanup_remote_warning'));
+    return texts;
   }
 
   // =============================================================================
@@ -340,8 +351,15 @@
     return section;
   }
 
-  function replaceReportBody(units) {
+  function replaceReportBody(report) {
+    const { units } = report;
     const unitNodes = (Array.isArray(units) ? units : []).map((unit, unitIndex) => renderUnitReport(unit, unitIndex));
+    const warningTexts = getCleanupWarningTexts(report);
+    if (warningTexts.length) {
+      const list = createDomElement('ul', { className: 'text-extraction-batch-final-warnings' });
+      warningTexts.forEach((text) => list.appendChild(createDomElement('li', { textContent: text })));
+      unitNodes.push(list);
+    }
     if (typeof body.replaceChildren === 'function') {
       body.replaceChildren(...unitNodes);
       return;
@@ -382,6 +400,11 @@
       lines.push(getSnapshotResultText(unit));
       lines.push('');
     });
+    const warningTexts = getCleanupWarningTexts(report);
+    if (warningTexts.length) {
+      warningTexts.forEach((warning) => lines.push(`- ${warning}`));
+      lines.push('');
+    }
     lines.push(report.hadOutput
       ? tRenderer('renderer.text_extraction.batch_report.current_text_has_output')
       : tRenderer('renderer.text_extraction.batch_report.current_text_unchanged'));
@@ -411,7 +434,7 @@
   } = {}) {
     if (!hasRequiredElements()) {
       log.error('Batch final modal DOM elements missing.');
-      return;
+      throw new Error('Batch final modal DOM elements missing.');
     }
     if (!report || typeof report !== 'object' || !Array.isArray(report.units)) {
       log.warn('Batch final modal received invalid report payload; rendering normalized report.');
@@ -429,7 +452,7 @@
         elapsed.textContent = '';
       }
       setElementVisibility(elapsed, !!normalizedElapsedValueText);
-      replaceReportBody(safeReport.units);
+      replaceReportBody(safeReport);
       btnCopy.textContent = tRenderer('renderer.text_extraction.batch_report.copy_report');
       btnOpenSnapshots.textContent = tRenderer('renderer.text_extraction.batch_report.open_snapshots_folder');
       btnOk.textContent = tRenderer('renderer.text_extraction.batch_report.ok_button');

@@ -133,6 +133,17 @@ function createIpcMainDouble() {
   };
 }
 
+function registerSettingsIpc(settings, ipcMain, menuDependencies = {}) {
+  settings.registerIpc(ipcMain, {
+    buildAppMenu() {},
+    shouldRebuildAppMenu() {
+      return true;
+    },
+    onMenuRebuildFailure() {},
+    ...menuDependencies,
+  });
+}
+
 function captureWarnings(action) {
   const previousLevel = Log.getLevel();
   const originalWarn = console.warn;
@@ -146,6 +157,33 @@ function captureWarnings(action) {
     Log.setLevel(previousLevel);
   }
 }
+
+test('registerIpc requires application-menu rebuild dependencies before registering handlers', () => {
+  const invalidDependencies = [
+    [{ shouldRebuildAppMenu() { return true; } }, /requires buildAppMenu to be a function/],
+    [{ buildAppMenu() {} }, /requires shouldRebuildAppMenu to be a function/],
+    [{ buildAppMenu() {}, shouldRebuildAppMenu() { return true; } }, /requires onMenuRebuildFailure to be a function/],
+    [{ buildAppMenu: 'rebuild', shouldRebuildAppMenu() { return true; } }, /requires buildAppMenu to be a function/],
+    [{ buildAppMenu() {}, shouldRebuildAppMenu: false }, /requires shouldRebuildAppMenu to be a function/],
+    [{ buildAppMenu() {}, shouldRebuildAppMenu() { return true; }, onMenuRebuildFailure: false }, /requires onMenuRebuildFailure to be a function/],
+  ];
+
+  for (const [menuDependencies, expectedError] of invalidDependencies) {
+    const settings = loadFreshSettingsModule();
+    const registeredChannels = [];
+    const ipcMain = {
+      handle(channel) {
+        registeredChannels.push(channel);
+      },
+    };
+
+    assert.throws(
+      () => settings.registerIpc(ipcMain, menuDependencies),
+      expectedError
+    );
+    assert.deepEqual(registeredChannels, []);
+  }
+});
 
 test('language helpers accept exact declared IDs and expose independent scopes', () => {
   const settings = loadFreshSettingsModule();
@@ -586,7 +624,7 @@ test('registerIpc decorates get-settings and published payloads without mutating
       };
     },
   });
-  settings.registerIpc(ipcMain);
+  registerSettingsIpc(settings, ipcMain);
 
   const initialSettings = await ipcMain.invoke('get-settings');
   assert.equal(initialSettings.language, 'ar');
@@ -655,11 +693,21 @@ test('set-language defers only first-run menu installation to startup and retain
     shouldRebuildAppMenu() {
       return startupLanguageResolved;
     },
+    onMenuRebuildFailure() {},
   });
 
   const firstRunResult = await ipcMain.invoke('set-language', 'en');
 
   assert.deepEqual(firstRunResult, { ok: true, language: 'en' });
+  assert.equal(harness.getStoredValue().language, 'en');
+  assert.deepEqual(menuBuilds, []);
+  assert.deepEqual(publishedLanguages, ['en']);
+
+  startupLanguageResolved = undefined;
+  await assert.rejects(
+    ipcMain.invoke('set-language', 'es'),
+    /shouldRebuildAppMenu must return a boolean; received undefined/
+  );
   assert.equal(harness.getStoredValue().language, 'en');
   assert.deepEqual(menuBuilds, []);
   assert.deepEqual(publishedLanguages, ['en']);
@@ -671,6 +719,57 @@ test('set-language defers only first-run menu installation to startup and retain
   assert.equal(harness.getStoredValue().language, 'es');
   assert.deepEqual(menuBuilds, ['es']);
   assert.deepEqual(publishedLanguages, ['en', 'es']);
+});
+
+test('set-language retains and publishes the selected language despite runtime menu-rebuild and notification failures', async () => {
+  const settings = loadFreshSettingsModule();
+  const harness = createSettingsHarness({
+    language: 'en',
+    presetsByScope: {},
+    selectedPresetByScope: {},
+    disabledDefaultPresetsByScope: {},
+    numberFormattingByScope: {},
+  });
+  const ipcMain = createIpcMainDouble();
+  const publishedLanguages = [];
+  const failureNotices = [];
+
+  initializeSettings(settings, harness);
+  settings.configurePublication({
+    getWindows: () => ({}),
+    onSettingsUpdated(nextSettings) {
+      publishedLanguages.push(nextSettings.language);
+    },
+    decorateSettings(nextSettings) {
+      return nextSettings;
+    },
+  });
+  settings.registerIpc(ipcMain, {
+    buildAppMenu() {
+      throw new Error('Menu.setApplicationMenu failed');
+    },
+    shouldRebuildAppMenu() {
+      return true;
+    },
+    async onMenuRebuildFailure(language) {
+      await Promise.resolve();
+      failureNotices.push({
+        language,
+        publishedLanguages: publishedLanguages.slice(),
+      });
+      throw new Error('Language Window unavailable');
+    },
+  });
+
+  const result = await ipcMain.invoke('set-language', 'es');
+
+  assert.deepEqual(result, { ok: true, language: 'es' });
+  assert.equal(harness.getStoredValue().language, 'es');
+  assert.deepEqual(publishedLanguages, ['es']);
+  assert.deepEqual(failureNotices, [{
+    language: 'es',
+    publishedLanguages: ['es'],
+  }]);
 });
 
 test('publishSettingsUpdated includes calculator and reading-test window roles in the fixed target list', () => {
@@ -766,7 +865,7 @@ test('invalid renderer decoration drops live updates and rejects get-settings', 
       return null;
     },
   });
-  settings.registerIpc(ipcMain);
+  registerSettingsIpc(settings, ipcMain);
 
   settings.publishSettingsUpdated({ language: 'en' });
 
@@ -828,7 +927,7 @@ test('set-preview-spoiler-enabled strictly saves the main-window preference with
       return nextSettings;
     },
   });
-  settings.registerIpc(ipcMain);
+  registerSettingsIpc(settings, ipcMain);
 
   const result = await ipcMain.invoke('set-preview-spoiler-enabled', false);
 
@@ -883,7 +982,7 @@ test('registerIpc does not publish settings-updated or mutate persisted settings
       return nextSettings;
     },
   });
-  settings.registerIpc(ipcMain);
+  registerSettingsIpc(settings, ipcMain);
 
   await assert.rejects(
     ipcMain.invoke('set-mode-conteo', 'simple'),
@@ -919,7 +1018,7 @@ test('Precise-counting fallback strictly persists Simple once, then publishes an
     }),
     decorateSettings: (nextSettings) => nextSettings,
   });
-  settings.registerIpc(ipcMain);
+  registerSettingsIpc(settings, ipcMain);
 
   const first = await ipcMain.invoke('precise-counting-failed', {
     code: 'PRECISE_SEGMENTER_UNAVAILABLE',
@@ -963,7 +1062,7 @@ test('Precise-counting fallback accepts a Unicode-property capability failure re
     getWindows: () => ({ mainWin: null }),
     decorateSettings: (nextSettings) => nextSettings,
   });
-  settings.registerIpc(ipcMain);
+  registerSettingsIpc(settings, ipcMain);
 
   const result = await ipcMain.invoke('precise-counting-failed', {
     code: 'PRECISE_UNICODE_PROPERTIES_UNAVAILABLE',
@@ -1055,7 +1154,7 @@ test('set-selected-preset rejects on strict save failure and keeps persisted sel
   const ipcMain = createIpcMainDouble();
 
   initializeSettings(settings, harness);
-  settings.registerIpc(ipcMain);
+  registerSettingsIpc(settings, ipcMain);
 
   await assert.rejects(
     ipcMain.invoke('set-selected-preset', 'fast'),

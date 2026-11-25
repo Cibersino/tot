@@ -23,6 +23,8 @@ const TASK_ROW_COMMENT_MAX_CHARS = 1200; // Max chars for task row "comment" (co
 const TASK_ROW_LINK_MAX_CHARS = 1000; // Max chars for task row "link" (enlace).
 const OCR_IMAGE_UPLOAD_LIMIT_MB = 10; // Maximum Google OCR image-upload size in megabytes for the effective provider-ready upload file.
 const OCR_PROVIDER_LIMIT_MB = 50; // Maximum Google OCR non-image upload size in megabytes used by heavy-PDF planning and the existing non-image provider-facing limit.
+const OCR_CANCEL_CREATE_GRACE_MS = 60_000; // Time to wait for an in-flight OCR document ID after cancellation.
+const OCR_CANCEL_DELETE_GRACE_MS = 30_000; // Time to wait for remote OCR cleanup after cancellation.
 const HEAVY_SPLIT_SAFETY_FACTOR = 0.75; // Safety factor applied to the provider limit when estimating generated split size.
 const EDITOR_FONT_SIZE_MIN_PX = 12; // Minimum font size for the Text Editor textarea.
 const EDITOR_FONT_SIZE_MAX_PX = 36; // Maximum font size for the Text Editor textarea.
@@ -55,6 +57,8 @@ module.exports = {
   TASK_ROW_LINK_MAX_CHARS,
   OCR_IMAGE_UPLOAD_LIMIT_MB,
   OCR_PROVIDER_LIMIT_MB,
+  OCR_CANCEL_CREATE_GRACE_MS,
+  OCR_CANCEL_DELETE_GRACE_MS,
   HEAVY_SPLIT_SAFETY_FACTOR,
   EDITOR_FONT_SIZE_MIN_PX,
   EDITOR_FONT_SIZE_MAX_PX,

@@ -330,6 +330,7 @@ test('materializePdfPageSelectionInput preserves subordinate cleanup lineage ins
   const cleanupWarning = materialized.cleanupGeneratedArtifact();
   assert.deepEqual(cleanupWarning, {
     warningCode: 'cleanup:pdf_subset_cleanup_failed',
+    origin: 'local',
     detailsSafeForLogs: {
       stage: 'cleanup_generated_subset',
       runDir: path.dirname(materialized.effectiveFilePath),
@@ -346,6 +347,28 @@ test('materializePdfPageSelectionInput preserves subordinate cleanup lineage ins
       },
     },
   });
+});
+
+test('failed PDF materialization classifies a cleanup failure at its producer', async (t) => {
+  const tempDir = createTestTempDir('pdf-materialization-cleanup-failure');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const { loadedModule, restore } = loadPdfPageSelectionModuleWithMocks({
+    appTempPathsOverrides: {
+      createRuntimeTempRunDir() { return tempDir; },
+      cleanupRuntimeTempRunDir() {
+        return { warningCode: 'cleanup:runtime_temp_run_dir_cleanup_failed', detailsSafeForLogs: { errorCode: 'EPERM' } };
+      },
+    },
+  });
+  t.after(restore);
+  const result = await loadedModule.materializePdfPageSelectionInput({
+    fileInfo: { filePath: path.join(tempDir, 'missing.pdf'), fileName: 'missing.pdf', sourceFileKind: 'pdf' },
+    pdfPageSelection: { mode: 'range', fromPage: 1, toPage: 2, totalPages: 2, selectedPageCount: 2 },
+    generatedPdfArtifactPolicy: { mode: 'delete' },
+  });
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.cleanupWarning, { origin: 'local', warningCode: 'cleanup:pdf_subset_cleanup_failed' });
+  assert.equal(result.error.detailsSafeForLogs.cleanupFailure.errorCode, 'EPERM');
 });
 
 test('resolveProcessingInputFileName pads range bounds to the source PDF page-count width', () => {

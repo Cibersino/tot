@@ -312,7 +312,7 @@ test('first-run selection defers settings-side menu rebuilding to the startup re
 
   assert.match(
     settingsRegistration,
-    /settingsState\.registerIpc\(ipcMain, \{\s*buildAppMenu,\s*shouldRebuildAppMenu: \(\) => languageResolved,\s*\}\);/
+    /settingsState\.registerIpc\(ipcMain, \{\s*buildAppMenu,\s*shouldRebuildAppMenu: \(\) => languageResolved,\s*onMenuRebuildFailure: \(language\) => showMenuRebuildFailureNotice\(language\),\s*\}\);/
   );
   assert.match(
     firstRunSelection,
@@ -320,6 +320,20 @@ test('first-run selection defers settings-side menu rebuilding to the startup re
   );
   assert.match(languageSelectionHandler, /resolveLanguage\('selected'\)/);
   assert.doesNotMatch(languageSelectionHandler, /\bbuildAppMenu\s*\(/);
+});
+
+test('runtime menu-rebuild failure notice uses only the Language Window', () => {
+  const notice = sourceSection(
+    'async function showMenuRebuildFailureNotice(language) {',
+    'function settleInitialCurrentTextProcessingForStartupFailure() {'
+  );
+
+  assert.match(notice, /if \(!isAliveWindow\(langWin\)\)/);
+  assert.match(notice, /await dialog\.showMessageBox\(langWin, \{/);
+  assert.match(notice, /menuBuilder\.resolveDialogText\(dialogTexts, 'application_problem_title', \{ log \}\)/);
+  assert.match(notice, /menuBuilder\.resolveDialogText\(dialogTexts, 'application_menu_rebuild_failure_message', \{ log \}\)/);
+  assert.doesNotMatch(notice, /\bmainWin\b/);
+  assert.doesNotMatch(notice, /showMessageBox\(\{\s*/);
 });
 
 test('main startup terminates an initial main-document failure after resolving initial current-text processing', () => {

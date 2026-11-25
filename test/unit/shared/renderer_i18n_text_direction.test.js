@@ -282,6 +282,93 @@ test('the DEFAULT_LANG renderer bundle contains the English root schema', () => 
   assert.deepEqual(missingDefaultPaths, []);
 });
 
+test('batch OCR and report messages resolve through RendererI18n in Spanish and English', async () => {
+  const bundles = Object.fromEntries(['es', 'en'].map((language) => [
+    language,
+    JSON.parse(fs.readFileSync(path.resolve(__dirname, `../../../i18n/${language}/renderer.json`), 'utf8')),
+  ]));
+  bundles.fr = { renderer: { text_extraction: { alerts: { route_choice_error: 'French fixture override' } } } };
+  const { i18n } = createHarness('ltr', {
+    defaultLang: 'es',
+    async fetchImpl(pathname) {
+      const match = /^\.\.\/i18n\/(es|en|fr)\/renderer\.json$/.exec(pathname);
+      return match
+        ? { ok: true, text: async () => JSON.stringify(bundles[match[1]]) }
+        : { ok: false, status: 404, text: async () => '' };
+    },
+  });
+  const suffixes = ['activation_required', 'credentials_missing', 'credentials_invalid', 'token_state_invalid', 'connectivity_failed', 'quota_or_rate_limited', 'unavailable'];
+  const descriptions = {
+    unsupported_format: ['formato no admitido', 'unsupported format'],
+    unreadable_or_corrupt: ['archivo ilegible o corrupto', 'unreadable or corrupt file'],
+    protected_pdf: ['PDF protegido o cifrado', 'protected or encrypted PDF'],
+    page_count_unavailable: ['número de páginas desconocido', 'unknown page count'],
+    page_selection_invalid: ['rango de páginas inválido', 'invalid page range'],
+    pdf_generation_failed: ['error al generar PDF', 'PDF generation error'],
+    ocr_activation_required: ['OCR sin activar', 'OCR not enabled'],
+    credentials_missing: ['credenciales OCR ausentes', 'missing OCR credentials'],
+    credentials_invalid: ['credenciales OCR inválidas', 'invalid OCR credentials'],
+    ocr_token_state_invalid: ['sesión OCR inválida', 'invalid OCR sign-in state'],
+    ocr_communication_failed: ['error de comunicación con OCR', 'OCR communication error'],
+    ocr_usage_restricted: ['restricciones de uso de OCR', 'OCR usage restrictions'],
+    ocr_unavailable: ['OCR no disponible', 'OCR unavailable'],
+    preparation_error: ['error de preparación', 'preparation error'],
+    execution_error: ['error de ejecución', 'execution error'],
+    native_execution_error: ['error de extracción nativa', 'native extraction error'],
+    ocr_execution_error: ['error de extracción OCR', 'OCR extraction error'],
+    prepared_request_invalid: ['solicitud preparada inválida', 'invalid prepared request'],
+    route_unresolved: ['ruta de extracción indeterminada', 'unresolved extraction route'],
+    ocr_image_too_large: ['imagen demasiado grande para OCR', 'image too large for OCR'],
+    ocr_pdf_too_large: ['PDF demasiado grande para OCR', 'PDF too large for OCR'],
+    application_error: ['error de aplicación del texto', 'text application error'],
+  };
+  for (const language of ['es', 'en']) {
+    await i18n.transitionRendererTranslations(language, { applyTranslations() {} });
+    for (const suffix of suffixes) {
+      const key = `renderer.text_extraction.alerts.ocr.batch_ocr.${suffix}`;
+      assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.alerts.ocr.batch_ocr[suffix]);
+      assert.notEqual(i18n.tRenderer(key), key);
+    }
+    for (const [category, texts] of Object.entries(descriptions)) {
+      const key = `renderer.text_extraction.failure_descriptions.${category}`;
+      const expected = texts[language === 'es' ? 0 : 1];
+      assert.equal(bundles[language].renderer.text_extraction.failure_descriptions[category], expected);
+      assert.equal(i18n.tRenderer(key), expected);
+    }
+    for (const name of ['failed_with_description', 'snapshot_failed']) {
+      const key = `renderer.text_extraction.batch_report.${name}`;
+      assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.batch_report[name]);
+      assert.notEqual(i18n.tRenderer(key), key);
+    }
+    for (const name of ['cleanup_local_warning', 'cleanup_remote_warning', 'route_choice_error', 'heavy_pdf_recovery_error', 'pdf_options_error', 'result_modal_error', 'planning_modal_error', 'final_report_error']) {
+      const key = `renderer.text_extraction.alerts.${name}`;
+      assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.alerts[name]);
+      assert.notEqual(i18n.tRenderer(key), key);
+    }
+  }
+  await i18n.transitionRendererTranslations('fr', { applyTranslations() {} });
+  assert.equal(i18n.tRenderer('renderer.text_extraction.alerts.route_choice_error'), 'French fixture override');
+  for (const name of ['failed_with_description', 'snapshot_failed']) {
+    const key = `renderer.text_extraction.batch_report.${name}`;
+    assert.equal(i18n.tRenderer(key), bundles.es.renderer.text_extraction.batch_report[name]);
+  }
+  assert.equal(
+    i18n.tRenderer('renderer.text_extraction.failure_descriptions.preparation_error'),
+    bundles.es.renderer.text_extraction.failure_descriptions.preparation_error
+  );
+  for (const name of ['cleanup_local_warning', 'cleanup_remote_warning', 'pdf_options_error', 'result_modal_error', 'planning_modal_error', 'final_report_error']) {
+    const key = `renderer.text_extraction.alerts.${name}`;
+    assert.equal(i18n.tRenderer(key), bundles.es.renderer.text_extraction.alerts[name]);
+  }
+  const spanishAlerts = bundles.es.renderer.text_extraction.alerts;
+  assert.equal(spanishAlerts.route_choice_error, 'No se pudieron mostrar las opciones de ruta de extracción.');
+  assert.equal(spanishAlerts.heavy_pdf_recovery_error, 'No se pudieron mostrar las opciones de recuperación para este PDF.');
+  assert.equal(spanishAlerts.pdf_options_error, 'No se pudieron mostrar las opciones de extracción del PDF.');
+  assert.equal(spanishAlerts.result_modal_error, 'No se pudo mostrar el resultado de la extracción.');
+  assert.equal(spanishAlerts.planning_modal_error, 'No se pudieron mostrar las opciones de planificación de la extracción.');
+  assert.equal(spanishAlerts.final_report_error, 'No se pudo mostrar el informe final de la extracción.');
+});
+
 test('renderer bundles diagnose declared-resource failures and continue through the graph chain', async () => {
   const requestedPaths = [];
   const { i18n, logEntries } = createHarness('ltr', {

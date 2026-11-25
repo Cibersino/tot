@@ -157,7 +157,7 @@ async function handleExecutePrepared(event, payload = {}, {
         code: routeResolution.reason === 'route_choice_required'
           ? 'ROUTE_CHOICE_REQUIRED'
           : 'ROUTE_RESOLUTION_FAILED',
-        primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
+        primaryAlertKey: 'renderer.text_extraction.alerts.route_resolution_failed',
       };
     }
 
