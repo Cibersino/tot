@@ -296,6 +296,8 @@
           "runtime_error": "I puta he hapa whakahaere OCR i te tango. Tirohia te papatohu ka ngana anō.",
           "cancelled": "Kua whakakorea te tango OCR.",
           "cleanup_warning": "Kua oti te OCR, engari i rahua te horoi i te kōnae rangitahi mamao. Tirohia tō kōpaki Google Drive.",
+          "create_outcome_unknown": "Kua oti te whakakore. Tērā pea kua waihangatia tētahi tuhinga rangitahi ki Google Drive, ā, me muku pea e koe.",
+          "delete_outcome_unknown": "Kua oti te whakakore, engari kāore i taea te whakaū kua mukua te tuhinga rangitahi i Google Drive.",
           "batch_ocr": {
             "activation_required": "He tūemi OCR kei tēnei rōpū, engari kāore a Google OCR i te whakahohea. Whakamahia Manakohanga > Whakahohe Google OCR, kātahi ka tīmata anō i te rōpū.",
             "token_state_invalid": "He tūemi OCR kei tēnei rōpū, engari he muhu te āhua takiuru Google OCR kua tiakina. Whakamahia anō Manakohanga > Whakahohe Google OCR, kātahi ka tīmata anō i te rōpū.",

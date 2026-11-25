@@ -296,6 +296,8 @@
           "runtime_error": "Während der Extraktion ist ein OCR-Laufzeitfehler aufgetreten. Prüfen Sie die Konsole und versuchen Sie es erneut.",
           "cancelled": "OCR-Extraktion wurde abgebrochen.",
           "cleanup_warning": "OCR wurde abgeschlossen, aber die temporäre entfernte Dateibereinigung ist fehlgeschlagen. Prufen Sie Ihren Google-Drive-Ordner.",
+          "create_outcome_unknown": "Der Abbruch ist abgeschlossen. Möglicherweise wurde in Google Drive ein temporäres Dokument erstellt, das Sie gegebenenfalls löschen müssen.",
+          "delete_outcome_unknown": "Der Abbruch ist abgeschlossen, aber es konnte nicht bestätigt werden, ob das temporäre Dokument in Google Drive gelöscht wurde.",
           "batch_ocr": {
             "activation_required": "Dieser Stapel enthält OCR-Elemente, aber Google OCR ist nicht aktiviert. Verwenden Sie Einstellungen > Google OCR aktivieren und starten Sie den Stapel dann erneut.",
             "token_state_invalid": "Dieser Stapel enthält OCR-Elemente, aber der gespeicherte Google OCR-Anmeldestatus ist ungültig. Verwenden Sie erneut Einstellungen > Google OCR aktivieren und starten Sie den Stapel dann erneut.",

@@ -296,6 +296,8 @@
           "runtime_error": "Qichuy ukhupi OCR ejecución pantay karqan. Consolata qhaway hinaspa wakmanta ruwapay.",
           "cancelled": "OCR qichuy saqisqa.",
           "cleanup_warning": "OCR tukusqa, ichaqa temporal remoto archivo pichay pantarun. Google Drive carpetaykita qhaway.",
+          "create_outcome_unknown": "Saqiy tukurqan. Google Drive-pi huk documento temporal ruwasqa kanman; ichapas chayta qullunayki kanqa.",
+          "delete_outcome_unknown": "Saqiy tukurqan, ichaqa Google Drive-pi documento temporal qullusqa kasqanta mana takyachiyta atirqanchu.",
           "batch_ocr": {
             "activation_required": "Kay t'aqaqa OCR itemkunata charin, ichaqa Google OCR mana activasqachu. Akllaykuna > Google OCRta activay llamk'achiy, hinaspa t'aqata wakmanta qallariy.",
             "token_state_invalid": "Kay t'aqaqa OCR itemkunata charin, ichaqa waqaychasqa Google OCR yaykuna estado mana allinchu. Akllaykuna > Google OCRta activay wakmanta llamk'achiy, hinaspa t'aqata wakmanta qallariy.",

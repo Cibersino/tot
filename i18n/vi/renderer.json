@@ -296,6 +296,8 @@
           "runtime_error": "Đã xảy ra lỗi runtime OCR trong khi trích xuất. Hãy kiểm tra console và thử lại.",
           "cancelled": "Trích xuất OCR đã bị hủy.",
           "cleanup_warning": "OCR đã hoàn tất, nhưng không thể dọn tệp tạm thời từ xa. Hãy kiểm tra thư mục Google Drive của bạn.",
+          "create_outcome_unknown": "Quá trình hủy đã hoàn tất. Có thể một tài liệu tạm thời đã được tạo trên Google Drive và bạn có thể cần xóa tài liệu đó.",
+          "delete_outcome_unknown": "Quá trình hủy đã hoàn tất, nhưng không thể xác nhận tài liệu tạm thời trên Google Drive đã được xóa hay chưa.",
           "batch_ocr": {
             "activation_required": "Lô này có các mục OCR, nhưng Google OCR chưa được bật. Dùng Tùy chọn > Bật Google OCR, rồi bắt đầu lại lô.",
             "token_state_invalid": "Lô này có các mục OCR, nhưng trạng thái đăng nhập Google OCR đã lưu không hợp lệ. Dùng lại Tùy chọn > Bật Google OCR, rồi bắt đầu lại lô.",

@@ -296,6 +296,8 @@
           "runtime_error": "Hubo un cagazo en la ejecución OCR durante la extracción. Lorea la consola y prueba otra vez.",
           "cancelled": "La extracción OCR quedó cancelada.",
           "cleanup_warning": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
+          "create_outcome_unknown": "La cancelación terminó. Puede que se haya creado un documento temporal en Google Drive y que tengas que borrarlo.",
+          "delete_outcome_unknown": "La cancelación terminó, pero no se pudo confirmar que se haya borrado el documento temporal de Google Drive.",
           "batch_ocr": {
             "activation_required": "Este lote trae elementos con OCR, pero Google OCR no está enchufado. Usa A tu pinta > Enchufar Google OCR y después parte el lote de nuevo.",
             "token_state_invalid": "Este lote trae elementos con OCR, pero el login guardado de Google OCR salió chueco. Usa A tu pinta > Enchufar Google OCR de nuevo y después parte el lote de nuevo.",

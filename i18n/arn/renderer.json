@@ -296,6 +296,8 @@
           "runtime_error": "Extracción mew OCR runtime welulkuy. Kintunge consola ka wiño küdaw.",
           "cancelled": "OCR extracción katrüntuy.",
           "cleanup_warning": "OCR afi tañi küdaw, welu pepilay lifeltuam ti chillka kamapu mu. Adkintunge mi carpeta Google Drive mu.",
+          "create_outcome_unknown": "Cancelación afi. Pepi dewmangey kiñe documento temporal Google Drive mew, ka pepi müleay tami ñamümün.",
+          "delete_outcome_unknown": "Cancelación afi, welu pepi kimngelay ñamümngen ti documento temporal Google Drive mew.",
           "batch_ocr": {
             "activation_required": "Tüfachi lote mew müley OCR items, welu Google OCR activado ngelay. Püne Düllin > Activar Google OCR, ka wiño amulnge lote.",
             "token_state_invalid": "Tüfachi lote mew müley OCR items, welu Google OCR login estado elkünulu no küme. Püne ka Düllin > Activar Google OCR, ka wiño amulnge lote.",

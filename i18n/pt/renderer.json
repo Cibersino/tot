@@ -296,6 +296,8 @@
           "runtime_error": "Ocorreu um erro de execução do OCR durante a extração.",
           "cancelled": "A extração OCR foi cancelada.",
           "cleanup_warning": "O OCR terminou, mas a limpeza do arquivo remoto temporário falhou. Verifique sua pasta do Google Drive.",
+          "create_outcome_unknown": "O cancelamento foi concluído. É possível que um documento temporário tenha sido criado no Google Drive e que você precise excluí-lo.",
+          "delete_outcome_unknown": "O cancelamento foi concluído, mas não foi possível confirmar a exclusão do documento temporário do Google Drive.",
           "batch_ocr": {
             "activation_required": "Este lote inclui itens com OCR, mas o Google OCR não está ativado. Use Preferências > Ativar Google OCR e depois inicie a extração novamente.",
             "token_state_invalid": "Este lote inclui itens com OCR, mas o estado salvo de acesso do Google OCR é inválido. Use Preferências > Ativar Google OCR novamente e depois inicie a extração novamente.",

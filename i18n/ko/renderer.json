@@ -296,6 +296,8 @@
           "runtime_error": "추출 중 OCR 런타임 오류가 발생했습니다. 콘솔을 확인하고 다시 시도하세요.",
           "cancelled": "OCR 추출이 취소되었습니다.",
           "cleanup_warning": "OCR은 완료되었지만 임시 원격 파일 정리에 실패했습니다. Google Drive 폴더를 확인하세요.",
+          "create_outcome_unknown": "취소가 완료되었습니다. Google Drive에 임시 문서가 생성되었을 수 있으며, 삭제해야 할 수도 있습니다.",
+          "delete_outcome_unknown": "취소가 완료되었지만 Google Drive의 임시 문서가 삭제되었는지 확인할 수 없었습니다.",
           "batch_ocr": {
             "activation_required": "이 일괄 처리에는 OCR 항목이 포함되어 있지만 Google OCR이 활성화되어 있지 않습니다. 환경설정 > Google OCR 활성화를 사용한 뒤 일괄 처리를 다시 시작하세요.",
             "token_state_invalid": "이 일괄 처리에는 OCR 항목이 포함되어 있지만 저장된 Google OCR 로그인 상태가 올바르지 않습니다. 환경설정 > Google OCR 활성화를 다시 사용한 뒤 일괄 처리를 다시 시작하세요.",

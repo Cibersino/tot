@@ -296,6 +296,8 @@
           "runtime_error": "Ett OCR-runtimefel uppstod under extrahering. Kontrollera konsolen och försök igen.",
           "cancelled": "OCR-extrahering avbröts.",
           "cleanup_warning": "OCR slutfördes, men rensning av tillfällig fjärrfil misslyckades. Kontrollera din Google Drive-mapp.",
+          "create_outcome_unknown": "Avbrytningen är klar. Ett tillfälligt dokument kan ha skapats i Google Drive och du kan behöva ta bort det.",
+          "delete_outcome_unknown": "Avbrytningen är klar, men det gick inte att bekräfta att det tillfälliga dokumentet i Google Drive har tagits bort.",
           "batch_ocr": {
             "activation_required": "Denna sats innehåller OCR-objekt, men Google OCR är inte aktiverat. Använd Inställningar > Aktivera Google OCR och starta sedan satsen igen.",
             "token_state_invalid": "Denna sats innehåller OCR-objekt, men det sparade Google OCR-inloggningstillståndet är ogiltigt. Använd Inställningar > Aktivera Google OCR igen och starta sedan satsen igen.",

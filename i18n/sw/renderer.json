@@ -296,6 +296,8 @@
           "runtime_error": "Hitilafu ya utekelezaji wa OCR imetokea wakati wa utoaji.",
           "cancelled": "Utoaji wa maandishi kwa OCR ulighairiwa.",
           "cleanup_warning": "OCR imekamilika, lakini kuondoa faili ya muda ya mbali kumeshindwa. Kagua folda yako ya Google Drive.",
+          "create_outcome_unknown": "Kughairi kumekamilika. Huenda hati ya muda iliundwa kwenye Google Drive, na huenda ukahitaji kuifuta.",
+          "delete_outcome_unknown": "Kughairi kumekamilika, lakini haikuwezekana kuthibitisha kuwa hati ya muda ya Google Drive ilifutwa.",
           "batch_ocr": {
             "activation_required": "Kundi hili lina vipengee vya OCR, lakini Google OCR haijawashwa. Tumia Mapendeleo > Washa Google OCR, kisha anzisha utoaji tena.",
             "token_state_invalid": "Kundi hili lina vipengee vya OCR, lakini hali ya kuingia ya Google OCR iliyohifadhiwa si halali. Tumia Mapendeleo > Washa Google OCR tena, kisha anzisha utoaji tena.",

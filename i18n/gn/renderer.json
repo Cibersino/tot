@@ -296,6 +296,8 @@
           "runtime_error": "Oiko OCR runtime error text extraction aja. Ehecha consola ha eha’ã jey.",
           "cancelled": "OCR extracción ojeheja.",
           "cleanup_warning": "OCR opa, hákatu limpieza temporal remota archivo rehegua ojavy. Ehecha nde Google Drive carpeta.",
+          "create_outcome_unknown": "Opa pe cancelación. Ikatu ojejapora’e peteĩ documento temporal Google Drive-pe ha ikatu tekotevẽ rembogue.",
+          "delete_outcome_unknown": "Opa pe cancelación, hákatu ndaikatúi oñemoañete oñembogue hague pe documento temporal Google Drive-gui.",
           "batch_ocr": {
             "activation_required": "Ko lote oguereko elemento OCR, hákatu Google OCR noĩri activado. Eipuru Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",
             "token_state_invalid": "Ko lote oguereko elemento OCR, hákatu estado oñeñongatúva Google OCR jeike rehegua ndoikói. Eipuru jey Preferencias > Emyandy Google OCR, ha emoñepyrũjey lote.",

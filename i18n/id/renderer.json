@@ -296,6 +296,8 @@
           "runtime_error": "Terjadi kesalahan runtime OCR selama ekstraksi. Periksa konsol dan coba lagi.",
           "cancelled": "Ekstraksi OCR dibatalkan.",
           "cleanup_warning": "OCR selesai, tetapi pembersihan file sementara jarak jauh gagal. Periksa folder Google Drive Anda.",
+          "create_outcome_unknown": "Pembatalan selesai. Dokumen sementara mungkin telah dibuat di Google Drive dan mungkin perlu Anda hapus.",
+          "delete_outcome_unknown": "Pembatalan selesai, tetapi penghapusan dokumen sementara di Google Drive tidak dapat dikonfirmasi.",
           "batch_ocr": {
             "activation_required": "Kelompok ini mencakup item OCR, tetapi Google OCR belum diaktifkan. Gunakan Preferensi > Aktifkan Google OCR, lalu mulai ulang kelompok.",
             "token_state_invalid": "Kelompok ini mencakup item OCR, tetapi status masuk Google OCR yang tersimpan tidak valid. Gunakan Preferensi > Aktifkan Google OCR lagi, lalu mulai ulang kelompok.",

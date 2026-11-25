@@ -296,6 +296,8 @@
           "runtime_error": "Apsuña taypin OCR ejecución pantjasiw utji. Consola uñakipam ukat wasitat yant’am.",
           "cancelled": "OCR apsuña suyt’ayata.",
           "cleanup_warning": "OCR tukuyiwa, ukampis temporal remoto archivo pichhaña pantjasi. Google Drive carpetam uñakipam.",
+          "create_outcome_unknown": "Cancelación tukuyiwa. Google Drive ukan mä documento temporal luratäspawa, ukat inas chhaqtayañax wakischispa.",
+          "delete_outcome_unknown": "Cancelación tukuyiwa, ukampis Google Drive ukan documento temporal chhaqtayatätapax janiw chiqañchatäkänti.",
           "batch_ocr": {
             "activation_required": "Aka lote ukax OCR item-naka apani, ukampis Google OCR janiw activatäkiti. Ajllitanaka > Google OCR activaña apnaqam, ukat lote wasitat qalltam.",
             "token_state_invalid": "Aka lote ukax OCR item-naka apani, ukampis imata Google OCR mantaña estado janiw walikiti. Ajllitanaka > Google OCR activaña wasitat apnaqam, ukat lote wasitat qalltam.",

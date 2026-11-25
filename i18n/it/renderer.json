@@ -296,6 +296,8 @@
           "runtime_error": "Si è verificato un errore di esecuzione OCR durante estrazione. Controlla la console e riprova.",
           "cancelled": "L'estrazione OCR è stata annullata.",
           "cleanup_warning": "L'OCR e terminato, ma la pulizia temporanea remota del file non e riuscita. Controlla la tua cartella Google Drive.",
+          "create_outcome_unknown": "L'annullamento è terminato. È possibile che sia stato creato un documento temporaneo in Google Drive e che tu debba eliminarlo.",
+          "delete_outcome_unknown": "L'annullamento è terminato, ma non è stato possibile confermare l'eliminazione del documento temporaneo di Google Drive.",
           "batch_ocr": {
             "activation_required": "Questo lotto include elementi OCR, ma Google OCR non è attivo. Usa Preferenze > Attiva Google OCR, quindi riavvia il lotto.",
             "token_state_invalid": "Questo lotto include elementi OCR, ma lo stato di accesso Google OCR salvato non è valido. Usa di nuovo Preferenze > Attiva Google OCR, quindi riavvia il lotto.",

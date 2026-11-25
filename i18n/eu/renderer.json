@@ -296,6 +296,8 @@
           "runtime_error": "OCR exekuzio-errorea gertatu da erauzketa bitartean. Begiratu kontsola eta saiatu berriro.",
           "cancelled": "OCR erauzketa prozesua bertan behera utzi da.",
           "cleanup_warning": "OCR amaitu da, baina urruneko aldi baterako fitxategiaren garbiketak huts egin du. Begiratu zure Google Drive karpeta.",
+          "create_outcome_unknown": "Bertan behera uztea amaitu da. Baliteke Google Drive-n aldi baterako dokumentu bat sortu izana eta zuk ezabatu behar izatea.",
+          "delete_outcome_unknown": "Bertan behera uztea amaitu da, baina ezin izan da baieztatu Google Drive-ko aldi baterako dokumentua ezabatu denik.",
           "batch_ocr": {
             "activation_required": "Multzo honek OCR elementuak ditu, baina Google OCR ez dago aktibatuta. Erabili Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",
             "token_state_invalid": "Multzo honek OCR elementuak ditu, baina gordetako Google OCR saio-hasieraren egoera baliogabea da. Erabili berriro Hobespenak > Aktibatu Google OCR, eta hasi multzoa berriro.",

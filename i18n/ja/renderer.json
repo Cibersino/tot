@@ -296,6 +296,8 @@
           "runtime_error": "抽出中に OCR 実行時エラーが発生しました。コンソールを確認して再試行してください。",
           "cancelled": "OCR 抽出はキャンセルされました。",
           "cleanup_warning": "OCR は完了しましたが、一時リモートファイルのクリーンアップに失敗しました。Google Drive フォルダを確認してください。",
+          "create_outcome_unknown": "キャンセル処理が完了しました。Google Drive に一時的なドキュメントが作成された可能性があり、削除が必要になる場合があります。",
+          "delete_outcome_unknown": "キャンセル処理が完了しましたが、Google Drive の一時的なドキュメントが削除されたかどうか確認できませんでした。",
           "batch_ocr": {
             "activation_required": "この一括処理には OCR 項目が含まれていますが、Google OCR が有効ではありません。設定 > Google OCR を有効化 から有効化してから、一括処理を再開してください。",
             "token_state_invalid": "この一括処理には OCR 項目が含まれていますが、保存された Google OCR ログイン状態が無効です。設定 > Google OCR を有効化 からもう一度有効化してから、一括処理を再開してください。",

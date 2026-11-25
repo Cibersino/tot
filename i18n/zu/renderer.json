@@ -296,6 +296,8 @@
           "runtime_error": "Kuvele iphutha lokusebenza le-OCR ngesikhathi sokukhishwa. Hlola ikhonsoli bese uzama futhi.",
           "cancelled": "Ukukhishwa kwe-OCR kukhanseliwe.",
           "cleanup_warning": "I-OCR iqediwe, kodwa ukuhlanzwa kwefayela lesikhashana elikude kuhlulekile. Hlola ifolda yakho ye-Google Drive.",
+          "create_outcome_unknown": "Ukukhansela sekuqediwe. Kungenzeka ukuthi idokhumenti yesikhashana idaliwe ku-Google Drive, futhi kungase kudingeke uyisuse.",
+          "delete_outcome_unknown": "Ukukhansela sekuqediwe, kodwa akukwazekanga ukuqinisekisa ukuthi idokhumenti yesikhashana isusiwe ku-Google Drive.",
           "batch_ocr": {
             "activation_required": "Leli qoqo liqukethe izinto ze-OCR, kodwa i-Google OCR ayivuliwe. Sebenzisa Izintandokazi > Vula i-Google OCR, bese uqala iqoqo futhi.",
             "token_state_invalid": "Leli qoqo liqukethe izinto ze-OCR, kodwa isimo sokungena se-Google OCR esigciniwe asivumelekile. Sebenzisa futhi Izintandokazi > Vula i-Google OCR, bese uqala iqoqo futhi.",

@@ -296,6 +296,8 @@
           "runtime_error": "Çıkarma sırasında OCR çalışma zamanı hatası oluştu. Konsolu kontrol edin ve yeniden deneyin.",
           "cancelled": "OCR çıkarma iptal edildi.",
           "cleanup_warning": "OCR tamamlandı, ancak geçici uzak dosya temizliği başarısız oldu. Google Drive klasörünüzü kontrol edin.",
+          "create_outcome_unknown": "İptal işlemi tamamlandı. Google Drive'da geçici bir belge oluşturulmuş olabilir ve bu belgeyi silmeniz gerekebilir.",
+          "delete_outcome_unknown": "İptal işlemi tamamlandı, ancak Google Drive'daki geçici belgenin silindiği doğrulanamadı.",
           "batch_ocr": {
             "activation_required": "Bu toplu işlem OCR öğeleri içeriyor, ancak Google OCR etkin değil. Tercihler > Google OCR’ı etkinleştir seçeneğini kullanın ve ardından toplu işlemi yeniden başlatın.",
             "token_state_invalid": "Bu toplu işlem OCR öğeleri içeriyor, ancak kaydedilmiş Google OCR oturum açma durumu geçersiz. Tercihler > Google OCR’ı etkinleştir seçeneğini yeniden kullanın ve ardından toplu işlemi yeniden başlatın.",

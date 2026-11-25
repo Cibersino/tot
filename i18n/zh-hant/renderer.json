@@ -296,6 +296,8 @@
           "runtime_error": "擷取過程中發生 OCR 執行階段錯誤。請檢查主控台並重試。",
           "cancelled": "OCR 擷取已取消。",
           "cleanup_warning": "OCR 已完成，但暫時遠端檔案清理失敗。請檢查你的 Google Drive 資料夾。",
+          "create_outcome_unknown": "取消作業已完成。Google Drive 中可能已建立暫存文件，你可能需要將其刪除。",
+          "delete_outcome_unknown": "取消作業已完成，但無法確認 Google Drive 中的暫存文件是否已刪除。",
           "batch_ocr": {
             "activation_required": "此批次任務包含 OCR 項目，但 Google OCR 尚未啟用。請使用「偏好設定 > 啟用 Google OCR」，然後重新啟動批次任務。",
             "token_state_invalid": "此批次任務包含 OCR 項目，但已儲存的 Google OCR 登入狀態無效。請再次使用「偏好設定 > 啟用 Google OCR」，然後重新啟動批次任務。",

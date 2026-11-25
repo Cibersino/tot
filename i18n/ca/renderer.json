@@ -296,6 +296,8 @@
           "runtime_error": "S’ha produït un error d’execució OCR durant extracció. Revisa la consola i torna-ho a provar.",
           "cancelled": "L’extracció OCR s’ha cancel·lat.",
           "cleanup_warning": "L’OCR ha acabat, però ha fallat la neteja temporal remota del fitxer. Revisa la teva carpeta de Google Drive.",
+          "create_outcome_unknown": "La cancel·lació ha finalitzat. És possible que s'hagi creat un document temporal a Google Drive i que l'hagis d'eliminar.",
+          "delete_outcome_unknown": "La cancel·lació ha finalitzat, però no s'ha pogut confirmar l'eliminació del document temporal de Google Drive.",
           "batch_ocr": {
             "activation_required": "Aquest lot inclou elements OCR, però Google OCR no està activat. Usa Preferències > Activar Google OCR i torna a iniciar el lot.",
             "token_state_invalid": "Aquest lot inclou elements OCR, però l’estat d’inici de sessió desat de Google OCR és invàlid. Torna a usar Preferències > Activar Google OCR i torna a iniciar el lot.",
