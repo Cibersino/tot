@@ -1075,6 +1075,24 @@ test('single-file heavy-split handoff retains the admitted operation until Batch
   assert.equal(harness.getCheckTextExtractionPreconditionsCallCount(), 2);
 });
 
+test('individual cleanup warning is immediate before continuing to heavy-PDF splitting', async () => {
+  const events = [];
+  const harness = createHarness({
+    singleFileHeavyResponses: ['split'],
+    executePreparedTextExtractionResult: {
+      ok: true,
+      warningAlertKeys: ['renderer.text_extraction.alerts.cleanup_local_warning'],
+      result: { state: 'failure', error: { code: 'ocr_input_too_large' } },
+    },
+    startSyntheticSingleFileHeavySplitImpl() {
+      events.push([...harness.notifications]);
+    },
+  });
+  await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(events, [['renderer.text_extraction.alerts.cleanup_local_warning']]);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.cleanup_local_warning']);
+});
+
 test('single-file cancellation finishes abort finalization only after execution settles', async () => {
   const harness = createHarness({
     executePreparedTextExtractionResult: {

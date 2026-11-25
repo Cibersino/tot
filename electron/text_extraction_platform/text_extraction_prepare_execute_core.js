@@ -963,33 +963,13 @@ function resolvePrimaryAlertKey(routeKind, result) {
   return 'renderer.text_extraction.alerts.start_error';
 }
 
-function resolveWarningAlertKeys(routeKind, result) {
-  const warnings = Array.isArray(result && result.warnings) ? result.warnings : [];
-  const alertKeys = [];
-
-  if (warnings.some((warning) => warning === 'cleanup:pdf_subset_cleanup_failed')) {
-    alertKeys.push('renderer.text_extraction.alerts.generated_pdf_cleanup_warning');
-  }
-
-  if (routeKind === 'ocr' && warnings.includes('cleanup:ocr_create_outcome_unknown')) {
-    alertKeys.push('renderer.text_extraction.alerts.ocr.create_outcome_unknown');
-  }
-  if (routeKind === 'ocr' && warnings.includes('cleanup:ocr_delete_outcome_unknown')) {
-    alertKeys.push('renderer.text_extraction.alerts.ocr.delete_outcome_unknown');
-  }
-
-  if (routeKind === 'ocr'
-    && warnings.some((warning) => (
-      typeof warning === 'string'
-      && warning.startsWith('cleanup:')
-      && warning !== 'cleanup:pdf_subset_cleanup_failed'
-      && warning !== 'cleanup:ocr_create_outcome_unknown'
-      && warning !== 'cleanup:ocr_delete_outcome_unknown'
-    ))) {
-    alertKeys.push('renderer.text_extraction.alerts.ocr.cleanup_warning');
-  }
-
-  return alertKeys;
+function resolveWarningAlertKeys(result) {
+  const warnings = Array.isArray(result && result.cleanupWarnings) ? result.cleanupWarnings : [];
+  return warnings.flatMap((warning) => {
+    if (warning && warning.origin === 'local') return ['renderer.text_extraction.alerts.cleanup_local_warning'];
+    if (warning && warning.origin === 'remote') return ['renderer.text_extraction.alerts.cleanup_remote_warning'];
+    return [];
+  });
 }
 
 function buildCleanupWarningLogDetails(cleanupWarning) {
@@ -1444,6 +1424,8 @@ async function executePreparedHeavySplitUnit({
   cancellationSignal,
   heavySplitFailurePolicy,
   processingContext,
+  warnings,
+  cleanupWarnings,
 }) {
   const heavySplitPreview = routeMetadata && routeMetadata.heavySplitPreview && routeMetadata.heavySplitPreview.ok === true
     ? routeMetadata.heavySplitPreview
@@ -1476,7 +1458,7 @@ async function executePreparedHeavySplitUnit({
       ok: true,
       ...failure,
       primaryAlertKey: resolvePrimaryAlertKey(productRoute, failure.result),
-      warningAlertKeys: resolveWarningAlertKeys(productRoute, failure.result),
+      warningAlertKeys: resolveWarningAlertKeys(failure.result),
     };
   }
 
@@ -1491,7 +1473,6 @@ async function executePreparedHeavySplitUnit({
     generatedPdfArtifact: null,
   };
   const childStatuses = [];
-  const cleanupWarnings = [];
   let aggregatedText = '';
   let allChildrenSucceeded = true;
   let lastFailureError = null;
@@ -1517,6 +1498,10 @@ async function executePreparedHeavySplitUnit({
     });
 
     if (!materializedInput || materializedInput.ok !== true) {
+      if (materializedInput && materializedInput.cleanupWarning) {
+        cleanupWarnings.push(materializedInput.cleanupWarning);
+        warnings.push(materializedInput.cleanupWarning.warningCode);
+      }
       const error = materializedInput && materializedInput.error
         ? materializedInput.error
         : {
@@ -1562,7 +1547,8 @@ async function executePreparedHeavySplitUnit({
           'Generated PDF subset cleanup failed (ignored):',
           cleanupWarningLogDetails
         );
-        cleanupWarnings.push(cleanupWarning.warningCode);
+        cleanupWarnings.push({ origin: cleanupWarning.origin, warningCode: cleanupWarning.warningCode });
+        warnings.push(cleanupWarning.warningCode);
       }
       childStatuses.push(buildHeavySplitChildStatus({
         generatedInput,
@@ -1590,13 +1576,15 @@ async function executePreparedHeavySplitUnit({
           },
         },
       });
+      cancelledExecution.result.warnings = [...warnings];
+      cancelledExecution.result.cleanupWarnings = [...cleanupWarnings];
       return {
         ok: true,
         executionKind: 'google_drive',
         result: cancelledExecution.result,
         routeMetadata: cancelledExecution.routeMetadata,
         primaryAlertKey: resolvePrimaryAlertKey('ocr', cancelledExecution.result),
-        warningAlertKeys: resolveWarningAlertKeys('ocr', cancelledExecution.result),
+        warningAlertKeys: resolveWarningAlertKeys(cancelledExecution.result),
       };
     }
 
@@ -1613,6 +1601,8 @@ async function executePreparedHeavySplitUnit({
         isAborted: () => !executionOwnsController(),
         cancellationSignal,
       });
+      if (Array.isArray(childResult && childResult.warnings)) warnings.push(...childResult.warnings);
+      if (Array.isArray(childResult && childResult.cleanupWarnings)) cleanupWarnings.push(...childResult.cleanupWarnings);
       childResult = enforceFailureAbortInvariants({
         routeKind: 'ocr',
         fileInfo: preparedRecord.fileInfo,
@@ -1629,7 +1619,8 @@ async function executePreparedHeavySplitUnit({
           'Generated PDF subset cleanup failed (ignored):',
           cleanupWarningLogDetails
         );
-        cleanupWarnings.push(cleanupWarning.warningCode);
+        cleanupWarnings.push({ origin: cleanupWarning.origin, warningCode: cleanupWarning.warningCode });
+        warnings.push(cleanupWarning.warningCode);
       }
     }
 
@@ -1705,13 +1696,15 @@ async function executePreparedHeavySplitUnit({
           },
         },
       });
+      cancelledExecution.result.warnings = [...warnings];
+      cancelledExecution.result.cleanupWarnings = [...cleanupWarnings];
       return {
         ok: true,
         executionKind: 'google_drive',
         result: cancelledExecution.result,
         routeMetadata: cancelledExecution.routeMetadata,
         primaryAlertKey: resolvePrimaryAlertKey('ocr', cancelledExecution.result),
-        warningAlertKeys: resolveWarningAlertKeys('ocr', cancelledExecution.result),
+        warningAlertKeys: resolveWarningAlertKeys(cancelledExecution.result),
       };
     }
 
@@ -1745,12 +1738,7 @@ async function executePreparedHeavySplitUnit({
     }
   }
 
-  const topLevelWarnings = [];
-  cleanupWarnings.forEach((warning) => {
-    if (typeof warning === 'string' && warning.trim()) {
-      topLevelWarnings.push(warning);
-    }
-  });
+  const topLevelWarnings = [...warnings];
 
   if (allChildrenSucceeded) {
     const result = decorateExecutionResultForPreparedInput({
@@ -1762,7 +1750,8 @@ async function executePreparedHeavySplitUnit({
         executedRoute: 'ocr',
         text: aggregatedText,
         warnings: topLevelWarnings,
-        summary: topLevelWarnings.length > 0
+        cleanupWarnings: [...cleanupWarnings],
+        summary: cleanupWarnings.length > 0
           ? 'Heavy PDF OCR split succeeded with cleanup warning.'
           : 'Heavy PDF OCR split succeeded.',
         heavySplitExecution: {
@@ -1789,7 +1778,7 @@ async function executePreparedHeavySplitUnit({
         executedRoute: 'ocr',
       },
       primaryAlertKey: resolvePrimaryAlertKey('ocr', result),
-      warningAlertKeys: resolveWarningAlertKeys('ocr', result),
+      warningAlertKeys: resolveWarningAlertKeys(result),
     };
   }
 
@@ -1802,6 +1791,7 @@ async function executePreparedHeavySplitUnit({
       executedRoute: 'ocr',
       text: '',
       warnings: topLevelWarnings,
+      cleanupWarnings: [...cleanupWarnings],
       summary: 'Heavy PDF OCR split failed because one or more generated inputs did not complete successfully.',
       heavySplitExecution: {
         generatedInputs: childStatuses,
@@ -1835,7 +1825,7 @@ async function executePreparedHeavySplitUnit({
       executedRoute: 'ocr',
     },
     primaryAlertKey: resolvePrimaryAlertKey('ocr', failureResult),
-    warningAlertKeys: resolveWarningAlertKeys('ocr', failureResult),
+    warningAlertKeys: resolveWarningAlertKeys(failureResult),
   };
 }
 
@@ -1934,6 +1924,8 @@ async function executePreparedImport({
     generatedPdfArtifact: null,
   };
   let cleanupGeneratedArtifact = null;
+  const observedWarnings = [];
+  const observedCleanupWarnings = [];
   const heavySplitActive = productRoute === 'ocr'
     && preparedRecord
     && preparedRecord.routeMetadata
@@ -1952,6 +1944,8 @@ async function executePreparedImport({
         cancellationSignal,
         heavySplitFailurePolicy,
         processingContext,
+        warnings: observedWarnings,
+        cleanupWarnings: observedCleanupWarnings,
       });
       return executionResult;
     }
@@ -1984,6 +1978,10 @@ async function executePreparedImport({
         summary: resolvePreRouteFailureSummary(error.code),
         error,
       });
+      if (materializedInput && materializedInput.cleanupWarning) {
+        executionResult.result.warnings.push(materializedInput.cleanupWarning.warningCode);
+        executionResult.result.cleanupWarnings = [materializedInput.cleanupWarning];
+      }
     } else {
       processingInputContext = {
         processingInputFileName: materializedInput.processingInputFileName,
@@ -2073,6 +2071,8 @@ async function executePreparedImport({
           isAborted: () => !executionOwnsController(),
           cancellationSignal,
         });
+        if (Array.isArray(ocrResult && ocrResult.warnings)) observedWarnings.push(...ocrResult.warnings);
+        if (Array.isArray(ocrResult && ocrResult.cleanupWarnings)) observedCleanupWarnings.push(...ocrResult.cleanupWarnings);
         const safeOcrResult = enforceFailureAbortInvariants({
           routeKind: 'ocr',
           fileInfo,
@@ -2106,6 +2106,8 @@ async function executePreparedImport({
       error,
       processingInputContext
     );
+    executionResult.result.warnings = [...observedWarnings];
+    executionResult.result.cleanupWarnings = [...observedCleanupWarnings];
   } finally {
     if (cleanupGeneratedArtifact) {
       const cleanupWarning = cleanupGeneratedArtifact();
@@ -2117,6 +2119,10 @@ async function executePreparedImport({
             ? executionResult.result.warnings
             : [];
           executionResult.result.warnings.push(cleanupWarning.warningCode);
+          executionResult.result.cleanupWarnings = Array.isArray(executionResult.result.cleanupWarnings)
+            ? executionResult.result.cleanupWarnings
+            : [];
+          executionResult.result.cleanupWarnings.push({ origin: cleanupWarning.origin, warningCode: cleanupWarning.warningCode });
         }
       }
     }
@@ -2138,10 +2144,7 @@ async function executePreparedImport({
     executionResult.routeMetadata ? executionResult.routeMetadata.executedRoute : productRoute,
     executionResult.result
   );
-  const warningAlertKeys = resolveWarningAlertKeys(
-    executionResult.routeMetadata ? executionResult.routeMetadata.executedRoute : productRoute,
-    executionResult.result
-  );
+  const warningAlertKeys = resolveWarningAlertKeys(executionResult.result);
 
   return {
     ok: true,

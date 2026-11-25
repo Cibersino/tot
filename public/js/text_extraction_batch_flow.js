@@ -1469,6 +1469,7 @@
       flowKind: state.flowKind,
       units: [],
       hadOutput: false,
+      cleanupWarnings: [],
     };
     const initialContext = units.length && units[0] && units[0].inputs.length
       ? buildBatchProcessingContext({
@@ -1650,6 +1651,16 @@
             log.error('Batch execution run failed unexpectedly:', error);
           }
           textExtractionStatusUi.clearPendingExecutionContext();
+
+          const cleanupWarnings = execution && execution.result && Array.isArray(execution.result.cleanupWarnings)
+            ? execution.result.cleanupWarnings
+            : [];
+          cleanupWarnings.forEach((warning) => {
+            if (warning && (warning.origin === 'local' || warning.origin === 'remote')
+              && !finalReport.cleanupWarnings.includes(warning.origin)) {
+              finalReport.cleanupWarnings.push(warning.origin);
+            }
+          });
 
           if (!execution || execution.ok !== true || !execution.result) {
             const failureCode = execution && execution.code === 'PREPARED_ID_INVALID'

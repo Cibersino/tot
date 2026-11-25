@@ -314,6 +314,11 @@ test('batch OCR and report messages resolve through RendererI18n in Spanish and 
       assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.batch_report[name]);
       assert.notEqual(i18n.tRenderer(key), key);
     }
+    for (const name of ['cleanup_local_warning', 'cleanup_remote_warning']) {
+      const key = `renderer.text_extraction.alerts.${name}`;
+      assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.alerts[name]);
+      assert.notEqual(i18n.tRenderer(key), key);
+    }
   }
   await i18n.transitionRendererTranslations('fr', { applyTranslations() {} });
   for (const name of ['failed_with_description', 'snapshot_failed']) {
@@ -324,6 +329,10 @@ test('batch OCR and report messages resolve through RendererI18n in Spanish and 
     i18n.tRenderer('renderer.text_extraction.failure_descriptions.preparation_error'),
     bundles.es.renderer.text_extraction.failure_descriptions.preparation_error
   );
+  for (const name of ['cleanup_local_warning', 'cleanup_remote_warning']) {
+    const key = `renderer.text_extraction.alerts.${name}`;
+    assert.equal(i18n.tRenderer(key), bundles.es.renderer.text_extraction.alerts[name]);
+  }
 });
 
 test('renderer bundles diagnose declared-resource failures and continue through the graph chain', async () => {

@@ -301,6 +301,10 @@ for (const stage of ['create', 'delete']) {
       assert.ok(result.warnings.includes(stage === 'create'
         ? 'cleanup:ocr_create_outcome_unknown'
         : 'cleanup:ocr_delete_outcome_unknown'));
+      assert.deepEqual(result.cleanupWarnings, [{
+        origin: 'remote',
+        warningCode: stage === 'create' ? 'cleanup:ocr_create_outcome_unknown' : 'cleanup:ocr_delete_outcome_unknown',
+      }]);
       assert.equal(upload.closed, true);
       assert.equal(auth.transporter, redirect);
     } finally {
@@ -640,6 +644,7 @@ test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning
   };
   const cleanupWarning = {
     warningCode: 'cleanup:image_normalization_cleanup_failed',
+    origin: 'local',
     detailsSafeForLogs: {
       stage: 'cleanup_image_normalization',
       tempDirPath: path.join(tempDir, 'run-1'),
@@ -675,6 +680,7 @@ test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning
     assert.equal(result.state, 'success');
     assert.equal(result.summary, 'OCR route succeeded with cleanup warning.');
     assert.deepEqual(result.warnings, ['cleanup:image_normalization_cleanup_failed']);
+    assert.deepEqual(result.cleanupWarnings, [{ origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' }]);
 
     const cleanupLog = warnCalls.find((call) => call[0] === 'OCR upload cleanup failed (ignored):');
     assert.ok(cleanupLog);
@@ -690,6 +696,49 @@ test('runGoogleDriveOcrRoute logs structured upload cleanup details with warning
   } finally {
     restore();
   }
+});
+
+test('OCR classifies provider-derived cleanup diagnostics as remote', async (t) => {
+  const tempDir = createTestTempDir('ocr-remote-cleanup');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.png');
+  fs.writeFileSync(source, 'image');
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    normalizeImageForOcrUpload: async () => ({ uploadFilePath: source }),
+    driveFilesOverrides: {
+      async delete() {
+        const error = new Error('DNS failure');
+        error.code = 'ENOTFOUND';
+        throw error;
+      },
+    },
+  });
+  t.after(restore);
+  const result = await loadedModule.runGoogleDriveOcrRoute({ filePath: source, isAborted: () => false });
+  assert.equal(result.state, 'success');
+  assert.ok(result.warnings.includes('cleanup:connectivity_failed'));
+  assert.deepEqual(result.cleanupWarnings, [{ origin: 'remote', warningCode: 'cleanup:connectivity_failed' }]);
+});
+
+test('OCR preserves local cleanup warnings when image normalization fails', async (t) => {
+  const tempDir = createTestTempDir('ocr-normalization-failed-cleanup');
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const source = path.join(tempDir, 'source.webp');
+  fs.writeFileSync(source, 'image');
+  const { loadedModule, restore } = loadRouteModuleWithMocks({
+    async normalizeImageForOcrUpload() {
+      const error = new Error('conversion failed');
+      error.code = 'source_to_png_conversion_failed';
+      error.cleanupWarning = { origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' };
+      throw error;
+    },
+  });
+  t.after(restore);
+  const result = await loadedModule.runGoogleDriveOcrRoute({ filePath: source, isAborted: () => false });
+  assert.equal(result.state, 'failure');
+  assert.equal(result.error.code, 'unreadable_or_corrupt');
+  assert.deepEqual(result.warnings, ['cleanup:image_normalization_cleanup_failed']);
+  assert.deepEqual(result.cleanupWarnings, [{ origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' }]);
 });
 
 test('runGoogleDriveOcrRoute size-checks the normalized PNG input for JP2 sources', async () => {

@@ -1329,6 +1329,7 @@ test('OCR execution receives the actual controller cancellation and surfaces its
       return {
         state: 'cancelled', executedRoute: 'ocr', text: '',
         warnings: ['cleanup:ocr_create_outcome_unknown'],
+        cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:ocr_create_outcome_unknown' }],
         provenance: { metadataSafeForLogs: {} }, error: { code: 'aborted_by_user' },
       };
     },
@@ -1351,7 +1352,32 @@ test('OCR execution receives the actual controller cancellation and surfaces its
   controller.requestAbort();
   const result = await execution;
   assert.equal(result.result.state, 'cancelled');
-  assert.deepEqual(result.warningAlertKeys, ['renderer.text_extraction.alerts.ocr.create_outcome_unknown']);
+  assert.deepEqual(result.warningAlertKeys, ['renderer.text_extraction.alerts.cleanup_remote_warning']);
+});
+
+test('individual OCR warnings use producer origins and retain diagnostic warnings', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    mockRunGoogleDriveOcrRoute: async () => ({
+      state: 'success', executedRoute: 'ocr', text: 'text',
+      warnings: ['empty_extraction', 'cleanup:image_normalization_cleanup_failed', 'cleanup:provider_specific_failure'],
+      cleanupWarnings: [
+        { origin: 'local', warningCode: 'cleanup:image_normalization_cleanup_failed' },
+        { origin: 'remote', warningCode: 'cleanup:provider_specific_failure' },
+      ],
+    }),
+  });
+  t.after(restore);
+  const fileInfo = getFileInfo('scan.png');
+  const result = await core.executePreparedImport({
+    preparedRecord: { fileInfo, ocrLanguage: 'es', routeMetadata: { availableRoutes: ['ocr'], chosenRoute: 'ocr' } },
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+  });
+  assert.deepEqual(result.result.warnings, ['empty_extraction', 'cleanup:image_normalization_cleanup_failed', 'cleanup:provider_specific_failure']);
+  assert.deepEqual(result.warningAlertKeys, [
+    'renderer.text_extraction.alerts.cleanup_local_warning',
+    'renderer.text_extraction.alerts.cleanup_remote_warning',
+  ]);
 });
 
 test('OCR execution rejects a controller that cannot provide cancellation signals', async () => {
@@ -1675,6 +1701,7 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
         retainedArtifactPath: '',
         cleanupGeneratedArtifact: () => ({
           warningCode: 'cleanup:pdf_subset_cleanup_failed',
+          origin: 'local',
           detailsSafeForLogs: {
             stage: 'cleanup_generated_subset',
             runDir: 'C:\\temp\\tot-run',
@@ -1728,7 +1755,7 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
   assert.equal(result.result.state, 'success');
   assert.deepEqual(result.result.warnings, ['cleanup:pdf_subset_cleanup_failed']);
   assert.deepEqual(result.warningAlertKeys, [
-    'renderer.text_extraction.alerts.generated_pdf_cleanup_warning',
+    'renderer.text_extraction.alerts.cleanup_local_warning',
   ]);
   assert.equal(warnCalls.length, 1);
   assert.equal(warnCalls[0][0], 'Generated PDF subset cleanup failed (ignored):');
@@ -1738,6 +1765,32 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
     runDir: 'C:\\temp\\tot-run',
     fileName: 'selectable_text_fixture_12_pages_pages_02_03.pdf',
   });
+});
+
+test('PDF materialization failure retains its cleanup warning in the ordinary result', async (t) => {
+  const { core, restore } = loadCoreWithMocks({
+    pdfPageSelectionOverrides: {
+      async materializePdfPageSelectionInput() {
+        return {
+          ok: false,
+          error: { code: 'pdf_subset_creation_failed' },
+          cleanupWarning: { origin: 'local', warningCode: 'cleanup:pdf_subset_cleanup_failed' },
+        };
+      },
+    },
+  });
+  t.after(restore);
+  const fileInfo = getFileInfo(SELECTABLE_PDF_FIXTURE);
+  const result = await core.executePreparedImport({
+    preparedRecord: { fileInfo, routeMetadata: { availableRoutes: ['native'], chosenRoute: 'native' } },
+    resolvePaths: resolveHeavySplitTestPaths,
+    controller: createExecutingController(),
+  });
+  assert.equal(result.result.state, 'failure');
+  assert.equal(result.result.error.code, 'pdf_subset_creation_failed');
+  assert.deepEqual(result.result.warnings, ['cleanup:pdf_subset_cleanup_failed']);
+  assert.deepEqual(result.result.cleanupWarnings, [{ origin: 'local', warningCode: 'cleanup:pdf_subset_cleanup_failed' }]);
+  assert.deepEqual(result.warningAlertKeys, ['renderer.text_extraction.alerts.cleanup_local_warning']);
 });
 
 test('invalid heavy-split execution metadata returns a classified execution result', async () => {
@@ -2103,6 +2156,7 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
           retainedArtifactPath: '',
           cleanupGeneratedArtifact: () => ({
             warningCode: 'cleanup:pdf_subset_cleanup_failed',
+            origin: 'local',
             detailsSafeForLogs: {
               stage: 'cleanup_generated_subset',
               runDir: `C:\\temp\\tot-run-${fromPage}-${toPage}`,
@@ -2201,7 +2255,8 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
     'cleanup:pdf_subset_cleanup_failed',
   ]);
   assert.deepEqual(result.warningAlertKeys, [
-    'renderer.text_extraction.alerts.generated_pdf_cleanup_warning',
+    'renderer.text_extraction.alerts.cleanup_local_warning',
+    'renderer.text_extraction.alerts.cleanup_local_warning',
   ]);
   assert.equal(warnCalls.length, 2);
   assert.deepEqual(warnCalls[0], [
@@ -2222,6 +2277,80 @@ test('executePreparedImport logs structured generated-PDF cleanup warnings and p
       fileName: 'selectable_text_fixture_12_pages_pages_03_04.pdf',
     },
   ]);
+});
+
+test('heavy split preserves cleanup incidents through success, failure, cancellation and exceptions', async () => {
+  for (const scenario of ['success', 'failure', 'failure_stop', 'invalid', 'materialize_failure', 'cancel_child', 'cancel_before_route', 'exception']) {
+    const controller = createExecutingController();
+    let materialized = 0;
+    let dispatched = 0;
+    const { core, restore } = loadCoreWithMocks({
+      pdfPageSelectionOverrides: {
+        async materializePdfPageSelectionInput() {
+          materialized += 1;
+          if (scenario === 'cancel_before_route' && materialized === 2) controller.cancelCurrent();
+          if (scenario === 'materialize_failure' && materialized === 2) {
+            return {
+              ok: false,
+              error: { code: 'pdf_subset_creation_failed' },
+              cleanupWarning: { origin: 'local', warningCode: 'cleanup:pdf-2' },
+            };
+          }
+          return {
+            ok: true,
+            effectiveFilePath: 'generated.pdf',
+            processingInputFileName: `part-${materialized}.pdf`,
+            cleanupGeneratedArtifact: () => ({ origin: 'local', warningCode: `cleanup:pdf-${materialized}` }),
+          };
+        },
+      },
+      mockRunGoogleDriveOcrRoute: async () => {
+        dispatched += 1;
+        if (scenario === 'exception' && dispatched === 2) throw new Error('unexpected provider failure');
+        const result = {
+          state: 'success', text: 'text',
+          warnings: ['empty_extraction', `cleanup:remote-${dispatched}`],
+          cleanupWarnings: [{ origin: 'remote', warningCode: `cleanup:remote-${dispatched}` }],
+        };
+        if ((scenario === 'failure' || scenario === 'failure_stop') && dispatched === 2) {
+          result.state = 'failure';
+          result.error = { code: 'ocr_conversion_failed' };
+        }
+        if (scenario === 'invalid' && dispatched === 2) result.text = null;
+        if (scenario === 'cancel_child' && dispatched === 2) {
+          result.state = 'cancelled';
+          result.error = { code: 'aborted_by_user' };
+        }
+        return result;
+      },
+    });
+    try {
+      const result = await core.executePreparedImport({
+        preparedRecord: createHeavySplitPreparedRecord(createHeavySplitGeneratedInputs(scenario === 'failure_stop' ? 3 : 2)),
+        routePreference: 'ocr',
+        heavySplitFailurePolicy: scenario === 'failure_stop' ? 'finish_unit_after_last_success' : 'omit_failed_and_continue',
+        resolvePaths: resolveHeavySplitTestPaths,
+        controller,
+        log: silentLog,
+      });
+      assert.equal(result.result.state, scenario === 'success' ? 'success'
+        : (scenario === 'cancel_child' || scenario === 'cancel_before_route' ? 'cancelled' : 'failure'), scenario);
+      const expected = [
+        { origin: 'remote', warningCode: 'cleanup:remote-1' },
+        { origin: 'local', warningCode: 'cleanup:pdf-1' },
+      ];
+      if (scenario !== 'exception' && scenario !== 'cancel_before_route' && scenario !== 'materialize_failure') {
+        expected.push({ origin: 'remote', warningCode: 'cleanup:remote-2' });
+      }
+      expected.push({ origin: 'local', warningCode: 'cleanup:pdf-2' });
+      assert.deepEqual(result.result.cleanupWarnings, expected, scenario);
+      assert.deepEqual(result.result.warnings.filter((code) => code.startsWith('cleanup:')), expected.map((item) => item.warningCode), scenario);
+      assert.ok(result.result.warnings.includes('empty_extraction'), scenario);
+      if (scenario === 'failure_stop') assert.equal(result.result.heavySplitExecution.generatedInputs[2].state, 'omitted');
+    } finally {
+      restore();
+    }
+  }
 });
 
 test('executePreparedImport keeps retained generated PDFs only on heavy split child statuses', async (t) => {

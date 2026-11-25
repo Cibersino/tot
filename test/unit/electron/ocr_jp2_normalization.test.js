@@ -181,6 +181,7 @@ test('normalizeJp2ForOcrUpload cleanup returns one structured warning object', a
 
   const cleanupWarning = uploadInput.cleanup();
   assert.equal(cleanupWarning.warningCode, 'cleanup:image_normalization_cleanup_failed');
+  assert.equal(cleanupWarning.origin, 'local');
   assert.equal(cleanupWarning.detailsSafeForLogs.stage, 'cleanup_image_normalization');
   assert.equal(cleanupWarning.detailsSafeForLogs.tempDirPath, tempDirPath);
   assert.equal(
@@ -265,6 +266,12 @@ test('normalizeJp2ForOcrUpload maps corrupt JP2 inputs to source_to_png_conversi
   fs.writeFileSync(corruptPath, Buffer.from('not a jp2'));
 
   const { loadedModule, restore } = loadJp2NormalizationModuleWithMocks({
+    appTempPathsOverrides: {
+      createRuntimeTempRunDir() { return tempDirPath; },
+      cleanupRuntimeTempRunDir() {
+        return { warningCode: 'cleanup:runtime_temp_run_dir_cleanup_failed', detailsSafeForLogs: { errorCode: 'EPERM' } };
+      },
+    },
     jpeg2000DecoderExports: {
       OpenJPEGWASM: async () => ({
         J2KDecoder: class MockJ2KDecoder {
@@ -296,6 +303,8 @@ test('normalizeJp2ForOcrUpload maps corrupt JP2 inputs to source_to_png_conversi
       assert.equal(err.code, 'source_to_png_conversion_failed');
       assert.equal(err.detailsSafeForLogs.reason, 'jp2_source_to_png_failed');
       assert.equal(err.detailsSafeForLogs.sourceFileExt, 'jp2');
+      assert.equal(err.cleanupWarning.origin, 'local');
+      assert.equal(err.cleanupWarning.warningCode, 'cleanup:image_normalization_cleanup_failed');
       return true;
     }
   );

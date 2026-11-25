@@ -1354,6 +1354,30 @@ test('batch execution autosaves unnamed ordinary single-input units from source 
   assert.ok(report.units.every((unit) => /snapshot\.json/.test(unit.snapshotResult.text)));
 });
 
+test('batch aggregates cleanup origins across units before failure and application branches', async () => {
+  const harness = createHarness({
+    preparationsByPath: Object.fromEntries(['success', 'failed', 'invalid', 'apply', 'ipc'].map((name) => [
+      `${name}.txt`, createPreparation({ fileName: `${name}.txt`, chosenRoute: 'native', fileKind: 'txt' }),
+    ])),
+    promptBatchPlanResult: { action: 'start' },
+    normalizeExecutionResultApplicability: false,
+    executionResultsByProcessingInputFileName: {
+      'success.txt': { ok: true, result: { state: 'success', text: 'success', textApplicability: 'applicable', cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:remote-a' }] } },
+      'failed.txt': { ok: true, result: { state: 'failure', error: { code: 'native_extraction_failed' }, cleanupWarnings: [{ origin: 'local', warningCode: 'cleanup:local-a' }] } },
+      'invalid.txt': { ok: true, result: { state: 'success', text: null, cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:remote-b' }] } },
+      'apply.txt': { ok: true, result: { state: 'success', text: 'apply', textApplicability: 'applicable', cleanupWarnings: [{ origin: 'local', warningCode: 'cleanup:local-b' }] } },
+      'ipc.txt': { ok: false, code: 'EXECUTE_PREPARED_IPC_FAILED', result: { cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:remote-c' }] } },
+    },
+    applyTextViaCanonicalPathImpl: ({ textToApply }) => textToApply === 'apply' ? { ok: false, code: 'apply_failed' } : { ok: true },
+  });
+  await harness.batchFlow.startFromSelectedFiles({ filePaths: ['success.txt', 'failed.txt', 'invalid.txt', 'apply.txt', 'ipc.txt'], source: 'test' });
+  const report = harness.getCapturedFinalReport();
+  assert.deepEqual(Array.from(report.cleanupWarnings), ['remote', 'local']);
+  assert.deepEqual(Array.from(report.units, (unit) => unit.inputs[0].state), ['success', 'failed', 'failed', 'failed', 'failed']);
+  assert.equal(report.units[2].inputs[0].code, 'invalid_execution_result');
+  assert.equal(report.units[3].inputs[0].code, 'apply_failed');
+});
+
 test('batch execution reports malformed autosave results as failed without trusting their code', async () => {
   const preparationsByPath = {
     'C:\\docs\\first.pdf': createPreparation({

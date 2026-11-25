@@ -2155,12 +2155,18 @@ Estados de revisión recomendados:
           "en": "Dropped item is not a valid local file."
           // [CONCEPTO_APP] extracción de texto
         },
-        "generated_pdf_cleanup_warning": {
-          "es": "La extracción terminó, pero no fue posible limpiar automáticamente un PDF local generado.",
-          "en": "Extraction finished, but a generated local PDF could not be cleaned up automatically."
-          // [PROPÓSITO] Advertencia de limpieza local fallida de un PDF generado después de completar extracción.
-          // [CONCEPTO_APP] PDF generado
-          // [PROTEGIDO] `PDF`
+        "cleanup_local_warning": {
+          "es": "Es posible que hayan quedado archivos temporales locales sin eliminar.",
+          "en": "Some local temporary files may not have been removed."
+          // [PROPÓSITO] Advertencia de limpieza local no garantizada; no afirmar que existan archivos residuales.
+          // [CONCEPTO_APP] extracción de texto; archivo temporal local
+        },
+        "cleanup_remote_warning": {
+          "es": "Es posible que hayan quedado documentos temporales sin eliminar en Google Drive. Revisa tu Google Drive.",
+          "en": "Some temporary documents may not have been removed from Google Drive. Check your Google Drive."
+          // [PROPÓSITO] Advertencia de limpieza remota no garantizada o de resultado incierto; no afirmar que existan documentos residuales.
+          // [CONCEPTO_APP] extracción de texto; documento temporal remoto
+          // [PROTEGIDO] `Google Drive`
         },
         "route_choice_error": {
           "es": "Ocurrió un error al elegir la ruta de extracción.",
@@ -2382,29 +2388,6 @@ Estados de revisión recomendados:
             "en": "OCR text extraction was cancelled."
             // [CONCEPTO_APP] OCR; extracción de texto
             // [PROTEGIDO] `OCR`
-          },
-          "cleanup_warning": {
-            "es": "OCR terminó, pero falló la limpieza temporal remota del archivo. Revisa tu carpeta de Google Drive.",
-            "en": "OCR finished, but temporary remote file cleanup failed. Check your Google Drive folder."
-            // [PROPÓSITO] Advertencia de limpieza remota fallida del documento temporal usado por OCR.
-            // [CONCEPTO_APP] OCR; Google OCR; extracción de texto
-            // [PROTEGIDO] `OCR`; `Google Drive`
-          },
-          "create_outcome_unknown": {
-            "es": "La cancelación terminó. Es posible que se haya creado un documento temporal en Google Drive y que debas eliminarlo.",
-            "en": "Cancellation finished. A temporary document may have been created in Google Drive and may need to be removed."
-            // [PROPÓSITO] Advertencia individual tras cancelar OCR cuando no se puede determinar si se creó un documento temporal remoto.
-            // [NO_CONFUNDIR] No afirmar que el documento existe ni que su eliminación falló; su creación es incierta.
-            // [CONCEPTO_APP] Google OCR; extracción de texto
-            // [PROTEGIDO] `Google Drive`
-          },
-          "delete_outcome_unknown": {
-            "es": "La cancelación terminó, pero no se pudo confirmar la eliminación del documento temporal de Google Drive.",
-            "en": "Cancellation finished, but removal of the temporary Google Drive document could not be confirmed."
-            // [PROPÓSITO] Advertencia individual tras cancelar OCR cuando no se puede confirmar la eliminación del documento temporal remoto.
-            // [NO_CONFUNDIR] No afirmar que la eliminación falló ni que el documento sigue existiendo; el resultado es incierto.
-            // [CONCEPTO_APP] Google OCR; extracción de texto
-            // [PROTEGIDO] `Google Drive`
           },
           "batch_ocr": {
             "activation_required": {

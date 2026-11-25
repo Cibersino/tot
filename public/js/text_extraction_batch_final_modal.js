@@ -244,6 +244,14 @@
       : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');
   }
 
+  function getCleanupWarningTexts(report) {
+    const origins = Array.isArray(report && report.cleanupWarnings) ? report.cleanupWarnings : [];
+    const texts = [];
+    if (origins.includes('local')) texts.push(tRenderer('renderer.text_extraction.alerts.cleanup_local_warning'));
+    if (origins.includes('remote')) texts.push(tRenderer('renderer.text_extraction.alerts.cleanup_remote_warning'));
+    return texts;
+  }
+
   // =============================================================================
   // Report rendering
   // =============================================================================
@@ -343,8 +351,15 @@
     return section;
   }
 
-  function replaceReportBody(units) {
+  function replaceReportBody(report) {
+    const { units } = report;
     const unitNodes = (Array.isArray(units) ? units : []).map((unit, unitIndex) => renderUnitReport(unit, unitIndex));
+    const warningTexts = getCleanupWarningTexts(report);
+    if (warningTexts.length) {
+      const list = createDomElement('ul', { className: 'text-extraction-batch-final-warnings' });
+      warningTexts.forEach((text) => list.appendChild(createDomElement('li', { textContent: text })));
+      unitNodes.push(list);
+    }
     if (typeof body.replaceChildren === 'function') {
       body.replaceChildren(...unitNodes);
       return;
@@ -385,6 +400,11 @@
       lines.push(getSnapshotResultText(unit));
       lines.push('');
     });
+    const warningTexts = getCleanupWarningTexts(report);
+    if (warningTexts.length) {
+      warningTexts.forEach((warning) => lines.push(`- ${warning}`));
+      lines.push('');
+    }
     lines.push(report.hadOutput
       ? tRenderer('renderer.text_extraction.batch_report.current_text_has_output')
       : tRenderer('renderer.text_extraction.batch_report.current_text_unchanged'));
@@ -432,7 +452,7 @@
         elapsed.textContent = '';
       }
       setElementVisibility(elapsed, !!normalizedElapsedValueText);
-      replaceReportBody(safeReport.units);
+      replaceReportBody(safeReport);
       btnCopy.textContent = tRenderer('renderer.text_extraction.batch_report.copy_report');
       btnOpenSnapshots.textContent = tRenderer('renderer.text_extraction.batch_report.open_snapshots_folder');
       btnOk.textContent = tRenderer('renderer.text_extraction.batch_report.ok_button');

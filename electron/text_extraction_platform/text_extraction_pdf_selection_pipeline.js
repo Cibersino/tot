@@ -431,6 +431,7 @@ async function materializePdfPageSelectionInput({
       const cleanupFailure = cleanupMaterializationFailure(runDir);
       return {
         ok: false,
+        ...(cleanupFailure ? { cleanupWarning: { origin: 'local', warningCode: 'cleanup:pdf_subset_cleanup_failed' } } : {}),
         error: buildPdfPageSelectionInvalidError('materialize_subset', 'bounds_out_of_range', {
           fromPage: safeSelection.fromPage,
           toPage: safeSelection.toPage,
@@ -477,6 +478,7 @@ async function materializePdfPageSelectionInput({
         }
         return {
           warningCode: 'cleanup:pdf_subset_cleanup_failed',
+          origin: 'local',
           detailsSafeForLogs: {
             stage: 'cleanup_generated_subset',
             runDir,
@@ -495,6 +497,7 @@ async function materializePdfPageSelectionInput({
     const classifiedError = classifyPdfLoadError(error, 'materialize_subset');
     return {
       ok: false,
+      ...(cleanupFailure ? { cleanupWarning: { origin: 'local', warningCode: 'cleanup:pdf_subset_cleanup_failed' } } : {}),
       error: {
         ...classifiedError,
         detailsSafeForLogs: {

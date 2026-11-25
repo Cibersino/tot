@@ -263,6 +263,8 @@ function createHarness() {
     'renderer.text_extraction.failure_descriptions.ocr_execution_error': 'OCR extraction error',
     'renderer.text_extraction.failure_descriptions.execution_error': 'execution error',
     'renderer.text_extraction.batch_report.snapshot_failed': '(text snapshot creation failed)',
+    'renderer.text_extraction.alerts.cleanup_local_warning': 'Local temporary files may remain.',
+    'renderer.text_extraction.alerts.cleanup_remote_warning': 'Remote temporary documents may remain.',
     'renderer.text_extraction.batch_report.no_text': 'No text',
     'renderer.text_extraction.batch_report.applied_truncated': 'applied with truncation',
     'renderer.text_extraction.batch_report.payload_too_large': 'too large to apply',
@@ -718,6 +720,52 @@ test('batch report shows child and original failures and cancellation without ex
   assert.match(harness.clipboardWrites[1], /\(falló la creación del snapshot de texto\)/);
   harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
   await promptPromise;
+});
+
+test('batch report shows each cleanup origin once after units in visual and copied reports', async () => {
+  const cases = [
+    { origins: [], expected: [] },
+    { origins: ['local'], expected: ['Local temporary files may remain.'] },
+    { origins: ['remote'], expected: ['Remote temporary documents may remain.'] },
+    { origins: ['remote', 'local', 'remote', 'local'], expected: ['Local temporary files may remain.', 'Remote temporary documents may remain.'] },
+  ];
+  for (const { origins, expected } of cases) {
+    const harness = createHarness();
+    const report = {
+      flowKind: 'batch', hadOutput: false, cleanupWarnings: origins,
+      units: [{ unitTitle: 'unit_1', inputs: [{ fileName: 'file.pdf', state: 'success' }],
+        snapshotResult: { state: 'not_created', text: 'Snapshot not created' } }],
+    };
+    const promptPromise = harness.prompt({ report });
+    const rendered = harness.elements.textExtractionBatchFinalModalBody.textContent;
+    const html = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+    assert.equal(html.includes('text-extraction-batch-final-warnings'), expected.length > 0);
+    for (const warning of expected) {
+      assert.equal(rendered.split(warning).length - 1, 1);
+      assert.ok(rendered.indexOf(warning) > rendered.indexOf('Snapshot not created'));
+    }
+    if (expected.length === 2) assert.ok(rendered.indexOf(expected[0]) < rendered.indexOf(expected[1]));
+    harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+    await Promise.resolve();
+    const copied = harness.clipboardWrites[0];
+    for (const warning of expected) {
+      assert.equal(copied.split(warning).length - 1, 1);
+      assert.ok(copied.indexOf(warning) > copied.indexOf('Snapshot not created'));
+      assert.ok(copied.indexOf(warning) < copied.indexOf('Current text was not changed.'));
+    }
+    if (expected.length === 2) {
+      assert.ok(copied.indexOf(expected[0]) < copied.indexOf(expected[1]));
+      harness.translations['renderer.text_extraction.alerts.cleanup_local_warning'] = 'Aviso local.';
+      harness.translations['renderer.text_extraction.alerts.cleanup_remote_warning'] = 'Aviso remoto.';
+      harness.applyTranslations();
+      assert.match(harness.elements.textExtractionBatchFinalModalBody.textContent, /Aviso local\..*Aviso remoto\./);
+      harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
+      await Promise.resolve();
+      assert.match(harness.clipboardWrites[1], /Aviso local\.[\s\S]*Aviso remoto\./);
+    }
+    harness.elements.textExtractionBatchFinalModalOk.dispatch('click');
+    await promptPromise;
+  }
 });
 
 test('batch final modal renders no-text statuses consistently for ordinary and heavy records', async () => {

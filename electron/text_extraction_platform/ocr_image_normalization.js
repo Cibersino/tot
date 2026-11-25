@@ -48,6 +48,7 @@ function buildCleanupFailureWarning(cleanupWarning, tempDirPath) {
   }
   return {
     warningCode: 'cleanup:image_normalization_cleanup_failed',
+    origin: 'local',
     detailsSafeForLogs: {
       stage: 'cleanup_image_normalization',
       tempDirPath: String(tempDirPath || '').trim(),
@@ -142,7 +143,7 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
     }
   } catch (error) {
     const cleanupWarning = cleanupTempDir(tempDirPath);
-    throw buildNormalizationError(
+    const normalizationError = buildNormalizationError(
       'source_to_png_conversion_failed',
       'Source-image-to-PNG normalization failed.',
       {
@@ -158,6 +159,8 @@ async function normalizeImageForOcrUpload({ fileInfo } = {}) {
           : {}),
       }
     );
+    if (cleanupWarning) normalizationError.cleanupWarning = cleanupWarning;
+    throw normalizationError;
   }
 
   return {

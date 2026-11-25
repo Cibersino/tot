@@ -778,6 +778,9 @@ async function runGoogleDriveOcrRoute({
       });
     }
   } catch (error) {
+    if (error && error.cleanupWarning) {
+      cleanupWarnings.push(error.cleanupWarning);
+    }
     const errorCode = getErrorCode(error);
     const cancelledTransport = (createInterrupted || exportInterrupted) && isAbortFailure(error);
     if (!tempDocumentId && createAttempted && cancellationSignal && cancellationSignal.aborted
@@ -849,7 +852,7 @@ async function runGoogleDriveOcrRoute({
     }
   } finally {
     if ((createInterrupted || createOutcomeUnknown) && !tempDocumentId) {
-      cleanupWarnings.push('cleanup:ocr_create_outcome_unknown');
+      cleanupWarnings.push({ origin: 'remote', warningCode: 'cleanup:ocr_create_outcome_unknown' });
       log.warn('OCR create during cancellation has an unknown temporary document outcome.');
     }
     if (tempDocumentId) {
@@ -874,7 +877,7 @@ async function runGoogleDriveOcrRoute({
         const cleanupCode = deleteInterrupted
           ? 'ocr_delete_outcome_unknown'
           : (classifyCommonFailure(parsedCleanupFailure) || 'ocr_cleanup_failed');
-        cleanupWarnings.push(`cleanup:${cleanupCode}`);
+        cleanupWarnings.push({ origin: 'remote', warningCode: `cleanup:${cleanupCode}` });
         log.warn('OCR cleanup delete temp document failed (ignored):', {
           tempDocumentId,
           warning: `cleanup:${cleanupCode}`,
@@ -891,7 +894,7 @@ async function runGoogleDriveOcrRoute({
     if (uploadInput && typeof uploadInput.cleanup === 'function') {
       const cleanupWarning = uploadInput.cleanup();
       if (cleanupWarning && typeof cleanupWarning.warningCode === 'string') {
-        cleanupWarnings.push(cleanupWarning.warningCode);
+        cleanupWarnings.push(cleanupWarning);
         log.warn('OCR upload cleanup failed (ignored):', {
           warningCode: cleanupWarning.warningCode,
           ...(cleanupWarning.detailsSafeForLogs && typeof cleanupWarning.detailsSafeForLogs === 'object'
@@ -917,7 +920,8 @@ async function runGoogleDriveOcrRoute({
 
   if (cleanupWarnings.length > 0) {
     result.warnings = Array.isArray(result.warnings) ? result.warnings : [];
-    result.warnings.push(...cleanupWarnings);
+    result.warnings.push(...cleanupWarnings.map((warning) => warning.warningCode));
+    result.cleanupWarnings = cleanupWarnings.map(({ origin, warningCode }) => ({ origin, warningCode }));
     if (result.state === 'success') {
       result.summary = 'OCR route succeeded with cleanup warning.';
     }
