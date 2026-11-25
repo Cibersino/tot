@@ -296,7 +296,7 @@ for (const stage of ['create', 'delete']) {
       await started;
       t.mock.timers.enable({ apis: ['setTimeout'] });
       cancellation.abort();
-      t.mock.timers.tick(stage === 'create' ? 30_000 : 15_000);
+      t.mock.timers.tick(stage === 'create' ? 60_000 : 30_000);
       const result = await execution;
       assert.ok(result.warnings.includes(stage === 'create'
         ? 'cleanup:ocr_create_outcome_unknown'
@@ -350,7 +350,7 @@ test('cancellation interrupts the installed multipart upload transport and close
     await started;
     t.mock.timers.enable({ apis: ['setTimeout'] });
     cancellation.abort();
-    t.mock.timers.tick(30_000);
+    t.mock.timers.tick(60_000);
     const result = await execution;
     assert.equal(result.state, 'cancelled');
     assert.ok(result.warnings.includes('cleanup:ocr_create_outcome_unknown'));
@@ -430,7 +430,7 @@ test('cancelled OCR interrupts stalled creation after its grace period and close
     });
     await started;
     cancellation.abort();
-    t.mock.timers.tick(29_999);
+    t.mock.timers.tick(59_999);
     assert.equal(signal.aborted, false);
     t.mock.timers.tick(1);
     const result = await execution;
@@ -470,7 +470,7 @@ test('cancelled OCR gives deletion an independent grace period', async (t) => {
     });
     await started;
     cancellation.abort();
-    t.mock.timers.tick(14_999);
+    t.mock.timers.tick(29_999);
     assert.equal(deleteSignal.aborted, false);
     t.mock.timers.tick(1);
     const result = await execution;
@@ -512,7 +512,7 @@ test('a document ID received during cancellation is deleted without exporting', 
     });
     await started;
     cancellation.abort();
-    t.mock.timers.tick(29_000);
+    t.mock.timers.tick(59_000);
     finishCreate({ data: { id: 'late-id' } });
     const result = await execution;
     assert.equal(result.state, 'cancelled');
