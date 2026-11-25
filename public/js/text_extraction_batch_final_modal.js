@@ -434,7 +434,7 @@
   } = {}) {
     if (!hasRequiredElements()) {
       log.error('Batch final modal DOM elements missing.');
-      return;
+      throw new Error('Batch final modal DOM elements missing.');
     }
     if (!report || typeof report !== 'object' || !Array.isArray(report.units)) {
       log.warn('Batch final modal received invalid report payload; rendering normalized report.');

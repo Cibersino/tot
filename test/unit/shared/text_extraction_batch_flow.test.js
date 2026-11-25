@@ -16,6 +16,7 @@ function createHarness({
   executionResultsByProcessingInputFileName = {},
   normalizeExecutionResultApplicability = true,
   promptBatchFinalReportImpl = null,
+  useMissingFinalReportDom = false,
   applyTextViaCanonicalPathImpl = null,
   applyTextViaCanonicalPathDependency = undefined,
   getOcrLanguageImpl = undefined,
@@ -236,6 +237,21 @@ function createHarness({
   };
 
   vm.createContext(sandbox);
+  if (useMissingFinalReportDom) {
+    sandbox.document = { getElementById() { return null; } };
+    sandbox.window.RendererIcons = { createIconButton() {} };
+    sandbox.window.Notify.registerCustomPrompt = (name, handler) => {
+      sandbox.window.Notify[name] = (options) => {
+        capturedFinalReport = options.report;
+        return handler(options);
+      };
+    };
+    const modalSource = fs.readFileSync(
+      path.resolve(__dirname, '../../../public/js/text_extraction_batch_final_modal.js'),
+      'utf8'
+    );
+    vm.runInContext(modalSource, sandbox, { filename: 'public/js/text_extraction_batch_final_modal.js' });
+  }
   const source = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/text_extraction_batch_flow.js'),
     'utf8'
@@ -685,28 +701,43 @@ test('batch stops before preparing selected files when preconditions reject', as
   assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.precondition_blocked']);
 });
 
-test('batch planning prompt failure is reported instead of treated as cancellation', async () => {
+test('planning prompt failure is reported for batch and single-file split', async () => {
   const preparationsByPath = {
     'C:\\docs\\document.pdf': createPreparation({
       fileName: 'document.pdf',
       chosenRoute: 'native',
     }),
   };
-  const harness = createHarness({
-    preparationsByPath,
-    onPromptBatchPlan() {
-      throw new Error('Batch planning modal DOM elements missing.');
-    },
-  });
+  for (const split of [false, true]) {
+    const harness = createHarness({
+      preparationsByPath,
+      onPromptBatchPlan() { throw new Error('Batch planning modal DOM elements missing.'); },
+    });
+    if (split) {
+      await harness.batchFlow.startSyntheticSingleFileHeavySplit({ filePath: Object.keys(preparationsByPath)[0] });
+    } else {
+      await harness.batchFlow.startFromSelectedFiles({ filePaths: Object.keys(preparationsByPath), source: 'picker' });
+    }
+    assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.planning_modal_error']);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+    assert.match(harness.getErrorLogs()[0][0], /Batch planning prompt failed/);
+  }
+});
 
-  await harness.batchFlow.startFromSelectedFiles({
-    filePaths: Object.keys(preparationsByPath),
-    source: 'picker',
-    actionId: 'test-batch-planning-prompt-error',
-  });
-
-  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.start_error']);
-  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+test('closing planning without starting is not a presentation failure in either flow', async () => {
+  const filePath = 'C:\\docs\\document.pdf';
+  const preparationsByPath = { [filePath]: createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }) };
+  for (const split of [false, true]) {
+    const harness = createHarness({ preparationsByPath, promptBatchPlanResult: null });
+    if (split) {
+      await harness.batchFlow.startSyntheticSingleFileHeavySplit({ filePath });
+    } else {
+      await harness.batchFlow.startFromSelectedFiles({ filePaths: [filePath], source: 'picker' });
+    }
+    assert.deepEqual(harness.notifications, []);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+    assert.deepEqual(harness.getErrorLogs(), []);
+  }
 });
 
 test('batch start remains pending until its real final-report prompt is dismissed', async () => {
@@ -2538,8 +2569,47 @@ test('batch final report prompt synchronous failure clears abort finalization an
   assert.equal(harness.getSyncMainInteractionLockUiCallCount(), 1);
   assert.deepEqual(
     harness.notifications,
-    ['renderer.text_extraction.alerts.start_error']
+    ['renderer.text_extraction.alerts.final_report_error']
   );
+});
+
+test('final-report failures notify once after processing for batch and single-file split, including missing DOM', async () => {
+  const filePath = 'C:\\docs\\document.pdf';
+  const preparationsByPath = { [filePath]: createPreparation({ fileName: 'document.pdf', chosenRoute: 'native' }) };
+  for (const split of [false, true]) {
+    for (const failure of ['throw', 'reject', 'missing-dom']) {
+      let submittedReport;
+      const harness = createHarness({
+        preparationsByPath,
+        promptBatchPlanResult: { action: 'start' },
+        useMissingFinalReportDom: failure === 'missing-dom',
+        promptBatchFinalReportImpl({ report }) {
+          submittedReport = report;
+          if (failure === 'throw') throw new Error('final report setup failed');
+          return Promise.reject(new Error('final report presentation failed'));
+        },
+        executionResultsByProcessingInputFileName: {
+          'document.pdf': { ok: true, result: { state: 'success', text: 'Text', textApplicability: 'applicable', cleanupWarnings: [{ origin: 'local', warningCode: 'cleanup:local' }, { origin: 'remote', warningCode: 'cleanup:remote' }] } },
+        },
+      });
+      if (split) {
+        await harness.batchFlow.startSyntheticSingleFileHeavySplit({ filePath });
+      } else {
+        await harness.batchFlow.startFromSelectedFiles({ filePaths: [filePath], source: 'picker' });
+      }
+      assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.final_report_error'], `${split} ${failure}`);
+      assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 1);
+      assert.ok(harness.getProcessingSessionEvents().some((event) => event.type === 'exit'));
+      assert.ok(harness.getSyncMainInteractionLockUiCallCount() >= 1);
+      assert.ok(harness.getErrorLogs().some(([message]) => message === 'Batch final report prompt failed:'));
+      if (failure === 'missing-dom') {
+        assert.ok(harness.getErrorLogs().some(([message]) => message === 'Batch final modal DOM elements missing.'));
+        submittedReport = harness.getCapturedFinalReport();
+      }
+      assert.equal(submittedReport.flowKind, split ? 'single_file_split' : 'batch');
+      assert.deepEqual(Array.from(submittedReport.cleanupWarnings), ['local', 'remote']);
+    }
+  }
 });
 
 test('batch execution final report preserves cancelled heavy child rows when split aborts', async () => {

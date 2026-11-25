@@ -314,7 +314,7 @@ test('batch OCR and report messages resolve through RendererI18n in Spanish and 
       assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.batch_report[name]);
       assert.notEqual(i18n.tRenderer(key), key);
     }
-    for (const name of ['cleanup_local_warning', 'cleanup_remote_warning']) {
+    for (const name of ['cleanup_local_warning', 'cleanup_remote_warning', 'route_choice_error', 'heavy_pdf_recovery_error', 'pdf_options_error', 'result_modal_error', 'planning_modal_error', 'final_report_error']) {
       const key = `renderer.text_extraction.alerts.${name}`;
       assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.alerts[name]);
       assert.notEqual(i18n.tRenderer(key), key);
@@ -329,10 +329,17 @@ test('batch OCR and report messages resolve through RendererI18n in Spanish and 
     i18n.tRenderer('renderer.text_extraction.failure_descriptions.preparation_error'),
     bundles.es.renderer.text_extraction.failure_descriptions.preparation_error
   );
-  for (const name of ['cleanup_local_warning', 'cleanup_remote_warning']) {
+  for (const name of ['cleanup_local_warning', 'cleanup_remote_warning', 'pdf_options_error', 'result_modal_error', 'planning_modal_error', 'final_report_error']) {
     const key = `renderer.text_extraction.alerts.${name}`;
     assert.equal(i18n.tRenderer(key), bundles.es.renderer.text_extraction.alerts[name]);
   }
+  const spanishAlerts = bundles.es.renderer.text_extraction.alerts;
+  assert.equal(spanishAlerts.route_choice_error, 'No se pudieron mostrar las opciones de ruta de extracción.');
+  assert.equal(spanishAlerts.heavy_pdf_recovery_error, 'No se pudieron mostrar las opciones de recuperación para este PDF.');
+  assert.equal(spanishAlerts.pdf_options_error, 'No se pudieron mostrar las opciones de extracción del PDF.');
+  assert.equal(spanishAlerts.result_modal_error, 'No se pudo mostrar el resultado de la extracción.');
+  assert.equal(spanishAlerts.planning_modal_error, 'No se pudieron mostrar las opciones de planificación de la extracción.');
+  assert.equal(spanishAlerts.final_report_error, 'No se pudo mostrar el informe final de la extracción.');
 });
 
 test('renderer bundles diagnose declared-resource failures and continue through the graph chain', async () => {

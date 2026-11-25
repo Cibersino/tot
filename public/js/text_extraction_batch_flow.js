@@ -1843,7 +1843,7 @@
       textExtractionStatusUi.endAbortFinalization();
       syncMainInteractionLockUi();
       log.error('Batch final report prompt failed:', error);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.final_report_error');
     }
   }
 
@@ -1922,7 +1922,7 @@
       });
     } catch (error) {
       log.error('Batch planning prompt failed:', error);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.planning_modal_error');
       return;
     }
     if (!plannerDecision || plannerDecision.action !== 'start') {

@@ -475,7 +475,7 @@
             pdfOptions = await window.Notify.promptTextExtractionPdfOptions({ inspection });
           } catch (error) {
             log.error('text extraction PDF options modal failed:', error);
-            window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+            window.Notify.notifyMain('renderer.text_extraction.alerts.pdf_options_error');
             return;
           }
           if (!pdfOptions) {
@@ -622,22 +622,31 @@
         && pdfOptions.pdfPageSelection.mode === 'all'
         && preparation.routeMetadata
         && preparation.routeMetadata.heavySplitEligible === true) {
-        const singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
-          caseKind: 'case_a',
-          sourceFileName: preparation.fileInfo && preparation.fileInfo.fileName
-            ? preparation.fileInfo.fileName
-            : inspection.fileInfo.fileName,
-          sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
-            ? preparation.fileInfo.sourceFileSizeBytes
-            : 0,
-          totalPages: preparation.routeMetadata.pdfTotalPages || inspection.totalPages || 0,
-          providerLimitBytes:
-            preparation.routeMetadata
-            && preparation.routeMetadata.ocrProviderLimitBytes
-              ? preparation.routeMetadata.ocrProviderLimitBytes
+        let singleFileHeavyAction;
+        try {
+          singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
+            caseKind: 'case_a',
+            sourceFileName: preparation.fileInfo && preparation.fileInfo.fileName
+              ? preparation.fileInfo.fileName
+              : inspection.fileInfo.fileName,
+            sourceFileSizeBytes: preparation.fileInfo && preparation.fileInfo.sourceFileSizeBytes
+              ? preparation.fileInfo.sourceFileSizeBytes
               : 0,
-          canUseNative: getPreparationRouteOptions(preparation).includes('native'),
-        });
+            totalPages: preparation.routeMetadata.pdfTotalPages || inspection.totalPages || 0,
+            providerLimitBytes:
+              preparation.routeMetadata
+              && preparation.routeMetadata.ocrProviderLimitBytes
+                ? preparation.routeMetadata.ocrProviderLimitBytes
+                : 0,
+            canUseNative: getPreparationRouteOptions(preparation).includes('native'),
+          });
+        } catch (error) {
+          completeAbortFinalization({ textExtractionStatusUi });
+          textExtractionStatusUi.clearPendingExecutionContext();
+          log.error('text extraction heavy-PDF recovery modal failed:', error);
+          window.Notify.notifyMain('renderer.text_extraction.alerts.heavy_pdf_recovery_error');
+          return;
+        }
         if (singleFileHeavyAction === 'return_to_pages') {
           await runSharedFlow({
             filePath: normalizedFilePath,
@@ -858,7 +867,7 @@
           });
         } catch (error) {
           log.error('text extraction apply modal failed:', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+          window.Notify.notifyMain('renderer.text_extraction.alerts.result_modal_error');
           return;
         }
         if (!applyChoice) {

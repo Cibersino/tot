@@ -35,6 +35,7 @@ function createHarness({
   const notifications = [];
   const toasts = [];
   const warnings = [];
+  const errors = [];
   let pdfOptionsPromptCount = 0;
   let singleFileHeavyPromptCount = 0;
   let executePreparedTextExtractionCallCount = 0;
@@ -118,7 +119,7 @@ function createHarness({
           info() {},
           warn(...args) { warnings.push(args); },
           warnOnce() {},
-          error() {},
+          error(...args) { errors.push(args); },
         };
       },
       RendererI18n: {
@@ -306,6 +307,7 @@ function createHarness({
   return {
     entry,
     notifications,
+    errors,
     toasts,
     getCapturedSingleFileHeavyOptions() {
       return capturedSingleFileHeavyOptions;
@@ -691,6 +693,7 @@ test('route-choice prompt failure is reported instead of treated as cancellation
   });
 
   assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.route_choice_error']);
+  assert.equal(harness.errors[0][1], routeChoiceError);
   assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
 });
 
@@ -704,7 +707,8 @@ test('PDF-options and apply prompt failures are reported instead of treated as c
     filePath: 'C:\\docs\\book.pdf',
     source: 'test',
   });
-  assert.deepEqual(pdfOptionsHarness.notifications, ['renderer.text_extraction.alerts.start_error']);
+  assert.deepEqual(pdfOptionsHarness.notifications, ['renderer.text_extraction.alerts.pdf_options_error']);
+  assert.match(pdfOptionsHarness.errors[0][0], /PDF options modal failed/);
   assert.equal(pdfOptionsHarness.getExecutePreparedTextExtractionCallCount(), 0);
 
   const applyHarness = createHarness({
@@ -725,7 +729,8 @@ test('PDF-options and apply prompt failures are reported instead of treated as c
     filePath: 'C:\\docs\\book.pdf',
     source: 'test',
   });
-  assert.deepEqual(applyHarness.notifications, ['renderer.text_extraction.alerts.apply_error']);
+  assert.deepEqual(applyHarness.notifications, ['renderer.text_extraction.alerts.result_modal_error']);
+  assert.match(applyHarness.errors[0][0], /apply modal failed/);
   assert.deepEqual(applyHarness.getApplyPayloads(), []);
 });
 
@@ -743,6 +748,103 @@ test('Case B heavy-PDF recovery prompt failures use recovery-specific reporting'
 
   assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.heavy_pdf_recovery_error']);
   assert.equal(harness.getSingleFileHeavyPromptCount(), 1);
+  assert.match(harness.errors[0][0], /heavy-PDF recovery modal failed/);
+});
+
+test('Case A heavy-PDF recovery prompt failure is reported without starting execution', async () => {
+  const modalError = new Error('Case A modal failed');
+  const harness = createHarness({
+    pdfOptionsResponses: [{ pdfPageSelection: { mode: 'all', fromPage: 1, toPage: 516, selectedPageCount: 516, totalPages: 516 } }],
+    singleFileHeavyImpl() { throw modalError; },
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true, prepareReady: true, prepareFailed: false, prepareId: 'prepare-1',
+        fileInfo: { fileName: 'book.pdf' },
+        routeChoiceOptions: ['native', 'ocr'],
+        routeMetadata: { chosenRoute: 'ocr', availableRoutes: ['native', 'ocr'], heavySplitEligible: true },
+      },
+    },
+  });
+  await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.equal(harness.getCapturedSingleFileHeavyOptions().caseKind, 'case_a');
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.heavy_pdf_recovery_error']);
+  assert.equal(harness.errors[0][1], modalError);
+  assert.equal(harness.entry.isOperationActive(), false);
+});
+
+test('closing Case A heavy-PDF recovery does not report an error or execute', async () => {
+  const harness = createHarness({
+    pdfOptionsResponses: [{ pdfPageSelection: { mode: 'all', fromPage: 1, toPage: 516, selectedPageCount: 516, totalPages: 516 } }],
+    singleFileHeavyResponses: ['cancel'],
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true, prepareReady: true, prepareFailed: false, prepareId: 'prepare-1',
+        fileInfo: { fileName: 'book.pdf' },
+        routeChoiceOptions: ['native', 'ocr'],
+        routeMetadata: { chosenRoute: 'ocr', availableRoutes: ['native', 'ocr'], heavySplitEligible: true },
+      },
+    },
+  });
+  await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.equal(harness.getCapturedSingleFileHeavyOptions().caseKind, 'case_a');
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  assert.deepEqual(harness.notifications, []);
+  assert.deepEqual(harness.errors, []);
+});
+
+test('no-text result presentation failure is distinct from a successful dismissal', async () => {
+  const result = { ok: true, result: { state: 'success', text: '', textApplicability: 'no_text' } };
+  for (const fails of [true, false]) {
+    const harness = createHarness({
+      executePreparedTextExtractionResult: result,
+      applyChoiceImpl() { if (fails) throw new Error('result modal failed'); return null; },
+    });
+    await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+    assert.deepEqual(harness.notifications, fails ? ['renderer.text_extraction.alerts.result_modal_error'] : []);
+    assert.deepEqual(harness.getApplyPayloads(), []);
+    if (fails) assert.match(harness.errors[0][0], /apply modal failed/);
+  }
+});
+
+test('individual modal cancellations and route determination failure remain distinct', async () => {
+  const pdfCancellation = createHarness({ pdfOptionsResponses: [null] });
+  await pdfCancellation.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(pdfCancellation.notifications, []);
+  assert.equal(pdfCancellation.getExecutePreparedTextExtractionCallCount(), 0);
+
+  const routeCancellation = createHarness({
+    routeChoiceImpl() { return null; },
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: {
+        ok: true, prepareReady: true, prepareFailed: false, prepareId: 'prepare-1', requiresRouteChoice: true,
+        fileInfo: { fileName: 'book.pdf' },
+        routeChoiceOptions: ['native', 'ocr'],
+        routeMetadata: { chosenRoute: null, availableRoutes: ['native', 'ocr'], heavySplitEligible: false },
+      },
+    },
+  });
+  await routeCancellation.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(routeCancellation.notifications, []);
+  assert.equal(routeCancellation.getExecutePreparedTextExtractionCallCount(), 0);
+
+  const routeFailure = createHarness({
+    requestPreparedImportResult: {
+      attemptId: 1,
+      preparation: { ok: true, prepareFailed: true, primaryAlertKey: 'renderer.text_extraction.alerts.route_resolution_failed' },
+    },
+  });
+  await routeFailure.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(routeFailure.notifications, ['renderer.text_extraction.alerts.route_resolution_failed']);
+  assert.equal(routeFailure.getExecutePreparedTextExtractionCallCount(), 0);
+
+  const heavyCancellation = createHarness();
+  await heavyCancellation.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.equal(heavyCancellation.getCapturedSingleFileHeavyOptions().caseKind, 'case_b');
+  assert.deepEqual(heavyCancellation.notifications, []);
 });
 
 test('entry releases admission when an unexpected Batch continuation rejection escapes', async () => {

@@ -2169,9 +2169,9 @@ Estados de revisión recomendados:
           // [PROTEGIDO] `Google Drive`
         },
         "route_choice_error": {
-          "es": "Ocurrió un error al elegir la ruta de extracción.",
-          "en": "An error occurred while choosing the extraction route."
-          // [PROPÓSITO] Alerta de fallo en el paso crítico de elección de ruta de extracción.
+          "es": "No se pudieron mostrar las opciones de ruta de extracción.",
+          "en": "Could not show the extraction route options."
+          // [PROPÓSITO] Fallo de presentación de las opciones de ruta, distinto del fallo al determinar la ruta.
           // [CONCEPTO_APP] ruta de extracción
         },
         "route_resolution_failed": {
@@ -2192,6 +2192,27 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Alerta cuando no se puede mostrar la carpeta de un PDF generado guardado.
           // [CONCEPTO_APP] PDF generado; PDF guardado
           // [PROTEGIDO] `PDF`
+        },
+        "pdf_options_error": {
+          "es": "No se pudieron mostrar las opciones de extracción del PDF.",
+          "en": "Could not show the PDF extraction options."
+          // [PROPÓSITO] Fallo de presentación de las opciones del PDF en la extracción individual.
+          // [PROTEGIDO] `PDF`
+        },
+        "result_modal_error": {
+          "es": "No se pudo mostrar el resultado de la extracción.",
+          "en": "Could not show the extraction result."
+          // [PROPÓSITO] Fallo de presentación del resultado, haya o no texto; distinto de un fallo de aplicación del texto.
+        },
+        "planning_modal_error": {
+          "es": "No se pudieron mostrar las opciones de planificación de la extracción.",
+          "en": "Could not show the extraction planning options."
+          // [PROPÓSITO] Fallo de presentación de la planificación de lotes o de la división de un PDF pesado.
+        },
+        "final_report_error": {
+          "es": "No se pudo mostrar el informe final de la extracción.",
+          "en": "Could not show the final extraction report."
+          // [PROPÓSITO] Fallo de presentación del informe final de lotes o de la división de un PDF pesado.
         },
         "apply_error": {
           "es": "Ocurrió un error al aplicar el texto extraído.",
