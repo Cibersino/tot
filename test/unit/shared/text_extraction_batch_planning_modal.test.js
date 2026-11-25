@@ -651,6 +651,42 @@ test('batch planning modal rejects unavailable DOM and an incomplete controller'
   );
 });
 
+test('batch planning displays and retranslates the localized preparation failure', async () => {
+  const harness = createHarness();
+  const key = 'renderer.text_extraction.failure_descriptions.unreadable_or_corrupt';
+  harness.translations[key] = 'unreadable or corrupt file';
+  const controller = {
+    getViewModel() {
+      return {
+        flowKind: 'batch',
+        failurePolicy: 'finish_unit_after_last_success',
+        startDisabled: false,
+        unitCount: 1,
+        units: [{
+          unitKey: 'unit-1',
+          inputs: [{
+            inputId: 'input-1',
+            fileName: 'broken.pdf',
+            failureDescriptionKey: key,
+            routeOptions: [],
+            groupOptions: [{ unitKey: 'unit-1', label: 'Unit 1' }],
+            groupKey: 'unit-1',
+          }],
+        }],
+      };
+    },
+    applyAction() {},
+  };
+  const promptPromise = harness.prompt({ controller });
+  assert.match(harness.elements.textExtractionBatchPlanUnits.textContent, /broken\.pdf\(unreadable or corrupt file\)/);
+  harness.translations[key] = 'archivo ilegible o corrupto';
+  harness.applyTranslations();
+  assert.match(harness.elements.textExtractionBatchPlanUnits.textContent, /broken\.pdf\(archivo ilegible o corrupto\)/);
+  assert.doesNotMatch(harness.elements.textExtractionBatchPlanUnits.textContent, /unreadable_or_corrupt/);
+  harness.elements.textExtractionBatchPlanCancel.dispatch('click');
+  await promptPromise;
+});
+
 test('batch planning Escape leaves the prompt open while a nested modal claims it', async () => {
   const harness = createHarness();
   const controller = {
@@ -776,7 +812,7 @@ test('batch planning modal keeps each heavy preview under its groupable source i
   const createInput = ({ inputId, fileName, heavySplitActive, generatedInputsPreview = [] }) => ({
     inputId,
     fileName,
-    alertCode: '',
+    failureDescriptionKey: '',
     activeRoute: heavySplitActive ? 'ocr' : 'native',
     routeOptions: heavySplitActive ? ['native', 'ocr'] : ['native'],
     pagesSummary: heavySplitActive ? 'All pages' : '',
@@ -907,7 +943,7 @@ test('batch planning modal exposes direct all-pages and range controls for ordin
           {
             inputId: 'input-1',
             fileName: 'sample.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1098,7 +1134,7 @@ test('batch planning modal shows keep control when page inputs auto-promote sele
           {
             inputId: 'input-1',
             fileName: 'sample.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1223,7 +1259,7 @@ test('batch planning modal preserves typed invalid to-page drafts while editing'
           {
             inputId: 'input-1',
             fileName: 'sample.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1335,7 +1371,7 @@ test('batch planning modal blocks start while a visible page-range draft is inva
           {
             inputId: 'input-1',
             fileName: 'sample.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1452,7 +1488,7 @@ test('batch planning modal preserves panel scroll and control focus across reren
           {
             inputId: 'input-1',
             fileName: 'sample-a.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1489,7 +1525,7 @@ test('batch planning modal preserves panel scroll and control focus across reren
           {
             inputId: 'input-2',
             fileName: 'sample-b.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1623,7 +1659,7 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
           {
             inputId: 'input-1',
             fileName: 'sample-a.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1662,7 +1698,7 @@ test('batch planning modal updates unit assignment dropdown labels immediately a
           {
             inputId: 'input-2',
             fileName: 'sample-b.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1764,7 +1800,7 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
           {
             inputId: 'input-1',
             fileName: 'sample-a.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1791,7 +1827,7 @@ test('batch planning modal uses icon buttons for move/remove actions and normal 
           {
             inputId: 'input-2',
             fileName: 'sample-b.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',
@@ -1909,7 +1945,7 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
           {
             inputId: 'input-pdf',
             fileName: 'heavy.pdf',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'ocr',
             routeOptions: ['native', 'ocr'],
             pagesSummary: 'All pages',
@@ -1935,7 +1971,7 @@ test('batch planning modal hides the non-editable pages summary for non-PDF inpu
           {
             inputId: 'input-text',
             fileName: 'notes.txt',
-            alertCode: '',
+            failureDescriptionKey: '',
             activeRoute: 'native',
             routeOptions: ['native'],
             pagesSummary: '',

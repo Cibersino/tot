@@ -282,6 +282,50 @@ test('the DEFAULT_LANG renderer bundle contains the English root schema', () => 
   assert.deepEqual(missingDefaultPaths, []);
 });
 
+test('batch OCR and report messages resolve through RendererI18n in Spanish and English', async () => {
+  const bundles = Object.fromEntries(['es', 'en', 'fr'].map((language) => [
+    language,
+    JSON.parse(fs.readFileSync(path.resolve(__dirname, `../../../i18n/${language}/renderer.json`), 'utf8')),
+  ]));
+  const { i18n } = createHarness('ltr', {
+    defaultLang: 'es',
+    async fetchImpl(pathname) {
+      const match = /^\.\.\/i18n\/(es|en|fr)\/renderer\.json$/.exec(pathname);
+      return match
+        ? { ok: true, text: async () => JSON.stringify(bundles[match[1]]) }
+        : { ok: false, status: 404, text: async () => '' };
+    },
+  });
+  const suffixes = ['activation_required', 'credentials_missing', 'credentials_invalid', 'token_state_invalid', 'connectivity_failed', 'quota_or_rate_limited', 'unavailable'];
+  for (const language of ['es', 'en']) {
+    await i18n.transitionRendererTranslations(language, { applyTranslations() {} });
+    for (const suffix of suffixes) {
+      const key = `renderer.text_extraction.alerts.ocr.batch_ocr.${suffix}`;
+      assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.alerts.ocr.batch_ocr[suffix]);
+      assert.notEqual(i18n.tRenderer(key), key);
+    }
+    for (const [category, description] of Object.entries(bundles[language].renderer.text_extraction.failure_descriptions)) {
+      const key = `renderer.text_extraction.failure_descriptions.${category}`;
+      assert.equal(i18n.tRenderer(key), description);
+      assert.notEqual(i18n.tRenderer(key), key);
+    }
+    for (const name of ['failed_with_description', 'snapshot_failed']) {
+      const key = `renderer.text_extraction.batch_report.${name}`;
+      assert.equal(i18n.tRenderer(key), bundles[language].renderer.text_extraction.batch_report[name]);
+      assert.notEqual(i18n.tRenderer(key), key);
+    }
+  }
+  await i18n.transitionRendererTranslations('fr', { applyTranslations() {} });
+  for (const name of ['failed_with_description', 'snapshot_failed']) {
+    const key = `renderer.text_extraction.batch_report.${name}`;
+    assert.equal(i18n.tRenderer(key), bundles.es.renderer.text_extraction.batch_report[name]);
+  }
+  assert.equal(
+    i18n.tRenderer('renderer.text_extraction.failure_descriptions.preparation_error'),
+    bundles.es.renderer.text_extraction.failure_descriptions.preparation_error
+  );
+});
+
 test('renderer bundles diagnose declared-resource failures and continue through the graph chain', async () => {
   const requestedPaths = [];
   const { i18n, logEntries } = createHarness('ltr', {

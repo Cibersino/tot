@@ -175,10 +175,10 @@
   // =============================================================================
   // Recovery + result helpers
   // =============================================================================
-  function resolvePrimaryAlertKey(resultLike) {
+  function resolvePrimaryAlertKey(resultLike, fallbackKey = 'renderer.text_extraction.alerts.start_error') {
     return (resultLike && typeof resultLike.primaryAlertKey === 'string' && resultLike.primaryAlertKey.trim())
       ? resultLike.primaryAlertKey
-      : 'renderer.text_extraction.alerts.start_error';
+      : fallbackKey;
   }
 
   function hasOwn(resultLike, key) {
@@ -326,7 +326,7 @@
     if (logMessage) {
       log.error(logMessage, preparation);
     }
-    window.Notify.notifyMain(resolvePrimaryAlertKey(preparation));
+    window.Notify.notifyMain(resolvePrimaryAlertKey(preparation, 'renderer.text_extraction.alerts.prepare_error'));
   }
 
   function completeAbortFinalization({
@@ -445,17 +445,24 @@
       if (typeof getOcrLanguage !== 'function') {
         log.warn('getOcrLanguage dependency unavailable; using empty OCR language fallback.');
       }
-      const inspection = await inspectTextExtractionSelectedFile({
-        filePath: normalizedFilePath,
-      });
+      let inspection;
+      try {
+        inspection = await inspectTextExtractionSelectedFile({ filePath: normalizedFilePath });
+      } catch (error) {
+        completeAbortFinalization({ textExtractionStatusUi });
+        textExtractionStatusUi.clearPendingExecutionContext();
+        log.error('text extraction inspect IPC failed unexpectedly:', error);
+        window.Notify.notifyMain('renderer.text_extraction.alerts.prepare_error');
+        return;
+      }
       if (!inspection || inspection.ok !== true) {
         log.error('text extraction inspect IPC failed:', inspection);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+        window.Notify.notifyMain('renderer.text_extraction.alerts.prepare_error');
         return;
       }
       if (inspection.isPdf === true && inspection.error) {
         log.warn('text extraction PDF inspect failed:', inspection.error);
-        window.Notify.notifyMain(inspection.primaryAlertKey || 'renderer.text_extraction.alerts.start_error');
+        window.Notify.notifyMain(inspection.primaryAlertKey || 'renderer.text_extraction.alerts.prepare_error');
         return;
       }
 
@@ -487,10 +494,15 @@
             ? pdfOptions.generatedPdfArtifactPolicy
             : null,
       };
-      let preparationRun = await requestPreparedImport({
-        prepareTextExtractionSelectedFile,
-        preparationRequest,
-      });
+      let preparationRun;
+      try {
+        preparationRun = await requestPreparedImport({ prepareTextExtractionSelectedFile, preparationRequest });
+      } catch (error) {
+        completeAbortFinalization({ textExtractionStatusUi });
+        log.error('text extraction prepare IPC failed unexpectedly:', error);
+        failPreparation(textExtractionStatusUi, null);
+        return;
+      }
       if (preparationRun && preparationRun.stale === true) {
         log.info('text extraction prepare result ignored because a newer prepare attempt exists.');
         return;
@@ -656,10 +668,16 @@
         preparation,
         routePreference,
       });
-      const execution = await executePreparedTextExtraction({
-        prepareId: preparation.prepareId,
-        routePreference,
-      });
+      let execution;
+      try {
+        execution = await executePreparedTextExtraction({ prepareId: preparation.prepareId, routePreference });
+      } catch (error) {
+        completeAbortFinalization({ textExtractionStatusUi });
+        textExtractionStatusUi.clearPendingExecutionContext();
+        log.error('text extraction execution IPC failed unexpectedly:', error);
+        window.Notify.notifyMain('renderer.text_extraction.alerts.execution_error');
+        return;
+      }
       if (!execution || execution.ok !== true || !execution.result) {
         completeAbortFinalization({ textExtractionStatusUi });
         textExtractionStatusUi.clearPendingExecutionContext();
@@ -667,7 +685,9 @@
           textExtractionStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
         }
         log.error('text extraction execution IPC failed:', execution);
-        window.Notify.notifyMain(resolvePrimaryAlertKey(execution));
+        window.Notify.notifyMain(execution && execution.code === 'ALREADY_ACTIVE'
+          ? 'renderer.text_extraction.alerts.operation_in_progress'
+          : resolvePrimaryAlertKey(execution, 'renderer.text_extraction.alerts.execution_error'));
         return;
       }
 
@@ -789,7 +809,15 @@
             textType: typeof execution.result.text,
             textApplicability: execution.result.textApplicability,
           });
-          window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+          const executedRoute = execution.result.executedRoute
+            || (execution.routeMetadata && execution.routeMetadata.executedRoute)
+            || resolvedRoute;
+          const alertKey = executedRoute === 'native'
+            ? 'renderer.text_extraction.alerts.native.runtime_error'
+            : executedRoute === 'ocr'
+              ? 'renderer.text_extraction.alerts.ocr.runtime_error'
+              : 'renderer.text_extraction.alerts.execution_error';
+          window.Notify.notifyMain(alertKey);
           return;
         }
         if (typeof getClipboardRepeatCount !== 'function') {
@@ -857,11 +885,20 @@
           return;
         }
 
-        const applyResult = await applyTextViaCanonicalPath({
-          mode: applyChoice.mode,
-          textToApply: execution.result.text,
-          repeatCount: applyChoice.repetitions,
-        });
+        let applyResult;
+        try {
+          applyResult = await applyTextViaCanonicalPath({
+            mode: applyChoice.mode,
+            textToApply: execution.result.text,
+            repeatCount: applyChoice.repetitions,
+          });
+        } catch (error) {
+          completeAbortFinalization({ textExtractionStatusUi });
+          textExtractionStatusUi.clearPendingExecutionContext();
+          log.error('text extraction text application failed unexpectedly:', error);
+          window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+          return;
+        }
         if (!applyResult || applyResult.ok !== true) {
           if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
             window.Notify.notifyMain('renderer.main.alerts.apply_too_large');

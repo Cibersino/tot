@@ -252,6 +252,55 @@
     return '';
   }
 
+  function getFailureDescriptionKey(code, { stage, route = '', ocrSetup = false }) {
+    const normalized = typeof code === 'string' ? code.trim().toLowerCase() : '';
+    if (stage === 'application' && (normalized === 'payload_too_large' || normalized === 'text_limit')) {
+      return '';
+    }
+    const specific = {
+      unsupported_format: 'unsupported_format',
+      unreadable_or_corrupt: 'unreadable_or_corrupt',
+      native_encrypted_or_password_protected: 'protected_pdf',
+      pdf_page_count_unavailable: 'page_count_unavailable',
+      pdf_page_selection_invalid: 'page_selection_invalid',
+      pdf_subset_creation_failed: 'pdf_generation_failed',
+      ocr_activation_required: 'ocr_activation_required',
+      credentials_missing: 'credentials_missing',
+      credentials_invalid: 'credentials_invalid',
+      ocr_token_state_invalid: 'ocr_token_state_invalid',
+      connectivity_failed: 'ocr_communication_failed',
+      quota_or_rate_limited: 'ocr_usage_restricted',
+      provider_api_disabled: 'ocr_unavailable',
+      auth_failed: 'ocr_unavailable',
+      ocr_unavailable: 'ocr_unavailable',
+      route_choice_required: 'route_unresolved',
+      route_resolution_failed: 'route_unresolved',
+      ocr_image_upload_too_large: 'ocr_image_too_large',
+      ocr_input_too_large: 'ocr_pdf_too_large',
+    };
+    let category;
+    if (stage === 'application') category = 'application_error';
+    else if (Object.hasOwn(specific, normalized)) category = specific[normalized];
+    else if (stage === 'preparation') category = ocrSetup ? 'ocr_unavailable' : 'preparation_error';
+    else if (normalized === 'prepared_id_invalid' || normalized === 'fingerprint_mismatch') {
+      category = 'prepared_request_invalid';
+    } else if (stage === 'mechanism' || normalized === 'heavy_split_plan_invalid') category = 'execution_error';
+    else if (route === 'native') category = 'native_execution_error';
+    else if (route === 'ocr') category = 'ocr_execution_error';
+    else category = 'execution_error';
+    return `renderer.text_extraction.failure_descriptions.${category}`;
+  }
+
+  function getPreparationFailureDescriptionKey(code, preparation) {
+    const metadata = preparation && preparation.routeMetadata;
+    const ocrSetup = !!(preparation && preparation.executionKind === 'google_drive'
+      && metadata && metadata.ocrSetupState && metadata.ocrSetupState !== 'ready');
+    return getFailureDescriptionKey((ocrSetup && metadata.ocrSetupCode) || code, {
+      stage: 'preparation',
+      ocrSetup,
+    });
+  }
+
   function isInputRemoved(input) {
     return !!(input && input.removed === true);
   }
@@ -700,7 +749,9 @@
         inputs: unit.inputs.map((input, inputIndex) => ({
           inputId: input.inputId,
           fileName: input.fileName,
-          alertCode: getInputAlertCode(input),
+          failureDescriptionKey: getInputAlertCode(input)
+            ? getPreparationFailureDescriptionKey(getInputAlertCode(input), input.preparation)
+            : '',
           activeRoute: normalizeRoute(input.activeRoute),
           routeOptions: [...input.routeOptions],
           pagesSummary: !canEditPages(input) && isPdfInput(input)
@@ -857,18 +908,20 @@
       ? availabilityResult.code
       : '';
     if (code === 'ocr_activation_required') {
-      return 'renderer.text_extraction.alerts.batch_ocr.activation_required';
+      return 'renderer.text_extraction.alerts.ocr.batch_ocr.activation_required';
     }
+    if (code === 'credentials_missing') return 'renderer.text_extraction.alerts.ocr.batch_ocr.credentials_missing';
+    if (code === 'credentials_invalid') return 'renderer.text_extraction.alerts.ocr.batch_ocr.credentials_invalid';
     if (code === 'ocr_token_state_invalid') {
-      return 'renderer.text_extraction.alerts.batch_ocr.token_state_invalid';
+      return 'renderer.text_extraction.alerts.ocr.batch_ocr.token_state_invalid';
     }
     if (code === 'connectivity_failed') {
-      return 'renderer.text_extraction.alerts.batch_ocr.connectivity_failed';
+      return 'renderer.text_extraction.alerts.ocr.batch_ocr.connectivity_failed';
     }
     if (code === 'quota_or_rate_limited') {
-      return 'renderer.text_extraction.alerts.batch_ocr.quota_or_rate_limited';
+      return 'renderer.text_extraction.alerts.ocr.batch_ocr.quota_or_rate_limited';
     }
-    return 'renderer.text_extraction.alerts.batch_ocr.unavailable';
+    return 'renderer.text_extraction.alerts.ocr.batch_ocr.unavailable';
   }
 
   async function validateBatchStart(state) {
@@ -1027,15 +1080,11 @@
       : null;
     if (!failureCode) {
       log.error('Batch snapshot save returned an invalid result:', snapshotResult);
+    } else {
+      log.warn('Batch snapshot save failed:', { code: failureCode });
     }
     return {
       state: 'failed',
-      text: formatSnapshotResultText(
-        'renderer.text_extraction.batch_report.snapshot_creation_failed',
-        {
-          code: failureCode || 'WRITE_FAILED',
-        }
-      ),
     };
   }
 
@@ -1075,6 +1124,7 @@
     executionState = '',
     textApplicability = '',
     textApplication = '',
+    failureDescriptionKey = '',
   }) {
     const record = {
       fileName,
@@ -1086,6 +1136,9 @@
     };
     if (applyTruncated === true) {
       record.applyTruncated = true;
+    }
+    if (state === 'failed' && failureDescriptionKey) {
+      record.failureDescriptionKey = failureDescriptionKey;
     }
     if (executionState) {
       record.executionState = executionState;
@@ -1110,6 +1163,7 @@
     executionState = '',
     textApplicability = '',
     textApplication = '',
+    failureDescriptionKey = '',
   } = {}) {
     return buildInputReportRecord({
       fileName: input.fileName,
@@ -1122,6 +1176,7 @@
       executionState,
       textApplicability,
       textApplication,
+      failureDescriptionKey,
     });
   }
 
@@ -1194,16 +1249,23 @@
           fileName: '',
           state: 'failed',
           code: 'invalid_execution_result',
+          failureDescriptionKey: getFailureDescriptionKey('invalid_execution_result', { stage: 'execution', route: 'ocr' }),
           generatedPdfArtifact: null,
         };
       }
-      const state = mapGeneratedInputStateToReportState(generatedInput.state);
+      const invalidSuccess = generatedInput.state === 'success'
+        && generatedInput.textApplicability !== 'applicable'
+        && generatedInput.textApplicability !== 'no_text';
+      const state = invalidSuccess ? 'failed' : mapGeneratedInputStateToReportState(generatedInput.state);
       const record = {
         fileName: generatedInput.fileName,
         state,
-        code: generatedInput.errorCode || '',
+        code: invalidSuccess ? 'invalid_execution_result' : (generatedInput.errorCode || ''),
         generatedPdfArtifact: generatedInput.generatedPdfArtifact || null,
       };
+      if (state === 'failed') {
+        record.failureDescriptionKey = getFailureDescriptionKey(record.code, { stage: 'execution', route: 'ocr' });
+      }
       if (state === 'success'
         && (generatedInput.textApplicability === 'applicable'
           || generatedInput.textApplicability === 'no_text')) {
@@ -1223,6 +1285,8 @@
     finalCode = null,
     textApplicability = '',
     textApplication = '',
+    failureStage = 'execution',
+    executionRoute = '',
   }) {
     if (!unitReport || !input || !executionResult) {
       return;
@@ -1231,17 +1295,24 @@
     // Generated PDFs are execution children of this logical source input; they
     // never become peer inputs or units in the user-facing report.
     const executionState = mapExecutionResultStateToReportState(executionResult);
+    const failureCode = finalCode === null
+      ? (executionResult.error && executionResult.error.code ? executionResult.error.code : '')
+      : finalCode;
+    const childFailure = finalState !== 'failed'
+      && executionResult.heavySplitExecution
+      && executionResult.heavySplitExecution.failureOrigin === 'children';
     unitReport.inputs.push(buildOriginalInputReportRecord(input, {
       state: finalState || executionState,
-      code: finalCode === null
-        ? (executionResult.error && executionResult.error.code ? executionResult.error.code : '')
-        : finalCode,
+      code: failureCode,
       applyTruncated: !!(applyResult && applyResult.truncated),
       generatedInputs: heavyGeneratedInputs,
       generatedPdfArtifact: executionResult.generatedPdfArtifact || null,
       executionState,
       textApplicability,
       textApplication,
+      failureDescriptionKey: (finalState || executionState) === 'failed' && !childFailure
+        ? getFailureDescriptionKey(failureCode, { stage: failureStage, route: executionRoute || input.activeRoute })
+        : '',
     }));
   }
 
@@ -1432,7 +1503,9 @@
       if (!sessionEnterThrew) {
         log.error('Batch processing session start failed:', sessionEnterResult);
       }
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      window.Notify.notifyMain(sessionEnterResult && sessionEnterResult.code === 'ALREADY_ACTIVE'
+        ? 'renderer.text_extraction.alerts.operation_in_progress'
+        : 'renderer.text_extraction.alerts.execution_error');
       return;
     }
 
@@ -1489,6 +1562,7 @@
                   sessionUpdateResult,
                   'processing_session_update_failed'
                 ),
+              failureDescriptionKey: sessionCancelled ? '' : getFailureDescriptionKey('', { stage: 'mechanism' }),
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
@@ -1527,6 +1601,7 @@
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
               state: sessionCancelled ? 'cancelled' : 'failed',
               code: processingSessionStatus.code,
+              failureDescriptionKey: sessionCancelled ? '' : getFailureDescriptionKey('', { stage: 'mechanism' }),
             }));
             appendOmittedInputsToUnitReport(unitReport, unit.inputs, inputIndex + 1);
             break;
@@ -1536,10 +1611,11 @@
           if (!executionPreparation || executionPreparation.ok !== true || executionPreparation.prepareReady !== true) {
             const failureCode = executionPreparation && executionPreparation.prepareFailed === true
               ? (executionPreparation.error && executionPreparation.error.code ? executionPreparation.error.code : 'prepare_failed')
-              : 'prepare_failed';
+              : (executionPreparation && executionPreparation.code ? executionPreparation.code : 'prepare_failed');
             unitReport.inputs.push(buildOriginalInputReportRecord(input, {
               state: 'failed',
               code: failureCode,
+              failureDescriptionKey: getPreparationFailureDescriptionKey(failureCode, executionPreparation),
             }));
             if (state.failurePolicy !== 'omit_failed_and_continue') {
               closeUnitAfterFailure = true;
@@ -1583,6 +1659,9 @@
               fileName: input.fileName,
               state: failureCode === 'active_session_required' ? 'cancelled' : 'failed',
               code: failureCode,
+              failureDescriptionKey: failureCode === 'active_session_required'
+                ? ''
+                : getFailureDescriptionKey(failureCode, { stage: 'mechanism' }),
             }));
             if (failureCode === 'active_session_required') {
               batchTermination = 'cancelled';
@@ -1611,7 +1690,8 @@
               heavyGeneratedInputs,
               finalState: 'failed',
               finalCode: 'invalid_execution_result',
-              textApplication: 'failed',
+              executionRoute: execution.result.executedRoute
+                || (execution.routeMetadata && execution.routeMetadata.executedRoute),
             });
             if (state.failurePolicy !== 'omit_failed_and_continue') {
               closeUnitAfterFailure = true;
@@ -1635,6 +1715,7 @@
                 finalCode: applyResult && applyResult.code ? applyResult.code : 'apply_failed',
                 textApplicability,
                 textApplication: 'failed',
+                failureStage: 'application',
               });
               if (state.failurePolicy !== 'omit_failed_and_continue') {
                 closeUnitAfterFailure = true;
@@ -1655,6 +1736,8 @@
             textApplication: isSuccess
               ? (isApplicable ? 'applied' : 'not_applied_no_text')
               : '',
+            executionRoute: execution.result.executedRoute
+              || (execution.routeMetadata && execution.routeMetadata.executedRoute),
           });
 
           if (isCancelled) {
@@ -1815,7 +1898,7 @@
 
     const inputs = await preparePlanInputs(normalizedFilePaths);
     if (!inputs) {
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      window.Notify.notifyMain('renderer.text_extraction.alerts.prepare_error');
       return;
     }
 

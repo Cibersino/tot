@@ -183,11 +183,14 @@ function resolveSetupCode(validationResult) {
 }
 
 function resolvePdfAlertKey(code) {
+  if (code === 'unsupported_format') {
+    return 'renderer.text_extraction.alerts.unsupported_format';
+  }
   if (code === 'native_encrypted_or_password_protected') {
     return 'renderer.text_extraction.alerts.pdf.encrypted_or_password_protected';
   }
   if (code === 'unreadable_or_corrupt') {
-    return 'renderer.text_extraction.alerts.pdf.unreadable_or_corrupt';
+    return 'renderer.text_extraction.alerts.unreadable_or_corrupt';
   }
   if (code === 'pdf_page_count_unavailable') {
     return 'renderer.text_extraction.alerts.pdf.page_count_unavailable';
@@ -198,7 +201,7 @@ function resolvePdfAlertKey(code) {
   if (code === 'pdf_subset_creation_failed') {
     return 'renderer.text_extraction.alerts.pdf.subset_creation_failed';
   }
-  return 'renderer.text_extraction.alerts.start_error';
+  return 'renderer.text_extraction.alerts.prepare_error';
 }
 
 function getGeneratedPdfArtifactPolicyMode(generatedPdfArtifactPolicy) {
@@ -412,10 +415,7 @@ function buildNativePrepareFailure({
 }) {
   const failure = getProbeFailureDetails(probeResult);
   const code = failure ? failure.code : '';
-  const pdfAlertKey = resolvePdfAlertKey(code);
-  const primaryAlertKey = pdfAlertKey === 'renderer.text_extraction.alerts.start_error'
-    ? 'renderer.text_extraction.alerts.native.runtime_error'
-    : pdfAlertKey;
+  const primaryAlertKey = resolvePdfAlertKey(code);
 
   return buildPrepareFailure({
     fileInfo,
@@ -809,7 +809,7 @@ async function resolvePdfPreparation({
       fileInfo,
       executionKind: routeMetadata.executionKind,
       routeMetadata,
-      primaryAlertKey: 'renderer.text_extraction.alerts.start_error',
+      primaryAlertKey: 'renderer.text_extraction.alerts.prepare_error',
       warningAlertKeys: [],
       error: {
         code: 'heavy_split_plan_invalid',
@@ -918,6 +918,13 @@ function resolvePrimaryAlertKey(routeKind, result) {
     ? result.error.code
     : '';
 
+  if (state !== 'success' && state !== 'cancelled' && code !== 'aborted_by_user') {
+    if (code === 'unsupported_format') return 'renderer.text_extraction.alerts.unsupported_format';
+    if (code === 'unreadable_or_corrupt') return 'renderer.text_extraction.alerts.unreadable_or_corrupt';
+    if (code === 'native_encrypted_or_password_protected') return 'renderer.text_extraction.alerts.pdf.encrypted_or_password_protected';
+    if (code === 'heavy_split_plan_invalid') return 'renderer.text_extraction.alerts.execution_error';
+  }
+
   if (code === 'pdf_page_count_unavailable') {
     return 'renderer.text_extraction.alerts.pdf.page_count_unavailable';
   }
@@ -931,10 +938,6 @@ function resolvePrimaryAlertKey(routeKind, result) {
   if (routeKind === 'native') {
     if (state === 'success') return '';
     if (state === 'cancelled' || code === 'aborted_by_user') return 'renderer.text_extraction.alerts.native.cancelled';
-    if (code === 'native_encrypted_or_password_protected') {
-      return 'renderer.text_extraction.alerts.native.encrypted_or_password_protected';
-    }
-    if (code === 'unreadable_or_corrupt') return 'renderer.text_extraction.alerts.native.unreadable_or_corrupt';
     return 'renderer.text_extraction.alerts.native.runtime_error';
   }
 
@@ -951,7 +954,6 @@ function resolvePrimaryAlertKey(routeKind, result) {
     if (code === 'quota_or_rate_limited') return 'renderer.text_extraction.alerts.ocr.quota_or_rate_limited';
     if (code === PROVIDER_API_DISABLED_CODE
       || code === 'auth_failed'
-      || code === 'platform_runtime_failed'
       || code === 'ocr_unavailable') {
       return 'renderer.text_extraction.alerts.ocr.unavailable';
     }
@@ -1450,7 +1452,7 @@ async function executePreparedHeavySplitUnit({
     ? heavySplitPreview.generatedInputs.map((generatedInput) => ({ ...generatedInput }))
     : [];
   if (generatedInputs.length < 1) {
-    return buildPreparedExecutionFailureResult({
+    const failure = buildPreparedExecutionFailureResult({
       preparedRecord,
       productRoute,
       executionKind: 'google_drive',
@@ -1470,6 +1472,12 @@ async function executePreparedHeavySplitUnit({
         },
       },
     });
+    return {
+      ok: true,
+      ...failure,
+      primaryAlertKey: resolvePrimaryAlertKey(productRoute, failure.result),
+      warningAlertKeys: resolveWarningAlertKeys(productRoute, failure.result),
+    };
   }
 
   const normalizedProcessingContext = normalizeProcessingContext(processingContext, {
@@ -1797,6 +1805,7 @@ async function executePreparedHeavySplitUnit({
       summary: 'Heavy PDF OCR split failed because one or more generated inputs did not complete successfully.',
       heavySplitExecution: {
         generatedInputs: childStatuses,
+        failureOrigin: 'children',
       },
       provenance: {
         sourceFileName: preparedRecord.fileInfo.fileName,
@@ -1863,7 +1872,7 @@ async function executePreparedImport({
       code: resolvedRoute.reason === 'route_choice_required'
         ? 'ROUTE_CHOICE_REQUIRED'
         : 'ROUTE_RESOLUTION_FAILED',
-      primaryAlertKey: 'renderer.text_extraction.alerts.route_choice_error',
+      primaryAlertKey: 'renderer.text_extraction.alerts.route_resolution_failed',
     };
   }
 

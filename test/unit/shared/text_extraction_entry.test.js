@@ -16,9 +16,11 @@ function createHarness({
   requestPreparedImportResult = null,
   requestPreparedImportImpl = null,
   executePreparedTextExtractionResult = null,
+  executePreparedTextExtractionImpl = null,
   applyChoice = null,
   applyChoiceImpl = null,
   applyTextViaCanonicalPathResult = null,
+  applyTextViaCanonicalPathImpl = null,
   checkTextExtractionPreconditionsImpl = null,
   openTextExtractionPickerImpl = null,
   resolveDroppedFilePathImpl = null,
@@ -159,6 +161,7 @@ function createHarness({
     },
     async applyTextViaCanonicalPath(payload) {
       applyPayloads.push(payload);
+      if (applyTextViaCanonicalPathImpl) return applyTextViaCanonicalPathImpl(payload);
       return applyTextViaCanonicalPathResult || { ok: true };
     },
     getOcrLanguage() {
@@ -209,6 +212,7 @@ function createHarness({
       if (methodName === 'executePreparedTextExtraction') {
         return async () => {
           executePreparedTextExtractionCallCount += 1;
+          if (executePreparedTextExtractionImpl) return executePreparedTextExtractionImpl();
           return executePreparedTextExtractionResult || {
             ok: true,
             result: {
@@ -1150,7 +1154,50 @@ test('single-file malformed nominal success fails closed instead of opening no-t
 
   assert.equal(harness.getCapturedApplyPromptOptions(), null);
   assert.deepEqual(harness.getApplyPayloads(), []);
-  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.apply_error']);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.ocr.runtime_error']);
+});
+
+test('individual execution distinguishes an active lock, prepared invalidation and generic IPC failure', async () => {
+  const cases = [
+    [{ ok: false, code: 'ALREADY_ACTIVE', state: { active: true } }, 'operation_in_progress'],
+    [{ ok: false, code: 'PREPARED_ID_INVALID', invalidReason: 'fingerprint_mismatch', primaryAlertKey: 'renderer.text_extraction.alerts.prepare_invalid' }, 'prepare_invalid'],
+    [{ ok: false, code: 'PREPARED_ID_INVALID', invalidReason: 'prepared_id_invalid', primaryAlertKey: 'renderer.text_extraction.alerts.prepare_invalid' }, 'prepare_invalid'],
+    [{ ok: false, code: 'EXECUTE_PREPARED_IPC_FAILED' }, 'execution_error'],
+  ];
+  for (const [result, alert] of cases) {
+    const harness = createHarness({ executePreparedTextExtractionResult: result });
+    await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+    assert.deepEqual(harness.notifications, [`renderer.text_extraction.alerts.${alert}`]);
+    assert.deepEqual(harness.toasts, []);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 1);
+  }
+});
+
+test('individual execution reports an invalid heavy-split plan as an execution failure', async () => {
+  const harness = createHarness({
+    executePreparedTextExtractionResult: {
+      ok: true,
+      primaryAlertKey: 'renderer.text_extraction.alerts.execution_error',
+      result: { state: 'failure', error: { code: 'heavy_split_plan_invalid' } },
+    },
+  });
+  await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.execution_error']);
+  assert.deepEqual(harness.toasts, []);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 1);
+});
+
+test('individual preparation distinguishes a fingerprint read failure from an IPC failure', async () => {
+  const cases = [
+    [{ ok: true, prepareFailed: true, error: { code: 'unreadable_or_corrupt' }, primaryAlertKey: 'renderer.text_extraction.alerts.unreadable_or_corrupt' }, 'unreadable_or_corrupt'],
+    [{ ok: false, code: 'PREPARE_IPC_FAILED' }, 'prepare_error'],
+  ];
+  for (const [preparation, alert] of cases) {
+    const harness = createHarness({ requestPreparedImportResult: { preparation } });
+    await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+    assert.deepEqual(harness.notifications, [`renderer.text_extraction.alerts.${alert}`]);
+    assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 0);
+  }
 });
 
 test('single-file rejects a success whose applicability contradicts its text', async () => {
@@ -1173,7 +1220,55 @@ test('single-file rejects a success whose applicability contradicts its text', a
 
   assert.equal(harness.getCapturedApplyPromptOptions(), null);
   assert.deepEqual(harness.getApplyPayloads(), []);
-  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.apply_error']);
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.ocr.runtime_error']);
+});
+
+test('an invalid successful native result reports native execution failure without applying text', async () => {
+  const harness = createHarness({
+    executePreparedTextExtractionResult: { ok: true, result: { state: 'success', executedRoute: 'native', text: '', textApplicability: 'applicable' } },
+  });
+  await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.native.runtime_error']);
+  assert.deepEqual(harness.getApplyPayloads(), []);
+});
+
+test('actual text application failures keep their distinct notifications', async () => {
+  const cases = [
+    ['SET_CURRENT_TEXT_FAILED', 'renderer.text_extraction.alerts.apply_error'],
+    ['PAYLOAD_TOO_LARGE', 'renderer.main.alerts.apply_too_large'],
+    ['TEXT_LIMIT', 'renderer.main.alerts.append_text_limit'],
+  ];
+  for (const [code, key] of cases) {
+    const harness = createHarness({
+      executePreparedTextExtractionResult: { ok: true, result: { state: 'success', text: 'Text', textApplicability: 'applicable' } },
+      applyChoice: { mode: 'overwrite', repetitions: 1 },
+      applyTextViaCanonicalPathResult: { ok: false, code },
+    });
+    await harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+    assert.equal(harness.getApplyPayloads().length, 1);
+    assert.deepEqual(harness.notifications, [key]);
+  }
+});
+
+test('thrown preparation, execution and application calls retain stage-specific notifications', async () => {
+  const preparationHarness = createHarness({ requestPreparedImportImpl() { throw new Error('prepare failed'); } });
+  await preparationHarness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(preparationHarness.notifications, ['renderer.text_extraction.alerts.prepare_error']);
+  assert.equal(preparationHarness.getExecutePreparedTextExtractionCallCount(), 0);
+
+  const executionHarness = createHarness({ executePreparedTextExtractionImpl() { throw new Error('execute failed'); } });
+  await executionHarness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.deepEqual(executionHarness.notifications, ['renderer.text_extraction.alerts.execution_error']);
+  assert.deepEqual(executionHarness.getApplyPayloads(), []);
+
+  const applicationHarness = createHarness({
+    executePreparedTextExtractionResult: { ok: true, result: { state: 'success', text: 'Text', textApplicability: 'applicable' } },
+    applyChoice: { mode: 'overwrite', repetitions: 1 },
+    applyTextViaCanonicalPathImpl() { throw new Error('apply failed'); },
+  });
+  await applicationHarness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  assert.equal(applicationHarness.getApplyPayloads().length, 1);
+  assert.deepEqual(applicationHarness.notifications, ['renderer.text_extraction.alerts.apply_error']);
 });
 
 test('single-file entry shows the OCR image-upload alert without opening the heavy-PDF modal', async () => {

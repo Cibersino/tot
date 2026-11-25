@@ -91,7 +91,7 @@ function buildPrepareFingerprintFailure(routeMetadata, error) {
     prepareFailed: true,
     executionKind: null,
     routeMetadata,
-    primaryAlertKey: 'renderer.text_extraction.alerts.start_error',
+    primaryAlertKey: 'renderer.text_extraction.alerts.unreadable_or_corrupt',
     warningAlertKeys: [],
     error: {
       code: 'unreadable_or_corrupt',

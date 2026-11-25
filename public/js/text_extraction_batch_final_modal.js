@@ -159,8 +159,10 @@
   function formatReportStatusText(state, code = '', {
     applyTruncated = false,
     textApplicability = '',
+    failureDescriptionKey = '',
   } = {}) {
     const normalizedState = normalizeReportState(state);
+    const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : '';
     if (!normalizedState) {
       return '';
     }
@@ -176,23 +178,18 @@
     if (normalizedState === 'omitted') {
       return tRenderer('renderer.text_extraction.batch_report.omitted');
     }
-    if (normalizedState === 'failed' && code === 'PAYLOAD_TOO_LARGE') {
+    if (normalizedState === 'failed' && normalizedCode === 'PAYLOAD_TOO_LARGE') {
       return tRenderer('renderer.text_extraction.batch_report.payload_too_large');
     }
-    if (normalizedState === 'failed' && code === 'TEXT_LIMIT') {
+    if (normalizedState === 'failed' && normalizedCode === 'TEXT_LIMIT') {
       return tRenderer('renderer.text_extraction.batch_report.text_limit');
     }
     if (normalizedState === 'cancelled') {
-      if (code) {
-        return formatTranslation('renderer.text_extraction.batch_report.cancelled_with_code', {
-          code,
-        });
-      }
       return tRenderer('renderer.text_extraction.batch_report.cancelled_fallback');
     }
-    if (code) {
-      return formatTranslation('renderer.text_extraction.batch_report.failed_with_code', {
-        code,
+    if (failureDescriptionKey) {
+      return formatTranslation('renderer.text_extraction.batch_report.failed_with_description', {
+        description: tRenderer(failureDescriptionKey),
       });
     }
     return tRenderer('renderer.text_extraction.batch_report.failed_fallback');
@@ -201,10 +198,12 @@
   function buildReportStatusSuffix(state, code = '', {
     applyTruncated = false,
     textApplicability = '',
+    failureDescriptionKey = '',
   } = {}) {
     const statusText = formatReportStatusText(state, code, {
       applyTruncated,
       textApplicability,
+      failureDescriptionKey,
     });
     return statusText ? `(${statusText})` : '';
   }
@@ -216,6 +215,7 @@
       {
         applyTruncated: item && item.applyTruncated === true,
         textApplicability: item && item.textApplicability,
+        failureDescriptionKey: item && item.failureDescriptionKey,
       }
     );
   }
@@ -236,6 +236,9 @@
   }
 
   function getSnapshotResultText(unit) {
+    if (unit && unit.snapshotResult && unit.snapshotResult.state === 'failed') {
+      return tRenderer('renderer.text_extraction.batch_report.snapshot_failed');
+    }
     return unit && unit.snapshotResult
       ? unit.snapshotResult.text
       : tRenderer('renderer.text_extraction.batch_report.snapshot_not_created');

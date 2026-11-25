@@ -1924,10 +1924,12 @@ Estados de revisión recomendados:
           "en": "failed"
           // [CONCEPTO_APP] extracción de texto
         },
-        "failed_with_code": {
-          "es": "falló: {code}",
-          "en": "failed: {code}"
+        "failed_with_description": {
+          "es": "falló: {description}",
+          "en": "failed: {description}"
+          // [PROPÓSITO] Estado del informe con la descripción breve y localizada de la causa del fallo.
           // [CONCEPTO_APP] extracción de texto
+          // [PROTEGIDO] `{description}`
         },
         "no_text": {
           "es": "Sin texto",
@@ -1958,11 +1960,6 @@ Estados de revisión recomendados:
           "en": "cancelled"
           // [CONCEPTO_APP] extracción de texto
         },
-        "cancelled_with_code": {
-          "es": "cancelada: {code}",
-          "en": "cancelled: {code}"
-          // [CONCEPTO_APP] extracción de texto
-        },
         "snapshot_not_created": {
           "es": "(no se creó snapshot de texto)",
           "en": "(no text snapshot created)"
@@ -1975,11 +1972,121 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Estado del informe cuando se creó un snapshot de texto.
           // [CONCEPTO_APP] snapshot de texto; unidad de extracción por lotes
         },
-        "snapshot_creation_failed": {
-          "es": "(falló la creación del snapshot de texto: {code})",
-          "en": "(text snapshot creation failed: {code})"
+        "snapshot_failed": {
+          "es": "(falló la creación del snapshot de texto)",
+          "en": "(text snapshot creation failed)"
           // [PROPÓSITO] Estado del informe cuando falló la creación del snapshot de texto.
           // [CONCEPTO_APP] snapshot de texto; unidad de extracción por lotes
+        }
+      },
+      "failure_descriptions": {
+        "unsupported_format": {
+          "es": "formato no admitido",
+          "en": "unsupported format"
+          // [PROPÓSITO] Descripción breve de fallo para planificación e informe, no una notificación independiente.
+        },
+        "unreadable_or_corrupt": {
+          "es": "archivo ilegible o corrupto",
+          "en": "unreadable or corrupt file"
+        },
+        "protected_pdf": {
+          "es": "PDF protegido o cifrado",
+          "en": "protected or encrypted PDF"
+          // [PROTEGIDO] `PDF`
+        },
+        "page_count_unavailable": {
+          "es": "número de páginas desconocido",
+          "en": "unknown page count"
+        },
+        "page_selection_invalid": {
+          "es": "rango de páginas inválido",
+          "en": "invalid page range"
+        },
+        "pdf_generation_failed": {
+          "es": "error al generar PDF",
+          "en": "PDF generation error"
+          // [PROTEGIDO] `PDF`
+        },
+        "ocr_activation_required": {
+          "es": "OCR sin activar",
+          "en": "OCR not enabled"
+          // [PROTEGIDO] `OCR`
+        },
+        "credentials_missing": {
+          "es": "credenciales OCR ausentes",
+          "en": "missing OCR credentials"
+          // [NO_CONFUNDIR] Distinguir credenciales ausentes de credenciales inválidas.
+          // [PROTEGIDO] `OCR`
+        },
+        "credentials_invalid": {
+          "es": "credenciales OCR inválidas",
+          "en": "invalid OCR credentials"
+          // [PROTEGIDO] `OCR`
+        },
+        "ocr_token_state_invalid": {
+          "es": "sesión OCR inválida",
+          "en": "invalid OCR sign-in state"
+          // [PROTEGIDO] `OCR`
+        },
+        "ocr_communication_failed": {
+          "es": "error de comunicación con OCR",
+          "en": "OCR communication error"
+          // [PROPÓSITO] Fallo de comunicación de red o del servidor, sin atribuir necesariamente la causa al usuario.
+          // [PROTEGIDO] `OCR`
+        },
+        "ocr_usage_restricted": {
+          "es": "restricciones de uso de OCR",
+          "en": "OCR usage restrictions"
+          // [PROPÓSITO] Restricciones del proveedor, incluidas cuotas, límites y facturación; no presumir temporalidad.
+          // [PROTEGIDO] `OCR`
+        },
+        "ocr_unavailable": {
+          "es": "OCR no disponible",
+          "en": "OCR unavailable"
+          // [PROTEGIDO] `OCR`
+        },
+        "preparation_error": {
+          "es": "error de preparación",
+          "en": "preparation error"
+        },
+        "execution_error": {
+          "es": "error de ejecución",
+          "en": "execution error"
+        },
+        "native_execution_error": {
+          "es": "error de extracción nativa",
+          "en": "native extraction error"
+        },
+        "ocr_execution_error": {
+          "es": "error de extracción OCR",
+          "en": "OCR extraction error"
+          // [PROTEGIDO] `OCR`
+        },
+        "prepared_request_invalid": {
+          "es": "solicitud preparada inválida",
+          "en": "invalid prepared request"
+          // [PROPÓSITO] La solicitud preparada ya no es válida y requiere una nueva preparación.
+        },
+        "route_unresolved": {
+          "es": "ruta de extracción indeterminada",
+          "en": "unresolved extraction route"
+        },
+        "ocr_image_too_large": {
+          "es": "imagen demasiado grande para OCR",
+          "en": "image too large for OCR"
+          // [NO_CONFUNDIR] Límite de entrada de imagen para OCR, no límite de aplicación del texto.
+          // [PROTEGIDO] `OCR`
+        },
+        "ocr_pdf_too_large": {
+          "es": "PDF demasiado grande para OCR",
+          "en": "PDF too large for OCR"
+          // [NO_CONFUNDIR] Límite de entrada de PDF o fragmento para OCR, no límite de aplicación del texto.
+          // [PROTEGIDO] `PDF`; `OCR`
+        },
+        "application_error": {
+          "es": "error de aplicación del texto",
+          "en": "text application error"
+          // [NO_CONFUNDIR] Fallo al aplicar el texto, distinto del fallo al extraerlo.
         }
       },
       "alerts": {
@@ -1994,6 +2101,16 @@ Estados de revisión recomendados:
           "es": "Ocurrió un error al iniciar la extracción.",
           "en": "An error occurred while starting extraction."
           // [CONCEPTO_APP] extracción de texto
+        },
+        "prepare_error": {
+          "es": "Ocurrió un error al preparar la extracción.",
+          "en": "An error occurred while preparing the extraction."
+          // [PROPÓSITO] Fallo genérico de preparación o inspección de la extracción.
+        },
+        "execution_error": {
+          "es": "Ocurrió un error durante la ejecución de la extracción.",
+          "en": "An error occurred during the extraction."
+          // [PROPÓSITO] Fallo genérico del mecanismo de ejecución de la extracción.
         },
         "precondition_blocked": {
           "es": "Para iniciar la extracción, cierra todas las ventanas secundarias y detén el cronómetro.",
@@ -2051,6 +2168,11 @@ Estados de revisión recomendados:
           // [PROPÓSITO] Alerta de fallo en el paso crítico de elección de ruta de extracción.
           // [CONCEPTO_APP] ruta de extracción
         },
+        "route_resolution_failed": {
+          "es": "No fue posible determinar la ruta de extracción.",
+          "en": "The extraction route could not be determined."
+          // [PROPÓSITO] No fue posible determinar la ruta de extracción; distinto del fallo de presentación del modal de elección.
+        },
         "heavy_pdf_recovery_error": {
           "es": "No se pudieron mostrar las opciones de recuperación para este PDF.",
           "en": "Could not show the recovery options for this PDF."
@@ -2087,13 +2209,12 @@ Estados de revisión recomendados:
           "en": "Text extraction does not support this file format."
           // [CONCEPTO_APP] extracción de texto
         },
+        "unreadable_or_corrupt": {
+          "es": "El archivo seleccionado es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
+          "en": "The selected file is unreadable or corrupt. Check the file and try again."
+          // [PROPÓSITO] Archivo ilegible o corrupto, con independencia de la ruta o del tipo de archivo.
+        },
         "pdf": {
-          "unreadable_or_corrupt": {
-            "es": "Este PDF es ilegible o está corrupto. Revisa el archivo y vuelve a intentarlo.",
-            "en": "This PDF is unreadable or corrupt. Check the file and try again."
-            // [CONCEPTO_APP] PDF fuente
-            // [PROTEGIDO] `PDF`
-          },
           "encrypted_or_password_protected": {
             "es": "Este PDF está cifrado o protegido por contraseña. Desbloquéalo y vuelve a intentarlo.",
             "en": "This PDF is encrypted or password-protected. Unlock it and try again."
@@ -2127,18 +2248,6 @@ Estados de revisión recomendados:
             "en": "A native extraction runtime error occurred."
             // [CONCEPTO_APP] ruta nativa; extracción de texto
           },
-          "unreadable_or_corrupt": {
-            "es": "El archivo seleccionado es ilegible o está corrupto para extracción nativa.",
-            "en": "The selected file is unreadable or corrupt for native extraction."
-            // [CONCEPTO_APP] ruta nativa; extracción de texto
-          },
-          "encrypted_or_password_protected": {
-            "es": "El PDF seleccionado está cifrado o protegido por contraseña y no puede extraerse por ruta nativa.",
-            "en": "The selected PDF is encrypted or password-protected and cannot be extracted natively."
-            // [PROPÓSITO] Alerta específica de PDF cifrado/protegido cuando la ruta nativa no puede extraerlo.
-            // [CONCEPTO_APP] ruta nativa; PDF fuente; extracción de texto
-            // [PROTEGIDO] `PDF`
-          },
           "cancelled": {
             "es": "La extracción nativa fue cancelada.",
             "en": "Native extraction was cancelled."
@@ -2147,8 +2256,8 @@ Estados de revisión recomendados:
         },
         "ocr": {
           "unavailable": {
-            "es": "OCR no está disponible. Revisa la configuración/autenticación y vuelve a intentarlo.",
-            "en": "OCR is unavailable. Check setup/auth status and try again."
+            "es": "OCR no está disponible.",
+            "en": "OCR is unavailable."
             // [CONCEPTO_APP] OCR; Google OCR; token local OCR
             // [PROTEGIDO] `OCR`
           },
@@ -2230,8 +2339,9 @@ Estados de revisión recomendados:
             // [PROTEGIDO] `Google OCR`
           },
           "connectivity_failed": {
-            "es": "OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo.",
-            "en": "OCR requires an internet connection. Check your connection and try again."
+            "es": "No se pudo completar la comunicación con Google OCR. Revisa tu conexión a internet o vuelve a intentarlo más tarde.",
+            "en": "Communication with Google OCR could not be completed. Check your internet connection or try again later."
+            // [PROPÓSITO] Fallo de comunicación de red o del servidor; no atribuir necesariamente la causa a la conexión del usuario.
             // [CONCEPTO_APP] OCR; Google OCR
             // [PROTEGIDO] `OCR`
           },
@@ -2248,8 +2358,9 @@ Estados de revisión recomendados:
             // [PROTEGIDO] `OCR`; `OAuth`; `Google`
           },
           "quota_or_rate_limited": {
-            "es": "OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo.",
-            "en": "OCR is temporarily blocked by quota/rate limits. Wait and try again."
+            "es": "Google OCR no está disponible debido a restricciones de uso del proveedor.",
+            "en": "Google OCR is unavailable due to provider usage restrictions."
+            // [PROPÓSITO] Restricciones de uso del proveedor, incluidas cuotas, límites y facturación; no presumir temporalidad.
             // [CONCEPTO_APP] OCR; Google OCR
             // [PROTEGIDO] `OCR`
           },
@@ -2303,6 +2414,20 @@ Estados de revisión recomendados:
               // [CONCEPTO_APP] extracción por lotes; ítem de extracción por lotes; OCR; Google OCR; token local OCR
               // [PROTEGIDO] `OCR`; `Google OCR`
             },
+            "credentials_missing": {
+              "es": "Este lote incluye ítems con OCR, pero faltan las credenciales OAuth de Google incluidas con la app.",
+              "en": "This batch includes OCR items, but the bundled Google OAuth credentials are missing."
+              // [PROPÓSITO] Alerta previa al lote cuando las credenciales OAuth incluidas con la app son ausentes.
+              // [CONCEPTO_APP] extracción por lotes; OCR; credenciales OAuth OCR
+              // [PROTEGIDO] `OCR`; `OAuth`; `Google`
+            },
+            "credentials_invalid": {
+              "es": "Este lote incluye ítems con OCR, pero las credenciales OAuth de Google incluidas con la app son inválidas.",
+              "en": "This batch includes OCR items, but the bundled Google OAuth credentials are invalid."
+              // [PROPÓSITO] Alerta previa al lote cuando las credenciales OAuth incluidas con la app son inválidas.
+              // [CONCEPTO_APP] extracción por lotes; OCR; credenciales OAuth OCR
+              // [PROTEGIDO] `OCR`; `OAuth`; `Google`
+            },
             "token_state_invalid": {
               "es": "Este lote incluye ítems con OCR, pero el estado guardado de inicio de sesión de Google OCR no es válido. Usa Preferencias > Activar Google OCR de nuevo y luego vuelve a iniciar la extracción.",
               "en": "This batch includes OCR items, but the saved Google OCR sign-in state is invalid. Use Preferences > Enable Google OCR again, then start the extraction again."
@@ -2311,20 +2436,22 @@ Estados de revisión recomendados:
               // [PROTEGIDO] `OCR`; `Google OCR`
             },
             "connectivity_failed": {
-              "es": "Este lote incluye ítems con OCR, pero OCR requiere conexión a internet. Revisa tu conexión y vuelve a intentarlo antes de iniciar la extracción.",
-              "en": "This batch includes OCR items, but OCR requires an internet connection. Check your connection and try again before starting the extraction."
+              "es": "Este lote incluye ítems con OCR, pero no se pudo completar la comunicación con Google OCR. Revisa tu conexión a internet o vuelve a intentarlo más tarde.",
+              "en": "This batch includes OCR items, but communication with Google OCR could not be completed. Check your internet connection or try again later."
+              // [PROPÓSITO] Fallo previo al lote al comunicar con OCR; puede deberse a la red o al servidor.
               // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
               // [PROTEGIDO] `OCR`
             },
             "quota_or_rate_limited": {
-              "es": "Este lote incluye ítems con OCR, pero OCR está bloqueado temporalmente por cuota/límite de uso. Espera y vuelve a intentarlo antes de iniciar la extracción.",
-              "en": "This batch includes OCR items, but OCR is temporarily blocked by quota/rate limits. Wait and try again before starting the extraction."
+              "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible debido a restricciones de uso del proveedor.",
+              "en": "This batch includes OCR items, but Google OCR is unavailable due to provider usage restrictions."
+              // [PROPÓSITO] Restricciones de uso del proveedor, incluidas cuotas, límites y facturación; no presumir temporalidad.
               // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR
               // [PROTEGIDO] `OCR`
             },
             "unavailable": {
-              "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible ahora mismo. Si todavía no está activado, usa Preferencias > Activar Google OCR. Si ya estaba activado, revisa el estado/configuración de OCR y vuelve a intentarlo antes de iniciar la extracción.",
-              "en": "This batch includes OCR items, but Google OCR is not available right now. If OCR is not enabled yet, use Preferences > Enable Google OCR. Otherwise, check the OCR setup/status and try again before starting the extraction."
+              "es": "Este lote incluye ítems con OCR, pero Google OCR no está disponible.",
+              "en": "This batch includes OCR items, but Google OCR is unavailable."
               // [PROPÓSITO] Alerta previa a lote cuando OCR no está disponible para ítems que lo requieren.
               // [CONCEPTO_APP] extracción por lotes; OCR; Google OCR; token local OCR
               // [PROTEGIDO] `OCR`; `Google OCR`
