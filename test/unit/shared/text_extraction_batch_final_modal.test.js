@@ -739,22 +739,34 @@ test('batch report shows each cleanup origin once after units in visual and copi
     const promptPromise = harness.prompt({ report });
     const rendered = harness.elements.textExtractionBatchFinalModalBody.textContent;
     const html = harness.elements.textExtractionBatchFinalModalBody.innerHTML;
+    const warningLists = harness.elements.textExtractionBatchFinalModalBody._children.filter((node) => node.tagName === 'ul');
+    assert.equal(warningLists.length, expected.length ? 1 : 0);
+    if (warningLists.length) {
+      assert.deepEqual(warningLists[0]._children.map((node) => node.textContent), expected);
+    }
     assert.equal(html.includes('text-extraction-batch-final-warnings'), expected.length > 0);
+    for (const warning of ['Local temporary files may remain.', 'Remote temporary documents may remain.']) {
+      assert.equal(rendered.split(warning).length - 1, expected.includes(warning) ? 1 : 0);
+    }
     for (const warning of expected) {
-      assert.equal(rendered.split(warning).length - 1, 1);
       assert.ok(rendered.indexOf(warning) > rendered.indexOf('Snapshot not created'));
     }
-    if (expected.length === 2) assert.ok(rendered.indexOf(expected[0]) < rendered.indexOf(expected[1]));
     harness.elements.textExtractionBatchFinalModalCopy.dispatch('click');
     await Promise.resolve();
     const copied = harness.clipboardWrites[0];
+    const copiedLines = copied.split('\n');
+    const snapshotIndex = copiedLines.indexOf('Snapshot not created');
+    const finalStatementIndex = copiedLines.indexOf('Current text was not changed.');
+    assert.ok(snapshotIndex >= 0 && finalStatementIndex > snapshotIndex);
+    assert.deepEqual(copiedLines.slice(snapshotIndex + 1, finalStatementIndex).filter(Boolean), expected.map((warning) => `- ${warning}`));
+    for (const warning of ['Local temporary files may remain.', 'Remote temporary documents may remain.']) {
+      assert.equal(copied.split(warning).length - 1, expected.includes(warning) ? 1 : 0);
+    }
     for (const warning of expected) {
-      assert.equal(copied.split(warning).length - 1, 1);
       assert.ok(copied.indexOf(warning) > copied.indexOf('Snapshot not created'));
       assert.ok(copied.indexOf(warning) < copied.indexOf('Current text was not changed.'));
     }
     if (expected.length === 2) {
-      assert.ok(copied.indexOf(expected[0]) < copied.indexOf(expected[1]));
       harness.translations['renderer.text_extraction.alerts.cleanup_local_warning'] = 'Aviso local.';
       harness.translations['renderer.text_extraction.alerts.cleanup_remote_warning'] = 'Aviso remoto.';
       harness.applyTranslations();

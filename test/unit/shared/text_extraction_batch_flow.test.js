@@ -1386,27 +1386,38 @@ test('batch execution autosaves unnamed ordinary single-input units from source 
 });
 
 test('batch aggregates cleanup origins across units before failure and application branches', async () => {
-  const harness = createHarness({
-    preparationsByPath: Object.fromEntries(['success', 'failed', 'invalid', 'apply', 'ipc'].map((name) => [
-      `${name}.txt`, createPreparation({ fileName: `${name}.txt`, chosenRoute: 'native', fileKind: 'txt' }),
-    ])),
-    promptBatchPlanResult: { action: 'start' },
-    normalizeExecutionResultApplicability: false,
-    executionResultsByProcessingInputFileName: {
-      'success.txt': { ok: true, result: { state: 'success', text: 'success', textApplicability: 'applicable', cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:remote-a' }] } },
-      'failed.txt': { ok: true, result: { state: 'failure', error: { code: 'native_extraction_failed' }, cleanupWarnings: [{ origin: 'local', warningCode: 'cleanup:local-a' }] } },
-      'invalid.txt': { ok: true, result: { state: 'success', text: null, cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:remote-b' }] } },
-      'apply.txt': { ok: true, result: { state: 'success', text: 'apply', textApplicability: 'applicable', cleanupWarnings: [{ origin: 'local', warningCode: 'cleanup:local-b' }] } },
-      'ipc.txt': { ok: false, code: 'EXECUTE_PREPARED_IPC_FAILED', result: { cleanupWarnings: [{ origin: 'remote', warningCode: 'cleanup:remote-c' }] } },
-    },
-    applyTextViaCanonicalPathImpl: ({ textToApply }) => textToApply === 'apply' ? { ok: false, code: 'apply_failed' } : { ok: true },
-  });
-  await harness.batchFlow.startFromSelectedFiles({ filePaths: ['success.txt', 'failed.txt', 'invalid.txt', 'apply.txt', 'ipc.txt'], source: 'test' });
-  const report = harness.getCapturedFinalReport();
-  assert.deepEqual(Array.from(report.cleanupWarnings), ['remote', 'local']);
-  assert.deepEqual(Array.from(report.units, (unit) => unit.inputs[0].state), ['success', 'failed', 'failed', 'failed', 'failed']);
-  assert.equal(report.units[2].inputs[0].code, 'invalid_execution_result');
-  assert.equal(report.units[3].inputs[0].code, 'apply_failed');
+  const names = ['success', 'failed', 'invalid', 'apply', 'ipc'];
+  const cases = names.flatMap((name) => ['local', 'remote'].map((origin) => ({ warningsByName: { [name]: [origin] }, expected: [origin] })));
+  cases.push({ warningsByName: { success: ['remote'], failed: ['local'], invalid: ['remote'], apply: ['local'], ipc: ['remote'] }, expected: ['local', 'remote'] });
+
+  for (const { warningsByName, expected } of cases) {
+    const executionResultsByProcessingInputFileName = {
+      'success.txt': { ok: true, result: { state: 'success', text: 'success', textApplicability: 'applicable' } },
+      'failed.txt': { ok: true, result: { state: 'failure', error: { code: 'native_extraction_failed' } } },
+      'invalid.txt': { ok: true, result: { state: 'success', text: null } },
+      'apply.txt': { ok: true, result: { state: 'success', text: 'apply', textApplicability: 'applicable' } },
+      'ipc.txt': { ok: false, code: 'EXECUTE_PREPARED_IPC_FAILED', result: {} },
+    };
+    for (const [name, origins] of Object.entries(warningsByName)) {
+      executionResultsByProcessingInputFileName[`${name}.txt`].result.cleanupWarnings = origins.map((origin) => ({ origin, warningCode: `cleanup:${origin}-${name}` }));
+    }
+    const harness = createHarness({
+      preparationsByPath: Object.fromEntries(names.map((name) => [
+        `${name}.txt`, createPreparation({ fileName: `${name}.txt`, chosenRoute: 'native', fileKind: 'txt' }),
+      ])),
+      promptBatchPlanResult: { action: 'start' },
+      normalizeExecutionResultApplicability: false,
+      executionResultsByProcessingInputFileName,
+      applyTextViaCanonicalPathImpl: ({ textToApply }) => textToApply === 'apply' ? { ok: false, code: 'apply_failed' } : { ok: true },
+    });
+    await harness.batchFlow.startFromSelectedFiles({ filePaths: names.map((name) => `${name}.txt`), source: 'test' });
+    const report = harness.getCapturedFinalReport();
+    assert.deepEqual(Array.from(report.cleanupWarnings).sort(), expected, JSON.stringify(warningsByName));
+    assert.deepEqual(Array.from(report.units, (unit) => unit.inputs[0].state), ['success', 'failed', 'failed', 'failed', 'failed']);
+    assert.equal(report.units[2].inputs[0].code, 'invalid_execution_result');
+    assert.equal(report.units[3].inputs[0].code, 'apply_failed');
+    assert.equal(report.units[4].inputs[0].code, 'execute_prepared_ipc_failed');
+  }
 });
 
 test('batch execution reports malformed autosave results as failed without trusting their code', async () => {
@@ -1500,6 +1511,8 @@ test('batch reports a technical processing-session update failure as failed and 
   });
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(report.units[0].inputs[0].failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.execution_error');
+  assert.equal(Object.hasOwn(report.units[1].inputs[0], 'failureDescriptionKey'), false);
   assert.deepEqual(
     report.units.map((unit) => unit.inputs.map((input) => ({
       fileName: input.fileName,
@@ -1548,6 +1561,8 @@ test('batch reports a technical processing-session state failure as failed', asy
   });
 
   const report = JSON.parse(JSON.stringify(harness.getCapturedFinalReport()));
+  assert.equal(report.units[0].inputs[0].failureDescriptionKey, 'renderer.text_extraction.failure_descriptions.execution_error');
+  assert.equal(Object.hasOwn(report.units[1].inputs[0], 'failureDescriptionKey'), false);
   assert.deepEqual(
     report.units.map((unit) => unit.inputs.map((input) => ({
       fileName: input.fileName,
