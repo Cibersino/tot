@@ -445,6 +445,8 @@ function registerIpc(
     const windows = getWindows() || {};
     return windows.mainWin || null;
   };
+  let terminationAdmitted = false;
+  let recoveryAbortController = null;
 
   ipcMain.handle(PREPARE_CHANNEL, async (event) => {
     const mainWin = resolveMainWin();
@@ -608,9 +610,10 @@ function registerIpc(
     }
   });
 
-  ipcMain.handle(LAUNCH_CHANNEL, async (event) => {
+  ipcMain.handle(LAUNCH_CHANNEL, async (event, payload = {}) => {
     const mainWin = resolveMainWin();
     let releaseOperation = null;
+    let currentRecoveryController = null;
     try {
       if (!isAuthorizedSender(event, mainWin, {
         warnKey: 'text_extraction_ocr_activation.launch.unauthorized',
@@ -627,6 +630,11 @@ function registerIpc(
         });
       }
 
+      const isRecovery = payload && payload.source === 'text_extraction_recovery';
+      if (isRecovery && terminationAdmitted) {
+        return buildFailure({ state: 'cancelled', code: 'ocr_activation_cancelled' });
+      }
+
       releaseOperation = ocrOperation.begin();
       if (!releaseOperation) {
         log.warn('Google OCR activation ignored because another operation is in progress.');
@@ -634,6 +642,10 @@ function registerIpc(
           code: 'ocr_operation_in_progress',
           alertKey: 'renderer.text_extraction.alerts.ocr.operation_in_progress',
         });
+      }
+      if (isRecovery) {
+        currentRecoveryController = new AbortController();
+        recoveryAbortController = currentRecoveryController;
       }
 
       const {
@@ -694,6 +706,7 @@ function registerIpc(
           credentialsJson: credentialsValidation.parsed,
           scopes: OCR_SCOPES,
           openExternal: (url) => shell.openExternal(url),
+          ...(currentRecoveryController ? { signal: currentRecoveryController.signal } : {}),
         });
       } catch (error) {
         const authFailure = mapAuthenticateError(error);
@@ -767,9 +780,20 @@ function registerIpc(
       log.error(`${LAUNCH_CHANNEL} failed unexpectedly:`, failure.detailsSafeForLogs);
       return failure;
     } finally {
+      if (recoveryAbortController === currentRecoveryController) recoveryAbortController = null;
       if (releaseOperation) releaseOperation();
     }
   });
+
+  return {
+    admitTermination() {
+      terminationAdmitted = true;
+      if (recoveryAbortController) recoveryAbortController.abort();
+    },
+    releaseTermination() {
+      terminationAdmitted = false;
+    },
+  };
 }
 
 // =============================================================================

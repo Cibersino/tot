@@ -462,6 +462,7 @@
 
     return new Promise((resolve) => {
       let settled = false;
+      let dismissedForTermination = false;
       // A refresh replaces report-body nodes, so return body focus to a stable control.
       const refreshModalTranslations = () => {
         const scrollTop = typeof panel.scrollTop === 'number' ? panel.scrollTop : 0;
@@ -479,6 +480,7 @@
         btnClose.removeEventListener('click', onOk);
         backdrop.removeEventListener('click', onOk);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onTermination);
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
       };
@@ -503,7 +505,7 @@
           await onRevealGeneratedPdf(target.getAttribute('data-artifact-path') || '');
         } catch (error) {
           log.error('Generated PDF reveal failed (ignored):', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
+          if (!dismissedForTermination || !window.TextExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         }
       };
       const onCopy = async () => {
@@ -525,6 +527,10 @@
         }
       };
       const onOk = () => finish();
+      const onTermination = () => {
+        dismissedForTermination = true;
+        onOk();
+      };
       const onWindowKeyDown = (event) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
         if (!window.Notify.claimModalEscape(event, modal)) return;
@@ -538,6 +544,7 @@
       btnClose.addEventListener('click', onOk);
       backdrop.addEventListener('click', onOk);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onTermination);
       activePromptTranslations = refreshModalTranslations;
 
       modal.setAttribute('aria-hidden', 'false');

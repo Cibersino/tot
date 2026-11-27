@@ -104,6 +104,8 @@ function createNoopSurface(overrides = {}) {
 async function createRendererHarness({
   absentElectronMethods = [],
   currentTextRuntimeOverrides = {},
+  textExtractionEntryOverrides = {},
+  useRealTextExtractionEntry = false,
   deferStartupReady = false,
   electronMethodOverrides = {},
   expectStartupError = false,
@@ -482,6 +484,7 @@ async function createRendererHarness({
       configure(config) { textExtractionEntryConfigs.push(config); },
       isCurrentOperation() { return false; },
       isOperationActive() { return false; },
+      ...textExtractionEntryOverrides,
     }),
     TextExtractionOcrActivationDisclosureModal: {
       applyTranslations() { recordActiveCustomPromptTranslationRefresh('TextExtractionOcrActivationDisclosureModal'); },
@@ -503,6 +506,7 @@ async function createRendererHarness({
     TextTimeCalculatorLauncher: createNoopSurface(),
     WpmControls: { createController() { return wpmControls; } },
     addEventListener() {},
+    dispatchEvent() {},
     electronAPI,
     getLogger() { return logger; },
     menuActions: {
@@ -524,6 +528,7 @@ async function createRendererHarness({
         };
       }
     },
+    Event: class Event { constructor(type) { this.type = type; } },
     document,
     fetch: async () => ({ ok: true, text: async () => '' }),
     requestAnimationFrame(callback) { callback(); },
@@ -531,6 +536,12 @@ async function createRendererHarness({
     window,
   };
   vm.createContext(sandbox);
+  if (useRealTextExtractionEntry) {
+    const entrySource = fs.readFileSync(
+      path.resolve(__dirname, '../../../public/js/text_extraction_entry.js'), 'utf8'
+    );
+    vm.runInContext(entrySource, sandbox, { filename: 'public/js/text_extraction_entry.js' });
+  }
   const currentTextRefreshPolicySource = fs.readFileSync(
     path.resolve(__dirname, '../../../public/js/current_text_refresh_policy.js'),
     'utf8'
@@ -638,6 +649,151 @@ test('Main startup has no programmatic initial DOM focus', async () => {
   await createRendererHarness({ focusCalls });
 
   assert.deepEqual(focusCalls, []);
+});
+
+test('production renderer acknowledgment keeps termination waiting for extraction and dependent closure', async () => {
+  const { EventEmitter } = require('node:events');
+  const termination = require('../../../electron/application_termination');
+  const rendererBridge = require('../../../electron/application_termination_renderer_bridge');
+  const ipc = new EventEmitter();
+  const contents = new EventEmitter();
+  contents.isDestroyed = () => false;
+  const main = { webContents: contents, isDestroyed: () => false };
+  const dependent = new EventEmitter();
+  let dependentDestroyed = false;
+  dependent.isDestroyed = () => dependentDestroyed;
+  dependent.close = () => {};
+  const settlement = createDeferred();
+  const events = [];
+  let held = false;
+  let commandHandler;
+  const harness = await createRendererHarness({
+    electronMethodOverrides: {
+      onApplicationTerminationCommand(handler) { commandHandler = handler; },
+      respondToApplicationTermination(response) {
+        ipc.emit('application-termination-response', { sender: contents }, response);
+      },
+    },
+    textExtractionEntryOverrides: {
+      beginTerminationAttempt() { events.push('begin'); },
+      admitTermination() { held = true; events.push('admit'); },
+      isTerminationAdmitted() { return held; },
+      waitForTerminationSettlement() { events.push('settle'); return settlement.promise; },
+      releaseTerminationAttempt() { held = false; events.push('release'); },
+    },
+  });
+  assert.equal(typeof commandHandler, 'function');
+  contents.send = (channel, payload) => {
+    assert.equal(channel, 'application-termination-command');
+    void commandHandler(payload);
+  };
+  const bridge = rendererBridge.createBridge({ ipcMain: ipc, resolveMainWindow: () => main });
+  const sequencer = termination.createController({
+    isReady: () => true,
+    getMainWindow: () => main,
+    getTaskWindow: () => null,
+    requestTaskClose: async () => true,
+    extractionCommand: bridge.send,
+    abortExtraction: () => events.push('abort'),
+    terminateReadingTest: () => events.push('reading'),
+    getDependentWindows: () => [dependent],
+    setInteractionHeld() {},
+    quit: () => events.push('quit'),
+    reportFailure: (error) => { throw error; },
+    log: { error() {} },
+  });
+  const close = { prevented: false, preventDefault() { this.prevented = true; } };
+  sequencer.handleEvent(close);
+  await flushAsyncWork();
+  assert.equal(close.prevented, true);
+  assert.deepEqual(events, ['begin', 'admit', 'abort', 'settle']);
+  assert.equal(harness.getElement('btnHelp').disabled, true);
+  await harness.selectorActions.onClearText();
+  assert.deepEqual(harness.textApplyCalls, []);
+  const duplicate = { prevented: false, preventDefault() { this.prevented = true; } };
+  sequencer.handleEvent(duplicate);
+  assert.equal(duplicate.prevented, true);
+  settlement.resolve();
+  await flushAsyncWork();
+  assert.deepEqual(events, ['begin', 'admit', 'abort', 'settle', 'reading']);
+  dependentDestroyed = true;
+  dependent.emit('closed');
+  await flushAsyncWork();
+  assert.deepEqual(events, ['begin', 'admit', 'abort', 'settle', 'reading', 'quit']);
+});
+
+test('production termination waits for the real extraction owner after processing abort', async () => {
+  const { EventEmitter } = require('node:events');
+  const termination = require('../../../electron/application_termination');
+  const rendererBridge = require('../../../electron/application_termination_renderer_bridge');
+  const processing = require('../../../electron/text_extraction_platform/text_extraction_processing_mode_ipc')
+    .createController({ onStateChanged() {} });
+  const ipc = new EventEmitter();
+  const contents = new EventEmitter();
+  contents.isDestroyed = () => false;
+  const main = { webContents: contents, isDestroyed: () => false };
+  const execution = createDeferred();
+  const executionStarted = createDeferred();
+  let cancellationSignal;
+  let commandHandler;
+  let quitCount = 0;
+  const harness = await createRendererHarness({
+    useRealTextExtractionEntry: true,
+    electronMethodOverrides: {
+      onApplicationTerminationCommand(handler) { commandHandler = handler; },
+      respondToApplicationTermination(response) {
+        ipc.emit('application-termination-response', { sender: contents }, response);
+      },
+      async checkTextExtractionPreconditions() { return { ok: true, canStart: true }; },
+      async openTextExtractionPicker() { return { ok: true, canceled: false, filePaths: ['book.txt'] }; },
+      async inspectTextExtractionSelectedFile() { return { ok: true, isPdf: false }; },
+      async prepareTextExtractionSelectedFile() {
+        return { ok: true, prepareReady: true, prepareFailed: false, prepareId: 'one',
+          routeMetadata: { chosenRoute: 'native', availableRoutes: ['native'] } };
+      },
+      async executePreparedTextExtraction() {
+        const state = processing.enter().state;
+        cancellationSignal = processing.getCancellationSignal(state.lockId);
+        executionStarted.resolve();
+        return execution.promise;
+      },
+    },
+  });
+  contents.send = (_channel, payload) => { void commandHandler(payload); };
+  const bridge = rendererBridge.createBridge({ ipcMain: ipc, resolveMainWindow: () => main });
+  const sequencer = termination.createController({
+    isReady: () => true,
+    getMainWindow: () => main,
+    getTaskWindow: () => null,
+    requestTaskClose: async () => true,
+    extractionCommand: bridge.send,
+    abortExtraction: () => processing.requestAbort({ source: 'application', reason: 'termination' }),
+    terminateReadingTest() {},
+    getDependentWindows: () => [],
+    setInteractionHeld() {},
+    quit: () => { quitCount += 1; },
+    reportFailure: (error) => { throw error; },
+    log: { error() {} },
+  });
+  const operation = harness.selectorActions.onTextExtraction();
+  let startupTimeout;
+  try {
+    await Promise.race([
+      executionStarted.promise,
+      new Promise((_, reject) => { startupTimeout = setTimeout(() => reject(new Error('extraction did not start')), 1000); }),
+    ]);
+  } finally {
+    clearTimeout(startupTimeout);
+  }
+  sequencer.handleEvent({ preventDefault() {} });
+  await flushAsyncWork();
+  assert.equal(cancellationSignal.aborted, true);
+  assert.equal(quitCount, 0);
+  execution.resolve({ ok: true, result: { state: 'success', text: 'late', textApplicability: 'applicable' } });
+  await operation;
+  await flushAsyncWork();
+  assert.equal(quitCount, 1);
+  assert.deepEqual(harness.textApplyCalls, []);
 });
 
 test('main renderer logs initial listener, core-ready, and READY acknowledgment milestones', async () => {

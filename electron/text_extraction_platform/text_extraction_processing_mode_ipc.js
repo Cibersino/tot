@@ -237,7 +237,7 @@ function isAuthorizedSender(event, mainWin) {
   }
 }
 
-function registerIpc(ipcMain, { getWindows, controller } = {}) {
+function registerIpc(ipcMain, { getWindows, controller, isTerminationAdmitted = () => false } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     throw new Error('[text_extraction_processing_mode] registerIpc requires ipcMain');
   }
@@ -272,6 +272,8 @@ function registerIpc(ipcMain, { getWindows, controller } = {}) {
       if (!isAuthorizedSender(event, mainWin)) {
         return { ok: false, code: 'UNAUTHORIZED' };
       }
+
+      if (isTerminationAdmitted()) return { ok: false, code: 'TERMINATION_ACTIVE' };
 
       const context = normalizePayloadContext(payload);
       const transition = controller.enter(context);

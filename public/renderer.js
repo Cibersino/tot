@@ -353,6 +353,7 @@ function isStandaloneFullRefreshPendingActive() {
 
 function isMainInteractionLocked() {
   return !isRendererReady()
+    || textExtractionEntry.isTerminationAdmitted()
     || isProcessingModeActive()
     || isCurrentTextAreaPendingActive()
     || isAbortFinalizationActive()
@@ -509,6 +510,7 @@ function hasBlockingMainWindowModalOpen() {
 
 function canAcceptTextExtractionDrop() {
   return isRendererReady()
+    && !textExtractionEntry.isTerminationAdmitted()
     && !isProcessingModeActive()
     && !isCurrentTextAreaPendingActive()
     && !isAbortFinalizationActive()
@@ -549,9 +551,10 @@ function maybeNotifyProcessingLock(actionId) {
       : (isStandaloneFullRefreshPendingActive()
         ? 'renderer.main.alerts.current_text_recount_locked'
         : 'renderer.main.alerts.current_text_processing_locked'));
-  window.Notify.notifyMain(
-    alertKey
-  );
+  if (!textExtractionEntry.isTerminationAttempt()
+    || (!isAbortFinalizationActive() && !isProcessingModeActive())) {
+    window.Notify.notifyMain(alertKey);
+  }
   log.warnOnce(
     `renderer.processing_lock.${actionId}`,
     'Renderer action ignored (main-window processing lock active):',
@@ -569,6 +572,8 @@ function guardUserAction(actionId, { allowDuringProcessing = false } = {}) {
     );
     return false;
   }
+
+  if (textExtractionEntry.isTerminationAdmitted()) return false;
 
   const isAbortAction = normalizedActionId === 'text-extraction-abort';
   if (!allowDuringProcessing
@@ -1189,6 +1194,30 @@ function armCurrentTextSubscription() {
 
 function armIpcSubscriptions() {
 
+  if (!window.electronAPI || typeof window.electronAPI.onApplicationTerminationCommand !== 'function'
+    || typeof window.electronAPI.respondToApplicationTermination !== 'function') {
+    throw new Error('[renderer] application termination bridge unavailable');
+  }
+  window.electronAPI.onApplicationTerminationCommand(async ({ id, command }) => {
+    try {
+      if (command === 'begin') textExtractionEntry.beginTerminationAttempt();
+      else if (command === 'admit') {
+        textExtractionEntry.admitTermination();
+        syncMainInteractionLockUi();
+      }
+      else if (command === 'settle') await textExtractionEntry.waitForTerminationSettlement();
+      else if (command === 'release') {
+        textExtractionEntry.releaseTerminationAttempt();
+        syncMainInteractionLockUi();
+      }
+      else throw new Error('Unknown application termination command');
+      window.electronAPI.respondToApplicationTermination({ id, ok: true });
+    } catch (error) {
+      log.error('Application termination command failed:', error);
+      window.electronAPI.respondToApplicationTermination({ id, ok: false });
+    }
+  });
+
   // preset-created is accepted only after READY, when its dependent controls and settings are established.
   if (window.electronAPI && typeof window.electronAPI.onPresetCreated === 'function') {
     window.electronAPI.onPresetCreated(async (payload) => {
@@ -1556,7 +1585,7 @@ function registerMenuActions() {
       if (!textExtractionOcrActivation
         || typeof textExtractionOcrActivation.startFromPreferencesMenu !== 'function') {
         log.warn('TextExtractionOcrActivation.startFromPreferencesMenu unavailable; menu action skipped.');
-        window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
+        if (!textExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
         return;
       }
 
@@ -1566,7 +1595,7 @@ function registerMenuActions() {
       if (!textExtractionOcrDisconnect
         || typeof textExtractionOcrDisconnect.startFromPreferencesMenu !== 'function') {
         log.warn('TextExtractionOcrDisconnect.startFromPreferencesMenu unavailable; menu action skipped.');
-        window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.disconnect_failed');
+        if (!textExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.disconnect_failed');
         return;
       }
 
@@ -1762,6 +1791,7 @@ function configureTextExtractionModules() {
     && typeof textExtractionOcrConnectionFlow.configure === 'function') {
     textExtractionOcrConnectionFlow.configure({
       getOptionalElectronMethod,
+      isTerminationAttempt: textExtractionEntry.isTerminationAttempt,
     });
   } else {
     log.warn('TextExtractionOcrConnectionFlow.configure unavailable; OCR connection flows will be disabled.');
@@ -1771,6 +1801,7 @@ function configureTextExtractionModules() {
     && typeof textExtractionOcrActivation.configure === 'function') {
     textExtractionOcrActivation.configure({
       ocrConnectionFlow: textExtractionOcrConnectionFlow,
+      isTerminationAttempt: textExtractionEntry.isTerminationAttempt,
     });
   } else {
     log.warn('TextExtractionOcrActivation.configure unavailable; Preferences > Enable Google OCR will be disabled.');
@@ -1780,6 +1811,7 @@ function configureTextExtractionModules() {
     && typeof textExtractionOcrActivationRecovery.configure === 'function') {
     textExtractionOcrActivationRecovery.configure({
       ocrConnectionFlow: textExtractionOcrConnectionFlow,
+      isTerminationAttempt: textExtractionEntry.isTerminationAttempt,
     });
   } else {
     log.warn('TextExtractionOcrActivationRecovery.configure unavailable; OCR setup recovery will be disabled.');
@@ -1811,6 +1843,8 @@ function configureTextExtractionModules() {
     hasBlockingModalOpen: hasBlockingMainWindowModalOpen,
     hasCurrentTextSubscription: () => hasCurrentTextSubscription,
     isCurrentTextExtractionOperation: textExtractionEntry.isCurrentOperation,
+    isTerminationAttempt: textExtractionEntry.isTerminationAttempt,
+    isTerminationAdmitted: textExtractionEntry.isTerminationAdmitted,
     requestPreparedImport,
     syncMainInteractionLockUi,
     textExtractionStatusUi,
@@ -1818,6 +1852,7 @@ function configureTextExtractionModules() {
 
   textExtractionDragDrop.configure({
     canAcceptDrop: canAcceptTextExtractionDrop,
+    isTerminationAttempt: textExtractionEntry.isTerminationAttempt,
     startFromDroppedFiles: textExtractionEntry.startFromDroppedFiles,
   });
 
@@ -1826,6 +1861,7 @@ function configureTextExtractionModules() {
     textExtractionOcrDisconnect.configure({
       getOptionalElectronMethod,
       ocrConnectionFlow: textExtractionOcrConnectionFlow,
+      isTerminationAttempt: textExtractionEntry.isTerminationAttempt,
     });
   } else {
     log.warn('TextExtractionOcrDisconnect.configure unavailable; Preferences > Disconnect Google OCR will be disabled.');
@@ -1916,7 +1952,7 @@ async function handleTextExtractionAbort() {
       unavailableMessage: 'requestTextExtractionAbort unavailable; abort action skipped.'
     });
     if (!requestTextExtractionAbort) {
-      window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
+      if (!textExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
       return;
     }
 
@@ -1930,7 +1966,7 @@ async function handleTextExtractionAbort() {
         return;
       }
       log.error('text extraction abort failed:', result);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
+      if (!textExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
       return;
     }
 
@@ -1939,10 +1975,10 @@ async function handleTextExtractionAbort() {
       textExtractionStatusUi.applyProcessingModeState(result.state, { source: 'abort_response' });
     }
     syncMainInteractionLockUi();
-    window.Notify.notifyMain('renderer.text_extraction.alerts.cancellation_requested');
+    if (!textExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.cancellation_requested');
   } catch (error) {
     log.error('Error handling text extraction abort:', error);
-    window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
+    if (!textExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.abort_error');
   }
 }
 

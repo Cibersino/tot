@@ -8,6 +8,7 @@ const vm = require('node:vm');
 
 function createHarness({
   activationResult = null,
+  isTerminationAttempt = () => false,
 } = {}) {
   const notifications = [];
   let activationCallCount = 0;
@@ -41,6 +42,7 @@ function createHarness({
 
   const activation = sandbox.window.TextExtractionOcrActivation;
   activation.configure({
+    isTerminationAttempt,
     ocrConnectionFlow: {
       async startActivationFlow() {
         activationCallCount += 1;
@@ -71,6 +73,19 @@ test('Preferences-menu OCR activation notifies success after the shared flow suc
     'renderer.text_extraction.alerts.ocr.enable_success',
   ]);
   assert.equal(harness.getActivationCallCount(), 1);
+});
+
+test('Preferences OCR feedback is suppressed during termination and restored afterward', async () => {
+  let terminating = true;
+  const harness = createHarness({
+    activationResult: { ok: false, state: 'failure', code: 'credentials_missing' },
+    isTerminationAttempt: () => terminating,
+  });
+  await harness.activation.startFromPreferencesMenu();
+  assert.deepEqual(harness.notifications, []);
+  terminating = false;
+  await harness.activation.startFromPreferencesMenu();
+  assert.deepEqual(harness.notifications, ['renderer.text_extraction.alerts.ocr.setup_missing_credentials']);
 });
 
 test('Preferences-menu OCR activation stays silent when the disclosure is declined', async () => {

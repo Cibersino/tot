@@ -775,6 +775,8 @@
       let currentModel = controller.getViewModel();
       let rootListenerBound = false;
       let startValidationInFlight = false;
+      let pendingTagEdit = null;
+      let terminationRequested = false;
       // Preserve incomplete page-range edits across rerenders until they resolve.
       const pageSelectionDrafts = new Map();
       const pageSelectionRoots = new Map();
@@ -999,6 +1001,7 @@
         btnClose.removeEventListener('click', onCancel);
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onTermination);
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
       };
@@ -1039,7 +1042,9 @@
             canStart = await controller.validateStart();
           } catch (error) {
             log.error('Batch planning start validation failed unexpectedly:', error);
-            window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+            if (!terminationRequested || !window.TextExtractionEntry.isTerminationAttempt()) {
+              window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+            }
             canStart = false;
           } finally {
             startValidationInFlight = false;
@@ -1056,6 +1061,14 @@
         finish({ action: 'start' });
       };
       const onCancel = () => finish(null);
+      const onTermination = () => {
+        terminationRequested = true;
+        if (pendingTagEdit) {
+          void pendingTagEdit.then(() => finish(null), () => finish(null));
+        } else {
+          finish(null);
+        }
+      };
       const onWindowKeyDown = (event) => {
         if (modal.getAttribute('aria-hidden') !== 'false') return;
         if (!window.Notify.claimModalEscape(event, modal)) return;
@@ -1099,8 +1112,13 @@
             log.warn('Batch planning edit-tags action ignored: controller.editUnitTags unavailable.');
             return;
           }
-          await controller.editUnitTags(unitKey);
-          rerender();
+          pendingTagEdit = controller.editUnitTags(unitKey);
+          try {
+            await pendingTagEdit;
+          } finally {
+            pendingTagEdit = null;
+          }
+          if (!settled && !terminationRequested) rerender();
         }
       };
 
@@ -1178,6 +1196,7 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onTermination);
       body.addEventListener('click', onBodyClick);
       body.addEventListener('change', onBodyChange);
       body.addEventListener('input', onBodyInput);

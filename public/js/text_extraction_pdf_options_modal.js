@@ -267,6 +267,7 @@
         btnClose.removeEventListener('click', onCancel);
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onCancel);
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
       };
@@ -314,6 +315,7 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onCancel);
       activePromptTranslations = refreshModalTranslations;
 
       modal.setAttribute('aria-hidden', 'false');

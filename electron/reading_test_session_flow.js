@@ -352,6 +352,7 @@ function buildPrefilledPresetPayload(wpm, options = {}) {
 
 function beginPresetStep(wpm, options = {}) {
   const {
+    state,
     setStage,
     openPresetWindow,
     buildPrefilledPresetPayload,
@@ -360,6 +361,7 @@ function beginPresetStep(wpm, options = {}) {
     log,
   } = options;
 
+  const selectedEntry = state.selectedEntry;
   setStage('preset');
 
   let presetWin = null;
@@ -384,7 +386,7 @@ function beginPresetStep(wpm, options = {}) {
     } catch (error) {
       log.warn('Reading-test preset close listener detach failed (ignored):', error);
     }
-    clearSession();
+    if (state.active && state.selectedEntry === selectedEntry) clearSession();
   };
 
   presetWin.on('closed', onClosed);
@@ -430,6 +432,7 @@ async function finishRunningSession(options = {}) {
       elapsedMs: wpmInfo.elapsed,
       wordCount: wpmInfo.wordCount,
     });
+    if (!state.active || state.selectedEntry !== selectedEntry) return;
     if (!resultWindowInfo.ok) {
       emitNotice('renderer.reading_test.alerts.result_unavailable', { type: 'warn' });
     }
@@ -437,6 +440,7 @@ async function finishRunningSession(options = {}) {
     if (selectedEntry.hasValidQuestions) {
       setStage('questions');
       const questionsWindowInfo = await openQuestionsWindow(selectedEntry.questions);
+      if (!state.active || state.selectedEntry !== selectedEntry) return;
       if (!questionsWindowInfo.ok) {
         emitNotice('renderer.reading_test.alerts.questions_unavailable', { type: 'warn' });
       }
@@ -444,6 +448,7 @@ async function finishRunningSession(options = {}) {
 
     beginPresetStep(wpmInfo.wpm);
   } catch (error) {
+    if (!state.active || state.selectedEntry !== selectedEntry) return;
     log.error('Reading-test session finish failed:', error);
     options.resetAndCloseActiveSession(
       selectedEntry,

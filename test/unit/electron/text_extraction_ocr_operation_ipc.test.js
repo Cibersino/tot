@@ -13,7 +13,7 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
-function createHarness({ holdValidation = false, holdRevocation = false } = {}) {
+function createHarness({ holdValidation = false, holdRevocation = false, abortAware = false } = {}) {
   const mainWin = {};
   const oauth = deferred();
   const confirmation = deferred();
@@ -21,6 +21,7 @@ function createHarness({ holdValidation = false, holdRevocation = false } = {}) 
   const revocation = deferred();
   let writes = 0;
   let deletes = 0;
+  let activationLifecycle;
   const handlers = new Map();
   const operation = require('../../../electron/text_extraction_platform/ocr_google_drive_operation');
   const log = { debug() {}, info() {}, warn() {}, warnOnce() {}, error() {} };
@@ -38,7 +39,14 @@ function createHarness({ holdValidation = false, holdRevocation = false } = {}) 
       selectPreferredRevocationToken: () => ({ token: 'token', kind: 'refresh' }),
       buildGoogleTokenRevocationClient: () => ({ revokeToken: () => holdRevocation ? revocation.promise : Promise.resolve() }),
     },
-    './ocr_google_drive_secure_oauth': { authenticateGoogleLoopback: () => oauth.promise },
+    './ocr_google_drive_secure_oauth': { authenticateGoogleLoopback: ({ signal } = {}) => {
+      if (abortAware && signal) signal.addEventListener('abort', () => {
+        const error = new Error('OAuth cancelled');
+        error.code = 'oauth_cancelled';
+        oauth.reject(error);
+      }, { once: true });
+      return oauth.promise;
+    } },
     './ocr_google_drive_setup_validation': { validateGoogleDriveOcrSetup: () => holdValidation ? validation.promise : Promise.resolve({ ok: true }) },
     './ocr_google_drive_token_storage': { readEncryptedTokenFile: () => ({ refresh_token: 'token' }), writeEncryptedTokenFile() { writes += 1; }, deleteEncryptedTokenFile() { deletes += 1; } },
   };
@@ -49,11 +57,23 @@ function createHarness({ holdValidation = false, holdRevocation = false } = {}) 
     const load = (id) => Object.hasOwn(mocks, id) ? mocks[id] : require(id);
     const wrapper = vm.runInThisContext(`(function(require, module, exports) { ${fs.readFileSync(filename, 'utf8')}\n})`, { filename });
     wrapper(load, module, module.exports);
-    module.exports.registerIpc(ipcMain, { getWindows: () => ({ mainWin }), resolvePaths: () => ({ credentialsPath: 'credentials', tokenPath: 'token' }) });
+    const lifecycle = module.exports.registerIpc(ipcMain, { getWindows: () => ({ mainWin }), resolvePaths: () => ({ credentialsPath: 'credentials', tokenPath: 'token' }) });
+    if (name === 'text_extraction_ocr_activation_ipc') activationLifecycle = lifecycle;
   }
   const event = { sender: { window: mainWin } };
-  return { oauth, confirmation, validation, revocation, counts: () => ({ writes, deletes }), invoke: (channel) => handlers.get(channel)(event) };
+  return { oauth, confirmation, validation, revocation, activationLifecycle, counts: () => ({ writes, deletes }), invoke: (channel, payload) => handlers.get(channel)(event, payload) };
 }
+
+test('termination cancels an admitted recovery authorization and rejects later recovery launches', async () => {
+  const h = createHarness({ abortAware: true });
+  const pending = h.invoke('text-extraction-launch-ocr-activation', { source: 'text_extraction_recovery' });
+  h.activationLifecycle.admitTermination();
+  const outcome = await pending;
+  assert.equal(outcome.code, 'ocr_activation_cancelled');
+  assert.equal(h.counts().writes, 0);
+  assert.equal((await h.invoke('text-extraction-launch-ocr-activation', { source: 'text_extraction_recovery' })).code, 'ocr_activation_cancelled');
+  h.activationLifecycle.releaseTermination();
+});
 
 test('main handlers reject disconnect and a second launch while OAuth runs, then release on failure', async () => {
   const h = createHarness();

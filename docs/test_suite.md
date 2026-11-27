@@ -130,6 +130,8 @@ Current automated coverage maps back to this manual suite roughly as follows:
 * `test/smoke/main_startup_failure.test.js`
   * exercises Main startup admission, managed termination, first-run fallback persistence/continuation, and renderer-startup event authorization through an Electron-process probe with simulated windows, dialogs, and renderer IPC
   * supports parts of `SM-01`, `REG-FR-03`, `REG-PERSIST`, and `EDGE-03`
+* `test/unit/electron/application_termination.test.js` and `test/unit/electron/application_termination_renderer_bridge.test.js`
+  * exercise focused coordination and renderer communication contracts using simulated dependencies; native window behavior still requires manual verification (`REG-LIFECYCLE-01`)
 * `electron/text_extraction_platform/text_extraction_supported_formats.js`
   * supports parts of `SM-09`
   * supports parts of `SM-10`
@@ -1940,6 +1942,21 @@ nonconforming persisted data without migration or repair.
 - Invalid JSON/invalid pool candidates are rejected without crashing the flow.
 - Duplicate handling is explicit and keyed by destination filename in the runtime pool.
 - After import, the open modal recomputes the eligible count and available combinations immediately.
+
+---
+
+### REG-LIFECYCLE — Application termination and window behavior
+
+#### REG-LIFECYCLE-01 Close, Quit, and session preservation
+**Goal:** termination respects active work; visibility changes and auxiliary-window closure do not terminate the app.
+1. With a dirty Task Editor, request Main close and refuse disposal; verify the draft and app remain available. Repeat and discard; verify the app exits. Test explicit Quit separately where available.
+2. In separate sessions, request termination during extraction and during a pool-sourced Reading Test. Relaunch and check current text: a cancelled extraction must not apply; Reading Test clears pool text in `arming`/`running` and retains it in `result`/`questions`/`preset`.
+3. Close an auxiliary window while Main remains open. Start the stopwatch, minimize and restore Main, and check the session. On macOS also test Hide, Hide Others, and Dock reactivation; record actual window visibility and focus.
+
+**Expected:**
+- Main close and explicit Quit use the same orderly termination path; Task refusal prevents termination, while approval closes dependent windows and exits the process.
+- Auxiliary close, minimize, and native Hide do not terminate the application. A Reading Test window may still perform its normal feature-specific cancellation.
+- Record platform and actual native behavior; automated simulations do not verify window-manager routing or remote cleanup.
 
 ---
 

@@ -183,6 +183,7 @@ async function authenticateGoogleLoopback({
   credentialsJson,
   scopes,
   openExternal,
+  signal = null,
   httpModule = http,
   randomBytes = crypto.randomBytes,
   callbackTimeoutMs = DEFAULT_CALLBACK_TIMEOUT_MS,
@@ -216,11 +217,19 @@ async function authenticateGoogleLoopback({
   let codeVerifier = '';
   let server = null;
   let timeoutHandle = null;
+  let exchangeInFlight = false;
+  let cancellationRequested = false;
 
   return new Promise((resolve, reject) => {
+    const cancellationError = () => {
+      const error = new Error('Google OAuth activation cancelled.');
+      error.code = 'oauth_cancelled';
+      return error;
+    };
     const settle = (error, client) => {
       if (settled) return;
       settled = true;
+      if (signal) signal.removeEventListener('abort', onAbort);
       if (timeoutHandle) {
         clearTimeout(timeoutHandle);
         timeoutHandle = null;
@@ -232,6 +241,23 @@ async function authenticateGoogleLoopback({
       }
       resolve(client);
     };
+
+    const onAbort = () => {
+      cancellationRequested = true;
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+      closeServer(server);
+      // A token exchange already underway must settle before its owner returns.
+      if (!exchangeInFlight) settle(cancellationError());
+    };
+
+    if (signal && signal.aborted) {
+      settle(cancellationError());
+      return;
+    }
+    if (signal) signal.addEventListener('abort', onAbort, { once: true });
 
     server = httpModule.createServer(async (req, res) => {
       try {
@@ -272,15 +298,29 @@ async function authenticateGoogleLoopback({
           return;
         }
 
+        exchangeInFlight = true;
         const tokenResult = await oauthClient.getToken({
           code,
           redirect_uri: redirectUrl.toString(),
           codeVerifier,
         });
+        exchangeInFlight = false;
+        if (settled) return;
+        if (cancellationRequested) {
+          writeResponse(res, 200, DENIED_RESPONSE);
+          settle(cancellationError());
+          return;
+        }
         oauthClient.credentials = tokenResult && tokenResult.tokens ? tokenResult.tokens : {};
         writeResponse(res, 200, SUCCESS_RESPONSE);
         settle(null, oauthClient);
       } catch (error) {
+        exchangeInFlight = false;
+        if (cancellationRequested) {
+          writeResponse(res, 200, DENIED_RESPONSE);
+          settle(cancellationError());
+          return;
+        }
         writeResponse(res, 500, FAILURE_RESPONSE);
         settle(error);
       }
@@ -301,6 +341,10 @@ async function authenticateGoogleLoopback({
 
     server.listen(listenPort, listenHost, async () => {
       try {
+        if (settled) {
+          closeServer(server);
+          return;
+        }
         const address = server.address();
         if (!address || typeof address !== 'object' || !Number.isFinite(address.port)) {
           throw new Error('Google OAuth callback server did not expose a usable port.');
@@ -318,6 +362,7 @@ async function authenticateGoogleLoopback({
         }
 
         const verifier = await oauthClient.generateCodeVerifierAsync();
+        if (settled) return;
         codeVerifier = String(verifier && verifier.codeVerifier ? verifier.codeVerifier : '').trim();
         const codeChallenge = String(verifier && verifier.codeChallenge ? verifier.codeChallenge : '').trim();
         expectedState = createCsrfState(randomBytes);

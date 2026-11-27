@@ -242,6 +242,7 @@ function createHarness({
   });
 
   const windowListeners = new Map();
+  let terminationAttempt = false;
   const documentListeners = new Map();
   const translations = {
     'renderer.snapshots.title': 'Save text snapshot',
@@ -307,6 +308,7 @@ function createHarness({
 
   const sandbox = {
     window: {
+      TextExtractionEntry: { isTerminationAttempt: () => terminationAttempt },
       Notify: {
         activateModalFocus(modal, { initialFocus }) {
           modalOpeners.set(modal, activeElementRef);
@@ -549,8 +551,22 @@ function createHarness({
     findInManagerByText,
     findInManagerByClassName,
     dispatchWindowEvent,
+    setTerminationAttempt(value) { terminationAttempt = value; },
   };
 }
+
+test('an extraction tag prompt loading at termination stays cancelled after Task refusal', async () => {
+  let resolvePreferences;
+  const preferences = new Promise((resolve) => { resolvePreferences = resolve; });
+  const harness = createHarness({ getSnapshotTagPreferencesImpl: () => preferences });
+  const prompt = harness.promptTags({ cancelOnExtractionTermination: true });
+  harness.setTerminationAttempt(true);
+  harness.dispatchWindowEvent('text-extraction-termination-attempt');
+  harness.setTerminationAttempt(false);
+  resolvePreferences({ ok: true, snapshotTags: snapshotTagCatalog.createEmptySnapshotTagPreferences() });
+  assert.equal(await prompt, null);
+  assert.notEqual(harness.elements.snapshotSaveTagsModal.getAttribute('aria-hidden'), 'false');
+});
 
 test('snapshot save tags modal registers public prompts through window.Notify.registerCustomPrompt', () => {
   const harness = createHarness();

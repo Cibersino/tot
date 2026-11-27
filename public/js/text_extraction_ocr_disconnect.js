@@ -25,10 +25,12 @@
   function configure({
     getOptionalElectronMethod = null,
     ocrConnectionFlow = null,
+    isTerminationAttempt = () => false,
   } = {}) {
     deps = {
       getOptionalElectronMethod,
       ocrConnectionFlow,
+      isTerminationAttempt,
     };
   }
 
@@ -61,12 +63,12 @@
     const ocrConnectionFlow = deps && deps.ocrConnectionFlow;
     if (!ocrConnectionFlow || typeof ocrConnectionFlow.runDisconnectFlow !== 'function') {
       log.error('OCR connection flow unavailable; disconnect action blocked.');
-      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.disconnect_failed');
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.disconnect_failed');
       return;
     }
     const result = await ocrConnectionFlow.runDisconnectFlow(disconnect);
     if (result && result.code === 'ocr_operation_in_progress') {
-      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.operation_in_progress');
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.operation_in_progress');
     }
   }
 
@@ -78,12 +80,12 @@
       disconnectTextExtractionOcr = getDisconnectMethod();
     } catch (error) {
       log.error('Error resolving disconnectTextExtractionOcr bridge:', error);
-      window.Notify.notifyMain(failureAlertKey);
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain(failureAlertKey);
       return;
     }
 
     if (!disconnectTextExtractionOcr) {
-      window.Notify.notifyMain(failureAlertKey);
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain(failureAlertKey);
       return;
     }
 
@@ -95,13 +97,13 @@
       });
     } catch (error) {
       log.error('Error invoking disconnectTextExtractionOcr:', error);
-      window.Notify.notifyMain(failureAlertKey);
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain(failureAlertKey);
       return;
     }
 
     if (!result || typeof result !== 'object') {
       log.error('disconnectTextExtractionOcr returned invalid result:', result);
-      window.Notify.notifyMain(failureAlertKey);
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain(failureAlertKey);
       return;
     }
 
@@ -118,7 +120,7 @@
       log.warn('disconnectTextExtractionOcr returned invalid alertKey; using fallback alert key:', result);
     }
 
-    window.Notify.notifyMain(alertKey || (result.ok === true
+    if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain(alertKey || (result.ok === true
       ? 'renderer.text_extraction.alerts.ocr.disconnect_success'
       : failureAlertKey));
   }

@@ -420,6 +420,19 @@ Estados de revisión recomendados:
         "es": "Aceptar",
         "en": "OK"
       },
+      "termination_failure_title": {
+        "es": "No se pudo cerrar toT",
+        "en": "Could not close toT"
+        // [PROPÓSITO] Título del diálogo nativo cuando falla la coordinación de cierre de la aplicación; no corresponde a una negativa del usuario a cerrar el Editor de Tareas.
+        // [PROTEGIDO] `toT`
+      },
+      "termination_failure_message": {
+        "es": "toT no pudo terminar de cerrarse. Revisa tu trabajo e inténtalo de nuevo. El Editor de tareas que autorizaste cerrar puede haberse cerrado ya.",
+        "en": "toT could not finish closing. Please check your work and try again. A Task Editor you approved closing may already have closed."
+        // [PROPÓSITO] Aviso de que la aplicación no terminó de cerrarse y se puede revisar el trabajo antes de reintentar. El Editor de Tareas solo puede haber cerrado ya si se autorizó su cierre; no afirmar que haya cerrado ni que se hayan guardado o perdido cambios.
+        // [CONCEPTO_APP] Editor de Tareas
+        // [PROTEGIDO] `toT`
+      },
       "continue_button": {
         "es": "Sí, continuar",
         "en": "Yes, continue"
@@ -3027,6 +3040,10 @@ Estados de revisión recomendados:
             "es": "Sueco",
             "en": "Swedish"
           },
+          "sw": {
+            "es": "Suajili",
+            "en": "Swahili"
+          },
           "tr": {
             "es": "Turco",
             "en": "Turkish"
@@ -3753,7 +3770,7 @@ Estados de revisión recomendados:
         },
         "intro": {
           "es": "Este test sirve para estimar tu velocidad real de lectura con una sesión guiada. La app abrirá el texto y esperará a que pulses Play (▶) en el Cronómetro Flotante cuando estés listo para empezar. Una vez que el test haya empezado, no pulses Pausa (⏸) hasta terminar de leer: Pausa termina el test; no pone el cronómetro en pausa. Usa Detener/Restablecer (⏹) solo si quieres cancelar el test. Después podrás revisar preguntas de comprensión si el texto las incluye y, al final, crear un preset con el resultado.\nAntes de empezar, ten en cuenta que estos textos de prueba suelen requerir entre 5 y 15 minutos de concentración continua, sin interrupciones.\nEste pool usa textos breves, así que interpreta el resultado con cautela. No debería extrapolarse directamente a textos largos, donde suelen entrar en juego factores positivos, como la adquisición de fluidez y de contexto, y factores negativos, como la recapitulación mental y la fatiga.",
-          "en": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play."
+          "en": "This test is meant to estimate your real reading speed through a guided session. The app will open the text and wait for you to press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the stopwatch. Use Stop/Reset (⏹) only if you want to cancel the test. Afterwards, you may review comprehension questions if the text includes them and, at the end, create a preset from the result.\nBefore you begin, keep in mind that these test texts usually require between 5 and 15 minutes of uninterrupted concentration.\nThis pool uses short texts, so treat the result with caution. It should not be directly extrapolated to long texts, where positive factors such as flow and contextual buildup, and negative factors such as mental recapitulation and fatigue, usually come into play."
           // [PROPÓSITO] Introducción completa del flujo guiado; explica inicio con Cronómetro Flotante, preguntas opcionales y creación posterior de preset.
           // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro Flotante; pool del test; preset de velocidad de lectura; Editor de Texto
           // [PROTEGIDO] `▶`; `⏸`; `⏹`
@@ -3872,7 +3889,7 @@ Estados de revisión recomendados:
       "prestart": {
         "reminder": {
           "es": "Pulsa Play (▶) en el Cronómetro Flotante cuando estés listo para empezar. Una vez que el test haya empezado, no pulses Pausa (⏸) hasta terminar de leer: Pausa termina el test; no pone el cronómetro en pausa. Pulsa Detener/Restablecer (⏹) solo para cancelar el test.",
-          "en": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the timer. Press Stop/Reset (⏹) only if you want to cancel the test."
+          "en": "Press Play (▶) in the Floating Stopwatch when you're ready to begin. Once the test has started, do not press Pause (⏸) until you finish reading: Pause ends the test; it does not pause the stopwatch. Press Stop/Reset (⏹) only if you want to cancel the test."
           // [PROPÓSITO] Instrucción previa al test: el usuario debe iniciar la medición con Play en el Cronómetro Flotante; Pausa termina el test.
           // [CONCEPTO_APP] Test de velocidad de lectura; Cronómetro Flotante
           // [PROTEGIDO] `▶`; `⏸`; `⏹`

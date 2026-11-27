@@ -139,6 +139,7 @@
         backdrop.removeEventListener('click', onCancel);
         privacyLink.removeEventListener('click', onPrivacyClick);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onCancel);
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
       };
@@ -171,6 +172,7 @@
       backdrop.addEventListener('click', onCancel);
       privacyLink.addEventListener('click', onPrivacyClick);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onCancel);
       activePromptTranslations = () => {
         applyModalDirection();
         applyModalCopy();

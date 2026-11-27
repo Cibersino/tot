@@ -194,6 +194,7 @@
 
     return await new Promise((resolve) => {
       let settled = false;
+      let dismissedForTermination = false;
 
       const cleanup = () => {
         activePromptTranslations = null;
@@ -207,6 +208,7 @@
         repeatInput.removeEventListener('blur', onRepeatBlur);
         repeatInput.removeEventListener('keydown', onRepeatKeyDown);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onTermination);
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
       };
@@ -234,6 +236,10 @@
         finish(resolveChoice('append'));
       };
       const onCancel = () => finish(null);
+      const onTermination = () => {
+        dismissedForTermination = true;
+        onCancel();
+      };
       const onRepeatInput = () => {
         updateRepeatInvalidState(repeatInput.value, safeMaxRepeat);
       };
@@ -255,7 +261,7 @@
           await onRevealGeneratedPdf();
         } catch (error) {
           log.error('Reveal saved generated PDF failed:', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
+          if (!dismissedForTermination || !window.TextExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         } finally {
           revealPending = false;
           btnRevealSavedPdf.disabled = false;
@@ -277,6 +283,7 @@
       repeatInput.addEventListener('blur', onRepeatBlur);
       repeatInput.addEventListener('keydown', onRepeatKeyDown);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onTermination);
       activePromptTranslations = renderModalCopy;
 
       modal.setAttribute('aria-hidden', 'false');
