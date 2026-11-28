@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "Không thể đóng toT",
+      "termination_failure_message": "toT không thể hoàn tất quá trình đóng. Hãy kiểm tra công việc của bạn rồi thử lại. Trình soạn thảo tác vụ mà bạn đã đồng ý đóng có thể đã được đóng.",
       "continue_button": "Có, tiếp tục",
       "cancel_button": "Không, hủy",
       "all_files": "Tất cả tệp",

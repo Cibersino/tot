@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Tamam",
+      "termination_failure_title": "toT kapatılamadı",
+      "termination_failure_message": "toT kapanma işlemini tamamlayamadı. Çalışmanızı kontrol edip tekrar deneyin. Kapatılmasını onayladığınız Görev Düzenleyici zaten kapanmış olabilir.",
       "continue_button": "Evet, devam et",
       "cancel_button": "Hayır, iptal et",
       "all_files": "Tüm dosyalar",

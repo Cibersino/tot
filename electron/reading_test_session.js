@@ -62,6 +62,7 @@ function createController(options = {}) {
     getCurrentText,
     applyCurrentText,
     openPresetWindow,
+    isTerminationAdmitted = () => false,
   } = options;
 
   const requiredOptionFns = [
@@ -304,6 +305,9 @@ function createController(options = {}) {
   // Availability / selection helpers
   function checkEntryAvailability() {
     try {
+      if (isTerminationAdmitted()) {
+        return buildBlockedResult('renderer.reading_test.alerts.precondition_blocked', 'TERMINATION_ACTIVE');
+      }
       if (state.active) {
         return buildBlockedResult('renderer.reading_test.alerts.precondition_blocked', 'SESSION_ACTIVE');
       }
@@ -467,6 +471,7 @@ function createController(options = {}) {
 
   function beginPresetStep(wpm) {
     return readingTestSessionFlow.beginPresetStep(wpm, {
+      state,
       setStage,
       openPresetWindow,
       buildPrefilledPresetPayload,
@@ -545,6 +550,31 @@ function createController(options = {}) {
       resetAndCloseActiveSession,
       emitNotice,
     });
+  }
+
+  // Invalidate the session before closing windows: their close callbacks and
+  // pending result/question continuations must not advance the old session.
+  function terminateForApplication() {
+    if (!state.active) return;
+    const { stage, selectedEntry } = state;
+    const modalWindows = Object.values(readingTestModalWindows);
+    clearSession();
+
+    if (stage === 'arming' || stage === 'running') {
+      tryResetCrono('Reading-test termination crono reset failed (ignored):');
+      closeReadingWindows();
+      clearSessionTextIfNeeded(selectedEntry);
+      runtimeFlags.suppressUnexpectedEditorClose = false;
+      runtimeFlags.suppressUnexpectedFlotanteClose = false;
+    }
+    for (const win of modalWindows) {
+      if (!isAliveWindow(win)) continue;
+      try {
+        win.close();
+      } catch (error) {
+        log.warn('Reading-test termination window close failed:', error);
+      }
+    }
   }
 
   function startPoolSession(selection) {
@@ -698,6 +728,7 @@ function createController(options = {}) {
     handleFlotanteCommand,
     handleEditorClosed,
     handleFlotanteClosed,
+    terminateForApplication,
     registerIpc,
   };
 }

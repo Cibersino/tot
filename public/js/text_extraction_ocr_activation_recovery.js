@@ -26,9 +26,11 @@
 
   function configure({
     ocrConnectionFlow = null,
+    isTerminationAttempt = () => false,
   } = {}) {
     deps = {
       ocrConnectionFlow,
+      isTerminationAttempt,
     };
   }
 
@@ -160,6 +162,7 @@
     const activationResult = await activationFlow.startActivationFlow({
       source: 'text_extraction_recovery',
     });
+    if (requireConfiguredDeps().isTerminationAttempt()) return { preparation, handled: true };
     if (!activationResult || activationResult.ok !== true) {
       if (activationResult
         && activationResult.state === 'unavailable'

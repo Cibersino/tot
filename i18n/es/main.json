@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Aceptar",
+      "termination_failure_title": "No se pudo cerrar toT",
+      "termination_failure_message": "toT no pudo terminar de cerrarse. Revisa tu trabajo e inténtalo de nuevo. El Editor de tareas que autorizaste cerrar puede haberse cerrado ya.",
       "continue_button": "Sí, continuar",
       "cancel_button": "No, cancelar",
       "all_files": "Todos los archivos",

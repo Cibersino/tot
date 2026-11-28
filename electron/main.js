@@ -62,6 +62,8 @@ const editorWindowLifecycle = require('./editor_window_lifecycle');
 const editorFindMain = require('./editor_find_main');
 const taskEditorState = require('./task_editor_state');
 const taskEditorWindowLifecycle = require('./task_editor_window_lifecycle');
+const applicationTermination = require('./application_termination');
+const applicationTerminationRendererBridge = require('./application_termination_renderer_bridge');
 
 // Feature IPC owners and services
 const presetsMain = require('./presets_main');
@@ -163,6 +165,7 @@ function isMainInteractive() {
 
 function isMainMenuInteractive() {
   return isMainInteractive()
+    && !terminationInteractionHeld
     && !textExtractionProcessingModeController.isActive()
     && !currentTextProcessingStateController.isActive()
     && !(readingTestSessionController && readingTestSessionController.isInteractionLocked());
@@ -170,6 +173,7 @@ function isMainMenuInteractive() {
 
 function getMainInteractionBlockReason() {
   if (!isMainInteractive()) return 'pre_ready';
+  if (terminationInteractionHeld) return 'termination';
   if (textExtractionProcessingModeController.isActive()) return 'processing_mode';
   if (currentTextProcessingStateController.isActive()) return 'current_text_pending';
   if (readingTestSessionController && readingTestSessionController.isInteractionLocked()) {
@@ -191,6 +195,11 @@ function guardMainUserAction(actionId, message, { allowDuringProcessing = false,
       bootstrapMessage,
       actionId
     );
+    return false;
+  }
+
+  if (terminationInteractionHeld) {
+    log.warnOnce(`main.termination.${actionId}`, 'Main action ignored during application termination:', actionId);
     return false;
   }
 
@@ -417,11 +426,10 @@ let flotanteWin = null; // Floating Stopwatch (flotante.html)
 let taskEditorWin = null; // Task Editor window (task_editor.html)
 let textTimeCalculatorWin = null; // Quick text/time calculator window
 let initialStartupMainWin = null;
-let pendingMainWindowCloseAfterProcessingAbort = false;
-let pendingMainWindowCloseAfterTaskResolution = false;
 let currentTextProcessingStateMainBridge = null;
-let pendingMainWindowCloseAfterCurrentTextProcessing = false;
 let readingTestSessionController = null;
+let terminationInteractionHeld = false;
+let ocrActivationLifecycle = null;
 
 // =============================================================================
 // Startup readiness gates + handshake state
@@ -444,8 +452,7 @@ let startupTerminalFailure = false;
 // =============================================================================
 // main.js owns only the cross-window coordination for processing mode:
 // - broadcast state changes to the main renderer,
-// - block main-window interaction while processing is active,
-// - complete a deferred main-window close after an abort finishes.
+// - block main-window interaction while processing is active.
 // Domain IPC and feature logic stay in the delegated text_extraction_platform modules.
 const textExtractionProcessingModeController = textExtractionProcessingModeIpc.createController({
   onStateChanged: (state) => {
@@ -456,20 +463,6 @@ const textExtractionProcessingModeController = textExtractionProcessingModeIpc.c
       } else {
         log.warn('text-extraction-processing-mode-changed broadcast skipped (ignored): main window unavailable.');
       }
-      if (state && state.active === false && pendingMainWindowCloseAfterProcessingAbort) {
-        pendingMainWindowCloseAfterProcessingAbort = false;
-        if (targetWin && !targetWin.isDestroyed()) {
-          setTimeout(() => {
-            try {
-              if (targetWin && !targetWin.isDestroyed()) {
-                targetWin.close();
-              }
-            } catch (error) {
-              log.warn('Failed to close main window after processing cancellation (ignored):', error);
-            }
-          }, 0);
-        }
-      }
     } catch (error) {
       log.warn('Failed to broadcast processing-mode state (ignored):', error);
     }
@@ -479,21 +472,6 @@ const textExtractionProcessingModeController = textExtractionProcessingModeIpc.c
 const currentTextProcessingStateController = currentTextProcessingStateIpc.createController({
   onStateChanged: (state) => {
     currentTextProcessingStateMainBridge.handleStateChanged(state);
-    if (state && state.active === false && pendingMainWindowCloseAfterCurrentTextProcessing) {
-      pendingMainWindowCloseAfterCurrentTextProcessing = false;
-      const targetWin = resolveMainWindow();
-      if (targetWin && !targetWin.isDestroyed()) {
-        setTimeout(() => {
-          try {
-            if (targetWin && !targetWin.isDestroyed()) {
-              targetWin.close();
-            }
-          } catch (error) {
-            log.warn('Failed to close main window after current-text processing settled (ignored):', error);
-          }
-        }, 0);
-      }
-    }
   },
 });
 currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBridge({
@@ -501,6 +479,53 @@ currentTextProcessingStateMainBridge = currentTextProcessingMainBridge.createBri
   hasLiveWebContents,
   log,
 });
+
+const terminationRendererBridge = applicationTerminationRendererBridge.createBridge({ ipcMain, resolveMainWindow });
+const terminationController = applicationTermination.createController({
+  isReady: () => isMainInteractive() && !isSmokeTest && !startupTerminalFailure,
+  getMainWindow: resolveMainWindow,
+  getTaskWindow: () => taskEditorWin,
+  requestTaskClose: (owner) => taskEditorWindowLifecycleController.requestNativeClose(owner),
+  extractionCommand: (command) => terminationRendererBridge.send(command),
+  abortExtraction: () => (textExtractionProcessingModeController.isActive()
+    ? textExtractionProcessingModeController.requestAbort({ source: 'application', reason: 'termination' })
+    : null),
+  terminateReadingTest: () => {
+    if (readingTestSessionController) readingTestSessionController.terminateForApplication();
+  },
+  getDependentWindows: () => {
+    const windows = getSettingsBroadcastWindows();
+    return [windows.editorFindWin, windows.editorWin, windows.flotanteWin,
+      windows.readingTestQuestionsWin, windows.readingTestResultWin, windows.presetWin,
+      windows.langWin, windows.textTimeCalculatorWin, windows.taskEditorWin];
+  },
+  closeDependentWindow: (win) => {
+    if (win === editorFindMain.getFindWindow()) editorFindMain.closeFindWindow();
+    else win.close();
+  },
+  setInteractionHeld: (held) => {
+    terminationInteractionHeld = held;
+    if (ocrActivationLifecycle) {
+      if (held) ocrActivationLifecycle.admitTermination();
+      else ocrActivationLifecycle.releaseTermination();
+    }
+  },
+  quit: () => app.quit(),
+  reportFailure: () => {
+    try {
+      const texts = menuBuilder.getDialogTexts(getSelectedLanguage());
+      const title = menuBuilder.resolveDialogText(texts, 'termination_failure_title', { log });
+      const message = menuBuilder.resolveDialogText(texts, 'termination_failure_message', { log });
+      const ok = menuBuilder.resolveDialogText(texts, 'ok', { log });
+      void dialog.showMessageBox(resolveMainWindow(), { type: 'error', title, message, buttons: [ok] })
+        .catch((error) => log.error('Application termination failure disclosure failed:', error));
+    } catch (error) {
+      log.error('Application termination failure disclosure could not be opened:', error);
+    }
+  },
+  log,
+});
+app.on('before-quit', (event) => terminationController.handleEvent(event));
 
 // =============================================================================
 // Language, menu, and development utilities
@@ -937,82 +962,15 @@ function createMainWindow() {
   mainWindowCreated = true;
   maybeMarkMainInvariantsReady();
 
-  // Best-effort shutdown: when the main window closes, try to close auxiliary windows too.
-  mainWin.on('close', (event) => {
-    try {
-      if (isAliveWindow(taskEditorWin) && !taskEditorWindowLifecycleController.isForceCloseAuthorized()) {
-        if (event && typeof event.preventDefault === 'function') {
-          event.preventDefault();
-        }
-        if (pendingMainWindowCloseAfterTaskResolution) return;
-        pendingMainWindowCloseAfterTaskResolution = true;
-        void taskEditorWindowLifecycleController.requestNativeClose(mainWin).then((authorized) => {
-          pendingMainWindowCloseAfterTaskResolution = false;
-          if (authorized && isAliveWindow(mainWin)) {
-            mainWin.close();
-          }
-        }).catch((error) => {
-          pendingMainWindowCloseAfterTaskResolution = false;
-          log.error('Task Editor close resolution failed during main window close:', error);
-        });
-        return;
-      }
-
-      if (textExtractionProcessingModeController.isActive()) {
-        if (event && typeof event.preventDefault === 'function') {
-          event.preventDefault();
-        }
-        pendingMainWindowCloseAfterProcessingAbort = true;
-        const abortResult = textExtractionProcessingModeController.requestAbort({
-          source: 'main_window',
-          reason: 'close_during_processing',
-        });
-        if (!abortResult || abortResult.ok !== true) {
-          pendingMainWindowCloseAfterProcessingAbort = false;
-          log.warn('Main window close during processing could not request cancellation:', abortResult);
-        }
-        return;
-      }
-
-      if (currentTextProcessingStateController.isActive()) {
-        if (event && typeof event.preventDefault === 'function') {
-          event.preventDefault();
-        }
-        pendingMainWindowCloseAfterCurrentTextProcessing = true;
-        return;
-      }
-
-      if (isAliveWindow(editorWin)) {
-        try {
-          editorWin.close();
-        } catch (error) {
-          log.error('Error closing editorWin from mainWin.close:', error);
-        }
-      }
-
-      try {
-        editorFindMain.closeFindWindow();
-      } catch (error) {
-        log.error('Error closing editorFindWin from mainWin.close:', error);
-      }
-
-      if (isAliveWindow(presetWin)) {
-        try {
-          presetWin.close();
-        } catch (error) {
-          log.error('Error closing presetWin from mainWin.close:', error);
-        }
-      }
-
-    } catch (error) {
-      log.error('Error in mainWin.close handler:', error);
-    }
-  });
+  // Main close and explicit Quit share the same interactive termination attempt.
+  mainWin.on('close', (event) => terminationController.handleEvent(event));
 
   // Release reference and quit the app once the main window is gone.
   mainWin.on('closed', () => {
     mainWin = null;
     mainWindowCreated = false;
+
+    if (terminationController.isHandedOff()) return;
 
     // Force an orderly application exit. (If something goes wrong here, we still want to see it as an error.)
     try {
@@ -2853,6 +2811,7 @@ app.whenReady().then(() => {
         taskEditorWin,
       }),
       ensureTaskEditorWindow: () => {
+        if (terminationInteractionHeld) return;
         if (!isAliveWindow(taskEditorWin)) {
           createTaskEditorWindow();
         } else {
@@ -2875,6 +2834,7 @@ app.whenReady().then(() => {
         mainWin,
       }),
       controller: textExtractionProcessingModeController,
+      isTerminationAdmitted: () => terminationInteractionHeld,
     });
 
     startupRegistrationOperation = 'text-extraction file-picker IPC registration';
@@ -2893,7 +2853,7 @@ app.whenReady().then(() => {
     });
 
     startupRegistrationOperation = 'text-extraction OCR activation IPC registration';
-    textExtractionOcrActivationIpc.registerIpc(ipcMain, {
+    ocrActivationLifecycle = textExtractionOcrActivationIpc.registerIpc(ipcMain, {
       getWindows: () => ({
         mainWin,
       }),
@@ -2930,6 +2890,7 @@ app.whenReady().then(() => {
       }),
       resolvePaths: () => resolveTextExtractionRuntimePaths(),
       controller: textExtractionProcessingModeController,
+      isTerminationAdmitted: () => terminationInteractionHeld,
     });
 
     startupRegistrationOperation = 'text-extraction generated-PDF reveal IPC registration';
@@ -2958,6 +2919,7 @@ app.whenReady().then(() => {
       getCurrentText: () => textState.getCurrentText(),
       applyCurrentText: (text, meta) => textState.applyCurrentText(text, meta),
       openPresetWindow: (initialData) => createPresetWindow(initialData),
+      isTerminationAdmitted: () => terminationInteractionHeld,
     });
 
     startupRegistrationOperation = 'Reading Test session IPC registration';

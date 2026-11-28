@@ -264,7 +264,12 @@
   // =============================================================================
   // Snapshot-tag preference bridge
   // =============================================================================
-  async function loadSnapshotTagPreferences(initialPreferences = null) {
+  function suppressExtractionCommunication(options) {
+    return options && options.cancelOnExtractionTermination === true
+      && window.TextExtractionEntry.isTerminationAttempt();
+  }
+
+  async function loadSnapshotTagPreferences(initialPreferences = null, options = {}) {
     if (snapshotTagCatalog.isPlainObject(initialPreferences)) {
       return snapshotTagCatalog.normalizeSnapshotTagPreferences(initialPreferences);
     }
@@ -273,7 +278,7 @@
       log.warn(
         'Snapshot-tag preference bridge unavailable; snapshot-tag prompt cancelled.'
       );
-      window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
+      if (!suppressExtractionCommunication(options)) window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
       return null;
     }
 
@@ -287,16 +292,16 @@
       log.error('Snapshot-tag preferences load failed; snapshot-tag prompt cancelled:', error);
     }
 
-    window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
+    if (!suppressExtractionCommunication(options)) window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
     return null;
   }
 
-  async function persistSnapshotTagPreferences(nextPreferences) {
+  async function persistSnapshotTagPreferences(nextPreferences, options = {}) {
     if (!setSnapshotTagPreferences) {
       log.warn(
         'Snapshot-tag preference bridge unavailable; cannot persist snapshot-tag preferences.'
       );
-      window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
+      if (!suppressExtractionCommunication(options)) window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
       return null;
     }
 
@@ -310,7 +315,7 @@
       log.error('Snapshot-tag preferences save failed:', error);
     }
 
-    window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
+    if (!suppressExtractionCommunication(options)) window.Notify.notifyMain(MANAGER_UNAVAILABLE_ALERT_KEY);
     return null;
   }
 
@@ -443,7 +448,7 @@
           return;
         }
 
-        const persistedPreferences = await persistSnapshotTagPreferences(createInfo.preferences);
+        const persistedPreferences = await persistSnapshotTagPreferences(createInfo.preferences, promptState.options);
         if (!persistedPreferences) {
           recordDeferredConfirmSaveFailure(promptState);
           return;
@@ -733,8 +738,19 @@
       throw new Error('Snapshot tag manager DOM elements missing.');
     }
 
-    let managerPreferences = await loadSnapshotTagPreferences(options.initialPreferences || null);
+    let cancelledDuringLoad = false;
+    const cancelDuringLoad = () => { cancelledDuringLoad = true; };
+    if (options.cancelOnExtractionTermination === true) {
+      window.addEventListener('text-extraction-termination-attempt', cancelDuringLoad);
+    }
+    let managerPreferences;
+    try {
+      managerPreferences = await loadSnapshotTagPreferences(options.initialPreferences || null, options);
+    } finally {
+      window.removeEventListener('text-extraction-termination-attempt', cancelDuringLoad);
+    }
     if (!managerPreferences) return null;
+    if (cancelledDuringLoad || suppressExtractionCommunication(options)) return null;
     const draftStateByCategory = new Map();
     for (const category of snapshotTagCatalog.TAG_KEYS) {
       draftStateByCategory.set(category, {
@@ -807,7 +823,7 @@
       }
 
       async function commitManagerPreferences(nextPreferences) {
-        const persistedPreferences = await persistSnapshotTagPreferences(nextPreferences);
+        const persistedPreferences = await persistSnapshotTagPreferences(nextPreferences, options);
         if (!persistedPreferences) return false;
         managerPreferences = persistedPreferences;
         return true;
@@ -1097,6 +1113,7 @@
         managerCloseButton.removeEventListener('click', onCancel);
         managerBackdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onTermination);
         managerModal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(managerModal);
       }
@@ -1116,6 +1133,10 @@
         finish(managerPreferences);
       }
 
+      function onTermination() {
+        if (options.cancelOnExtractionTermination === true) onCancel();
+      }
+
       function onWindowKeyDown(event) {
         if (!isManagerModalOpen()) return;
         if (!window.Notify.claimModalEscape(event, managerModal)) return;
@@ -1126,6 +1147,7 @@
       managerCloseButton.addEventListener('click', onCancel);
       managerBackdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onTermination);
 
       renderManagerContent();
       activePromptTranslationRefreshers.add(refreshManagerTranslations);
@@ -1149,8 +1171,18 @@
     ensureMetricChoiceEventsBound();
     populateCopy(options.copy);
     setSnapshotSaveFieldVisibility(includeSaveFields);
-    currentSnapshotTagPreferences = await loadSnapshotTagPreferences();
+    let cancelledDuringLoad = false;
+    const cancelDuringLoad = () => { cancelledDuringLoad = true; };
+    if (options.cancelOnExtractionTermination === true) {
+      window.addEventListener('text-extraction-termination-attempt', cancelDuringLoad);
+    }
+    try {
+      currentSnapshotTagPreferences = await loadSnapshotTagPreferences(null, options);
+    } finally {
+      window.removeEventListener('text-extraction-termination-attempt', cancelDuringLoad);
+    }
     if (!currentSnapshotTagPreferences) return null;
+    if (cancelledDuringLoad || suppressExtractionCommunication(options)) return null;
     resetFields(options.initialTags);
     resetMetricChoices();
     resetSnapshotSaveFields();
@@ -1158,6 +1190,7 @@
     return await new Promise((resolve) => {
       let settled = false;
       const promptState = {
+        options,
         catalogSaveChain: Promise.resolve(),
         deferredAction: '',
         deferredConfirmSaveFailed: false,
@@ -1177,6 +1210,7 @@
         btnClose.removeEventListener('click', onCancel);
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onTermination);
         closeAllFields();
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
@@ -1216,8 +1250,9 @@
         const currentTags = collectTags();
         const nextPreferences = await promptSnapshotTagManager({
           initialPreferences: currentSnapshotTagPreferences,
+          cancelOnExtractionTermination: options.cancelOnExtractionTermination === true,
         });
-        if (!nextPreferences) return;
+        if (settled || !nextPreferences) return;
         currentSnapshotTagPreferences = snapshotTagCatalog.normalizeSnapshotTagPreferences(nextPreferences);
         resetFields(currentTags);
       }
@@ -1264,6 +1299,10 @@
         requestAction('cancel');
       }
 
+      function onTermination() {
+        if (options.cancelOnExtractionTermination === true) onCancel();
+      }
+
       function onManageClick() {
         requestAction('manage');
       }
@@ -1289,6 +1328,7 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onTermination);
       activePromptTranslationRefreshers.add(refreshSnapshotTranslations);
 
       modal.setAttribute('aria-hidden', 'false');

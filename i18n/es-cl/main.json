@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Ya era",
+      "termination_failure_title": "No se pudo cerrar toT",
+      "termination_failure_message": "toT no pudo terminar de cerrarse. Lorea tu pega y prueba de nuevo. Puede que el Editor de Tareas que diste permiso pa’ cerrar ya se haya cerrado.",
       "continue_button": "Voh dale",
       "cancel_button": "No, sorri hno",
       "all_files": "Toos los archivos",

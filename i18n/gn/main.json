@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Moneĩ",
+      "termination_failure_title": "Ndaikatúi oñemboty toT",
+      "termination_failure_message": "toT ndaikatúi omohu’ã iñemboty. Ehecha ne rembiapo ha eha’ã jey. Ikatu oñembotyma pe Tembiapo myatyrõha remoneĩva’ekue oñemboty hag̃ua.",
       "continue_button": "Hẽe, esegi",
       "cancel_button": "Nahániri, eheja",
       "all_files": "Opaite marandurenda",

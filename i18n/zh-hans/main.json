@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "确定",
+      "termination_failure_title": "无法关闭 toT",
+      "termination_failure_message": "toT 未能完成关闭操作。请检查你的工作并重试。你已同意关闭的任务编辑器可能已经关闭。",
       "continue_button": "是，继续",
       "cancel_button": "否，取消",
       "all_files": "所有文件",

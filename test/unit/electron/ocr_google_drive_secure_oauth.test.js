@@ -213,3 +213,93 @@ test('authenticateGoogleLoopback times out cleanly when no callback arrives', as
   });
 });
 
+test('cancelling a pending authorization closes its loopback server', async () => {
+  const controller = new AbortController();
+  let server;
+  let opened;
+  const browserOpened = new Promise((resolve) => { opened = resolve; });
+  const result = authenticateGoogleLoopback({
+    credentialsJson: buildCredentials(['http://localhost/oauth2callback']),
+    scopes: ['scope.one'],
+    signal: controller.signal,
+    httpModule: { createServer(handler) { server = http.createServer(handler); return server; } },
+    createOAuthClient: () => ({
+      async generateCodeVerifierAsync() { return { codeVerifier: 'verifier', codeChallenge: 'challenge' }; },
+      generateAuthUrl() { return 'https://example.test/auth'; },
+      async getToken() { throw new Error('unexpected token exchange'); },
+    }),
+    openExternal: () => { opened(); },
+  });
+  const rejection = assert.rejects(result, (error) => error.code === 'oauth_cancelled');
+  await browserOpened;
+  const closed = new Promise((resolve) => server.once('close', resolve));
+  controller.abort();
+  await rejection;
+  await closed;
+  assert.equal(server.listening, false);
+});
+
+test('cancellation before the loopback listener becomes ready never opens the browser', async () => {
+  const { EventEmitter } = require('node:events');
+  const controller = new AbortController();
+  const server = new EventEmitter();
+  let onListening;
+  let closeCount = 0;
+  let browserOpened = false;
+  server.listen = (_port, _host, callback) => { onListening = callback; };
+  server.close = () => { closeCount += 1; };
+  const result = authenticateGoogleLoopback({
+    credentialsJson: buildCredentials(['http://localhost/oauth2callback']),
+    scopes: ['scope.one'],
+    signal: controller.signal,
+    httpModule: { createServer: () => server },
+    openExternal: () => { browserOpened = true; },
+  });
+  const rejection = assert.rejects(result, (error) => error.code === 'oauth_cancelled');
+  controller.abort();
+  await rejection;
+  await onListening();
+  assert.equal(browserOpened, false);
+  assert.ok(closeCount >= 1);
+});
+
+test('cancellation during token exchange waits for it and does not return credentials', async () => {
+  const controller = new AbortController();
+  let resolveToken;
+  let markExchangeStarted;
+  let callbackResponse;
+  const token = new Promise((resolve) => { resolveToken = resolve; });
+  const exchangeStarted = new Promise((resolve) => { markExchangeStarted = resolve; });
+  const client = {
+    credentials: {},
+    async generateCodeVerifierAsync() { return { codeVerifier: 'verifier', codeChallenge: 'challenge' }; },
+    generateAuthUrl(options) { return `https://example.test/auth?${new URLSearchParams(options)}`; },
+    async getToken() { markExchangeStarted(); return token; },
+  };
+  const result = authenticateGoogleLoopback({
+    credentialsJson: buildCredentials(['http://localhost/oauth2callback']),
+    scopes: ['scope.one'],
+    signal: controller.signal,
+    randomBytes: () => Buffer.alloc(24, 4),
+    createOAuthClient: () => client,
+    openExternal(url) {
+      const authorization = new URL(url);
+      const callback = new URL(authorization.searchParams.get('redirect_uri'));
+      callback.searchParams.set('code', 'code');
+      callback.searchParams.set('state', authorization.searchParams.get('state'));
+      callbackResponse = fetchText(callback.toString());
+    },
+  });
+  let completed = false;
+  const rejection = assert.rejects(result, (error) => error.code === 'oauth_cancelled')
+    .then(() => { completed = true; });
+  await exchangeStarted;
+  controller.abort();
+  await Promise.resolve();
+  assert.equal(completed, false);
+  resolveToken({ tokens: { access_token: 'late-token' } });
+  await rejection;
+  assert.deepEqual(client.credentials, {});
+  assert.match((await callbackResponse).body, /rejected/i);
+});
+

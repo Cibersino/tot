@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "Não foi possível fechar o toT",
+      "termination_failure_message": "O toT não conseguiu concluir o fechamento. Revise seu trabalho e tente novamente. O Editor de Tarefas cujo fechamento você autorizou pode já ter sido fechado.",
       "continue_button": "Sim, continuar",
       "cancel_button": "Não, cancelar",
       "all_files": "Todos os arquivos",

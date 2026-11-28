@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "toT tidak dapat ditutup",
+      "termination_failure_message": "toT tidak dapat menyelesaikan proses penutupan. Periksa pekerjaan Anda dan coba lagi. Editor Tugas yang Anda setujui untuk ditutup mungkin sudah ditutup.",
       "continue_button": "Ya, lanjutkan",
       "cancel_button": "Tidak, batal",
       "all_files": "Semua file",

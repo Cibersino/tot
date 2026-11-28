@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "Could not close toT",
+      "termination_failure_message": "toT could not finish closing. Please check your work and try again. A Task Editor you approved closing may already have closed.",
       "continue_button": "Yes, continue",
       "cancel_button": "No, cancel",
       "all_files": "All files",

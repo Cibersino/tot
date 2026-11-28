@@ -48,6 +48,8 @@ function createHarness({
   const execCalls = [];
   const setRangeTextCalls = [];
   const dispatchedEvents = [];
+  const dispatchedSuppressStates = [];
+  const notifyEditorCalls = [];
   const setCurrentTextCalls = [];
   const errorLogs = [];
   const syncCanonicalTextSyncControlCalls = [];
@@ -77,6 +79,7 @@ function createHarness({
     },
     dispatchEvent(event) {
       dispatchedEvents.push(event && event.type ? event.type : 'unknown');
+      dispatchedSuppressStates.push(state.suppressLocalUpdate);
       return true;
     },
   };
@@ -148,7 +151,7 @@ function createHarness({
         };
       },
       Notify: {
-        notifyEditor() {},
+        notifyEditor(...args) { notifyEditorCalls.push(args); },
       },
     },
     document,
@@ -209,10 +212,67 @@ function createHarness({
     warnLogs,
     warnOnceLogs,
     dispatchedEvents,
+    dispatchedSuppressStates,
+    notifyEditorCalls,
     previousActiveElement,
     visibilityHistory: style.history,
   };
 }
+
+test('initial seeds apply empty and truncated documents without native editing', async () => {
+  for (const [text, expected, truncated] of [['', '', false], ['abcdef', 'abcd', true]]) {
+    const harness = createHarness({ initialValue: 'old', maxTextChars: 4 });
+    const applied = await harness.engine.applyInitialText({ text });
+
+    assert.equal(applied, true);
+    assert.equal(harness.editor.value, expected);
+    assert.equal(harness.editor.focusCount, 0);
+    assert.equal(harness.editor.selectCount, 0);
+    assert.deepEqual(harness.execCalls, []);
+    assert.deepEqual(harness.dispatchedEvents, ['input']);
+    assert.deepEqual(harness.dispatchedSuppressStates, [true]);
+    assert.equal(harness.notifyEditorCalls.length, truncated ? 1 : 0);
+  }
+});
+
+test('live startup updates seed the current document without native editing and retain truncation and sync suppression', async () => {
+  for (const action of ['overwrite', 'append_newline']) {
+    const harness = createHarness({ initialValue: 'old', maxTextChars: 4 });
+    const result = await harness.engine.applyExternalUpdate({
+      text: 'old plus',
+      meta: { source: 'main-window', action },
+    }, { duringStartup: true });
+
+    assert.equal(harness.editor.value, 'old ');
+    assert.equal(result.canonicalTextSyncIsolationLatched, false);
+    assert.equal(harness.editor.focusCount, 0);
+    assert.equal(harness.editor.selectCount, 0);
+    assert.equal(harness.previousActiveElement.focusCount, 0);
+    assert.deepEqual(harness.execCalls, []);
+    assert.deepEqual(harness.setRangeTextCalls, []);
+    assert.deepEqual(harness.dispatchedEvents, ['input']);
+    assert.deepEqual(harness.dispatchedSuppressStates, [true]);
+    assert.equal(harness.state.suppressLocalUpdate, false);
+    assert.equal(harness.notifyEditorCalls.length, 1);
+  }
+});
+
+test('a live startup update that cannot set the document isolates synchronization', async () => {
+  const harness = createHarness({ initialValue: 'old' });
+  Object.defineProperty(harness.editor, 'value', {
+    get() { return 'old'; },
+    set() {},
+  });
+
+  const result = await harness.engine.applyExternalUpdate({
+    text: 'new',
+    meta: { source: 'main-window', action: 'overwrite' },
+  }, { duringStartup: true });
+
+  assert.equal(result.canonicalTextSyncIsolationLatched, true);
+  assert.equal(harness.state.canonicalTextSyncIsolated, true);
+  assert.deepEqual(harness.execCalls, []);
+});
 
 test('replace-all uses the direct hidden whole-text commit path when the final text is above the threshold', () => {
   const {

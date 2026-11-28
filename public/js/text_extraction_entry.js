@@ -32,6 +32,30 @@
   // =============================================================================
   let deps = null;
   let activeOperation = null;
+  let terminationAttempt = false;
+  let terminationAdmitted = false;
+  let terminationFailure = null;
+
+  function beginTerminationAttempt() {
+    terminationAttempt = true;
+    terminationFailure = null;
+    window.dispatchEvent(new Event('text-extraction-termination-attempt'));
+  }
+
+  function admitTermination() {
+    terminationAdmitted = true;
+  }
+
+  function releaseTerminationAttempt() {
+    terminationAttempt = false;
+    terminationAdmitted = false;
+    terminationFailure = null;
+  }
+
+  async function waitForTerminationSettlement() {
+    if (activeOperation) await activeOperation.settled;
+    if (terminationFailure) throw terminationFailure;
+  }
 
   function configure(nextDeps = {}) {
     deps = {
@@ -79,25 +103,31 @@
 
   // Recursive reruns and batch handoffs reuse the same operation token. The admission remains active until all delegated work completes.
   async function runAdmittedOperation({ source, actionId }, work) {
+    if (terminationAdmitted) return;
     if (isOperationActive()) {
       log.info('Text extraction entry ignored because another operation is active:', {
         actionId,
         source,
       });
-      window.Notify.toastMain('renderer.text_extraction.alerts.operation_in_progress', {
+      if (!terminationAttempt) window.Notify.toastMain('renderer.text_extraction.alerts.operation_in_progress', {
         type: 'info',
       });
       return;
     }
 
-    const operation = {};
+    let resolveSettled;
+    const operation = { settled: new Promise((resolve) => { resolveSettled = resolve; }) };
     activeOperation = operation;
     try {
       await work(operation);
+    } catch (error) {
+      if (terminationAdmitted) terminationFailure = error;
+      throw error;
     } finally {
       if (isCurrentOperation(operation)) {
         activeOperation = null;
       }
+      resolveSettled();
     }
   }
 
@@ -326,7 +356,7 @@
     if (logMessage) {
       log.error(logMessage, preparation);
     }
-    window.Notify.notifyMain(resolvePrimaryAlertKey(preparation, 'renderer.text_extraction.alerts.prepare_error'));
+    if (!terminationAttempt) window.Notify.notifyMain(resolvePrimaryAlertKey(preparation, 'renderer.text_extraction.alerts.prepare_error'));
   }
 
   function completeAbortFinalization({
@@ -339,7 +369,7 @@
     textExtractionStatusUi.endAbortFinalization();
     syncMainInteractionLockUi();
     if (notifyCompletion) {
-      window.Notify.notifyMain('renderer.text_extraction.alerts.cancellation_complete');
+      if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.cancellation_complete');
     }
     return true;
   }
@@ -349,18 +379,18 @@
       unavailableMessage: 'checkTextExtractionPreconditions unavailable; text extraction precondition check skipped.'
     });
     if (!checkTextExtractionPreconditions) {
-      window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
+      if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
       return false;
     }
 
     const preconditions = await checkTextExtractionPreconditions();
     if (!preconditions || preconditions.ok === false) {
       log.error('text extraction precondition check failed:', preconditions);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
+      if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.precondition_error');
       return false;
     }
     if (!preconditions.canStart) {
-      window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.text_extraction.alerts.precondition_blocked');
+      if (!terminationAttempt) window.Notify.notifyMain(preconditions.guidanceKey || 'renderer.text_extraction.alerts.precondition_blocked');
       return false;
     }
     return true;
@@ -411,22 +441,23 @@
     }
     if (!normalizedFilePath) {
       log.warn('text extraction entry received an empty file path:', { source });
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
     if (typeof requestPreparedImport !== 'function') {
       log.error('requestPreparedImport dependency missing; text extraction action blocked:', actionId);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
     if (typeof maybeRecoverTextExtractionOcrSetupAndRetry !== 'function') {
       log.error('maybeRecoverTextExtractionOcrSetupAndRetry dependency missing; text extraction action blocked:', actionId);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 
     try {
       if (!(await canStartTextExtraction())) return;
+      if (terminationAdmitted) return;
 
       const prepareTextExtractionSelectedFile = getOptionalElectronMethod('prepareTextExtractionSelectedFile', {
         unavailableMessage: 'prepareTextExtractionSelectedFile unavailable; text extraction prepare cannot continue.'
@@ -438,7 +469,7 @@
         unavailableMessage: 'executePreparedTextExtraction unavailable; text extraction execution cannot continue.'
       });
       if (!prepareTextExtractionSelectedFile || !inspectTextExtractionSelectedFile || !executePreparedTextExtraction) {
-        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+        if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
         return;
       }
 
@@ -452,17 +483,18 @@
         completeAbortFinalization({ textExtractionStatusUi });
         textExtractionStatusUi.clearPendingExecutionContext();
         log.error('text extraction inspect IPC failed unexpectedly:', error);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.prepare_error');
+        if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.prepare_error');
         return;
       }
       if (!inspection || inspection.ok !== true) {
         log.error('text extraction inspect IPC failed:', inspection);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.prepare_error');
+        if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.prepare_error');
         return;
       }
+      if (terminationAdmitted) return;
       if (inspection.isPdf === true && inspection.error) {
         log.warn('text extraction PDF inspect failed:', inspection.error);
-        window.Notify.notifyMain(inspection.primaryAlertKey || 'renderer.text_extraction.alerts.prepare_error');
+        if (!terminationAttempt) window.Notify.notifyMain(inspection.primaryAlertKey || 'renderer.text_extraction.alerts.prepare_error');
         return;
       }
 
@@ -471,11 +503,12 @@
         if (forcedPdfOptions) {
           pdfOptions = forcedPdfOptions;
         } else {
+          if (terminationAttempt) return;
           try {
             pdfOptions = await window.Notify.promptTextExtractionPdfOptions({ inspection });
           } catch (error) {
             log.error('text extraction PDF options modal failed:', error);
-            window.Notify.notifyMain('renderer.text_extraction.alerts.pdf_options_error');
+            if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.pdf_options_error');
             return;
           }
           if (!pdfOptions) {
@@ -507,6 +540,7 @@
         log.info('text extraction prepare result ignored because a newer prepare attempt exists.');
         return;
       }
+      if (terminationAttempt) return;
 
       let preparation = preparationRun ? preparationRun.preparation : null;
       const recovery = await maybeRecoverTextExtractionOcrSetupAndRetry({
@@ -514,6 +548,7 @@
         preparationRequest,
         prepareTextExtractionSelectedFile,
       });
+      if (terminationAdmitted) return;
       const recoveryResult = consumeRecoveryPreparationState({
         recovery,
         preparationRun,
@@ -554,12 +589,13 @@
         if (forcedRoutePreference === 'native' || forcedRoutePreference === 'ocr') {
           routePreference = forcedRoutePreference;
         } else {
+          if (terminationAttempt) return;
           try {
             routePreference = await window.Notify.promptTextExtractionRouteChoice({ preparation });
           } catch (error) {
             textExtractionStatusUi.clearPendingExecutionContext();
             log.error('text extraction route-choice modal failed:', error);
-            window.Notify.notifyMain('renderer.text_extraction.alerts.route_choice_error');
+            if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.route_choice_error');
             return;
           }
           if (hasAttemptFreshnessGuard && !isLatestTextExtractionPrepareAttempt(latestAttemptId)) {
@@ -574,6 +610,8 @@
         }
       }
 
+      if (terminationAdmitted) return;
+
       if (routePreference === 'ocr') {
         const ocrRouteRecovery = await maybeRecoverTextExtractionOcrSetupAndRetry({
           preparation,
@@ -581,6 +619,7 @@
           prepareTextExtractionSelectedFile,
           routePreference,
         });
+        if (terminationAdmitted) return;
         const ocrRouteRecoveryResult = consumeRecoveryPreparationState({
           recovery: ocrRouteRecovery,
           preparationRun,
@@ -622,6 +661,7 @@
         && pdfOptions.pdfPageSelection.mode === 'all'
         && preparation.routeMetadata
         && preparation.routeMetadata.heavySplitEligible === true) {
+        if (terminationAttempt) return;
         let singleFileHeavyAction;
         try {
           singleFileHeavyAction = await window.Notify.promptTextExtractionSingleFileHeavyPdf({
@@ -644,7 +684,7 @@
           completeAbortFinalization({ textExtractionStatusUi });
           textExtractionStatusUi.clearPendingExecutionContext();
           log.error('text extraction heavy-PDF recovery modal failed:', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.heavy_pdf_recovery_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.heavy_pdf_recovery_error');
           return;
         }
         if (singleFileHeavyAction === 'return_to_pages') {
@@ -673,6 +713,7 @@
         }
       }
 
+      if (terminationAdmitted) return;
       textExtractionStatusUi.setPendingExecutionContext({
         preparation,
         routePreference,
@@ -684,7 +725,7 @@
         completeAbortFinalization({ textExtractionStatusUi });
         textExtractionStatusUi.clearPendingExecutionContext();
         log.error('text extraction execution IPC failed unexpectedly:', error);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.execution_error');
+        if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.execution_error');
         return;
       }
       if (!execution || execution.ok !== true || !execution.result) {
@@ -694,7 +735,7 @@
           textExtractionStatusUi.applyProcessingModeState(execution.state, { source: 'execute_already_active' });
         }
         log.error('text extraction execution IPC failed:', execution);
-        window.Notify.notifyMain(execution && execution.code === 'ALREADY_ACTIVE'
+        if (!terminationAttempt) window.Notify.notifyMain(execution && execution.code === 'ALREADY_ACTIVE'
           ? 'renderer.text_extraction.alerts.operation_in_progress'
           : resolvePrimaryAlertKey(execution, 'renderer.text_extraction.alerts.execution_error'));
         return;
@@ -705,9 +746,15 @@
         : [];
       warningAlertKeys.forEach((alertKey) => {
         if (typeof alertKey === 'string' && alertKey.trim()) {
-          window.Notify.notifyMain(alertKey);
+          if (!terminationAttempt) window.Notify.notifyMain(alertKey);
         }
       });
+
+      if (terminationAdmitted) {
+        completeAbortFinalization({ textExtractionStatusUi });
+        textExtractionStatusUi.clearPendingExecutionContext();
+        return;
+      }
 
       const resultState = execution.result && typeof execution.result.state === 'string'
         ? execution.result.state
@@ -719,6 +766,7 @@
       if (execution.result
         && execution.result.error
         && execution.result.error.code === 'ocr_input_too_large') {
+        if (terminationAttempt) return;
         const retainedGeneratedPdf = resolveRetainedGeneratedPdf(execution.result);
         const pdfPageSelection = execution.result.pdfPageSelection
           && typeof execution.result.pdfPageSelection === 'object'
@@ -775,7 +823,7 @@
           });
         } catch (error) {
           log.error('text extraction heavy-PDF recovery modal failed:', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.heavy_pdf_recovery_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.heavy_pdf_recovery_error');
           return;
         }
         if (singleFileHeavyAction === 'return_to_pages') {
@@ -826,7 +874,7 @@
             : executedRoute === 'ocr'
               ? 'renderer.text_extraction.alerts.ocr.runtime_error'
               : 'renderer.text_extraction.alerts.execution_error';
-          window.Notify.notifyMain(alertKey);
+          if (!terminationAttempt) window.Notify.notifyMain(alertKey);
           return;
         }
         if (typeof getClipboardRepeatCount !== 'function') {
@@ -837,6 +885,7 @@
           : 1;
         const retainedGeneratedPdf = resolveRetainedGeneratedPdf(execution.result);
         let applyChoice = null;
+        if (terminationAttempt) return;
         try {
           applyChoice = await window.Notify.promptTextExtractionApplyChoice({
             defaultRepeat,
@@ -867,7 +916,7 @@
           });
         } catch (error) {
           log.error('text extraction apply modal failed:', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.result_modal_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.result_modal_error');
           return;
         }
         if (!applyChoice) {
@@ -876,6 +925,7 @@
           }
           return;
         }
+        if (terminationAdmitted) return;
 
         if (textApplicability !== 'applicable') {
           return;
@@ -884,13 +934,13 @@
         if (typeof applyTextViaCanonicalPath !== 'function') {
           textExtractionStatusUi.clearPendingExecutionContext();
           log.error('applyTextViaCanonicalPath dependency unavailable; apply flow blocked.');
-          window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
           return;
         }
         if (typeof hasCurrentTextSubscription !== 'function' || !hasCurrentTextSubscription()) {
           textExtractionStatusUi.clearPendingExecutionContext();
           log.error('current-text-updated subscription unavailable; apply flow blocked.');
-          window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
           return;
         }
 
@@ -905,22 +955,22 @@
           completeAbortFinalization({ textExtractionStatusUi });
           textExtractionStatusUi.clearPendingExecutionContext();
           log.error('text extraction text application failed unexpectedly:', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
           return;
         }
         if (!applyResult || applyResult.ok !== true) {
           if (applyResult && applyResult.code === 'PAYLOAD_TOO_LARGE') {
-            window.Notify.notifyMain('renderer.main.alerts.apply_too_large');
+            if (!terminationAttempt) window.Notify.notifyMain('renderer.main.alerts.apply_too_large');
           } else if (applyResult && applyResult.code === 'TEXT_LIMIT') {
-            window.Notify.notifyMain('renderer.main.alerts.append_text_limit');
+            if (!terminationAttempt) window.Notify.notifyMain('renderer.main.alerts.append_text_limit');
           } else {
-            window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
+            if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.apply_error');
           }
           return;
         }
 
         if (applyResult.truncated) {
-          window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.main.alerts.apply_truncated');
         }
         return;
       }
@@ -934,12 +984,12 @@
         });
         return;
       }
-      window.Notify.notifyMain(primaryAlertKey);
+      if (!terminationAttempt) window.Notify.notifyMain(primaryAlertKey);
     } catch (error) {
       completeAbortFinalization({ textExtractionStatusUi });
       textExtractionStatusUi.clearPendingExecutionContext();
       log.error(`Error handling text extraction ${source} entrypoint:`, error);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }
 
@@ -995,19 +1045,21 @@
 
       try {
         if (!(await canStartTextExtraction())) return;
+        if (terminationAdmitted) return;
 
         const openTextExtractionPicker = getOptionalElectronMethod('openTextExtractionPicker', {
           unavailableMessage: 'openTextExtractionPicker unavailable; text extraction entrypoint skipped.'
         });
         if (!openTextExtractionPicker) {
-          window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
           return;
         }
 
         const picker = await openTextExtractionPicker();
+        if (terminationAdmitted) return;
         if (!picker || picker.ok === false) {
           log.error('text extraction picker failed:', picker && picker.error ? picker.error : picker);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+          if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
           return;
         }
         if (picker.canceled) return;
@@ -1023,7 +1075,7 @@
         });
       } catch (error) {
         log.error('Error handling text extraction picker entrypoint:', error);
-        window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+        if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       }
     });
   }
@@ -1056,8 +1108,9 @@
     const actionId = `text-extraction-${source}`;
     await runAdmittedOperation({ source, actionId }, async (operation) => {
       const filePaths = await resolveDroppedFilePaths(files);
+      if (terminationAdmitted) return;
       if (!filePaths.length) {
-        window.Notify.notifyMain('renderer.text_extraction.alerts.drop_invalid_file');
+        if (!terminationAttempt) window.Notify.notifyMain('renderer.text_extraction.alerts.drop_invalid_file');
         return;
       }
       await runFromFilePaths({
@@ -1074,6 +1127,12 @@
   // =============================================================================
   window.TextExtractionEntry = {
     configure,
+    beginTerminationAttempt,
+    admitTermination,
+    releaseTerminationAttempt,
+    waitForTerminationSettlement,
+    isTerminationAttempt: () => terminationAttempt,
+    isTerminationAdmitted: () => terminationAdmitted,
     startFromFilePath,
     startFromFilePaths,
     startFromDroppedFiles,

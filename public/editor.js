@@ -695,7 +695,9 @@ function registerEditorBridgeListeners() {
       if (!incomingMeta || incomingMeta.source !== 'editor') {
         ctx.state.latestNonEditorRevisionSeen = revision;
       }
-      const result = await ctx.engine.applyExternalUpdate(payload);
+      const result = await ctx.engine.applyExternalUpdate(payload, {
+        duringStartup: editorBootstrapPresentationOutcome === 'pending',
+      });
       handleCanonicalTextSyncIsolation(result);
       ctx.ui.updateEditorTextDirection();
     });

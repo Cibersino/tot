@@ -181,7 +181,7 @@
     const { startFromDroppedFiles } = requireConfiguredDeps();
     if (typeof startFromDroppedFiles !== 'function') {
       log.error('startFromDroppedFiles dependency missing; cannot continue dropped text extraction flow.');
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
       return;
     }
 
@@ -192,7 +192,7 @@
       });
     } catch (error) {
       log.error('Dropped text extraction flow failed unexpectedly:', error);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain('renderer.text_extraction.alerts.start_error');
     }
   }
 
@@ -202,6 +202,7 @@
   function configure(nextDeps = {}) {
     deps = {
       canAcceptDrop: null,
+      isTerminationAttempt: () => false,
       startFromDroppedFiles: null,
       ...nextDeps,
     };

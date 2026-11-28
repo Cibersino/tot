@@ -785,3 +785,96 @@ for (const { hasQuestions, presetUnavailable } of [
     assert.deepEqual(mainState, { wpm: 200, preset: 'default' });
   });
 }
+
+for (const stage of ['arming', 'running', 'result', 'questions', 'preset']) {
+  test(`application termination at ${stage} preserves the Reading Test text contract`, async (t) => {
+    const senderWin = { isDestroyed: () => false, webContents: { send() {} } };
+    const editorWin = { isDestroyed: () => false };
+    const flotanteWin = { isDestroyed: () => false };
+    const windows = {};
+    const opened = [];
+    const modal = (kind, callbacks) => new Promise((resolve) => {
+      let destroyed = false;
+      const win = new EventEmitter();
+      win.isDestroyed = () => destroyed;
+      win.close = () => {
+        if (destroyed) return;
+        destroyed = true;
+        callbacks.onWindowClosed(win);
+        win.emit('closed');
+        resolve({ ok: true });
+      };
+      windows[kind] = win;
+      opened.push(kind);
+      callbacks.onWindowCreated(win);
+    });
+    const sessionWindowsMock = {
+      async openReadingSessionWindows() { return { editorWin, flotanteWin }; },
+      openResultWindow(_info, callbacks) { return modal('result', callbacks); },
+      openQuestionsWindow(_questions, callbacks) { return modal('questions', callbacks); },
+      setEditorPrestartVisible() {},
+      async waitForWindowVisible() {},
+    };
+    const pool = createReadingTestPoolMock({ entries: [{
+      snapshotRelPath: '/reading_speed_test_pool/sample.json', fileName: 'sample.json',
+      text: 'word '.repeat(800), tags: { language: ['en'] }, used: false,
+      hasValidQuestions: true, questions: [{ id: 'q1' }],
+    }] });
+    const { readingTestSession, restore } = loadReadingTestSessionWithMocks(pool, senderWin, {
+      sessionWindowsMock,
+      settingsStateMock: {
+        getPreferenceScope: () => 'en',
+        getSettings: () => ({ language: 'en', modeConteo: 'simple', presetsByScope: {} }),
+      },
+    });
+    t.after(restore);
+    let currentText = '';
+    let elapsed = 0;
+    let resetCount = 0;
+    const controller = readingTestSession.createController({
+      resolveMainWindow: () => senderWin,
+      getPreconditionContext: () => ({ openSecondaryWindows: [], stopwatchRunning: false }),
+      isProcessingModeActive: () => false,
+      ensureEditorWindow: async () => editorWin,
+      showEditorWindow() {},
+      ensureFlotanteWindow: async () => flotanteWin,
+      closeEditorWindow() {}, closeFlotanteWindow() {},
+      startCrono() { elapsed = 60000; },
+      resetCrono() { resetCount += 1; },
+      stopCrono() {},
+      getCronoState: () => ({ elapsed }),
+      getCurrentText: () => currentText,
+      applyCurrentText(text) { currentText = text; return { ok: true }; },
+      openPresetWindow() {
+        opened.push('preset');
+        const win = new EventEmitter();
+        win.isDestroyed = () => false;
+        return win;
+      },
+    });
+    const ipc = createIpcMainDouble();
+    controller.registerIpc(ipc);
+    assert.deepEqual(await ipc.invoke('reading-test-start', { sender: senderWin.webContents }, {
+      sourceMode: 'pool', selection: {},
+    }), { ok: true });
+    await flushAsyncWork();
+    if (stage !== 'arming') controller.handleFlotanteCommand({ cmd: 'toggle' });
+    if (!['arming', 'running'].includes(stage)) controller.handleFlotanteCommand({ cmd: 'toggle' });
+    if (['questions', 'preset'].includes(stage)) {
+      windows.result.close();
+      await flushAsyncWork();
+    }
+    if (stage === 'preset') {
+      windows.questions.close();
+      await flushAsyncWork();
+    }
+    assert.equal(controller.getState().stage, stage);
+    const openedBefore = opened.slice();
+    controller.terminateForApplication();
+    await flushAsyncWork();
+    assert.equal(controller.getState().stage, 'idle');
+    assert.equal(currentText, ['arming', 'running'].includes(stage) ? '' : 'word '.repeat(800));
+    assert.equal(resetCount, ['arming', 'running'].includes(stage) ? 1 : 0);
+    assert.deepEqual(opened, openedBefore);
+  });
+}

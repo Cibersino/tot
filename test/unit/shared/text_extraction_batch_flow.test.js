@@ -5,6 +5,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { EventEmitter } = require('node:events');
+const applicationTermination = require('../../../electron/application_termination');
 const snapshotTagCatalog = require('../../../public/js/lib/snapshot_tag_catalog');
 
 function createHarness({
@@ -34,6 +36,8 @@ function createHarness({
   processingSessionExitResult = { ok: true },
   settingsCache = null,
   syncMainInteractionLockUiImpl = undefined,
+  isTerminationAttempt = () => false,
+  isTerminationAdmitted = () => false,
   unavailableOptionalElectronMethods = [],
 }) {
   let capturedViewModel = null;
@@ -347,6 +351,8 @@ function createHarness({
     isCurrentTextExtractionOperation(candidate) {
       return candidate === operation;
     },
+    isTerminationAttempt,
+    isTerminationAdmitted,
     syncMainInteractionLockUi: syncMainInteractionLockUiImpl === undefined
       ? () => {
         syncMainInteractionLockUiCallCount += 1;
@@ -1029,6 +1035,7 @@ test('batch flow opens shared tags modal with batch-planning copy overrides', as
   assert.deepEqual(
     JSON.parse(JSON.stringify(harness.getSnapshotTagsPromptOptions())),
     {
+      cancelOnExtractionTermination: true,
       initialTags: {},
       copy: {
         titleKey: 'renderer.text_extraction.batch_plan.tags_modal.title',
@@ -1418,6 +1425,135 @@ test('batch aggregates cleanup origins across units before failure and applicati
     assert.equal(report.units[3].inputs[0].code, 'apply_failed');
     assert.equal(report.units[4].inputs[0].code, 'execute_prepared_ipc_failed');
   }
+});
+
+test('termination waits for a partial batch snapshot and does not run the next unit', async () => {
+  const applyStarted = createDeferred();
+  const apply = createDeferred();
+  const snapshotStarted = createDeferred();
+  const snapshot = createDeferred();
+  let terminating = false;
+  const harness = createHarness({
+    preparationsByPath: {
+      'first.txt': createPreparation({ fileName: 'first.txt', chosenRoute: 'native', fileKind: 'txt' }),
+      'second.txt': createPreparation({ fileName: 'second.txt', chosenRoute: 'native', fileKind: 'txt' }),
+    },
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'first.txt': { ok: true, result: { state: 'success', text: 'First' } },
+      'second.txt': { ok: true, result: { state: 'success', text: 'Second' } },
+    },
+    isTerminationAttempt: () => terminating,
+    isTerminationAdmitted: () => terminating,
+    applyTextViaCanonicalPathImpl() { applyStarted.resolve(); return apply.promise; },
+    saveCurrentTextSnapshotImpl() { snapshotStarted.resolve(); return snapshot.promise; },
+  });
+  let completed = false;
+  const operation = harness.batchFlow.startFromSelectedFiles({ filePaths: ['first.txt', 'second.txt'], source: 'test' })
+    .then(() => { completed = true; });
+  await applyStarted.promise;
+  terminating = true;
+  apply.resolve({ ok: true });
+  await snapshotStarted.promise;
+  assert.equal(completed, false);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 1);
+  assert.equal(harness.getCapturedFinalReport(), null);
+  snapshot.resolve({ ok: false, code: 'WRITE_FAILED' });
+  await operation;
+  assert.equal(completed, true);
+  assert.equal(harness.getExecutePreparedTextExtractionCallCount(), 1);
+  assert.deepEqual(harness.notifications, []);
+  assert.ok(harness.getWarnLogs().some(([message]) => message === 'Batch snapshot save failed:'));
+});
+
+test('suppressed batch report releases ordinary abort finalization when termination later fails', async () => {
+  const applyStarted = createDeferred();
+  const apply = createDeferred();
+  const snapshotStarted = createDeferred();
+  const snapshot = createDeferred();
+  const released = createDeferred();
+  let terminationAttempt = false;
+  let terminationAdmitted = false;
+  let abortFinalizationActive = false;
+  let interactionLocked = false;
+  let syncCount = 0;
+  let failure = null;
+  let stateAtFailure = null;
+  const harness = createHarness({
+    preparationsByPath: {
+      'first.txt': createPreparation({ fileName: 'first.txt', chosenRoute: 'native', fileKind: 'txt' }),
+      'second.txt': createPreparation({ fileName: 'second.txt', chosenRoute: 'native', fileKind: 'txt' }),
+    },
+    promptBatchPlanResult: { action: 'start' },
+    executionResultsByProcessingInputFileName: {
+      'first.txt': { ok: true, result: { state: 'success', text: 'First' } },
+    },
+    isTerminationAttempt: () => terminationAttempt,
+    isTerminationAdmitted: () => terminationAdmitted,
+    applyTextViaCanonicalPathImpl() { applyStarted.resolve(); return apply.promise; },
+    saveCurrentTextSnapshotImpl() { snapshotStarted.resolve(); return snapshot.promise; },
+    syncMainInteractionLockUiImpl() {
+      syncCount += 1;
+      interactionLocked = terminationAdmitted || abortFinalizationActive;
+    },
+  });
+  harness.textExtractionStatusUi.beginAbortFinalization = () => { abortFinalizationActive = true; };
+  harness.textExtractionStatusUi.endAbortFinalization = () => { abortFinalizationActive = false; };
+  harness.textExtractionStatusUi.isAbortFinalizationActive = () => abortFinalizationActive;
+
+  const batch = harness.batchFlow.startFromSelectedFiles({ filePaths: ['first.txt', 'second.txt'], source: 'test' });
+  await applyStarted.promise;
+  // The user has already requested ordinary cancellation while the apply is settling.
+  harness.textExtractionStatusUi.beginAbortFinalization();
+  interactionLocked = true;
+
+  const main = { isDestroyed: () => false };
+  const dependent = new EventEmitter();
+  dependent.isDestroyed = () => false;
+  dependent.close = () => { throw new Error('dependent close failed'); };
+  const sequencer = applicationTermination.createController({
+    isReady: () => true,
+    getMainWindow: () => main,
+    getTaskWindow: () => null,
+    requestTaskClose: async () => true,
+    async extractionCommand(command) {
+      if (command === 'begin') terminationAttempt = true;
+      if (command === 'admit') terminationAdmitted = true;
+      if (command === 'settle') await batch;
+      if (command === 'release') {
+        terminationAttempt = false;
+        terminationAdmitted = false;
+        interactionLocked = abortFinalizationActive;
+        released.resolve();
+      }
+    },
+    abortExtraction: () => null,
+    terminateReadingTest() {},
+    getDependentWindows: () => [dependent],
+    setInteractionHeld() {},
+    quit() { assert.fail('a failed dependent close must not quit'); },
+    reportFailure(error) {
+      failure = error;
+      stateAtFailure = { abortFinalizationActive, interactionLocked, syncCount };
+    },
+    log: { error() {} },
+  });
+  const closeEvent = { prevented: false, preventDefault() { this.prevented = true; } };
+  sequencer.handleEvent(closeEvent);
+  apply.resolve({ ok: true });
+  await snapshotStarted.promise;
+  assert.equal(closeEvent.prevented, true);
+  assert.equal(abortFinalizationActive, true);
+  assert.equal(interactionLocked, true);
+  snapshot.resolve({ ok: true, filename: 'snapshot.json' });
+  await released.promise;
+
+  assert.match(failure.message, /dependent close failed/);
+  assert.deepEqual(stateAtFailure, { abortFinalizationActive: false, interactionLocked: true, syncCount: 1 });
+  assert.equal(harness.getCapturedFinalReport(), null);
+  assert.deepEqual(harness.notifications, []);
+  assert.equal(abortFinalizationActive, false);
+  assert.equal(interactionLocked, false);
 });
 
 test('batch execution reports malformed autosave results as failed without trusting their code', async () => {

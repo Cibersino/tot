@@ -25,12 +25,14 @@
 
   function configure({
     getOptionalElectronMethod = null,
+    isTerminationAttempt = () => false,
   } = {}) {
     if (typeof getOptionalElectronMethod !== 'function') {
       throw new Error('[text-extraction-ocr-connection-flow] configure() requires getOptionalElectronMethod function');
     }
     deps = {
       getOptionalElectronMethod,
+      isTerminationAttempt,
     };
   }
 
@@ -216,6 +218,9 @@
       });
     }
 
+    if (requireConfiguredDeps().isTerminationAttempt()) {
+      return buildResult({ state: 'cancelled', stage: 'disclosure', code: 'ocr_activation_disclosure_declined' });
+    }
     let disclosureAccepted = false;
     try {
       disclosureAccepted = await window.Notify.promptTextExtractionOcrActivationDisclosure();
@@ -250,9 +255,13 @@
       });
     }
 
+    if (requireConfiguredDeps().isTerminationAttempt()) {
+      return buildResult({ state: 'cancelled', stage: 'disclosure', code: 'ocr_activation_disclosure_declined' });
+    }
+
     let activationResult = null;
     try {
-      activationResult = await launchTextExtractionOcrActivation();
+      activationResult = await launchTextExtractionOcrActivation({ source });
     } catch (error) {
       log.error('OCR activation launch IPC failed:', error);
       return buildResult({

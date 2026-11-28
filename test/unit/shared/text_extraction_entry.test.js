@@ -54,6 +54,7 @@ function createHarness({
 
   const sandbox = {
     window: {
+      dispatchEvent() {},
       AppConstants: {
         MAX_CLIPBOARD_REPEAT: 100,
       },
@@ -128,6 +129,7 @@ function createHarness({
         },
       },
     },
+    Event: class Event { constructor(type) { this.type = type; } },
     console,
   };
 
@@ -359,6 +361,54 @@ function createDeferred() {
   });
   return { promise, resolve };
 }
+
+test('termination joins a running extraction and does not apply its late result', async () => {
+  const execution = createDeferred();
+  const started = createDeferred();
+  const harness = createHarness({
+    executePreparedTextExtractionImpl() {
+      started.resolve();
+      return execution.promise;
+    },
+  });
+  const operation = harness.entry.startFromFilePath({ filePath: 'C:\\docs\\book.pdf', source: 'test' });
+  await started.promise;
+  harness.entry.beginTerminationAttempt();
+  harness.entry.admitTermination();
+  let settled = false;
+  const settlement = harness.entry.waitForTerminationSettlement().then(() => { settled = true; });
+  await Promise.resolve();
+  assert.equal(settled, false);
+  execution.resolve({
+    ok: true,
+    warningAlertKeys: ['renderer.text_extraction.alerts.cleanup_warning'],
+    result: { state: 'success', text: 'late text', textApplicability: 'applicable' },
+  });
+  await operation;
+  await settlement;
+  assert.equal(settled, true);
+  assert.deepEqual(harness.notifications, []);
+  assert.deepEqual(harness.getApplyPayloads(), []);
+  assert.equal(harness.getCapturedApplyPromptOptions(), null);
+});
+
+test('an unexpected delegated extraction failure is not acknowledged as successful settlement', async () => {
+  const batch = createDeferred();
+  const started = createDeferred();
+  const failure = new Error('batch failed unexpectedly');
+  const harness = createHarness({
+    startFromSelectedFilesImpl() { started.resolve(); return batch.promise; },
+  });
+  const operation = harness.entry.startFromFilePaths({ filePaths: ['first.txt', 'second.txt'], source: 'test' });
+  const operationFailure = assert.rejects(operation, /batch failed unexpectedly/);
+  await started.promise;
+  harness.entry.beginTerminationAttempt();
+  harness.entry.admitTermination();
+  const settlementFailure = assert.rejects(harness.entry.waitForTerminationSettlement(), /batch failed unexpectedly/);
+  batch.resolve(Promise.reject(failure));
+  await operationFailure;
+  await settlementFailure;
+});
 
 test('entry admits one independent file operation until preflight and terminal handling settle', async () => {
   const preconditions = createDeferred();

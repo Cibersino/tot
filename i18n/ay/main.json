@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Waliki",
+      "termination_failure_title": "toT janiw jist’antañjamäkänti",
+      "termination_failure_message": "toT ukax jist’antañ janiw tukuyañjamäkänti. Lurawim uñakipam ukat wasitat yant’am. Jist’antañ iyawsata Tarea askichirix inas niy jist’antatächi.",
       "continue_button": "Jïsa, sarantaskakiña",
       "cancel_button": "Janiwa, suyt’ayaña",
       "all_files": "Taqi archivonaka",

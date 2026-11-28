@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Llowün",
+      "termination_failure_title": "toT nürüfun pepilafuy",
+      "termination_failure_message": "toT pepi afelafuy ñi nürüfun. Adkintunge mi küdaw ka wiño küdaw. Tachi Küdaw Azümwe tami llowün ñi nürüfün, pepi nürüfuy.",
       "continue_button": "May, amulepe",
       "cancel_button": "No, katrüntun",
       "all_files": "Kom archivo",

@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "Impossible de fermer toT",
+      "termination_failure_message": "toT n’a pas pu terminer sa fermeture. Vérifiez votre travail et réessayez. Il est possible que l’Éditeur de tâches dont vous avez autorisé la fermeture soit déjà fermé.",
       "continue_button": "Oui, continuer",
       "cancel_button": "Non, annuler",
       "all_files": "Tous les fichiers",

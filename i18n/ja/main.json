@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "toT を終了できませんでした",
+      "termination_failure_message": "toT の終了処理を完了できませんでした。作業内容を確認して再試行してください。閉じることを承認したタスクエディターは、すでに閉じている可能性があります。",
       "continue_button": "はい、続行",
       "cancel_button": "いいえ、キャンセル",
       "all_files": "すべてのファイル",

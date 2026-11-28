@@ -272,6 +272,7 @@
 
     return new Promise((resolve) => {
       let settled = false;
+      let dismissedForTermination = false;
       let revealPending = false;
 
       const cleanup = () => {
@@ -284,6 +285,7 @@
         btnClose.removeEventListener('click', onCancel);
         backdrop.removeEventListener('click', onCancel);
         window.removeEventListener('keydown', onWindowKeyDown);
+        window.removeEventListener('text-extraction-termination-attempt', onTermination);
         modal.setAttribute('aria-hidden', 'true');
         window.Notify.deactivateModalFocus(modal);
       };
@@ -299,6 +301,10 @@
       const onReturnToPages = () => finish('return_to_pages');
       const onUseNative = () => finish('use_native');
       const onCancel = () => finish('cancel');
+      const onTermination = () => {
+        dismissedForTermination = true;
+        onCancel();
+      };
       const onReveal = async () => {
         if (!canRevealGeneratedPdf || revealPending) return;
         revealPending = true;
@@ -307,7 +313,7 @@
           await onRevealGeneratedPdf();
         } catch (error) {
           log.error('Single-file heavy modal reveal failed:', error);
-          window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
+          if (!dismissedForTermination || !window.TextExtractionEntry.isTerminationAttempt()) window.Notify.notifyMain('renderer.text_extraction.alerts.generated_pdf_reveal_failed');
         } finally {
           revealPending = false;
           // btnReveal is reused by later prompts; stale completions must not update it.
@@ -330,6 +336,7 @@
       btnClose.addEventListener('click', onCancel);
       backdrop.addEventListener('click', onCancel);
       window.addEventListener('keydown', onWindowKeyDown);
+      window.addEventListener('text-extraction-termination-attempt', onTermination);
       activePromptTranslations = renderModalCopy;
 
       modal.setAttribute('aria-hidden', 'false');

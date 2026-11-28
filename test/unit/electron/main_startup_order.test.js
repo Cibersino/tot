@@ -136,6 +136,8 @@ function createMainDecoratorHarness({ decorateSpellcheck, getSnapshotTagPreferen
       init: noop,
       registerIpc: noop,
     }],
+    ['./application_termination', { createController: () => ({ handleEvent: noop, isHandedOff: () => false }) }],
+    ['./application_termination_renderer_bridge', { createBridge: () => ({ send: noop }) }],
     ['./editor_window_lifecycle', {
       createController: () => ({
         hasLiveWebContents: (window) => !!window && !window.isDestroyed(),

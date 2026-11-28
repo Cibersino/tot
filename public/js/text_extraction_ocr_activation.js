@@ -24,9 +24,11 @@
 
   function configure({
     ocrConnectionFlow = null,
+    isTerminationAttempt = () => false,
   } = {}) {
     deps = {
       ocrConnectionFlow,
+      isTerminationAttempt,
     };
   }
 
@@ -90,7 +92,7 @@
       activationFlow = getActivationFlow();
     } catch (error) {
       log.error('OCR activation flow unavailable for Preferences menu:', error);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
       return {
         ok: false,
         state: 'failure',
@@ -105,7 +107,7 @@
       });
     } catch (error) {
       log.error('OCR activation flow failed for Preferences menu:', error);
-      window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain('renderer.text_extraction.alerts.ocr.activation_failed');
       return {
         ok: false,
         state: 'failure',
@@ -118,7 +120,7 @@
     }
 
     if (activationResult && activationResult.ok === true) {
-      window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
+      if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
       return activationResult;
     }
 
@@ -128,7 +130,7 @@
       return activationResult;
     }
 
-    window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
+    if (!(deps && deps.isTerminationAttempt())) window.Notify.notifyMain(mapMenuActivationAlertKey(activationResult));
     return activationResult || {
       ok: false,
       state: 'failure',

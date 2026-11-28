@@ -115,6 +115,7 @@ async function handleExecutePrepared(event, payload = {}, {
   resolveMainWin,
   resolvePaths,
   controller,
+  isTerminationAdmitted = () => false,
 } = {}) {
   const request = resolveExecutePayload(payload);
 
@@ -123,6 +124,7 @@ async function handleExecutePrepared(event, payload = {}, {
     if (!isAuthorizedSender(event, mainWin, log, 'text-extraction-execute-prepared')) {
       return { ok: false, code: 'UNAUTHORIZED' };
     }
+    if (isTerminationAdmitted()) return { ok: false, code: 'TERMINATION_ACTIVE' };
     if (!request.prepareId) {
       log.warn('text-extraction-execute-prepared invalid payload (ignored): missing prepareId.');
       return buildInvalidPreparedIdResponse('invalid');
@@ -254,7 +256,7 @@ async function handleExecutePrepared(event, payload = {}, {
 // IPC registration
 // =============================================================================
 
-function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
+function registerIpc(ipcMain, { getWindows, resolvePaths, controller, isTerminationAdmitted = () => false } = {}) {
   if (!ipcMain || typeof ipcMain.handle !== 'function') {
     log.error('[text_extraction_execute_prepared_ipc] registerIpc requires ipcMain');
     throw new Error('[text_extraction_execute_prepared_ipc] registerIpc requires ipcMain');
@@ -290,6 +292,7 @@ function registerIpc(ipcMain, { getWindows, resolvePaths, controller } = {}) {
         resolveMainWin,
         resolvePaths,
         controller,
+        isTerminationAdmitted,
       }
     ));
   } catch (error) {

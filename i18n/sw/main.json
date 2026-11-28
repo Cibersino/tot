@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Sawa",
+      "termination_failure_title": "Haikuwezekana kufunga toT",
+      "termination_failure_message": "toT haikuweza kukamilisha mchakato wa kufunga programu. Kagua kazi yako na ujaribu tena. Kihariri cha Kazi ambacho ulikubali kifungwe huenda tayari kimefungwa.",
       "continue_button": "Ndiyo, endelea",
       "cancel_button": "Hapana, ghairi",
       "all_files": "Faili zote",

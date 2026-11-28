@@ -117,6 +117,11 @@
       }
     }
 
+    function applyStartupDocumentValue(nextValue) {
+      editor.value = nextValue;
+      dispatchNativeInputEvent();
+    }
+
     function tryNativeReplaceWholeValueSelection(nextValue) {
       let execOk = false;
 
@@ -763,11 +768,7 @@
           truncated = true;
         }
 
-        const committed = withLocalUpdateSuppressed(() => commitWholeValueWithThresholdPolicy(initialText));
-        if (!committed) {
-          log.error('Initial whole-value application failed unexpectedly.');
-          return false;
-        }
+        withLocalUpdateSuppressed(() => applyStartupDocumentValue(initialText));
         notifyIfTruncated(truncated);
       } catch (error) {
         log.error('applyInitialText error:', error);
@@ -787,7 +788,7 @@
       return true;
     }
 
-    async function applyExternalUpdate(payload) {
+    async function applyExternalUpdate(payload, { duringStartup = false } = {}) {
       if (state.canonicalTextSyncIsolated === true) {
         return { canonicalTextSyncIsolationLatched: false };
       }
@@ -822,6 +823,12 @@
 
         // Prevent main-driven updates from re-triggering local Text Editor sync while applying them.
         withLocalUpdateSuppressed(() => {
+          if (duringStartup) {
+            applyStartupDocumentValue(newText);
+            notifyIfTruncated(truncated);
+            return;
+          }
+
           const metaSource = incomingMeta && incomingMeta.source ? incomingMeta.source : null;
           const metaAction = incomingMeta && incomingMeta.action ? incomingMeta.action : null;
 
