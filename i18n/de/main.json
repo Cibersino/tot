@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "toT konnte nicht geschlossen werden",
+      "termination_failure_message": "toT konnte den Schließvorgang nicht abschließen. Überprüfe deine Arbeit und versuche es erneut. Ein Aufgabeneditor, dessen Schließen du zugestimmt hast, ist möglicherweise bereits geschlossen.",
       "continue_button": "Ja, fortfahren",
       "cancel_button": "Nein, abbrechen",
       "all_files": "Alle Dateien",

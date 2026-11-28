@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Allin",
+      "termination_failure_title": "toT wichq’ayta mana atikurqachu",
+      "termination_failure_message": "toT-qa wichq’ayninta tukuyta mana atirqachu. Llamk’ayniki qhaway hinaspa hukmanta yant’ay. Wichq’ananta saqisqayki Tarea allichanaqa ichapas ña wichq’akurqan.",
       "continue_button": "Arí, hinalla riy",
       "cancel_button": "Mana, saqiy",
       "all_files": "Llapan willañiqikuna",

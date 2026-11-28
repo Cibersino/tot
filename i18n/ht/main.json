@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "Li pa t posib fèmen toT",
+      "termination_failure_message": "toT pa t kapab fini fèmen. Tcheke travay ou epi eseye ankò. Editè Travay ou te dakò pou fèmen an ka deja fèmen.",
       "continue_button": "Wi, kontinye",
       "cancel_button": "Non, anile",
       "all_files": "Tout fichye",

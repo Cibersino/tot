@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "موافق",
+      "termination_failure_title": "تعذّر إغلاق toT",
+      "termination_failure_message": "تعذّر على toT إكمال عملية الإغلاق. راجع عملك وحاول مرة أخرى. ربما أُغلق بالفعل محرر المهام الذي وافقت على إغلاقه.",
       "continue_button": "نعم، متابعة",
       "cancel_button": "لا، إلغاء",
       "all_files": "كل الملفات",

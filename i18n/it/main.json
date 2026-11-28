@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "Impossibile chiudere toT",
+      "termination_failure_message": "toT non ha potuto completare la chiusura. Controlla il tuo lavoro e riprova. L’Editor attività di cui hai autorizzato la chiusura potrebbe essere già chiuso.",
       "continue_button": "Sì, continuare",
       "cancel_button": "No, annullare",
       "all_files": "Tutti i file",

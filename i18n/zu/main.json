@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Kulungile",
+      "termination_failure_title": "Ayikwazanga ukuvala i-toT",
+      "termination_failure_message": "I-toT ayikwazanga ukuqedela ukuvala. Hlola umsebenzi wakho bese uzama futhi. Isihleli Semisebenzi ovume ukuthi sivalwe kungenzeka ukuthi sesivaliwe.",
       "continue_button": "Yebo, qhubeka",
       "cancel_button": "Cha, khansela",
       "all_files": "Wonke amafayela",

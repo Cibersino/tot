@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "Det gick inte att stänga toT",
+      "termination_failure_message": "toT kunde inte slutföra stängningen. Kontrollera ditt arbete och försök igen. En uppgiftsredigerare som du har godkänt stängning av kan redan ha stängts.",
       "continue_button": "Ja, fortsätt",
       "cancel_button": "Nej, avbryt",
       "all_files": "Alla filer",

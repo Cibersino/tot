@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "OK",
+      "termination_failure_title": "toT no fit close",
+      "termination_failure_message": "toT no fit finish to close. Check your work and try again. Di Task Editor wey you agree make e close fit don close already.",
       "continue_button": "Yes, continue",
       "cancel_button": "No, cancel",
       "all_files": "All files",

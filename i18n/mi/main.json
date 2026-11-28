@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Āe",
+      "termination_failure_title": "Kāore i taea te kati i a toT",
+      "termination_failure_message": "Kāore i taea e toT te whakaoti i te tukanga kati. Tirohia tō mahi ka ngana anō. Tērā pea kua kati kē te Kaiwhakatika Tūmahi i whakaaetia e koe kia katia.",
       "continue_button": "Āe, haere tonu",
       "cancel_button": "Kāo, whakakore",
       "all_files": "Ngā kōnae katoa",

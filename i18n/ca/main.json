@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "D’acord",
+      "termination_failure_title": "No s’ha pogut tancar toT",
+      "termination_failure_message": "toT no ha pogut acabar de tancar-se. Revisa la teva feina i torna-ho a provar. És possible que l’Editor de tasques del qual has autoritzat el tancament ja s’hagi tancat.",
       "continue_button": "Sí, continua",
       "cancel_button": "No, cancel·la",
       "all_files": "Tots els fitxers",

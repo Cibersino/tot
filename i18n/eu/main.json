@@ -39,6 +39,8 @@
     },
     "dialog": {
       "ok": "Ados",
+      "termination_failure_title": "Ezin izan da toT itxi",
+      "termination_failure_message": "toT-k ezin izan du ixteko prozesua amaitu. Begiratu zure lana eta saiatu berriro. Ixteko baimena eman diozun ataza-editorea dagoeneko itxita egon daiteke.",
       "continue_button": "Bai, jarraitu",
       "cancel_button": "Ez, utzi",
       "all_files": "Fitxategi guztiak",
