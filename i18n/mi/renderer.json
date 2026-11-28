@@ -678,7 +678,7 @@
         }
       },
       "prestart": {
-        "reminder": "Pēhia te Play (▶) i te Matawā Mānu ina rite koe ki te tīmata. Kia tīmata te whakamātautau, kaua e pēhi Pause (⏸) kia mutu rā anō tō pānui: ka whakakapi te Pause i te whakamātautau; kāore e whakatā i te matawā. Pēhia Stop/Reset (⏹) anake mēnā e hiahia ana koe ki te whakakore i te whakamātautau."
+        "reminder": "Pēhia te Play (▶) i te Matawā Mānu ina rite koe ki te tīmata. Kia tīmata te whakamātautau, kaua e pēhi Pause (⏸) kia mutu rā anō tō pānui: ka whakamutu te Pause i te whakamātautau; kāore e whakatā i te matawā. Pēhia Stop/Reset (⏹) anake mēnā e hiahia ana koe ki te whakakore i te whakamātautau."
       },
       "questions": {
         "title": "Ngā pātai mārama pānui",
